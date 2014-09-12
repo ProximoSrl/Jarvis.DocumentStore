@@ -1,30 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Owin.Hosting;
+using System.Web.Http;
+using Castle.Windsor;
+using Owin;
 
 namespace Jarvis.ImageService.Host.Support
 {
+    public static class ContainerAccessor
+    {
+        public static IWindsorContainer Instance { get; set; }
+    }
+
     public class ImageServiceApplication
     {
-        IDisposable _webApplication;
-        readonly Uri _serverAddress;
-
-        public ImageServiceApplication(Uri serverAddress)
+        public void Configuration(IAppBuilder application)
         {
-            _serverAddress = serverAddress;
-        }
+            var config = new HttpConfiguration
+            {
+                DependencyResolver = new WindsorResolver(
+                    ContainerAccessor.Instance
+                    )
+            };
 
-        public void Start()
-        {
-            _webApplication = WebApp.Start<ImageServicePipeline>(_serverAddress.AbsoluteUri);
-        }
-
-        public void Stop()
-        {
-            _webApplication.Dispose();
+            config.MapHttpAttributeRoutes();
+            application.UseWebApi(config);
         }
     }
 }

@@ -14,17 +14,20 @@ namespace Jarvis.ImageService.Host
         {
             var exitCode = HostFactory.Run(host =>
             {
-                host.Service<ImageServiceApplication>(service =>
+                host.UseOldLog4Net("log4net.config");
+
+                host.Service<ImageServiceBootstrapper>(service =>
                 {
-                    service.ConstructUsing(() => new ImageServiceApplication( new Uri("http://localhost:5123")));
+                    service.ConstructUsing(() => new ImageServiceBootstrapper( new Uri("http://localhost:5123")));
                     service.WhenStarted(s => s.Start());
                     service.WhenStopped(s => s.Stop());
                 });
 
+                host.RunAsNetworkService();
+
                 host.SetDescription("Image service for JARVIS");
                 host.SetDisplayName("Jarvis - Image service");
                 host.SetServiceName("JarvisImageService");
-                host.RunAsNetworkService();
             });
 
             return (int)exitCode;

@@ -13,14 +13,14 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
     [TestFixture]
     public class ThumbnailApiTests
     {
-        ImageServiceApplication _app;
+        ImageServiceBootstrapper _app;
         Uri _serverAddress;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
             _serverAddress = new Uri("http://localhost:5123");
-            _app = new ImageServiceApplication(_serverAddress);
+            _app = new ImageServiceBootstrapper(_serverAddress);
             _app.Start();
         }
 
