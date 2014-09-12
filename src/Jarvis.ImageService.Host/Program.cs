@@ -16,7 +16,7 @@ namespace Jarvis.ImageService.Host
             {
                 host.Service<ImageServiceApplication>(service =>
                 {
-                    service.ConstructUsing(() => new ImageServiceApplication());
+                    service.ConstructUsing(() => new ImageServiceApplication( new Uri("http://localhost:5123")));
                     service.WhenStarted(s => s.Start());
                     service.WhenStopped(s => s.Stop());
                 });

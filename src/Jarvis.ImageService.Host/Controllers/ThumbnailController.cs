@@ -9,9 +9,9 @@ namespace Jarvis.ImageService.Host.Controllers
 {
     public class ThumbnailController : ApiController
     {
-        [Route("thumbnail/create")]
-        [HttpGet]
-        public string Create()
+        [Route("thumbnail/upload")]
+        [HttpPost]
+        public string Upload()
         {
             return "Created @ " + DateTime.Now;
         }

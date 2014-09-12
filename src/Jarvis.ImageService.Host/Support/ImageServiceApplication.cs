@@ -9,15 +9,22 @@ namespace Jarvis.ImageService.Host.Support
 {
     public class ImageServiceApplication
     {
-        protected IDisposable WebApplication;
+        IDisposable _webApplication;
+        readonly Uri _serverAddress;
+
+        public ImageServiceApplication(Uri serverAddress)
+        {
+            _serverAddress = serverAddress;
+        }
+
         public void Start()
         {
-            WebApplication = WebApp.Start<ImageServicePipeline>("http://localhost:5123");
+            _webApplication = WebApp.Start<ImageServicePipeline>(_serverAddress.AbsoluteUri);
         }
 
         public void Stop()
         {
-            WebApplication.Dispose();
+            _webApplication.Dispose();
         }
     }
 }
