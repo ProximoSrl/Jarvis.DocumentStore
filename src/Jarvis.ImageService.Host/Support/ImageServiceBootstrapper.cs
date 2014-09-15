@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.Windsor;
@@ -37,6 +38,7 @@ namespace Jarvis.ImageService.Host.Support
                 new SchedulerInstaller(connectionString)
             );
 
+            _container.Resolve<ILogger>().InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
             _webApplication = WebApp.Start<ImageServiceApplication>(_serverAddress.AbsoluteUri);
         }
 

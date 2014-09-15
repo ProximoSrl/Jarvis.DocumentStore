@@ -10,10 +10,12 @@ namespace Jarvis.ImageService.Core.Jobs
 {
     public class CreateThumbnailFromPdfJob : IJob
     {
+        public const string Documentid = "documentId";
+
         public ILogger Logger { get; set; }
         public void Execute(IJobExecutionContext context)
         {
-            Logger.Debug("Tick");
+            Logger.DebugFormat("Pdf -> PNG of {0}", context.JobDetail.JobDataMap[Documentid]);
         }
     }
 }

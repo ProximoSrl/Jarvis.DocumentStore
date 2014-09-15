@@ -5,18 +5,31 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
 using Jarvis.ImageService.Core.Http;
+using Jarvis.ImageService.Core.ProcessingPipeline;
+using Jarvis.ImageService.Core.ProcessinPipeline;
 using Jarvis.ImageService.Core.Storage;
+using Quartz;
 
 namespace Jarvis.ImageService.Core.Controllers
 {
     public class ThumbnailController : ApiController
     {
-        public ThumbnailController(IFileStore fileStore)
+        public ThumbnailController(IFileStore fileStore, IPipelineScheduler pipelineScheduler)
         {
+            PipelineScheduler = pipelineScheduler;
             FileStore = fileStore;
         }
 
         private IFileStore FileStore { get; set; }
+        private IPipelineScheduler PipelineScheduler { get; set; }
+
+        [Route("thumbnail/status")]
+        [HttpGet]
+        public string Status()
+        {
+            return "ok";
+        }
+
 
         [Route("thumbnail/upload/{id}")]
         [HttpPost]
@@ -30,7 +43,9 @@ namespace Jarvis.ImageService.Core.Controllers
             var provider = new FileStoreMultipartStreamProvider(FileStore, id);
             await Request.Content.ReadAsMultipartAsync(provider);
 
-            return Request.CreateResponse(HttpStatusCode.OK, "Created @ " + DateTime.Now);
+            PipelineScheduler.QueueThumbnail(id);
+
+            return Request.CreateResponse(HttpStatusCode.OK, id);
         }
     }
 }

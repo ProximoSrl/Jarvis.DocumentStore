@@ -9,6 +9,7 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.ImageService.Core.Jobs;
+using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.ProcessinPipeline;
 using Quartz;
 using Quartz.Impl.MongoDB;
@@ -34,6 +35,10 @@ namespace Jarvis.ImageService.Core.Support
                     .LifestyleTransient(),
                 Component
                     .For<CreatePdfImageTask>()
+                    .LifestyleTransient(),
+                Component
+                    .For<IPipelineScheduler>()
+                    .ImplementedBy<PipelineScheduler>()
                     .LifestyleTransient()
             );
 

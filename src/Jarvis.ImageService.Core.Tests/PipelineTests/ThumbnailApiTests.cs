@@ -37,6 +37,20 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             await client.Upload(SampleData.PathToDocumentPdf, "Document_1");
 
             Debug.WriteLine("Done");
+            Assert.IsTrue(true);
+        }
+    }
+
+    [TestFixture, Explicit]
+    public class client_call
+    {
+        [Test]
+        public async void can_upload_pdf()
+        {
+            var client = new ImageServiceClient(new Uri("http://localhost:5123"));
+            await client.Upload(SampleData.PathToDocumentPdf, "Document_1");
+
+            Debug.WriteLine("Done");
         }
     }
 }
