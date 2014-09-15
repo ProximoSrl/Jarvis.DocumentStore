@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Configuration;
+using Castle.Core.Logging;
 using Castle.Facilities.QuartzIntegration;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
@@ -42,25 +43,9 @@ namespace Jarvis.ImageService.Core.Support
                     .LifestyleTransient()
             );
 
-            var scheduler = container.Resolve<IScheduler>();
-            ConfigureScheduler(scheduler);
-        }
-
-        static void ConfigureScheduler(IScheduler scheduler)
-        {
-            var job = JobBuilder
-                .Create<HeartBeatJob>()
-                .WithIdentity("HeartBeat")
-                .Build();
-
-            var trigger = TriggerBuilder.Create()
-                .WithIdentity("trigger-HeartBeat")
-                .StartAt(DateTime.Now.AddSeconds(5))
-                .WithSimpleSchedule(builder => builder.WithIntervalInSeconds(5).RepeatForever())
-                .Build();
-
-            scheduler.DeleteJob(JobKey.Create("HeartBeat"));
-            scheduler.ScheduleJob(job, trigger);
+            container.Resolve<IScheduler>().ListenerManager.AddJobListener(new JobsListener(
+                container.Resolve<ILogger>()
+            ));
         }
 
         IConfiguration CreateDefaultConfiguration()

@@ -26,13 +26,13 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         {
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
-                .WithIdentity(documentId +".thumbnail.job")
+//                .WithIdentity(documentId +".thumbnail.job.")
+                .UsingJobData(CreateThumbnailFromPdfJob.Documentid, documentId)
                 .Build();
 
             var trigger = TriggerBuilder.Create()
-                .WithIdentity(documentId + ".thumbnail.trigger")
-                .UsingJobData(CreateThumbnailFromPdfJob.Documentid, documentId)
-                .StartNow()
+//                .WithIdentity(documentId + ".thumbnail.trigger")
+                .StartAt(DateTimeOffset.Now.AddSeconds(15))
                 .Build();
 
             Scheduler.ScheduleJob(job, trigger);

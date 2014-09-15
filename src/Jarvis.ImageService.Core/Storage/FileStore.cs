@@ -32,6 +32,8 @@ namespace Jarvis.ImageService.Core.Storage
 
             var uniqueFileName = rootName + "/source";
 
+            _gridFs.DeleteById(uniqueFileName);
+
             return _gridFs.Create(uniqueFileName, new MongoGridFSCreateOptions()
             {
                 ContentType = MimeTypes.GetMimeType(fname),

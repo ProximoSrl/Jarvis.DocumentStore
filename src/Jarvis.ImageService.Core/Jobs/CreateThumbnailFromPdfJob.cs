@@ -15,7 +15,9 @@ namespace Jarvis.ImageService.Core.Jobs
         public ILogger Logger { get; set; }
         public void Execute(IJobExecutionContext context)
         {
-            Logger.DebugFormat("Pdf -> PNG of {0}", context.JobDetail.JobDataMap[Documentid]);
+            var jobData = context.JobDetail.JobDataMap[Documentid];
+            Logger.DebugFormat("Pdf -> PNG of {0}", jobData);
+            throw new Exception("Invalid!!!!!");
         }
     }
 }

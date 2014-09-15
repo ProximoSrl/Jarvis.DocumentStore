@@ -84,7 +84,7 @@
     <Compile Include="Controllers\ThumbnailController.cs" />
     <Compile Include="Http\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Jobs\CreateThumbnailFromPdfJob.cs" />
-    <Compile Include="Jobs\HeartBeatJob.cs" />
+    <Compile Include="Jobs\JobsListener.cs" />
     <Compile Include="MimeTypes.cs" />
     <Compile Include="ProcessingPipeline\ConvertParams.cs" />
     <Compile Include="ProcessingPipeline\CreatePdfImageTask.cs" />
