@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 using MongoDB.Driver;
 
@@ -25,8 +26,10 @@ namespace Jarvis.ImageService.Core.Support
             container.Register(
                 Component
                     .For<IFileStore>()
-                    .ImplementedBy<FileStore>()
-                    .LifestyleTransient(),
+                    .ImplementedBy<FileStore>(),
+                Component
+                    .For<ICounterService>()
+                    .ImplementedBy<CounterService>(),
                 Component
                     .For<MongoDatabase>()
                     .Instance(GetDatabase())

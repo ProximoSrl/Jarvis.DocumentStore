@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
@@ -11,7 +12,7 @@ namespace Jarvis.ImageService.Core.Storage
 {
     public interface IFileStore
     {
-        Stream CreateNew(string fname);
+        Stream CreateNew(string fname, string rootName);
     }
 
     public class FileStore : IFileStore
@@ -22,12 +23,22 @@ namespace Jarvis.ImageService.Core.Storage
             _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
         }
 
-        public Stream CreateNew(string fname)
+        public Stream CreateNew(string fname, string rootName)
         {
-            return _gridFs.Create(fname, new MongoGridFSCreateOptions()
+            var metadata = new BsonDocument
+            {
+                { "originalFileName", fname}
+            };
+
+            var uniqueFileName = rootName + "/source";
+
+            return _gridFs.Create(uniqueFileName, new MongoGridFSCreateOptions()
             {
                 ContentType = MimeTypes.GetMimeType(fname),
-                UploadDate = DateTime.UtcNow
+                UploadDate = DateTime.UtcNow,
+                Metadata = metadata,
+                Aliases = new []{ fname, rootName},
+                Id = uniqueFileName
             });
         }
     }

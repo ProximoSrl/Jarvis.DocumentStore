@@ -18,7 +18,7 @@ namespace Jarvis.ImageService.Client
             _apiRoot = apiRoot;
         }
 
-        public async Task Upload(string pathToFile)
+        public async Task Upload(string pathToFile, string resourceId)
         {
             string fileName = Path.GetFileNameWithoutExtension(pathToFile);
             string fileNameWithExtension = Path.GetFileName(pathToFile);
@@ -35,7 +35,7 @@ namespace Jarvis.ImageService.Client
 
 //                        content.Add(new StringContent(pipeline), "pipeline");
 
-                        var endPoint = new Uri(_apiRoot, "thumbnail/upload");
+                        var endPoint = new Uri(_apiRoot, "thumbnail/upload/" + resourceId);
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {

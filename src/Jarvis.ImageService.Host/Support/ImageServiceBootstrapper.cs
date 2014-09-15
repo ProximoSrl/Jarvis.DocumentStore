@@ -4,10 +4,8 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Castle.Facilities.Logging;
-using Castle.MicroKernel.Registration;
-using Castle.MicroKernel.SubSystems.Configuration;
+using Castle.Facilities.Startable;
 using Castle.Windsor;
 using Jarvis.ImageService.Core.Support;
 using Microsoft.Owin.Hosting;
@@ -30,10 +28,13 @@ namespace Jarvis.ImageService.Host.Support
             _container = new WindsorContainer();
             ContainerAccessor.Instance = _container;
             _container.AddFacility<LoggingFacility>(f => f.UseLog4Net("log4net"));
-            
+            _container.AddFacility<StartableFacility>();
+
+            var connectionString = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
             _container.Install(
                 new ApiInstaller(), 
-                new CoreInstaller(ConfigurationManager.ConnectionStrings["filestore"].ConnectionString)
+                new CoreInstaller(connectionString),
+                new SchedulerInstaller(connectionString)
             );
 
             _webApplication = WebApp.Start<ImageServiceApplication>(_serverAddress.AbsoluteUri);
@@ -43,19 +44,6 @@ namespace Jarvis.ImageService.Host.Support
         {
             _webApplication.Dispose();
             _container.Dispose();
-        }
-    }
-
-    public class ApiInstaller : IWindsorInstaller
-    {
-        public void Install(IWindsorContainer container, IConfigurationStore store)
-        {
-            container.Register(
-                Classes
-                    .FromThisAssembly()
-                    .BasedOn<ApiController>()
-                    .LifestyleTransient()
-            );
         }
     }
 }

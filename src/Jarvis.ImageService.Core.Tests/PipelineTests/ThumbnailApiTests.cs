@@ -34,7 +34,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         public async void can_upload_pdf()
         {
             var client = new ImageServiceClient(_serverAddress);
-            await client.Upload(SampleData.PathToDocumentPdf);
+            await client.Upload(SampleData.PathToDocumentPdf, "Document_1");
 
             Debug.WriteLine("Done");
         }

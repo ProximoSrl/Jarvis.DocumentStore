@@ -15,16 +15,18 @@ namespace Jarvis.ImageService.Core.Http
     public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider
     {
         readonly IFileStore _store;
+        readonly string _resourceId;
 
-        public FileStoreMultipartStreamProvider(IFileStore store) : base(Path.GetTempPath())
+        public FileStoreMultipartStreamProvider(IFileStore store, string resourceId) : base(Path.GetTempPath())
         {
             _store = store;
+            _resourceId = resourceId;
         }
 
         public override Stream GetStream(HttpContent parent, HttpContentHeaders headers)
         {
             var fname = headers.ContentDisposition.FileName;
-            return _store.CreateNew(fname);
+            return _store.CreateNew(fname, _resourceId);
         }
     }
 }
