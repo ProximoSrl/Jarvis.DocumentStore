@@ -11,19 +11,13 @@ using Jarvis.ImageService.Core.Storage;
 
 namespace Jarvis.ImageService.Core.Http
 {
-    public class UnsupportedFileFormat : Exception
-    {
-        public UnsupportedFileFormat(string extension)
-            :base(string.Format("Unsupported file {0}", extension))
-        {
-        }
-    }
-
     public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider
     {
         readonly IFileStore _store;
         readonly string _resourceId;
         public string Filename { get; private set; }
+        public string UnsupportedExtension { get; private set; }
+
         public FileStoreMultipartStreamProvider(IFileStore store, string resourceId) : base(Path.GetTempPath())
         {
             _store = store;
@@ -33,13 +27,14 @@ namespace Jarvis.ImageService.Core.Http
         public override Stream GetStream(HttpContent parent, HttpContentHeaders headers)
         {
             Filename  = headers.ContentDisposition.FileName;
-            var extension = Path.GetExtension(Filename);
+            var extension = Path.GetExtension(Filename.Replace('\"', ' ').Trim());
             
-            if (extension == null || extension.ToLowerInvariant() != ".pdf")
+            if (extension.ToLowerInvariant() != ".pdf")
             {
-                throw new UnsupportedFileFormat(extension);
+                UnsupportedExtension = extension;
+                return new MemoryStream();
             }
-            
+
             return _store.CreateNew(_resourceId, Filename);
         }
     }

@@ -44,16 +44,21 @@ namespace Jarvis.ImageService.Core.Controllers
             }
 
             var provider = new FileStoreMultipartStreamProvider(FileStore, id);
+            await Request.Content.ReadAsMultipartAsync(provider);
 
-            try
-            {
-                await Request.Content.ReadAsMultipartAsync(provider);
-            }
-            catch (UnsupportedFileFormat ex)
+            if (provider.Filename == null)
             {
                 return Request.CreateErrorResponse(
-                    HttpStatusCode.UnsupportedMediaType,
-                    ex.Message
+                    HttpStatusCode.BadRequest,
+                    "Attachment not found!"
+                );
+            }
+
+            if (provider.UnsupportedExtension != null)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Format("Unsupported file {0}", provider.UnsupportedExtension)
                 );
             }
 
