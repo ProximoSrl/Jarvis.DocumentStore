@@ -3,11 +3,6 @@ using MongoDB.Driver.Builders;
 
 namespace Jarvis.ImageService.Core.Services
 {
-    public interface ICounterService
-    {
-        long GetNext(string serie);
-    }
-
     public class CounterService : ICounterService
     {
         readonly MongoCollection<IdentityCounter> _counters;

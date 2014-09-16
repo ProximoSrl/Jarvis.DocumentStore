@@ -4,17 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Fasterflect;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
 namespace Jarvis.ImageService.Core.Storage
 {
-    public interface IFileStore
-    {
-        Stream CreateNew(string fname, string rootName);
-    }
-
     public class FileStore : IFileStore
     {
         readonly MongoGridFS _gridFs;
@@ -23,25 +19,28 @@ namespace Jarvis.ImageService.Core.Storage
             _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
         }
 
-        public Stream CreateNew(string fname, string rootName)
+        public Stream CreateNew(string fileId, string fname)
         {
             var metadata = new BsonDocument
             {
                 { "originalFileName", fname}
             };
 
-            var uniqueFileName = rootName + "/source";
+            _gridFs.DeleteById(fileId);
 
-            _gridFs.DeleteById(uniqueFileName);
-
-            return _gridFs.Create(uniqueFileName, new MongoGridFSCreateOptions()
+            return _gridFs.Create(fname, new MongoGridFSCreateOptions()
             {
                 ContentType = MimeTypes.GetMimeType(fname),
                 UploadDate = DateTime.UtcNow,
                 Metadata = metadata,
-                Aliases = new []{ fname, rootName},
-                Id = uniqueFileName
+                Id = fileId
             });
+        }
+
+        public IFileStoreReader OpenRead(string fileId)
+        {
+            var s = _gridFs.FindOneById(fileId);
+            return new GridFsFileStoreReader(s);
         }
     }
 }

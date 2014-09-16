@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Newtonsoft.Json;
 using Quartz;
 
 namespace Jarvis.ImageService.Core.Jobs
@@ -29,14 +30,46 @@ namespace Jarvis.ImageService.Core.Jobs
 
         public void JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException)
         {
-            Logger.DebugFormat("JobWasExecuted");
             if (jobException != null)
             {
-                Logger.DebugFormat("With exception... rescheduling");
+                jobException.UnscheduleAllTriggers = true;
+
+                var ex = jobException.GetBaseException();
+                var retries = context.Trigger.JobDataMap.GetIntValue("_retrycount") +1;
+                Logger.ErrorFormat(ex, "Refire count {0}", retries);
+
+                try
+                {
+                    if (retries < 5)
+                    {
+                        var rescheduleAt = DateTime.Now.AddSeconds(5*retries);
+                        Logger.DebugFormat("Rescheduling job {0} at {1}", context.JobDetail.Key, rescheduleAt);
+                        context.Scheduler.RescheduleJob(
+                            context.Trigger.Key,
+                            TriggerBuilder
+                                .Create()
+                                .UsingJobData("_retrycount", retries)
+                                .StartAt(rescheduleAt)
+                            .Build()
+                        );
+                    }
+                    else
+                    {
+                        Logger.ErrorFormat("Too many errors on job {0} with data {1}", 
+                            context.JobDetail.JobType,
+                            JsonConvert.SerializeObject(context.JobDetail.JobDataMap)
+                        );
+                    }
+                }
+                catch (Exception rescheduleException)
+                {
+                    Logger.Fatal("rescheduling", rescheduleException);
+                }
             }
         }
 
-        public string Name {
+        public string Name
+        {
             get { return "pipeline.listener"; }
         }
     }

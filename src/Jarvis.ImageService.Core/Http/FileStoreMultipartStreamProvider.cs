@@ -16,7 +16,6 @@ namespace Jarvis.ImageService.Core.Http
     {
         readonly IFileStore _store;
         readonly string _resourceId;
-
         public FileStoreMultipartStreamProvider(IFileStore store, string resourceId) : base(Path.GetTempPath())
         {
             _store = store;
@@ -26,7 +25,7 @@ namespace Jarvis.ImageService.Core.Http
         public override Stream GetStream(HttpContent parent, HttpContentHeaders headers)
         {
             var fname = headers.ContentDisposition.FileName;
-            return _store.CreateNew(fname, _resourceId);
+            return _store.CreateNew(_resourceId, fname);
         }
     }
 }

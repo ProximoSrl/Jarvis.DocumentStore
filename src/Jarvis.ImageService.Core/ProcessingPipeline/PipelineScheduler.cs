@@ -8,11 +8,6 @@ using Quartz;
 
 namespace Jarvis.ImageService.Core.ProcessingPipeline
 {
-    public interface IPipelineScheduler
-    {
-        void QueueThumbnail(string documentId);
-    }
-
     public class PipelineScheduler : IPipelineScheduler
     {
         public PipelineScheduler(IScheduler scheduler)
@@ -26,14 +21,14 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         {
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
-//                .WithIdentity(documentId +".thumbnail.job.")
                 .UsingJobData(CreateThumbnailFromPdfJob.Documentid, documentId)
+                .StoreDurably(true)
                 .Build();
 
             var trigger = TriggerBuilder.Create()
-//                .WithIdentity(documentId + ".thumbnail.trigger")
                 .StartAt(DateTimeOffset.Now.AddSeconds(15))
                 .Build();
+
 
             Scheduler.ScheduleJob(job, trigger);
         }
