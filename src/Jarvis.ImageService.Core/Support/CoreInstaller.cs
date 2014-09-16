@@ -31,6 +31,9 @@ namespace Jarvis.ImageService.Core.Support
                     .For<ICounterService>()
                     .ImplementedBy<CounterService>(),
                 Component
+                    .For<IFileInfoService>()
+                    .ImplementedBy<MongoDbFileInfoService>(),
+                Component
                     .For<MongoDatabase>()
                     .Instance(GetDatabase())
             );

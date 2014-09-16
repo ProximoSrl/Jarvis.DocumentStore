@@ -4,25 +4,24 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Castle.Core.Logging;
 using Jarvis.ImageService.Core.Http;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline;
-using Jarvis.ImageService.Core.ProcessinPipeline;
+using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
-using Quartz;
 
 namespace Jarvis.ImageService.Core.Controllers
 {
     public class ThumbnailController : ApiController
     {
-        public ThumbnailController(IFileStore fileStore, IPipelineScheduler pipelineScheduler)
+        public ThumbnailController(IFileStore fileStore, IFileInfoService fileInfoService)
         {
-            PipelineScheduler = pipelineScheduler;
+            FileInfoService = fileInfoService;
             FileStore = fileStore;
         }
 
         private IFileStore FileStore { get; set; }
-        private IPipelineScheduler PipelineScheduler { get; set; }
+        private IFileInfoService FileInfoService { get; set; }
 
         [Route("thumbnail/status")]
         [HttpGet]
@@ -36,15 +35,29 @@ namespace Jarvis.ImageService.Core.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(string id)
         {
-            if (!Request.Content.IsMimeMultipartContent())
+            if (Request.Content == null || !Request.Content.IsMimeMultipartContent())
             {
-                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    "Attachment not found!"
+                );
             }
 
             var provider = new FileStoreMultipartStreamProvider(FileStore, id);
-            await Request.Content.ReadAsMultipartAsync(provider);
 
-            PipelineScheduler.QueueThumbnail(id);
+            try
+            {
+                await Request.Content.ReadAsMultipartAsync(provider);
+            }
+            catch (UnsupportedFileFormat ex)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.UnsupportedMediaType,
+                    ex.Message
+                );
+            }
+
+            FileInfoService.Create(id, provider.Filename);
 
             return Request.CreateResponse(HttpStatusCode.OK, id);
         }
@@ -53,7 +66,7 @@ namespace Jarvis.ImageService.Core.Controllers
         [HttpGet]
         public HttpResponseMessage GetThumbnail(string id, string size)
         {
-            var descriptor = FileStore.GetDescriptor(id + "/thumbnail/"+size);
+            var descriptor = FileStore.GetDescriptor(id + "/thumbnail/" + size);
             var response = Request.CreateResponse(HttpStatusCode.OK);
             response.Content = new StreamContent(descriptor.OpenRead());
             response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
