@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
@@ -46,6 +47,17 @@ namespace Jarvis.ImageService.Core.Controllers
             PipelineScheduler.QueueThumbnail(id);
 
             return Request.CreateResponse(HttpStatusCode.OK, id);
+        }
+
+        [Route("thumbnail/{id}/{size}")]
+        [HttpGet]
+        public HttpResponseMessage GetThumbnail(string id, string size)
+        {
+            var descriptor = FileStore.GetDescriptor(id + "/thumbnail/"+size);
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StreamContent(descriptor.OpenRead());
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+            return response;
         }
     }
 }

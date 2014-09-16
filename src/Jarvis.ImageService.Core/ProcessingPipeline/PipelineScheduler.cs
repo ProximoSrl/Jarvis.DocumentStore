@@ -21,7 +21,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         {
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
-                .UsingJobData(CreateThumbnailFromPdfJob.Documentid, documentId)
+                .UsingJobData(CreateThumbnailFromPdfJob.DocumentIdKey, documentId)
                 .StoreDurably(true)
                 .Build();
 

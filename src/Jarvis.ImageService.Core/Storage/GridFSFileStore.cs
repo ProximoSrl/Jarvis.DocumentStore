@@ -11,36 +11,34 @@ using MongoDB.Driver.GridFS;
 
 namespace Jarvis.ImageService.Core.Storage
 {
-    public class FileStore : IFileStore
+    public class GridFSFileStore : IFileStore
     {
         readonly MongoGridFS _gridFs;
-        public FileStore(MongoDatabase db)
+        public GridFSFileStore(MongoDatabase db)
         {
             _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
         }
 
         public Stream CreateNew(string fileId, string fname)
         {
-            var metadata = new BsonDocument
-            {
-                { "originalFileName", fname}
-            };
-
-            _gridFs.DeleteById(fileId);
-
+            Delete(fileId);
             return _gridFs.Create(fname, new MongoGridFSCreateOptions()
             {
                 ContentType = MimeTypes.GetMimeType(fname),
                 UploadDate = DateTime.UtcNow,
-                Metadata = metadata,
                 Id = fileId
             });
         }
 
-        public IFileStoreReader OpenRead(string fileId)
+        public IFileStoreDescriptor GetDescriptor(string fileId)
         {
             var s = _gridFs.FindOneById(fileId);
-            return new GridFsFileStoreReader(s);
+            return new GridFsFileStoreDescriptor(s);
+        }
+
+        public void Delete(string fileId)
+        {
+            _gridFs.DeleteById(fileId);
         }
     }
 }

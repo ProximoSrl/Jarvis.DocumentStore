@@ -26,7 +26,7 @@ namespace Jarvis.ImageService.Core.Support
             container.Register(
                 Component
                     .For<IFileStore>()
-                    .ImplementedBy<FileStore>(),
+                    .ImplementedBy<GridFSFileStore>(),
                 Component
                     .For<ICounterService>()
                     .ImplementedBy<CounterService>(),

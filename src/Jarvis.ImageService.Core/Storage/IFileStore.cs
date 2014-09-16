@@ -5,6 +5,7 @@ namespace Jarvis.ImageService.Core.Storage
     public interface IFileStore
     {
         Stream CreateNew(string fileId, string fname);
-        IFileStoreReader OpenRead(string fileId);
+        IFileStoreDescriptor GetDescriptor(string fileId);
+        void Delete(string fileId);
     }
 }
