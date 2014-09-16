@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Hosting;
 using Castle.Core.Logging;
 using Jarvis.ImageService.Core.Controllers;
 using Jarvis.ImageService.Core.ProcessingPipeline;
@@ -22,15 +23,19 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
     public class ThumbnailControllerTests
     {
         ThumbnailController _controller;
+        private IFileStore _fileStore;
+
         [SetUp]
         public void SetUp()
         {
-            var store = Substitute.For<IFileStore>();
+            _fileStore = Substitute.For<IFileStore>();
             var fileInfoService = Substitute.For<IFileInfoService>();
-            _controller = new ThumbnailController(store, fileInfoService)
+            _controller = new ThumbnailController(_fileStore, fileInfoService)
             {
-                Request = new HttpRequestMessage()
+                Request = new HttpRequestMessage() 
             };
+
+            _controller.Request.Properties.Add(HttpPropertyKeys.HttpConfigurationKey, new HttpConfiguration());
         }
 
         [Test]
@@ -52,23 +57,43 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         [Test]
         public async void calling_upload_with_unsupported_file_type_should_return_BadRequest()
         {
-            using (var stream = new FileStream(SampleData.PathToATextDocument, FileMode.Open))
+            var response = await upload_file(SampleData.PathToATextDocument);
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.AreEqual("Unsupported file .txt", response.GetError().Message);
+        } 
+        
+        [Test]
+        public async void calling_upload_with_supported_file_type_should_return_Ok()
+        {
+            long streamLen = 0;
+            HttpResponseMessage response = null;
+            using (var stream = new MemoryStream())
+            {
+                _fileStore.CreateNew(Arg.Any<string>(), Arg.Any<string>()).Returns(stream);
+                response = await upload_file(SampleData.PathToDocumentPdf);
+                streamLen = stream.Length;
+            }
+
+            response.EnsureSuccessStatusCode();
+            Assert.AreEqual(new FileInfo(SampleData.PathToDocumentPdf).Length, streamLen);
+        }
+
+        private async Task<HttpResponseMessage> upload_file(string pathToFile)
+        {
+            using (var stream = new FileStream(pathToFile, FileMode.Open))
             {
                 var multipartFormDataContent = new MultipartFormDataContent("test"){
                     {
                         new StreamContent(stream), 
-                        Path.GetFileNameWithoutExtension(SampleData.PathToATextDocument),
-                        Path.GetFileName(SampleData.PathToATextDocument)
+                        Path.GetFileNameWithoutExtension(pathToFile),
+                        Path.GetFileName(pathToFile)
                     }
                 };
 
                 _controller.Request.Content = multipartFormDataContent;
 
-                var response = await _controller.Upload("Document_1");
-
-                Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
-                Assert.AreEqual("Unsupported file .txt", response.GetError().Message);
-            }
+                return await _controller.Upload("Document_1");
+            }        
         }
     }
 }
