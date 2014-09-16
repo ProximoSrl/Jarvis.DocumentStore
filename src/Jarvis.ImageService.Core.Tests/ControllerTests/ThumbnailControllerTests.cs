@@ -30,7 +30,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         {
             _fileStore = Substitute.For<IFileStore>();
             var fileInfoService = Substitute.For<IFileInfoService>();
-            _controller = new ThumbnailController(_fileStore, fileInfoService)
+            _controller = new ThumbnailController(_fileStore, fileInfoService, new ConfigService())
             {
                 Request = new HttpRequestMessage() 
             };

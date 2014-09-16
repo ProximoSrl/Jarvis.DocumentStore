@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 
 namespace Jarvis.ImageService.Core.Services
 {
@@ -13,7 +14,8 @@ namespace Jarvis.ImageService.Core.Services
     {
         FileInfo GetById(string id);
         void Save(FileInfo fileInfo);
-        void Create(string id, string filename);
+        void Create(string id, string filename, SizeInfo[] getDefaultSizes);
+        void LinkImage(string id, string size, string imageId);
     }
 
     public class MongoDbFileInfoService : IFileInfoService
@@ -37,11 +39,22 @@ namespace Jarvis.ImageService.Core.Services
             _collection.Save(fileInfo);
         }
 
-        public void Create(string id, string filename)
+        public void Create(string id, string filename, SizeInfo[] sizes)
         {
             var fi = new FileInfo(id, filename);
+            foreach (var sizeInfo in sizes)
+            {
+                fi.LinkSize(sizeInfo.Name, null);
+            }
             Save(fi);
-            _scheduler.QueueThumbnail(id);
+            _scheduler.QueueThumbnail(id, sizes);
+        }
+
+        public void LinkImage(string id, string size, string imageId)
+        {
+            var fi = GetById(id);
+            fi.LinkSize(size, imageId);
+            Save(fi);
         }
     }
 }

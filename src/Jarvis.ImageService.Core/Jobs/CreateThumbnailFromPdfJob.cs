@@ -17,6 +17,7 @@ namespace Jarvis.ImageService.Core.Jobs
     {
         private static Regex _regex = new Regex("([a-z]+):([0-9]+)x([0-9]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         public const string DocumentIdKey = "documentId";
+        public const string Sizes = "sizes";
         
         private string DocumentId { get; set; }
 

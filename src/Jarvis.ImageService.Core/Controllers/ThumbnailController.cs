@@ -14,14 +14,20 @@ namespace Jarvis.ImageService.Core.Controllers
 {
     public class ThumbnailController : ApiController
     {
-        public ThumbnailController(IFileStore fileStore, IFileInfoService fileInfoService)
+        public ThumbnailController(
+            IFileStore fileStore, 
+            IFileInfoService fileInfoService,
+            ConfigService config
+        )
         {
             FileInfoService = fileInfoService;
             FileStore = fileStore;
+            Config = config;
         }
 
         private IFileStore FileStore { get; set; }
         private IFileInfoService FileInfoService { get; set; }
+        private ConfigService Config { get; set; }
 
         [Route("thumbnail/status")]
         [HttpGet]
@@ -30,10 +36,9 @@ namespace Jarvis.ImageService.Core.Controllers
             return "ok";
         }
 
-
-        [Route("thumbnail/upload/{id}")]
+        [Route("thumbnail/upload/{fileId}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Upload(string id)
+        public async Task<HttpResponseMessage> Upload(string fileId)
         {
             if (Request.Content == null || !Request.Content.IsMimeMultipartContent())
             {
@@ -43,7 +48,7 @@ namespace Jarvis.ImageService.Core.Controllers
                 );
             }
 
-            var provider = new FileStoreMultipartStreamProvider(FileStore, id);
+            var provider = new FileStoreMultipartStreamProvider(FileStore, fileId);
             await Request.Content.ReadAsMultipartAsync(provider);
 
             if (provider.Filename == null)
@@ -62,16 +67,20 @@ namespace Jarvis.ImageService.Core.Controllers
                 );
             }
 
-            FileInfoService.Create(id, provider.Filename);
+            FileInfoService.Create(
+                fileId, 
+                provider.Filename,
+                Config.GetDefaultSizes()
+            );
 
-            return Request.CreateResponse(HttpStatusCode.OK, id);
+            return Request.CreateResponse(HttpStatusCode.OK, fileId);
         }
 
-        [Route("thumbnail/{id}/{size}")]
+        [Route("thumbnail/{fileId}/{size}")]
         [HttpGet]
-        public HttpResponseMessage GetThumbnail(string id, string size)
+        public HttpResponseMessage GetThumbnail(string fileId, string size)
         {
-            var descriptor = FileStore.GetDescriptor(id + "/thumbnail/" + size);
+            var descriptor = FileStore.GetDescriptor(fileId + "/thumbnail/" + size);
             var response = Request.CreateResponse(HttpStatusCode.OK);
             response.Content = new StreamContent(descriptor.OpenRead());
             response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);

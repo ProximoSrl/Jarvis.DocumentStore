@@ -12,9 +12,16 @@ namespace Jarvis.ImageService.Core.Model
         {
             Id = id.ToLowerInvariant();
             Filename = filename;
+            this.Sizes = new Dictionary<string, string>();
+        }
+
+        public void LinkSize(string size, string fileId)
+        {
+            this.Sizes[size.ToLowerInvariant()] = fileId;
         }
 
         public string Id { get; private set; }
         public string Filename { get; private set; }
+        public IDictionary<string, string> Sizes { get; private set; }
     }
 }

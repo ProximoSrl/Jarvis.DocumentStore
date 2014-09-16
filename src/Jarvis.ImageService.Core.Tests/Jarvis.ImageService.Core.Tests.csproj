@@ -102,6 +102,7 @@
   <ItemGroup>
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\ThumbnailControllerTests.cs" />
+    <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="PipelineTests\SampleData.cs" />
     <Compile Include="PipelineTests\ThumbnailApiTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jarvis.ImageService.Core.Jobs;
+using Jarvis.ImageService.Core.Model;
 using Quartz;
 
 namespace Jarvis.ImageService.Core.ProcessingPipeline
@@ -17,11 +18,12 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 
         private IScheduler Scheduler { get; set; }
 
-        public void QueueThumbnail(string documentId)
+        public void QueueThumbnail(string documentId, SizeInfo[] sizes)
         {
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
                 .UsingJobData(CreateThumbnailFromPdfJob.DocumentIdKey, documentId)
+                .UsingJobData(CreateThumbnailFromPdfJob.Sizes, SizeInfoHelper.Serialize(sizes))
                 .StoreDurably(true)
                 .Build();
 
