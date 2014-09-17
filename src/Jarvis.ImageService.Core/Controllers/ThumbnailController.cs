@@ -12,23 +12,23 @@ namespace Jarvis.ImageService.Core.Controllers
 {
     public class ThumbnailController : ApiController
     {
-        public ThumbnailController(
-            IFileStore fileStore
-        )
+        readonly IImageService _imageService;
+        public ThumbnailController(IImageService imageService)
         {
-            FileStore = fileStore;
+            _imageService = imageService;
         }
-
-        private IFileStore FileStore { get; set; }
 
         [Route("thumbnail/{fileId}/{size}")]
         [HttpGet]
         public HttpResponseMessage GetThumbnail(string fileId, string size)
         {
-            var descriptor = FileStore.GetDescriptor(fileId + "/thumbnail/" + size);
+            var imageDescriptor = _imageService.GetImageDescriptor(fileId, size);
+            if (imageDescriptor == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Image not found");
+            
             var response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StreamContent(descriptor.OpenRead());
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+            response.Content = new StreamContent(imageDescriptor.OpenRead());
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue(imageDescriptor.ContentType);
             return response;
         }
     }

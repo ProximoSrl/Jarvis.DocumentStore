@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 namespace Jarvis.ImageService.Core.Tests.PipelineTests
 {
-    [TestFixture]
+    [TestFixture, Explicit]
     public class ThumbnailApiTests
     {
         ImageServiceBootstrapper _app;

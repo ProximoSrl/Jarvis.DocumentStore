@@ -10,6 +10,7 @@ using Castle.Core.Logging;
 using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.ProcessinPipeline;
+using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 using Quartz;
 
@@ -25,6 +26,7 @@ namespace Jarvis.ImageService.Core.Jobs
 
         public ILogger Logger { get; set; }
         public IFileStore FileStore { get; set; }
+        public IImageService ImageService { get; set; }
 
         public void Execute(IJobExecutionContext context)
         {
@@ -63,6 +65,8 @@ namespace Jarvis.ImageService.Core.Jobs
                 {
                     ImageResizer.Shrink(pageStream, destStream, size.Width, size.Height);
                 }
+                
+                ImageService.LinkImage(FileId, size.Name, resizeId);
             }
         }
     }

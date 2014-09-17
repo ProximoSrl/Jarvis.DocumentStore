@@ -19,6 +19,7 @@ namespace Jarvis.ImageService.Core.Services
         void Create(string id, string filename, ImageSizeInfo[] getDefaultImageSizes);
         void LinkImage(string id, string size, string imageId);
         Task<string> ReadFromHttp(HttpContent httpContent, string fileId);
+        IFileStoreDescriptor GetImageDescriptor(string fileId, string size);
     }
 
     public class MongoDbImageService : IImageService
@@ -97,6 +98,24 @@ namespace Jarvis.ImageService.Core.Services
             );
 
             return null;
+        }
+
+        public IFileStoreDescriptor GetImageDescriptor(string fileId, string size)
+        {
+            var fileInfo = GetById(fileId);
+            if (fileInfo == null)
+            {
+                return null;
+            }
+
+            size = size.ToLowerInvariant();
+
+            if (!fileInfo.Sizes.ContainsKey(size))
+            {
+                return null;
+            }
+
+            return _fileStore.GetDescriptor(fileInfo.Sizes[size]);
         }
     }
 }
