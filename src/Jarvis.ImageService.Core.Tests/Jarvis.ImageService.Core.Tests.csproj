@@ -141,6 +141,8 @@
     <None Include="Docs\Document.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Docs\eml sample.eml" />
+    <None Include="Docs\outlook message.msg" />
     <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

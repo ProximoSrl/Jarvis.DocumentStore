@@ -11,20 +11,25 @@ namespace Jarvis.ImageService.Core.Services
 {
     public class ConfigService
     {
-        private ImageSizeInfo[] ImageSizes { get; set; }
-
+        readonly ImageSizeInfo[] _imageSizes;
+        readonly string[] _allowedExtensions;
+        
         public ConfigService()
         {
-            this.ImageSizes = new ImageSizeInfo[]
-            {
-                new ImageSizeInfo("small", 200, 200),
-                new ImageSizeInfo("large", 800, 800)
-            };
+            _imageSizes = SizeInfoHelper.Deserialize(GetConfigValue(
+                "JARVIS_IMGSRVCS_SIZES",
+                "small:200x200|large:800x800"
+            ).ToLowerInvariant());
+
+            _allowedExtensions = GetConfigValue(
+                "JARVIS_IMGSRVCS_ALLOWED_FILE_TYPES",
+                ".pdf|.xls|.xlsx|.docx|.doc|.ppt|.pptx|.rtf|.odt|.ods|.odp"
+            ).ToLowerInvariant().Split('|');
         }
 
         public ImageSizeInfo[] GetDefaultSizes()
         {
-            return this.ImageSizes;
+            return this._imageSizes;
         }
 
         public string GetPathToLibreOffice()
@@ -37,10 +42,11 @@ namespace Jarvis.ImageService.Core.Services
             return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), fileId));
         }
 
-        string GetConfigValue(string key)
+        string GetConfigValue(string key, string defaultValue = null)
         {
             return  ConfigurationManager.AppSettings[key] ??
-                    Environment.GetEnvironmentVariable(key);
+                    Environment.GetEnvironmentVariable(key) ?? 
+                    defaultValue;
         }
 
         string EnsureFolder(string folder)
@@ -49,6 +55,17 @@ namespace Jarvis.ImageService.Core.Services
                 Directory.CreateDirectory(folder);
 
             return folder;
+        }
+
+        public bool IsFileAllowed(string filename)
+        {
+            var ext = Path.GetExtension(filename);
+            if (ext == null)
+                return false;
+
+            ext = ext.ToLowerInvariant();
+
+            return _allowedExtensions.Contains(ext);
         }
     }
 }

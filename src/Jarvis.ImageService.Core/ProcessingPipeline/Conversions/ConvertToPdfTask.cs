@@ -13,6 +13,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
 {
     /// <summary>
     /// Office / OpenOffice => pdf with Headless Libreoffice
+    /// TODO: switch to https://wiki.openoffice.org/wiki/AODL when complete pdf support is available
     /// </summary>
     public class ConvertToPdfTask
     {

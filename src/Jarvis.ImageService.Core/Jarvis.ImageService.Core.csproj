@@ -94,6 +94,7 @@
     <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="Model\SizeInfoHelper.cs" />
     <Compile Include="ProcessingPipeline\Conversions\ConvertToPdfTask.cs" />
+    <Compile Include="ProcessingPipeline\Conversions\MailMessageToPdfConverterTask.cs" />
     <Compile Include="ProcessingPipeline\IPipelineScheduler.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreatePdfImageTask.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreatePdfImageTaskParams.cs" />
