@@ -91,6 +91,7 @@
     <Compile Include="MimeTypes.cs" />
     <Compile Include="Model\ImageInfo.cs" />
     <Compile Include="Model\ImageSizeInfo.cs" />
+    <Compile Include="Model\SizeInfoHelper.cs" />
     <Compile Include="ProcessingPipeline\CreatePdfImageTaskParams.cs" />
     <Compile Include="ProcessingPipeline\CreatePdfImageTask.cs" />
     <Compile Include="ProcessingPipeline\ImageResizer.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Services\ICounterService.cs" />
     <Compile Include="Services\IImageService.cs" />
+    <Compile Include="Services\MongoDbImageService.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />
     <Compile Include="Storage\GridFsFileStoreDescriptor.cs" />
     <Compile Include="Storage\IFileStore.cs" />
