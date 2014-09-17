@@ -38,5 +38,24 @@ namespace Jarvis.ImageService.Core.Storage
         {
             _gridFs.DeleteById(fileId);
         }
+
+        public string Download(string fileId, string folder)
+        {
+            var s = _gridFs.FindOneById(fileId);
+            var localFileName = Path.Combine(folder, s.Name);
+            _gridFs.Download(localFileName,s);
+            return localFileName;
+        }
+
+        public void Upload(string fileId, string pathToFile)
+        {
+            using (var inStream = File.OpenRead(pathToFile))
+            {
+                using (var outStream = CreateNew(fileId, Path.GetFileName(pathToFile)))
+                {
+                    inStream.CopyTo(outStream);
+                }
+            }
+        }
     }
 }

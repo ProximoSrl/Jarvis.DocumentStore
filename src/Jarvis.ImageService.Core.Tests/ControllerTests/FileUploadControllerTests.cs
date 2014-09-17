@@ -66,7 +66,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         [Test]
         public async void calling_upload_with_unsupported_file_type_should_return_BadRequest()
         {
-            var response = await upload_file(SampleData.PathToATextDocument);
+            var response = await upload_file(SampleData.PathToTextDocument);
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Unsupported file .txt", response.GetError().Message);
         } 

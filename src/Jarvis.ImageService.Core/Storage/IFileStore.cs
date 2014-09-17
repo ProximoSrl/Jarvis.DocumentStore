@@ -7,5 +7,7 @@ namespace Jarvis.ImageService.Core.Storage
         Stream CreateNew(string fileId, string fname);
         IFileStoreDescriptor GetDescriptor(string fileId);
         void Delete(string fileId);
+        string Download(string fileId, string folder);
+        void Upload(string fileId, string pathToFile);
     }
 }

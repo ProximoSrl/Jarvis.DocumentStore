@@ -11,7 +11,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.ImageService.Core.Jobs;
 using Jarvis.ImageService.Core.ProcessingPipeline;
-using Jarvis.ImageService.Core.ProcessinPipeline;
+using Jarvis.ImageService.Core.ProcessingPipeline.Pdf;
 using Quartz;
 using Quartz.Impl.MongoDB;
 

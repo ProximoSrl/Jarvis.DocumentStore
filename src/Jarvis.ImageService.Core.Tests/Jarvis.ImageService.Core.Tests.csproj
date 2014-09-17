@@ -112,6 +112,7 @@
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\FileUploadControllerTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
+    <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\SampleData.cs" />
     <Compile Include="PipelineTests\ThumbnailApiTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -119,6 +120,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Docs\A Powerpoint Document.pptx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\A Word Document.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\An Excel Document.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\An OpenDocument Presentation.odp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\An OpenDocument Spreadsheet.ods">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\An OpenDocument Text.odt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Docs\Document.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

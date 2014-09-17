@@ -2,9 +2,8 @@
 using System.IO;
 using Castle.Core.Logging;
 using GraphicsMagick;
-using Jarvis.ImageService.Core.ProcessinPipeline;
 
-namespace Jarvis.ImageService.Core.ProcessingPipeline
+namespace Jarvis.ImageService.Core.ProcessingPipeline.Pdf
 {
     public class CreatePdfImageTask
     {

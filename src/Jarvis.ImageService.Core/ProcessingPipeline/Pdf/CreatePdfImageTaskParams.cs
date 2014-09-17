@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using GraphicsMagick;
-
-namespace Jarvis.ImageService.Core.ProcessinPipeline
+﻿namespace Jarvis.ImageService.Core.ProcessingPipeline.Pdf
 {
     public class CreatePdfImageTaskParams
     {
