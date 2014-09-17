@@ -9,20 +9,20 @@ namespace Jarvis.ImageService.Core.Services
 {
     public class ConfigService
     {
-        private SizeInfo[] Sizes { get; set; }
+        private ImageSizeInfo[] ImageSizes { get; set; }
 
         public ConfigService()
         {
-            this.Sizes = new SizeInfo[]
+            this.ImageSizes = new ImageSizeInfo[]
             {
-                new SizeInfo("small", 200, 200),
-                new SizeInfo("large", 800, 800)
+                new ImageSizeInfo("small", 200, 200),
+                new ImageSizeInfo("large", 800, 800)
             };
         }
 
-        public SizeInfo[] GetDefaultSizes()
+        public ImageSizeInfo[] GetDefaultSizes()
         {
-            return this.Sizes;
+            return this.ImageSizes;
         }
     }
 }

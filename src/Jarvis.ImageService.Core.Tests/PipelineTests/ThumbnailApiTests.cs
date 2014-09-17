@@ -39,8 +39,6 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             Debug.WriteLine("Done");
             Assert.IsTrue(true);
         }
-
-
     }
 
     [TestFixture, Explicit]

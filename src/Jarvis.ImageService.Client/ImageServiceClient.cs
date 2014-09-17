@@ -35,7 +35,7 @@ namespace Jarvis.ImageService.Client
 
 //                        content.Add(new StringContent(pipeline), "pipeline");
 
-                        var endPoint = new Uri(_apiRoot, "thumbnail/upload/" + resourceId);
+                        var endPoint = new Uri(_apiRoot, "file/upload/" + resourceId);
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {

@@ -18,12 +18,12 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 
         private IScheduler Scheduler { get; set; }
 
-        public void QueueThumbnail(string documentId, SizeInfo[] sizes)
+        public void QueueThumbnail(string fileId, ImageSizeInfo[] imageSizes)
         {
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
-                .UsingJobData(CreateThumbnailFromPdfJob.DocumentIdKey, documentId)
-                .UsingJobData(CreateThumbnailFromPdfJob.SizesKey, SizeInfoHelper.Serialize(sizes))
+                .UsingJobData(CreateThumbnailFromPdfJob.FileIdKey, fileId)
+                .UsingJobData(CreateThumbnailFromPdfJob.SizesKey, SizeInfoHelper.Serialize(imageSizes))
                 .StoreDurably(true)
                 .Build();
 

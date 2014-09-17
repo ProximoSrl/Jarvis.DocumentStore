@@ -12,7 +12,7 @@ namespace Jarvis.ImageService.Core.Model
     {
         private static Regex _regex = new Regex("([a-z]+):([0-9]+)x([0-9]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        public static string Serialize(IEnumerable<SizeInfo> sizes)
+        public static string Serialize(IEnumerable<ImageSizeInfo> sizes)
         {
             var sb = new StringBuilder();
             foreach (var sizeInfo in sizes)
@@ -31,12 +31,12 @@ namespace Jarvis.ImageService.Core.Model
             return sb.ToString();
         }
 
-        public static SizeInfo[] Deserialize(string sizes)
+        public static ImageSizeInfo[] Deserialize(string sizes)
         {
             return (from s in sizes.Split('|')
                     let m = _regex.Match(s)
                     where m.Success
-                    select new SizeInfo(
+                    select new ImageSizeInfo(
                         m.Groups[1].Value,
                         int.Parse(m.Groups[2].Value),
                         int.Parse(m.Groups[3].Value)
@@ -44,13 +44,13 @@ namespace Jarvis.ImageService.Core.Model
         }
     }
 
-    public class SizeInfo
+    public class ImageSizeInfo
     {
         public string Name { get; private set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public SizeInfo(string name, int width, int height)
+        public ImageSizeInfo(string name, int width, int height)
         {
             Name = name.ToLowerInvariant();
             Width = width;

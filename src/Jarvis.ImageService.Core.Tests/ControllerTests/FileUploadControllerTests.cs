@@ -14,23 +14,32 @@ using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 using Jarvis.ImageService.Core.Tests.PipelineTests;
+using Jarvis.ImageService.Core.Tests.Support;
+using MongoDB.Driver;
 using NSubstitute;
 using NUnit.Framework;
 
 namespace Jarvis.ImageService.Core.Tests.ControllerTests
 {
     [TestFixture]
-    public class ThumbnailControllerTests
+    public class FileUploadControllerTests
     {
-        ThumbnailController _controller;
+        FileUploadController _controller;
         private IFileStore _fileStore;
 
         [SetUp]
         public void SetUp()
         {
             _fileStore = Substitute.For<IFileStore>();
-            var fileInfoService = Substitute.For<IFileInfoService>();
-            _controller = new ThumbnailController(_fileStore, fileInfoService, new ConfigService())
+            var pipeline = Substitute.For<IPipelineScheduler>();
+            var imageService = new MongoDbImageService(
+                MongoDbTestConnectionProvider.TestDb,
+                pipeline,
+                _fileStore,
+                new ConfigService()
+            );
+
+            _controller = new FileUploadController(imageService)
             {
                 Request = new HttpRequestMessage() 
             };

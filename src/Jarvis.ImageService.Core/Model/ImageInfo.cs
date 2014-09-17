@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Jarvis.ImageService.Core.Model
 {
-    public class FileInfo
+    public class ImageInfo
     {
-        public FileInfo(string id, string filename)
+        public ImageInfo(string id, string filename)
         {
             Id = id.ToLowerInvariant();
             Filename = filename;

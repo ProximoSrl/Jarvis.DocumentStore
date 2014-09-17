@@ -5,6 +5,6 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 {
     public interface IPipelineScheduler
     {
-        void QueueThumbnail(string documentId, SizeInfo[] sizes);
+        void QueueThumbnail(string fileId, ImageSizeInfo[] imageSizes);
     }
 }

@@ -82,14 +82,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\FileUploadController.cs" />
     <Compile Include="Controllers\ThumbnailController.cs" />
     <Compile Include="Http\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Jobs\CreateThumbnailFromPdfJob.cs" />
     <Compile Include="Jobs\JobDataMapExtensions.cs" />
     <Compile Include="Jobs\JobsListener.cs" />
     <Compile Include="MimeTypes.cs" />
-    <Compile Include="Model\FileInfo.cs" />
-    <Compile Include="Model\SizeInfo.cs" />
+    <Compile Include="Model\ImageInfo.cs" />
+    <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="ProcessingPipeline\CreatePdfImageTaskParams.cs" />
     <Compile Include="ProcessingPipeline\CreatePdfImageTask.cs" />
     <Compile Include="ProcessingPipeline\ImageResizer.cs" />
@@ -99,7 +100,7 @@
     <Compile Include="Services\CounterService.cs" />
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Services\ICounterService.cs" />
-    <Compile Include="Services\IFileInfoService.cs" />
+    <Compile Include="Services\IImageService.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />
     <Compile Include="Storage\GridFsFileStoreDescriptor.cs" />
     <Compile Include="Storage\IFileStore.cs" />

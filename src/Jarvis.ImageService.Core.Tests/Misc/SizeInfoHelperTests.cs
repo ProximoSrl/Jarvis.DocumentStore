@@ -14,7 +14,7 @@ namespace Jarvis.ImageService.Core.Tests.Misc
         [Test]
         public void name_should_be_converted_to_lowercase()
         {
-            var si = new SizeInfo("SmAlL", 100, 100);
+            var si = new ImageSizeInfo("SmAlL", 100, 100);
             Assert.AreEqual("small", si.Name);
         }
     }
@@ -25,7 +25,7 @@ namespace Jarvis.ImageService.Core.Tests.Misc
         [Test]
         public void should_serialize_size_info()
         {
-            var sizes = new SizeInfo[] {new SizeInfo("SmAll", 100, 200)};
+            var sizes = new ImageSizeInfo[] {new ImageSizeInfo("SmAll", 100, 200)};
             var asString = SizeInfoHelper.Serialize(sizes);
 
             Assert.AreEqual("small:100x200", asString);
@@ -34,10 +34,10 @@ namespace Jarvis.ImageService.Core.Tests.Misc
         [Test]
         public void should_serialize_size_info_list_with_more_than_one_element()
         {
-            var sizes = new SizeInfo[]
+            var sizes = new ImageSizeInfo[]
             {
-                new SizeInfo("SmAll", 100, 200),
-                new SizeInfo("LARGE", 100, 200)
+                new ImageSizeInfo("SmAll", 100, 200),
+                new ImageSizeInfo("LARGE", 100, 200)
             };
             var asString = SizeInfoHelper.Serialize(sizes);
 
