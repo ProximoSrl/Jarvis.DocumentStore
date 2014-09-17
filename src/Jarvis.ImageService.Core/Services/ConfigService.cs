@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jarvis.ImageService.Core.Model;
+using Jarvis.ImageService.Core.Support;
 
 namespace Jarvis.ImageService.Core.Services
 {
@@ -59,12 +60,7 @@ namespace Jarvis.ImageService.Core.Services
 
         public bool IsFileAllowed(string filename)
         {
-            var ext = Path.GetExtension(filename);
-            if (ext == null)
-                return false;
-
-            ext = ext.ToLowerInvariant();
-
+            var ext = Path.GetExtension(filename.Replace("\"", "")).ToLowerInvariant();
             return _allowedExtensions.Contains(ext);
         }
     }

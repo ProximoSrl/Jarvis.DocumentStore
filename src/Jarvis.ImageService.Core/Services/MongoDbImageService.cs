@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Jarvis.ImageService.Core.Http;
@@ -46,7 +47,22 @@ namespace Jarvis.ImageService.Core.Services
                 fi.LinkSize(sizeInfo.Name, null);
             }
             Save(fi);
-            _scheduler.QueueThumbnail(id, imageSizes);
+
+            StartPipeline(fi);
+        }
+
+        void StartPipeline(ImageInfo imageInfo)
+        {
+            switch (imageInfo.GetFileExtension())
+            {
+                case ".pdf":
+                    _scheduler.QueueThumbnail(imageInfo);
+                    break;
+                
+                default:
+                    _scheduler.QueuePdfConversion(imageInfo);
+                    break;
+            }
         }
 
         public void LinkImage(string id, string size, string imageId)
@@ -64,17 +80,17 @@ namespace Jarvis.ImageService.Core.Services
             }
 
             var provider = await httpContent.ReadAsMultipartAsync(
-                new FileStoreMultipartStreamProvider(_fileStore, fileId)
-                );
+                new FileStoreMultipartStreamProvider(_fileStore, fileId,_config)
+            );
 
             if (provider.Filename == null)
             {
                 return "Attachment not found!";
             }
 
-            if (provider.UnsupportedExtension != null)
+            if (provider.IsInvalidFile)
             {
-                return string.Format("Unsupported file {0}", provider.UnsupportedExtension);
+                return string.Format("Unsupported file {0}", provider.Filename);
             }
 
             Create(

@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 namespace Jarvis.ImageService.Core.Tests.PipelineTests
 {
-    [TestFixture]
+    [TestFixture (Category = "integration")]
     public class ConvertToPdfTaskTests
     {
         GridFSFileStore _fileStore;
@@ -32,7 +32,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             _fileStore.Upload("ods", SampleData.PathToOpenDocumentSpreadsheet);
             _fileStore.Upload("odp", SampleData.PathToOpenDocumentPresentation);
 
-            _task = new ConvertToPdfTask(_fileStore)
+            _task = new ConvertToPdfTask(_fileStore, new ConfigService())
             {
                 Logger = new ConsoleLogger()
             };
@@ -48,7 +48,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         [TestCase("odp")]
         public void processing_file_should_succeed(string fileId)
         {
-            _task.Convert(fileId, new ConfigService());
+            _task.Convert(fileId);
             Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(fileId).ContentType);
         }
     }

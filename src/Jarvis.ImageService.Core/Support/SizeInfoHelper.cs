@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Jarvis.ImageService.Core.Model;
 
-namespace Jarvis.ImageService.Core.Model
+namespace Jarvis.ImageService.Core.Support
 {
     public static class SizeInfoHelper
     {

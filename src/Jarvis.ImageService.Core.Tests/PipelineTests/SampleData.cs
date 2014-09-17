@@ -24,6 +24,10 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "A text document.txt"); }
         }
 
+        public static string PathToInvalidFile{
+            get { return Path.Combine(DocumentsFolder, "file.invalid"); }
+        }
+
         public static string PathToExcelDocument{
             get { return Path.Combine(DocumentsFolder, "An Excel Document.xlsx"); }
         }

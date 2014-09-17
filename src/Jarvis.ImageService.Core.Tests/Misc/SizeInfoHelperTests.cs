@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jarvis.ImageService.Core.Model;
+using Jarvis.ImageService.Core.Support;
 using NUnit.Framework;
 
 namespace Jarvis.ImageService.Core.Tests.Misc

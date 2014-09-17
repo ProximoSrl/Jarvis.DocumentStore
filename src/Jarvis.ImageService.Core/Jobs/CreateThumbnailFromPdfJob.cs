@@ -28,6 +28,7 @@ namespace Jarvis.ImageService.Core.Jobs
         public ILogger Logger { get; set; }
         public IFileStore FileStore { get; set; }
         public IImageService ImageService { get; set; }
+        public ConfigService ConfigService { get; set; }
 
         public void Execute(IJobExecutionContext context)
         {
@@ -45,7 +46,9 @@ namespace Jarvis.ImageService.Core.Jobs
                     Pages = jobDataMap.GetIntOrDefault("pages.count", 1)
                 };
 
-                ImageSizes = SizeInfoHelper.Deserialize(jobDataMap.GetString(SizesKey));
+                var sizes = jobDataMap.GetString(SizesKey).Split('|');
+
+                ImageSizes = ConfigService.GetDefaultSizes().Where(x => sizes.Contains(x.Name)).ToArray();
                 task.Convert(sourceStream, convertParams, SaveRasterizedPage);
             }
 

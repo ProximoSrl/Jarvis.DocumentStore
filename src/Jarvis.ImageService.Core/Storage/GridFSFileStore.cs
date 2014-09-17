@@ -19,6 +19,9 @@ namespace Jarvis.ImageService.Core.Storage
 
         public Stream CreateNew(string fileId, string fname)
         {
+            fileId = fileId.ToLowerInvariant();
+            fname = fname.Replace("\"", "");
+
             Delete(fileId);
             return _gridFs.Create(fname, new MongoGridFSCreateOptions()
             {
@@ -30,17 +33,20 @@ namespace Jarvis.ImageService.Core.Storage
 
         public IFileStoreDescriptor GetDescriptor(string fileId)
         {
+            fileId = fileId.ToLowerInvariant();
             var s = _gridFs.FindOneById(fileId);
             return new GridFsFileStoreDescriptor(s);
         }
 
         public void Delete(string fileId)
         {
+            fileId = fileId.ToLowerInvariant();
             _gridFs.DeleteById(fileId);
         }
 
         public string Download(string fileId, string folder)
         {
+            fileId = fileId.ToLowerInvariant();
             var s = _gridFs.FindOneById(fileId);
             var localFileName = Path.Combine(folder, s.Name);
             _gridFs.Download(localFileName,s);
@@ -49,6 +55,7 @@ namespace Jarvis.ImageService.Core.Storage
 
         public void Upload(string fileId, string pathToFile)
         {
+            fileId = fileId.ToLowerInvariant();
             using (var inStream = File.OpenRead(pathToFile))
             {
                 using (var outStream = CreateNew(fileId, Path.GetFileName(pathToFile)))

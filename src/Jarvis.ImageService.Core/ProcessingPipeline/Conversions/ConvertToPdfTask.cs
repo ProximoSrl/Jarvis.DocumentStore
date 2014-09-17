@@ -18,20 +18,23 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
     public class ConvertToPdfTask
     {
         public ILogger Logger { get; set; }
-        public IFileStore FileStore { get; set; }
+        
+        readonly IFileStore _fileStore;
+        readonly ConfigService _config;
 
-        public ConvertToPdfTask(IFileStore fileStore)
+        public ConvertToPdfTask(IFileStore fileStore, ConfigService config)
         {
-            FileStore = fileStore;
+            _fileStore = fileStore;
+            _config = config;
         }
 
-        public void Convert(string fileId, ConfigService config)
+        public void Convert(string fileId)
         {
             Logger.DebugFormat("Starting conversion of fileId {0} to pdf", fileId);
-            string pathToLibreOffice = config.GetPathToLibreOffice();
-            var workingFolder = config.GetWorkingFolder(fileId);
+            string pathToLibreOffice = _config.GetPathToLibreOffice();
+            var workingFolder = _config.GetWorkingFolder(fileId);
 
-            var sourceFile = FileStore.Download(fileId, workingFolder);
+            var sourceFile = _fileStore.Download(fileId, workingFolder);
             var outputFile = Path.ChangeExtension(sourceFile, ".pdf");
 
             string arguments = string.Format("--headless -convert-to pdf -outdir \"{0}\"  \"{1}\" ",
@@ -60,7 +63,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
             if(!File.Exists(outputFile))
                 throw new Exception("Conversion failed");
 
-            FileStore.Upload(fileId, outputFile);
+            _fileStore.Upload(fileId, outputFile);
 
             try
             {
@@ -71,6 +74,11 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
             {
                 Logger.ErrorFormat(ex, "Unable to delete folder {0}", workingFolder);
             }
+        }
+
+        public bool CanHandle(string extension)
+        {
+            return true;
         }
     }
 }

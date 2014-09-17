@@ -31,13 +31,16 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         }
 
         [Test]
-        public async void can_upload_pdf()
+        public void can_upload_pdf()
         {
             var client = new ImageServiceClient(_serverAddress);
-            await client.Upload(SampleData.PathToDocumentPdf, "Document_1");
+
+            Task.WaitAll(
+                client.Upload(SampleData.PathToDocumentPdf, "Document_1"),
+                client.Upload(SampleData.PathToWordDocument, "Document_2")
+            );
 
             Debug.WriteLine("Done");
-            Assert.IsTrue(true);
         }
     }
 
