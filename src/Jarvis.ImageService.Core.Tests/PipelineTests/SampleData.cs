@@ -16,6 +16,10 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Document.pdf"); }
         }
 
+        public static string PathToRTFDocument{
+            get { return Path.Combine(DocumentsFolder, "RTF Document.rtf"); }
+        }
+
         public static string PathToWordDocument{
             get { return Path.Combine(DocumentsFolder, "A Word Document.docx"); }
         }

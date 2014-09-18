@@ -31,6 +31,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             _fileStore.Upload("odt", SampleData.PathToOpenDocumentText);
             _fileStore.Upload("ods", SampleData.PathToOpenDocumentSpreadsheet);
             _fileStore.Upload("odp", SampleData.PathToOpenDocumentPresentation);
+            _fileStore.Upload("rtf", SampleData.PathToRTFDocument);
 
             _task = new ConvertToPdfTask(_fileStore, new ConfigService())
             {
@@ -46,6 +47,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         [TestCase("odt")]
         [TestCase("ods")]
         [TestCase("odp")]
+        [TestCase("rtf")]
         public void processing_file_should_succeed(string fileId)
         {
             _task.Convert(fileId);
