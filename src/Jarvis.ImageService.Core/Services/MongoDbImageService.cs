@@ -29,7 +29,7 @@ namespace Jarvis.ImageService.Core.Services
             _collection = db.GetCollection<ImageInfo>("fileinfo");
         }
 
-        ImageInfo GetById(string id)
+        public ImageInfo GetById(string id)
         {
             return _collection.FindOneById(id.ToLowerInvariant());
         }

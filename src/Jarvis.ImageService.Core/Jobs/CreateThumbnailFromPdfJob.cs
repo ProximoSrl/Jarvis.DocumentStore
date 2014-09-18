@@ -19,9 +19,6 @@ namespace Jarvis.ImageService.Core.Jobs
 {
     public class CreateThumbnailFromPdfJob : IJob
     {
-        public const string FileIdKey = "fileId";
-        public const string SizesKey = "sizes";
-        
         private string FileId { get; set; }
         private ImageSizeInfo[] ImageSizes { get; set; }
 
@@ -33,7 +30,7 @@ namespace Jarvis.ImageService.Core.Jobs
         public void Execute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
-            FileId = jobDataMap.GetString(FileIdKey);
+            FileId = jobDataMap.GetString(JobKeys.FileId);
 
             var task = new CreatePdfImageTask();
             var descriptor = FileStore.GetDescriptor(FileId);
@@ -41,12 +38,12 @@ namespace Jarvis.ImageService.Core.Jobs
             {
                 var convertParams = new CreatePdfImageTaskParams()
                 {
-                    Dpi = jobDataMap.GetIntOrDefault("dpi", 150),
-                    FromPage = jobDataMap.GetIntOrDefault("pages.from", 1),
-                    Pages = jobDataMap.GetIntOrDefault("pages.count", 1)
+                    Dpi = jobDataMap.GetIntOrDefault(JobKeys.Dpi, 150),
+                    FromPage = jobDataMap.GetIntOrDefault(JobKeys.PagesFrom, 1),
+                    Pages = jobDataMap.GetIntOrDefault(JobKeys.PagesCount, 1)
                 };
 
-                var sizes = jobDataMap.GetString(SizesKey).Split('|');
+                var sizes = jobDataMap.GetString(JobKeys.Sizes).Split('|');
 
                 ImageSizes = ConfigService.GetDefaultSizes().Where(x => sizes.Contains(x.Name)).ToArray();
                 task.Convert(sourceStream, convertParams, SaveRasterizedPage);

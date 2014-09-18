@@ -11,11 +11,8 @@ namespace Jarvis.ImageService.Core.Jobs
 {
     public class ConvertToPdfJob : IJob
     {
-        public const string FileIdKey = "fileId";
-        public const string FileExtensionKey = "file_ext";
-
         private string FileId { get; set; }
-        ConvertToPdfTask _convertToPdfTask;
+        readonly ConvertToPdfTask _convertToPdfTask;
 
         public ILogger Logger { get; set; }
 
@@ -27,8 +24,8 @@ namespace Jarvis.ImageService.Core.Jobs
         public void Execute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
-            FileId = jobDataMap.GetString(FileIdKey);
-            string extension = jobDataMap.GetString(FileExtensionKey);
+            FileId = jobDataMap.GetString(JobKeys.FileId);
+            string extension = jobDataMap.GetString(JobKeys.FileExtension);
 
             if (_convertToPdfTask.CanHandle(extension))
             {

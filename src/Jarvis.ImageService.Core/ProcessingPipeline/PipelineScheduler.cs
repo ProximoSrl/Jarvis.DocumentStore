@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Jarvis.ImageService.Core.Jobs;
 using Jarvis.ImageService.Core.Model;
-using Jarvis.ImageService.Core.ProcessingPipeline.Conversions;
 using Quartz;
 
 namespace Jarvis.ImageService.Core.ProcessingPipeline
@@ -23,8 +22,8 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         {
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
-                .UsingJobData(CreateThumbnailFromPdfJob.FileIdKey, imageInfo.Id)
-                .UsingJobData(CreateThumbnailFromPdfJob.SizesKey, String.Join("|",imageInfo.Sizes.Select(x=>x.Key)))
+                .UsingJobData(JobKeys.FileId, imageInfo.Id)
+                .UsingJobData(JobKeys.Sizes, String.Join("|", imageInfo.Sizes.Select(x => x.Key)))
                 .StoreDurably(true)
                 .Build();
 
@@ -37,8 +36,9 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         {
             var job = JobBuilder
                 .Create<ConvertToPdfJob>()
-                .UsingJobData(ConvertToPdfJob.FileIdKey, imageInfo.Id)
-                .UsingJobData(ConvertToPdfJob.FileExtensionKey, imageInfo.GetFileExtension())
+                .UsingJobData(JobKeys.FileId, imageInfo.Id)
+                .UsingJobData(JobKeys.FileExtension, imageInfo.GetFileExtension())
+                .UsingJobData("next_job", "thumbnail")
                 .StoreDurably(true)
                 .Build();
 

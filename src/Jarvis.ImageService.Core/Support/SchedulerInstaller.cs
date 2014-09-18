@@ -12,6 +12,7 @@ using Castle.Windsor;
 using Jarvis.ImageService.Core.Jobs;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.ProcessingPipeline.Pdf;
+using Jarvis.ImageService.Core.Services;
 using Quartz;
 using Quartz.Impl.MongoDB;
 
@@ -40,11 +41,12 @@ namespace Jarvis.ImageService.Core.Support
                 Component
                     .For<IPipelineScheduler>()
                     .ImplementedBy<PipelineScheduler>()
-                    .LifestyleTransient()
             );
 
             container.Resolve<IScheduler>().ListenerManager.AddJobListener(new JobsListener(
-                container.Resolve<ILogger>()
+                container.Resolve<ILogger>(),
+                container.Resolve<IPipelineScheduler>(),
+                container.Resolve<IImageService>()
             ));
         }
 
