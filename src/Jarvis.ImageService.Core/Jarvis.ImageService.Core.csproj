@@ -89,12 +89,14 @@
     <Compile Include="Controllers\FileUploadController.cs" />
     <Compile Include="Controllers\ThumbnailController.cs" />
     <Compile Include="Http\FileStoreMultipartStreamProvider.cs" />
+    <Compile Include="Jobs\ConvertHtmlToPdfJob.cs" />
     <Compile Include="Jobs\ConvertToPdfJob.cs" />
     <Compile Include="Jobs\CreateThumbnailFromPdfJob.cs" />
     <Compile Include="Jobs\JobDataMapExtensions.cs" />
     <Compile Include="Jobs\JobKeys.cs" />
     <Compile Include="Jobs\JobsListener.cs" />
     <Compile Include="MimeTypes.cs" />
+    <Compile Include="Model\FileId.cs" />
     <Compile Include="Model\ImageInfo.cs" />
     <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="ProcessingPipeline\Conversions\ConvertHtmlToPdfTask.cs" />
@@ -111,6 +113,7 @@
     <Compile Include="Services\ICounterService.cs" />
     <Compile Include="Services\IImageService.cs" />
     <Compile Include="Services\MongoDbImageService.cs" />
+    <Compile Include="Storage\FileIdSerializer.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />
     <Compile Include="Storage\GridFsFileStoreDescriptor.cs" />
     <Compile Include="Storage\IFileStore.cs" />

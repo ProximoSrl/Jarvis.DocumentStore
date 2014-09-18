@@ -5,6 +5,7 @@ using Jarvis.ImageService.Core.Http;
 using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.Storage;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Jarvis.ImageService.Core.Services
@@ -29,9 +30,9 @@ namespace Jarvis.ImageService.Core.Services
             _collection = db.GetCollection<ImageInfo>("fileinfo");
         }
 
-        public ImageInfo GetById(string id)
+        public ImageInfo GetById(FileId id)
         {
-            return _collection.FindOneById(id.ToLowerInvariant());
+            return _collection.FindOneById((string)id);
         }
 
         void Save(ImageInfo imageInfo)
@@ -39,7 +40,7 @@ namespace Jarvis.ImageService.Core.Services
             _collection.Save(imageInfo);
         }
 
-        void Create(string id, string filename, ImageSizeInfo[] imageSizes)
+        void Create(FileId id, string filename, ImageSizeInfo[] imageSizes)
         {
             var fi = new ImageInfo(id, filename);
             foreach (var sizeInfo in imageSizes)
@@ -59,20 +60,24 @@ namespace Jarvis.ImageService.Core.Services
                     _scheduler.QueueThumbnail(imageInfo);
                     break;
                 
+                case ".htmlzip":
+                    _scheduler.QueueHtmlToPdfConversion(imageInfo);
+                    break;
+
                 default:
                     _scheduler.QueuePdfConversion(imageInfo);
                     break;
             }
         }
 
-        public void LinkImage(string id, string size, string imageId)
+        public void LinkImage(FileId id, string size, string imageId)
         {
             var fi = GetById(id);
             fi.LinkSize(size, imageId);
             Save(fi);
         }
 
-        public async Task<string> ReadFromHttp(HttpContent httpContent, string fileId)
+        public async Task<string> ReadFromHttp(HttpContent httpContent, FileId fileId)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
             {
@@ -102,7 +107,7 @@ namespace Jarvis.ImageService.Core.Services
             return null;
         }
 
-        public IFileStoreDescriptor GetImageDescriptor(string fileId, string size)
+        public IFileStoreDescriptor GetImageDescriptor(FileId fileId, string size)
         {
             var fileInfo = GetById(fileId);
             if (fileInfo == null)

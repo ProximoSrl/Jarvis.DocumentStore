@@ -47,6 +47,20 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
+        public void QueueHtmlToPdfConversion(ImageInfo imageInfo)
+        {
+            var job = JobBuilder
+                .Create<ConvertHtmlToPdfJob>()
+                .UsingJobData(JobKeys.FileId, imageInfo.Id)
+                .UsingJobData(JobKeys.NextJob, "thumbnail")
+                .StoreDurably(true)
+                .Build();
+
+            var trigger = CreateTrigger();
+
+            _scheduler.ScheduleJob(job, trigger);
+        }
+
         private ITrigger CreateTrigger()
         {
             var trigger = TriggerBuilder.Create()

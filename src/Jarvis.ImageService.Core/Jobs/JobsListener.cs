@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
@@ -46,7 +47,8 @@ namespace Jarvis.ImageService.Core.Jobs
                 if (nextJob == null)
                     return;
 
-                var fileInfo = _imageService.GetById(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+                var id = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+                var fileInfo = _imageService.GetById(id);
 
                 switch (nextJob)
                 {

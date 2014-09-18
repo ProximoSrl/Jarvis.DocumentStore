@@ -4,17 +4,19 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jarvis.ImageService.Core.Storage;
+using MongoDB.Bson.Serialization;
 
 namespace Jarvis.ImageService.Core.Model
 {
-    public class ImageInfo
+    public class ImageInfo 
     {
-        public ImageInfo(string id, string filename)
+        public ImageInfo(FileId id, string filename)
         {
             if (id == null) throw new ArgumentNullException("id");
             if (filename == null) throw new ArgumentNullException("filename");
 
-            Id = id.ToLowerInvariant();
+            Id = id;
             Filename = filename.Replace("\"", "");
             Sizes = new Dictionary<string, string>();
         }
@@ -24,7 +26,7 @@ namespace Jarvis.ImageService.Core.Model
             Sizes[size.ToLowerInvariant()] = fileId;
         }
 
-        public string Id { get; private set; }
+        public FileId Id { get; private set; }
         public string Filename { get; private set; }
         public IDictionary<string, string> Sizes { get; private set; }
 

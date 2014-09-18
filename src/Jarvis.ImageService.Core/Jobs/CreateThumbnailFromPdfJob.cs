@@ -19,7 +19,7 @@ namespace Jarvis.ImageService.Core.Jobs
 {
     public class CreateThumbnailFromPdfJob : IJob
     {
-        private string FileId { get; set; }
+        private FileId FileId { get; set; }
         private ImageSizeInfo[] ImageSizes { get; set; }
 
         public ILogger Logger { get; set; }
@@ -30,7 +30,7 @@ namespace Jarvis.ImageService.Core.Jobs
         public void Execute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
-            FileId = jobDataMap.GetString(JobKeys.FileId);
+            FileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
 
             var task = new CreatePdfImageTask();
             var descriptor = FileStore.GetDescriptor(FileId);

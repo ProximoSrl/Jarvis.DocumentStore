@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Jarvis.ImageService.Core.Http;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 
@@ -22,7 +23,10 @@ namespace Jarvis.ImageService.Core.Controllers
         [HttpGet]
         public HttpResponseMessage GetThumbnail(string fileId, string size)
         {
-            var imageDescriptor = _imageService.GetImageDescriptor(fileId, size);
+            // todo: json converter
+            var typedId = new FileId(fileId);
+            
+            var imageDescriptor = _imageService.GetImageDescriptor(typedId, size);
             if (imageDescriptor == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Image not found");
             
