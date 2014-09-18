@@ -38,7 +38,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
                 .Create<ConvertToPdfJob>()
                 .UsingJobData(JobKeys.FileId, imageInfo.Id)
                 .UsingJobData(JobKeys.FileExtension, imageInfo.GetFileExtension())
-                .UsingJobData("next_job", "thumbnail")
+                .UsingJobData(JobKeys.NextJob, "thumbnail")
                 .StoreDurably(true)
                 .Build();
 
