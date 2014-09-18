@@ -31,13 +31,18 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         }
 
         [Test]
-        public void can_upload_pdf()
+        public void should_upload_all_documents()
         {
             var client = new ImageServiceClient(_serverAddress);
 
             Task.WaitAll(
-                client.Upload(SampleData.PathToDocumentPdf, "Document_1"),
-                client.Upload(SampleData.PathToWordDocument, "Document_2")
+                client.Upload(SampleData.PathToWordDocument, "docx"),
+                client.Upload(SampleData.PathToExcelDocument, "xlsx"),
+                client.Upload(SampleData.PathToPowerpointDocument, "pptx"),
+                client.Upload(SampleData.PathToOpenDocumentText, "odt"),
+                client.Upload(SampleData.PathToOpenDocumentSpreadsheet, "ods"),
+                client.Upload(SampleData.PathToOpenDocumentPresentation, "odp"),
+                client.Upload(SampleData.PathToRTFDocument, "rtf")
             );
 
             Debug.WriteLine("Done");

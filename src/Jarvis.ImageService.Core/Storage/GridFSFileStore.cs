@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
@@ -12,6 +13,7 @@ namespace Jarvis.ImageService.Core.Storage
     public class GridFSFileStore : IFileStore
     {
         readonly MongoGridFS _gridFs;
+        public ILogger Logger { get; set; }
         public GridFSFileStore(MongoDatabase db)
         {
             _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
@@ -35,6 +37,12 @@ namespace Jarvis.ImageService.Core.Storage
         {
             fileId = fileId.ToLowerInvariant();
             var s = _gridFs.FindOneById(fileId);
+            if (s == null)
+            {
+                var message = string.Format("Descriptor for file {0} not found!", fileId);
+                Logger.DebugFormat(message);
+                throw new Exception(message);
+            }
             return new GridFsFileStoreDescriptor(s);
         }
 
