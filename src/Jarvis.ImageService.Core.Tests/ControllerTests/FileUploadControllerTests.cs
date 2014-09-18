@@ -66,7 +66,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         [Test]
         public async void calling_upload_with_unsupported_file_type_should_return_BadRequest()
         {
-            var response = await upload_file(SampleData.PathToInvalidFile);
+            var response = await upload_file(TestConfig.PathToInvalidFile);
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Unsupported file file.invalid", response.GetError().Message);
         } 
@@ -79,12 +79,12 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
             using (var stream = new MemoryStream())
             {
                 _fileStore.CreateNew(Arg.Any<string>(), Arg.Any<string>()).Returns(stream);
-                response = await upload_file(SampleData.PathToDocumentPdf);
+                response = await upload_file(TestConfig.PathToDocumentPdf);
                 streamLen = stream.Length;
             }
 
             response.EnsureSuccessStatusCode();
-            Assert.AreEqual(new FileInfo(SampleData.PathToDocumentPdf).Length, streamLen);
+            Assert.AreEqual(new FileInfo(TestConfig.PathToDocumentPdf).Length, streamLen);
         }
 
         private async Task<HttpResponseMessage> upload_file(string pathToFile)

@@ -37,7 +37,7 @@ namespace Jarvis.ImageService.Core.Support
                 Component
                     .For<ConfigService>(),
                 Component
-                    .For<ConvertToPdfTask>()
+                    .For<ConvertFileToPdfWithLibreOfficeTask>()
                     .LifestyleTransient(),
                 Component
                     .For<MongoDatabase>()

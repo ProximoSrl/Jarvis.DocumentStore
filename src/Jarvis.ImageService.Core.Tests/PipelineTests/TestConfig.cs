@@ -1,16 +1,20 @@
 ﻿using System;
 using System.IO;
+using TuesPechkin;
 
 namespace Jarvis.ImageService.Core.Tests.PipelineTests
 {
-    public static class SampleData
+    public static class TestConfig
     {
         static readonly string DocumentsFolder;
 
-        static SampleData()
+        static TestConfig()
         {
-            DocumentsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Docs");
+            DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"..\\..\\Docs")).FullName;
+            ServerAddress = new Uri("http://localhost:5123");
         }
+
+        public static Uri ServerAddress { get; private set; }
 
         public static string PathToDocumentPdf {
             get { return Path.Combine(DocumentsFolder, "Document.pdf"); }
@@ -52,6 +56,10 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         public static string PathToOpenDocumentPresentation{
             get { return Path.Combine(DocumentsFolder, "An OpenDocument Presentation.odp"); }
         }
-        
+
+        public static string PathToHtml
+        {
+            get { return Path.Combine(DocumentsFolder, "Architecture.htm"); }
+        }
     }
 }

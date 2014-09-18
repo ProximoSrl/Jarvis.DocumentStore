@@ -66,10 +66,16 @@ namespace Jarvis.ImageService.Core.Storage
             fileId = fileId.ToLowerInvariant();
             using (var inStream = File.OpenRead(pathToFile))
             {
-                using (var outStream = CreateNew(fileId, Path.GetFileName(pathToFile)))
-                {
-                    inStream.CopyTo(outStream);
-                }
+                Upload(fileId, Path.GetFileName(pathToFile), inStream);
+            }
+        }
+
+        public void Upload(string fileId, string fileName, Stream sourceStrem)
+        {
+            fileId = fileId.ToLowerInvariant();
+            using (var outStream = CreateNew(fileId, fileName))
+            {
+                sourceStrem.CopyTo(outStream);
             }
         }
     }

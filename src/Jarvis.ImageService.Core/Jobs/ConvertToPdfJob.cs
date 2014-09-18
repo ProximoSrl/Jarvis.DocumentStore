@@ -12,13 +12,13 @@ namespace Jarvis.ImageService.Core.Jobs
     public class ConvertToPdfJob : IJob
     {
         private string FileId { get; set; }
-        readonly ConvertToPdfTask _convertToPdfTask;
+        readonly ConvertFileToPdfWithLibreOfficeTask _convertFileToPdfWithLibreOfficeTask;
 
         public ILogger Logger { get; set; }
 
-        public ConvertToPdfJob(ConvertToPdfTask convertToPdfTask)
+        public ConvertToPdfJob(ConvertFileToPdfWithLibreOfficeTask convertFileToPdfWithLibreOfficeTask)
         {
-            _convertToPdfTask = convertToPdfTask;
+            _convertFileToPdfWithLibreOfficeTask = convertFileToPdfWithLibreOfficeTask;
         }
 
         public void Execute(IJobExecutionContext context)
@@ -27,14 +27,14 @@ namespace Jarvis.ImageService.Core.Jobs
             FileId = jobDataMap.GetString(JobKeys.FileId);
             string extension = jobDataMap.GetString(JobKeys.FileExtension);
 
-            if (_convertToPdfTask.CanHandle(extension))
+            if (_convertFileToPdfWithLibreOfficeTask.CanHandle(extension))
             {
                 Logger.DebugFormat(
                     "Delegating conversion of file {0} ({1}) to pdfTask",
                     FileId,
                     extension
                 );
-                _convertToPdfTask.Convert(FileId);
+                _convertFileToPdfWithLibreOfficeTask.Convert(FileId);
                 return;
             }
 

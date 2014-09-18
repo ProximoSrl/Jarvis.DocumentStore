@@ -83,6 +83,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -107,46 +108,33 @@
     <Reference Include="TopShelf.OldLog4NetIntegration">
       <HintPath>..\packages\TopShelf.OldLog4NetIntegration.1.01\lib\net35\TopShelf.OldLog4NetIntegration.dll</HintPath>
     </Reference>
+    <Reference Include="TuesPechkin">
+      <HintPath>..\packages\TuesPechkin.1.0.3.0\lib\net20\TuesPechkin.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\FileUploadControllerTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
+    <Compile Include="PipelineTests\ConvertHtmlToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
-    <Compile Include="PipelineTests\SampleData.cs" />
-    <Compile Include="PipelineTests\ThumbnailApiTests.cs" />
+    <Compile Include="PipelineTests\TestConfig.cs" />
+    <Compile Include="PipelineTests\ClientIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\MongoDbTestConnectionProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Docs\RTF Document.rtf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\file.invalid">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\A Powerpoint Document.pptx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\A Word Document.docx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\An Excel Document.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\An OpenDocument Presentation.odp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\An OpenDocument Spreadsheet.ods">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\An OpenDocument Text.odt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Docs\Document.pdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Docs\Architecture_files\css" />
+    <None Include="Docs\RTF Document.rtf" />
+    <None Include="Docs\file.invalid" />
+    <None Include="Docs\A Powerpoint Document.pptx" />
+    <None Include="Docs\A Word Document.docx" />
+    <None Include="Docs\An Excel Document.xlsx" />
+    <None Include="Docs\An OpenDocument Presentation.odp" />
+    <None Include="Docs\An OpenDocument Spreadsheet.ods" />
+    <None Include="Docs\An OpenDocument Text.odt" />
+    <None Include="Docs\Document.pdf" />
     <None Include="Docs\eml sample.eml" />
     <None Include="Docs\outlook message.msg" />
     <None Include="log4net.config">
@@ -169,9 +157,31 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Docs\A text document.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Docs\A text document.txt" />
+    <Content Include="Docs\Architecture.htm" />
+    <Content Include="Docs\Architecture_files\80x15.png" />
+    <Content Include="Docs\Architecture_files\avatar.jpg" />
+    <Content Include="Docs\Architecture_files\avatar92.jpg" />
+    <Content Include="Docs\Architecture_files\beacon.js" />
+    <Content Include="Docs\Architecture_files\common.880c607482bd4bf38c2449e41cb40540.js" />
+    <Content Include="Docs\Architecture_files\config.js" />
+    <Content Include="Docs\Architecture_files\count.js" />
+    <Content Include="Docs\Architecture_files\discovery.9619c3831839662b1a7539ac822a5d02.js" />
+    <Content Include="Docs\Architecture_files\embed.js" />
+    <Content Include="Docs\Architecture_files\event%281%29.js" />
+    <Content Include="Docs\Architecture_files\event%282%29.js" />
+    <Content Include="Docs\Architecture_files\event.js" />
+    <Content Include="Docs\Architecture_files\ga.js" />
+    <Content Include="Docs\Architecture_files\jarvis-architecture.jpg" />
+    <Content Include="Docs\Architecture_files\jarvis-building-blocks.jpg" />
+    <Content Include="Docs\Architecture_files\jquery.min.js" />
+    <Content Include="Docs\Architecture_files\lounge.4b6801fa1c74ce525ede6c5415a03be0.js" />
+    <Content Include="Docs\Architecture_files\lounge.load.js" />
+    <Content Include="Docs\Architecture_files\modernizr-2.6.2.custom.min.js" />
+    <Content Include="Docs\Architecture_files\old-metro-map.jpg" />
+    <Content Include="Docs\Architecture_files\RicciGmProfilePhoto.jpg" />
+    <Content Include="Docs\Architecture_files\saved_resource.htm" />
+    <Content Include="Docs\Architecture_files\scripts.min.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

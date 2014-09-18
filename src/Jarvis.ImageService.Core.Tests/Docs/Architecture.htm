@@ -1,0 +1,365 @@
+﻿<!DOCTYPE html>
+<!-- saved from url=(0046)http://www.ienumerable.it/jarvis-architecture/ -->
+<html class=" js no-touch cssanimations csstransitions" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Architecture – IEnumerable &lt;DevStory&gt;</title>
+    <meta name="description" content="Jarvis current architecture">
+    <meta name="keywords" content="neventstore, angularjs, mongodb, elasticsearch, bus, webapi">
+    <!-- Twitter Cards -->
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="http://www.ienumerable.it/images/old-metro-map.jpg">
+
+    <meta name="twitter:title" content="Architecture">
+    <meta name="twitter:description" content="Jarvis current architecture">
+    <meta name="twitter:creator" content="@andreabalducci">
+
+    <!-- Open Graph -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Architecture">
+    <meta property="og:description" content="Jarvis current architecture">
+    <meta property="og:url" content="http://www.ienumerable.it/jarvis-architecture/">
+    <meta property="og:site_name" content="IEnumerable &lt;DevStory&gt;">
+    <meta name="google-site-verification" content="7WUOz5_PPWraqh7Yv_Lwo5mxZehETKAOzdIW7-3I4V8">
+    <meta name="msvalidate.01" content="308C7A3A1754628982741035E6BDDA0A">
+
+    <link rel="canonical" href="./Architecture_files/Architecture.htm">
+    <link href="http://www.ienumerable.it/feed.xml" type="application/atom+xml" rel="alternate" title="IEnumerable &lt;DevStory&gt; Feed">
+    <link rel="author" href="https://google.com/+AndreaBalducci?rel=author">
+    <!-- http://t.co/dKP3o1e -->
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- For all browsers -->
+    <link rel="stylesheet" href="http://www.ienumerable.it/assets/css/main.min.css">
+    <!-- Webfonts -->
+    <link href="./Architecture_files/css" rel="stylesheet" type="text/css">
+    <meta http-equiv="cleartype" content="on">
+    <!-- Load Modernizr -->
+    <div class="fit-vids-style">­
+    <style>
+        .fluid-width-video-wrapper {
+            width: 100%;
+            position: relative;
+            padding: 0;
+        }
+
+            .fluid-width-video-wrapper iframe, .fluid-width-video-wrapper object, .fluid-width-video-wrapper embed {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+    </style></div>
+    <script src="./Architecture_files/modernizr-2.6.2.custom.min.js"></script>
+    <!-- Icons -->
+    <!-- 16x16 -->
+    <link rel="shortcut icon" href="http://www.ienumerable.it/favicon.ico">
+    <!-- 32x32 -->
+    <link rel="shortcut icon" href="http://www.ienumerable.it/favicon.png">
+    <!-- 57x57 (precomposed) for iPhone 3GS, pre-2011 iPod Touch and older Android devices -->
+    <link rel="apple-touch-icon-precomposed" href="http://www.ienumerable.it/images/apple-touch-icon-precomposed.png">
+    <!-- 72x72 (precomposed) for 1st generation iPad, iPad 2 and iPad mini -->
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://www.ienumerable.it/images/apple-touch-icon-72x72-precomposed.png">
+    <!-- 114x114 (precomposed) for iPhone 4, 4S, 5 and post-2011 iPod Touch -->
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://www.ienumerable.it/images/apple-touch-icon-114x114-precomposed.png">
+    <!-- 144x144 (precomposed) for iPad 3rd and 4th generation -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://www.ienumerable.it/images/apple-touch-icon-144x144-precomposed.png">
+
+
+    <!-- Asynchronous Google Analytics snippet -->
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-365151-3', 'auto');
+        ga('require', 'linkid', 'linkid.js');
+        ga('send', 'pageview');
+    </script>
+
+    <script type="text/javascript" async="" src="./Architecture_files/embed.js"></script>
+    <script async="" type="text/javascript" src="./Architecture_files/count.js"></script>
+    <style type="text/css"></style>
+</head>
+<body id="post" class="feature">
+    <!--[if lt IE 9]><div class="upgrade"><strong><a href="http://whatbrowser.org/">Your browser is quite old!</strong> Why not upgrade to a different browser to better enjoy this site?</a></div><![endif]-->
+    <nav id="dl-menu" class="dl-menuwrapper" role="navigation">
+        <button class="dl-trigger">Open Menu</button>
+        <ul class="dl-menu">
+            <li><a href="http://www.ienumerable.it/">Home</a></li>
+            <li>
+                <a href="http://www.ienumerable.it/jarvis-architecture/#">Authors</a>
+                <ul class="dl-submenu">
+                    <li class="dl-back"><a href="http://www.ienumerable.it/jarvis-architecture/#">back</a></li>
+
+
+                    <li>
+                        <a href="http://www.ienumerable.it/jarvis-architecture/#">Andrea Balducci</a>
+                        <ul class="dl-submenu">
+                            <li class="dl-back"><a href="http://www.ienumerable.it/jarvis-architecture/#">back</a></li>
+                            <li>
+                                <img src="./Architecture_files/avatar.jpg" alt="Andrea Balducci photo" class="author-photo">
+                                <h4>Andrea Balducci</h4>
+                                <p>still learning...</p>
+                            </li>
+                            <li><a href="http://www.ienumerable.it/about/andreabalducci">Learn More</a></li>
+                            <li>
+                                <a href="mailto:mtb.snowboard@gmail.com"><i class="fa fa-envelope"></i> Email</a>
+                            </li>
+                            <li>
+                                <a href="http://twitter.com/andreabalducci"><i class="fa fa-twitter"></i> Twitter</a>
+                            </li>
+
+                            <li>
+                                <a href="https://google.com/+AndreaBalducci"><i class="fa fa-google-plus"></i> Google+</a>
+                            </li>
+                            <li>
+                                <a href="http://linkedin.com/in/andreabalducci"><i class="fa fa-linkedin"></i> LinkedIn</a>
+                            </li>
+                            <li>
+                                <a href="http://www.slideshare.net/andreabalducci"><i class="fa fa-slideshare"></i> SlideShare</a>
+                            </li>
+                            <li>
+                                <a href="http://github.com/andreabalducci"><i class="fa fa-github"></i> GitHub</a>
+                            </li>
+                            <li>
+                                <a href="http://stackoverflow.com/users/54215/andrea-balducci"><i class="fa fa-stack-exchange"></i> Stackexchange</a>
+                            </li>
+                            <li>
+                                <a href="http://instagram.com/andreabalducci"><i class="fa fa-instagram"></i> Instagram</a>
+                            </li>
+                            <li>
+                                <a href="http://www.flickr.com/photos/skino"><i class="fa fa-flickr"></i> Flickr</a>
+                            </li>
+
+                        </ul><!-- /.dl-submenu -->
+                    </li>
+
+
+                    <li>
+                        <a href="http://www.ienumerable.it/jarvis-architecture/#">Gian Maria Ricci</a>
+                        <ul class="dl-submenu">
+                            <li class="dl-back"><a href="http://www.ienumerable.it/jarvis-architecture/#">back</a></li>
+                            <li>
+                                <img src="./Architecture_files/RicciGmProfilePhoto.jpg" alt="Gian Maria Ricci photo" class="author-photo">
+                                <h4>Gian Maria Ricci</h4>
+                                <p>Code addicted</p>
+                            </li>
+                            <li><a href="http://www.ienumerable.it/about/gianmariaricci">Learn More</a></li>
+                            <li>
+                                <a href="mailto:alkampfer@nablasoft.com"><i class="fa fa-envelope"></i> Email</a>
+                            </li>
+                            <li>
+                                <a href="http://twitter.com/alkampfer"><i class="fa fa-twitter"></i> Twitter</a>
+                            </li>
+
+                            <li>
+                                <a href="https://google.com/+GianMariaRicci"><i class="fa fa-google-plus"></i> Google+</a>
+                            </li>
+                            <li>
+                                <a href="http://linkedin.com/in/gianmariaricci"><i class="fa fa-linkedin"></i> LinkedIn</a>
+                            </li>
+                            <li>
+                                <a href="http://www.slideshare.net/alkampfer"><i class="fa fa-slideshare"></i> SlideShare</a>
+                            </li>
+                            <li>
+                                <a href="http://github.com/alkampfergit"><i class="fa fa-github"></i> GitHub</a>
+                            </li>
+
+
+
+
+                        </ul><!-- /.dl-submenu -->
+                    </li>
+
+                </ul>
+            </li>
+            <li>
+                <a href="http://www.ienumerable.it/jarvis-architecture/#">Posts</a>
+                <ul class="dl-submenu">
+                    <li class="dl-back"><a href="http://www.ienumerable.it/jarvis-architecture/#">back</a></li>
+                    <li><a href="http://www.ienumerable.it/posts/">All Posts</a></li>
+                    <li><a href="http://www.ienumerable.it/tags/">All Tags</a></li>
+                </ul>
+            </li>
+
+        </ul><!-- /.dl-menu -->
+    </nav><!-- /.dl-menuwrapper -->
+
+
+    <div class="entry-header">
+
+        <div class="image-credit">Image source: <a href="https://flic.kr/p/bm1S9j">Alexander Baxevanis</a></div>
+        <!-- /.image-credit -->
+        <div class="entry-image">
+            <img src="./Architecture_files/old-metro-map.jpg" alt="Architecture">
+        </div>
+        <!-- /.entry-image -->
+    </div>
+    <!-- /.entry-header -->
+
+
+
+
+
+    <div id="main" role="main">
+        <article class="hentry">
+            <header class="header-title">
+                <div class="header-title-wrap">
+
+                    <h1 class="entry-title"><a href="./Architecture_files/Architecture.htm" rel="bookmark" title="Architecture">Architecture</a></h1>
+
+                    <h2>September 18, 2014</h2>
+
+                    <p class="entry-reading-time">
+                        <i class="fa fa-clock-o"></i>
+                        Reading time ~3 minutes
+                    </p>
+                    <!-- /.entry-reading-time -->
+
+                </div>
+                <!-- /.header-title-wrap -->
+            </header>
+            <div class="entry-content">
+                <h2 id="jarvis-dev-stack">Jarvis Dev stack</h2>
+                <p>In the previous post we introduced Jarvis, in this we’ll talk about the development stack and the architecture.</p>
+                <p>
+                    The client is an Html5 AngularJs Single Page Application,
+                    our backend is mostly c#.
+                </p>
+                <figure>
+                    <a href="./Architecture_files/jarvis-building-blocks.jpg" class="image-popup">
+                        <img src="./Architecture_files/jarvis-building-blocks.jpg" alt="Jarvis building blocks">
+                    </a>
+                </figure>
+                <p>
+                    The core domains are implemented in eventsourcing and cqrs on top of <a href="http://neventstore.org/">NEventstore</a> with a custom implementation of CommonDomain.<br>
+                    For <a href="http://neventstore.org/">NEventstore v5</a> we needed a better implementation of <a href="https://github.com/NEventStore/NEventStore.Persistence.MongoDB">Mongo Persistence Engine</a> so I started pushing our fixes on Github.. some pull requests after I was invited to join the team (thank you <a href="https://twitter.com/randompunter">Damian</a>).<br>
+                    That was our first giveback to the dev community, then I patched / enhanced the majority of the core libraries we used in this project.
+                </p>
+                <p><strong>That’s (imho) how open source is supposed to work, less complains and more pull requests.</strong></p>
+                <p>Jarvis core domains are hosted in few (<a href="https://github.com/Topshelf/Topshelf">Topshelf</a> based) windows services  talking each other with <a href="https://github.com/rebus-org/Rebus">Rebus</a> and <a href="http://msdn.microsoft.com/en-us/library/ms711472(v=vs.85).aspx">MSMQ</a>.</p>
+                <p>The <a href="http://www.asp.net/web-api">webapi</a> services are hosted in IIS and secured with integrated authentication.</p>
+                <h2 id="data-flow">Data flow</h2>
+                <h3 id="frontend-api">Frontend api</h3>
+                <p>Jarvis data flow is “realtime async”: our frontend api accepts and validate user commands, translate them in domain commands and push them to our commandbus for delivery.</p>
+                <h3 id="domain-services">Domain services</h3>
+                <p>The destination worker handle the command, with automatic retry and failover, invoking the corresponding aggregate methods, it’s a sort of RPC over service bus: there is not a strict one to one mapping between commands and methods.</p>
+                <p>
+                    The target aggregate emits events in response to method calls to change its state, the events are persisted in NEventStore waiting for consumers: <a href="http://cqrs.wikidot.com/doc:projection">projections</a>
+                    and
+                    <a href="http://msdn.microsoft.com/en-us/library/jj591569.aspx">process managers</a>.
+                </p>
+                <h3 id="process-managers">Process managers</h3>
+                <p>
+                    Every <a href="http://msdn.microsoft.com/en-us/library/jj591569.aspx">process manager</a> place a subscription on Rebus for the events it is interested in.
+                    To be more accurate a process manager can subscribe to events and messages; a message doesn’t have domain semantic and is exchanged with external high latency services.
+                    The process manager react to events sending new commands and messages.
+                </p>
+                <h3 id="high-latency-services">High latency services</h3>
+                <p>We need to rely on external services for text extraction, document conversion and analisys; all the cpu intensive and high latency tasks are hosted by a service worker installed on one or more machines with a simple round robin routing for task distribution.</p>
+                <h3 id="projections">Projections</h3>
+                <p>
+                    Our <a href="http://cqrs.wikidot.com/doc:projection">projections</a> service works in pull mode; projections are grouped by affinity; every group has a subscpription to a polling client on the evenstore and run in its own thread.
+                    Our querymodel is denormalized on <a href="http://www.mongodb.org/">MongoDb</a> and <a href="http://www.elasticsearch.org/">Elasticsearch</a>.
+                </p>
+                <h3 id="push-notifications">Push notifications</h3>
+                <p>Query model updates are pushed to subscribers with <a href="http://signalr.net/">SignalR</a> and processed by AngularJs for interface updates.</p>
+                <figure>
+                    <a href="./Architecture_files/jarvis-architecture.jpg" class="image-popup">
+                        <img src="./Architecture_files/jarvis-architecture.jpg" alt="Jarvis architecture">
+                    </a>
+                </figure>
+                <h2 id="whats-next">What’s next</h2>
+                <p>
+                    This architecture worked well for our first customer, we have over 100 concurrent users, databases, frontend api and worker services on the same vmware box.
+                    Cpu is mostly between 1-2%, ram consumption flat and the whole roundript usually takes few milliseconds.
+                </p>
+                <p>Rebuilding all the 50+ projections from 350k+ commits takes almost 10 minutes (we are single thread), we need to improve in this area.</p>
+                <p>Our querymodel is about 4gb, we expect to grow (at least) by a <a href="http://www.ienumerable.it/about-this-blog/">100x factor</a> in the next two months.</p>
+                <p>We want to split our domains in isolated services and remove the friction for every deploy: we deploy twice a week, some weeks every day (or twice a day).</p>
+                <p>To achieve this goal <a href="http://www.ienumerable.it/about/gianmariaricci/">Gian Maria</a> is working on a configurations dispatcher service and getting rid of all the connection strings and application settings palced in the web/app.config.</p>
+                <p>More in the next post.</p>
+                <footer class="entry-meta">
+                    <span class="entry-tags"><a href="http://www.ienumerable.it/tags/#neventstore" title="Pages tagged neventstore" class="tag">neventstore</a><a href="http://www.ienumerable.it/tags/#angularjs" title="Pages tagged angularjs" class="tag">angularjs</a><a href="http://www.ienumerable.it/tags/#mongodb" title="Pages tagged mongodb" class="tag">mongodb</a><a href="http://www.ienumerable.it/tags/#elasticsearch" title="Pages tagged elasticsearch" class="tag">elasticsearch</a><a href="http://www.ienumerable.it/tags/#bus" title="Pages tagged bus" class="tag">bus</a><a href="http://www.ienumerable.it/tags/#webapi" title="Pages tagged webapi" class="tag">webapi</a></span>
+                    <span><a href="./Architecture_files/Architecture.htm" rel="bookmark" title="Architecture">Architecture</a> was published on <span class="entry-date date published updated"><time datetime="2014-09-18T00:00:00+00:00">September 18, 2014</time></span></span>
+
+                    <span class="author vcard"><span class="fn"><a href="http://www.ienumerable.it/about/andreabalducci" title="About Andrea Balducci"> Andrea Balducci </a></span></span>
+
+                    <div class="social-share">
+                        <ul class="socialcount socialcount-small inline-list">
+                            <li class="facebook">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u=http://www.ienumerable.it/jarvis-architecture/" title="Share on Facebook"><span class="count"><i class="fa fa-facebook-square"></i> Like</span></a>
+                            </li>
+                            <li class="twitter">
+                                <a href="https://twitter.com/intent/tweet?text=http://www.ienumerable.it/jarvis-architecture/" title="Share on Twitter"><span class="count"><i class="fa fa-twitter-square"></i> Tweet</span></a>
+                            </li>
+                            <li class="googleplus">
+                                <a href="https://plus.google.com/share?url=http://www.ienumerable.it/jarvis-architecture/" title="Share on Google Plus"><span class="count"><i class="fa fa-google-plus-square"></i> +1</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- /.social-share -->
+                </footer>
+            </div>
+            <!-- /.entry-content -->
+
+            <section id="disqus_thread"><iframe id="dsq-2" data-disqus-uid="2" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./Architecture_files/saved_resource.htm" style="width: 100% !important; border: none !important; overflow: hidden !important; height: 321px !important;" horizontalscrolling="no" verticalscrolling="no"></iframe><iframe id="dsq-indicator-north" data-disqus-uid="indicator-north" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" style="width: 640px !important; border: none !important; overflow: hidden !important; top: 0px !important; min-width: 640px !important; max-width: 640px !important; position: fixed !important; z-index: 2147483646 !important; height: 29px !important; min-height: 29px !important; max-height: 29px !important; display: none !important;"></iframe><iframe id="dsq-indicator-south" data-disqus-uid="indicator-south" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" style="width: 640px !important; border: none !important; overflow: hidden !important; bottom: 0px !important; min-width: 640px !important; max-width: 640px !important; position: fixed !important; z-index: 2147483646 !important; height: 29px !important; min-height: 29px !important; max-height: 29px !important; display: none !important;"></iframe></section>
+            <!-- /#disqus_thread -->
+            <div class="read-more">
+
+                <div class="read-more-header">
+                    <a href="http://www.ienumerable.it/what-is-jarvis/" class="read-more-btn">Read More</a>
+                </div>
+                <!-- /.read-more-header -->
+                <div class="read-more-content">
+                    <h3><a href="http://www.ienumerable.it/what-is-jarvis/" title="What is Jarvis?">What is Jarvis?</a></h3>
+                    <p>
+                        The product we are building right now <a href="http://www.ienumerable.it/what-is-jarvis/">Continue reading</a>
+                    </p>
+                </div>
+                <!-- /.read-more-content -->
+
+                <div class="read-more-list">
+
+                    <div class="list-item">
+                        <h4><a href="http://www.ienumerable.it/about-this-blog/" title="About this blog">About this blog</a></h4>
+                        <span>Published on September 09, 2014</span>
+                    </div>
+                    <!-- /.list-item -->
+
+                    <div class="list-item">
+                        <h4><a href="http://www.ienumerable.it/wish-we-could-say-more/" title="Wish we could say more">Wish we could say more</a></h4>
+                        <span>Published on September 04, 2014</span>
+                    </div>
+                    <!-- /.list-item -->
+
+                </div>
+                <!-- /.read-more-list -->
+
+            </div>
+            <!-- /.read-more -->
+        </article>
+    </div>
+    <!-- /#main -->
+    <div class="footer-wrapper">
+        <footer role="contentinfo">
+            <span>
+                © 2014 Andrea Balducci &amp; Gian Maria Ricci
+                | <a href="http://feeds.feedburner.com/ienumerable" alt="rss">Subscribe</a>
+                | <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="./Architecture_files/80x15.png"></a>
+            </span>
+        </footer>
+    </div>
+    <!-- /.footer-wrapper -->
+
+</body>
+</html>

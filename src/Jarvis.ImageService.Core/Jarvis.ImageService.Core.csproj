@@ -81,6 +81,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TuesPechkin">
+      <HintPath>..\packages\TuesPechkin.1.0.3.0\lib\net20\TuesPechkin.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\FileUploadController.cs" />
@@ -94,7 +97,8 @@
     <Compile Include="MimeTypes.cs" />
     <Compile Include="Model\ImageInfo.cs" />
     <Compile Include="Model\ImageSizeInfo.cs" />
-    <Compile Include="ProcessingPipeline\Conversions\ConvertToPdfTask.cs" />
+    <Compile Include="ProcessingPipeline\Conversions\ConvertHtmlToPdfTask.cs" />
+    <Compile Include="ProcessingPipeline\Conversions\ConvertFileToPdfWithLibreOfficeTask.cs" />
     <Compile Include="ProcessingPipeline\Conversions\MailMessageToPdfConverterTask.cs" />
     <Compile Include="ProcessingPipeline\IPipelineScheduler.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreatePdfImageTask.cs" />

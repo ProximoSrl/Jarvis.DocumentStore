@@ -9,5 +9,6 @@ namespace Jarvis.ImageService.Core.Storage
         void Delete(string fileId);
         string Download(string fileId, string folder);
         void Upload(string fileId, string pathToFile);
+        void Upload(string fileId, string fileName, Stream sourceStrem);
     }
 }

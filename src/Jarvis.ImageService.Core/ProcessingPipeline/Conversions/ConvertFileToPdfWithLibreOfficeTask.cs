@@ -15,14 +15,14 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
     /// Office / OpenOffice => pdf with Headless Libreoffice
     /// TODO: switch to https://wiki.openoffice.org/wiki/AODL when complete pdf support is available
     /// </summary>
-    public class ConvertToPdfTask
+    public class ConvertFileToPdfWithLibreOfficeTask
     {
         public ILogger Logger { get; set; }
         
         readonly IFileStore _fileStore;
         readonly ConfigService _config;
 
-        public ConvertToPdfTask(IFileStore fileStore, ConfigService config)
+        public ConvertFileToPdfWithLibreOfficeTask(IFileStore fileStore, ConfigService config)
         {
             _fileStore = fileStore;
             _config = config;

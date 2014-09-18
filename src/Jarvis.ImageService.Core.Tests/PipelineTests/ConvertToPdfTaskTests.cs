@@ -16,7 +16,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
     public class ConvertToPdfTaskTests
     {
         GridFSFileStore _fileStore;
-        ConvertToPdfTask _task;
+        ConvertFileToPdfWithLibreOfficeTask _withLibreOfficeTask;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -24,16 +24,16 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             MongoDbTestConnectionProvider.TestDb.Drop();
 
             _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.TestDb);
-            _fileStore.Upload("docx", SampleData.PathToWordDocument);
-            _fileStore.Upload("xlsx", SampleData.PathToExcelDocument);
-            _fileStore.Upload("pptx", SampleData.PathToPowerpointDocument);
-            _fileStore.Upload("txt", SampleData.PathToTextDocument);
-            _fileStore.Upload("odt", SampleData.PathToOpenDocumentText);
-            _fileStore.Upload("ods", SampleData.PathToOpenDocumentSpreadsheet);
-            _fileStore.Upload("odp", SampleData.PathToOpenDocumentPresentation);
-            _fileStore.Upload("rtf", SampleData.PathToRTFDocument);
+            _fileStore.Upload("docx", TestConfig.PathToWordDocument);
+            _fileStore.Upload("xlsx", TestConfig.PathToExcelDocument);
+            _fileStore.Upload("pptx", TestConfig.PathToPowerpointDocument);
+            _fileStore.Upload("txt", TestConfig.PathToTextDocument);
+            _fileStore.Upload("odt", TestConfig.PathToOpenDocumentText);
+            _fileStore.Upload("ods", TestConfig.PathToOpenDocumentSpreadsheet);
+            _fileStore.Upload("odp", TestConfig.PathToOpenDocumentPresentation);
+            _fileStore.Upload("rtf", TestConfig.PathToRTFDocument);
 
-            _task = new ConvertToPdfTask(_fileStore, new ConfigService())
+            _withLibreOfficeTask = new ConvertFileToPdfWithLibreOfficeTask(_fileStore, new ConfigService())
             {
                 Logger = new ConsoleLogger()
             };
@@ -50,7 +50,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         [TestCase("rtf")]
         public void processing_file_should_succeed(string fileId)
         {
-            _task.Convert(fileId);
+            _withLibreOfficeTask.Convert(fileId);
             Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(fileId).ContentType);
         }
     }
