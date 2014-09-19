@@ -25,6 +25,20 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
                 .UsingJobData(JobKeys.FileId, imageInfo.Id)
+                .UsingJobData(JobKeys.NextJob, "resize")
+                .StoreDurably(true)
+                .Build();
+
+            var trigger = CreateTrigger();
+
+            _scheduler.ScheduleJob(job, trigger);
+        }
+
+        public void QueueResize(ImageInfo imageInfo)
+        {
+            var job = JobBuilder
+                .Create<ImageResizeJob>()
+                .UsingJobData(JobKeys.FileId, imageInfo.Id)
                 .UsingJobData(JobKeys.Sizes, String.Join("|", imageInfo.Sizes.Select(x => x.Key)))
                 .StoreDurably(true)
                 .Build();

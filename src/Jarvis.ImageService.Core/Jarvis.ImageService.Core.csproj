@@ -92,6 +92,7 @@
     <Compile Include="Jobs\ConvertHtmlToPdfJob.cs" />
     <Compile Include="Jobs\ConvertToPdfJob.cs" />
     <Compile Include="Jobs\CreateThumbnailFromPdfJob.cs" />
+    <Compile Include="Jobs\ImageResizeJob.cs" />
     <Compile Include="Jobs\JobDataMapExtensions.cs" />
     <Compile Include="Jobs\JobKeys.cs" />
     <Compile Include="Jobs\JobsListener.cs" />

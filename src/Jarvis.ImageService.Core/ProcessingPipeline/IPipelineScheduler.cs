@@ -8,5 +8,6 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         void QueueThumbnail(ImageInfo imageInfo);
         void QueuePdfConversion(ImageInfo imageInfo);
         void QueueHtmlToPdfConversion(ImageInfo imageInfo);
+        void QueueResize(ImageInfo imageInfo);
     }
 }

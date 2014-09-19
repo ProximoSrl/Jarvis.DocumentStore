@@ -55,6 +55,9 @@ namespace Jarvis.ImageService.Core.Jobs
                     case "thumbnail": _pipelineScheduler.QueueThumbnail(fileInfo);
                         break;
 
+                    case "resize" : _pipelineScheduler.QueueResize(fileInfo);
+                        break;
+
                     default:
                         _logger.ErrorFormat("Job {0} not queued");
                         break;
