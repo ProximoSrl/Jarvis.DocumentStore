@@ -9,16 +9,19 @@ using Quartz;
 
 namespace Jarvis.ImageService.Core.Jobs
 {
+    /// <summary>
+    /// Converts a file to pdf using headless liberoffice
+    /// </summary>
     public class ConvertToPdfJob : IJob
     {
         private string FileId { get; set; }
-        readonly ConvertFileToPdfWithLibreOfficeTask _convertFileToPdfWithLibreOfficeTask;
+        readonly LibreOfficeConversion _libreOfficeConversion;
 
         public ILogger Logger { get; set; }
 
-        public ConvertToPdfJob(ConvertFileToPdfWithLibreOfficeTask convertFileToPdfWithLibreOfficeTask)
+        public ConvertToPdfJob(LibreOfficeConversion libreOfficeConversion)
         {
-            _convertFileToPdfWithLibreOfficeTask = convertFileToPdfWithLibreOfficeTask;
+            _libreOfficeConversion = libreOfficeConversion;
         }
 
         public void Execute(IJobExecutionContext context)
@@ -27,14 +30,17 @@ namespace Jarvis.ImageService.Core.Jobs
             FileId = jobDataMap.GetString(JobKeys.FileId);
             string extension = jobDataMap.GetString(JobKeys.FileExtension);
 
-            if (_convertFileToPdfWithLibreOfficeTask.CanHandle(extension))
+            if (_libreOfficeConversion.CanHandle(extension))
             {
                 Logger.DebugFormat(
-                    "Delegating conversion of file {0} ({1}) to pdfTask",
+                    "Delegating conversion of file {0} ({1}) to libreoffice",
                     FileId,
                     extension
                 );
-                _convertFileToPdfWithLibreOfficeTask.Convert(FileId);
+                DateTime start = DateTime.Now;
+                _libreOfficeConversion.Run(FileId, "pdf");
+                var elapsed = DateTime.Now - start;
+                Logger.DebugFormat("Libreoffice conversion task ended in {0}ms", elapsed.TotalMilliseconds);
                 return;
             }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
 using Jarvis.ImageService.Core.Jobs;
 using Jarvis.ImageService.Core.Model;
 using Quartz;
@@ -12,6 +13,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
     public class PipelineScheduler : IPipelineScheduler
     {
         readonly IScheduler _scheduler;
+        public ILogger Logger { get; set; }
 
         public PipelineScheduler(IScheduler scheduler)
         {
@@ -34,10 +36,12 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 
         public void QueuePdfConversion(ImageInfo imageInfo)
         {
+            var fileExtension = imageInfo.GetFileExtension();
+
             var job = JobBuilder
                 .Create<ConvertToPdfJob>()
                 .UsingJobData(JobKeys.FileId, imageInfo.Id)
-                .UsingJobData(JobKeys.FileExtension, imageInfo.GetFileExtension())
+                .UsingJobData(JobKeys.FileExtension, fileExtension)
                 .UsingJobData(JobKeys.NextJob, "thumbnail")
                 .StoreDurably(true)
                 .Build();

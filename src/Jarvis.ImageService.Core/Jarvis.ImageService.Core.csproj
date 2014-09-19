@@ -100,7 +100,7 @@
     <Compile Include="Model\ImageInfo.cs" />
     <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="ProcessingPipeline\Conversions\ConvertHtmlToPdfTask.cs" />
-    <Compile Include="ProcessingPipeline\Conversions\ConvertFileToPdfWithLibreOfficeTask.cs" />
+    <Compile Include="ProcessingPipeline\Conversions\LibreOfficeConversion.cs" />
     <Compile Include="ProcessingPipeline\Conversions\MailMessageToPdfConverterTask.cs" />
     <Compile Include="ProcessingPipeline\IPipelineScheduler.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreateImageFromPdfTask.cs" />

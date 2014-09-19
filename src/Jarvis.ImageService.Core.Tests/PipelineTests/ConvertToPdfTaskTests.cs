@@ -16,7 +16,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
     public class ConvertToPdfTaskTests
     {
         GridFSFileStore _fileStore;
-        ConvertFileToPdfWithLibreOfficeTask _withLibreOfficeTask;
+        LibreOfficeConversion _withLibreOfficeConversion;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -34,7 +34,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             _fileStore.Upload("odp", TestConfig.PathToOpenDocumentPresentation);
             _fileStore.Upload("rtf", TestConfig.PathToRTFDocument);
 
-            _withLibreOfficeTask = new ConvertFileToPdfWithLibreOfficeTask(_fileStore, new ConfigService())
+            _withLibreOfficeConversion = new LibreOfficeConversion(_fileStore, new ConfigService())
             {
                 Logger = new ConsoleLogger()
             };
@@ -52,7 +52,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         [TestCase("rtf")]
         public void processing_file_should_succeed(string fileId)
         {
-            _withLibreOfficeTask.Convert(fileId);
+            _withLibreOfficeConversion.Run(fileId, "pdf");
             Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(fileId).ContentType);
         }
     }
