@@ -103,7 +103,7 @@
     <Compile Include="ProcessingPipeline\Conversions\ConvertFileToPdfWithLibreOfficeTask.cs" />
     <Compile Include="ProcessingPipeline\Conversions\MailMessageToPdfConverterTask.cs" />
     <Compile Include="ProcessingPipeline\IPipelineScheduler.cs" />
-    <Compile Include="ProcessingPipeline\Pdf\CreatePdfImageTask.cs" />
+    <Compile Include="ProcessingPipeline\Pdf\CreateImageFromPdfTask.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreatePdfImageTaskParams.cs" />
     <Compile Include="ProcessingPipeline\PipelineScheduler.cs" />
     <Compile Include="ProcessingPipeline\Tools\ImageResizer.cs" />

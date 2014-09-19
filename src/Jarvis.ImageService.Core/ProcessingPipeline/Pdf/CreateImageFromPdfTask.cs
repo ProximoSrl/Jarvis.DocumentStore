@@ -5,17 +5,19 @@ using GraphicsMagick;
 
 namespace Jarvis.ImageService.Core.ProcessingPipeline.Pdf
 {
-    public class CreatePdfImageTask
+    public class CreateImageFromPdfTask
     {
-        ILogger _logger = NullLogger.Instance;
+        private static readonly object LockForInitializationIssue = new object();
+        private static bool _firstDone = false;
 
+        ILogger _logger = NullLogger.Instance;
         public ILogger Logger
         {
             get { return _logger; }
             set { _logger = value; }
         }
 
-        public void Convert(Stream sourceStream, CreatePdfImageTaskParams createPdfImageTaskParams, Action<int, Stream> pageWriter)
+        public void Run(Stream sourceStream, CreatePdfImageTaskParams createPdfImageTaskParams, Action<int, Stream> pageWriter)
         {
             var settings = new MagickReadSettings
             {
@@ -27,7 +29,23 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Pdf
             Logger.DebugFormat("Image format is {0}", imageFormat.ToString());
             using (var images = new MagickImageCollection())
             {
-                images.Read(sourceStream, settings);
+                bool done = false;
+                if (_firstDone == false)
+                {
+                    lock (LockForInitializationIssue)
+                    {
+                        if (_firstDone == false)
+                        {
+                            images.Read(sourceStream, settings);
+                            done = true;
+                            _firstDone = true;
+                        }
+                    }
+                }
+
+                if (!done)
+                    images.Read(sourceStream, settings);
+
                 var lastImage = Math.Min(createPdfImageTaskParams.FromPage - 1 + createPdfImageTaskParams.Pages, images.Count) - 1;
                 for (int page = createPdfImageTaskParams.FromPage - 1; page <= lastImage; page++)
                 {

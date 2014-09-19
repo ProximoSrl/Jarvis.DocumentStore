@@ -32,7 +32,7 @@ namespace Jarvis.ImageService.Core.Jobs
             var jobDataMap = context.JobDetail.JobDataMap;
             FileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
 
-            var task = new CreatePdfImageTask();
+            var task = new CreateImageFromPdfTask();
             var descriptor = FileStore.GetDescriptor(FileId);
             using (var sourceStream = descriptor.OpenRead())
             {
@@ -46,7 +46,7 @@ namespace Jarvis.ImageService.Core.Jobs
                 var sizes = jobDataMap.GetString(JobKeys.Sizes).Split('|');
 
                 ImageSizes = ConfigService.GetDefaultSizes().Where(x => sizes.Contains(x.Name)).ToArray();
-                task.Convert(sourceStream, convertParams, SaveRasterizedPage);
+                task.Run(sourceStream, convertParams, SaveRasterizedPage);
             }
 
             Logger.DebugFormat("Deleting document {0}", FileId);

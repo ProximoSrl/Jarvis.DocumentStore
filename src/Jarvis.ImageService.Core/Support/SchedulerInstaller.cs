@@ -36,7 +36,7 @@ namespace Jarvis.ImageService.Core.Support
                     .WithServiceSelf()
                     .LifestyleTransient(),
                 Component
-                    .For<CreatePdfImageTask>()
+                    .For<CreateImageFromPdfTask>()
                     .LifestyleTransient(),
                 Component
                     .For<IPipelineScheduler>()
