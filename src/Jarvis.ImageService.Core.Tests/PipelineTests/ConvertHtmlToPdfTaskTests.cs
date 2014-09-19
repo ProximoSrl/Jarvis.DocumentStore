@@ -5,20 +5,44 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
+using Jarvis.ImageService.Client;
+using Jarvis.ImageService.Core.ProcessingPipeline.Conversions;
+using Jarvis.ImageService.Core.Services;
+using Jarvis.ImageService.Core.Storage;
+using Jarvis.ImageService.Core.Tests.Support;
 using NUnit.Framework;
-using TuesPechkin;
-using GlobalSettings = TuesPechkin.GlobalSettings;
 
 namespace Jarvis.ImageService.Core.Tests.PipelineTests
 {
     [TestFixture]
     public class ConvertHtmlToPdfTaskTests
     {
-        [Test]
-        public void convert()
+        GridFSFileStore _fileStore;
+
+        [SetUp]
+        public void SetUp()
         {
+            MongoDbTestConnectionProvider.TestDb.Drop();
+            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.TestDb);
 
+            var client = new ImageServiceClient(TestConfig.ServerAddress);
+            var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
+            _fileStore.Upload("ziphtml", zipped);
+        }
 
+        [Test]
+        public void should_convert_htmlfolder_to_pdf()
+        {
+            var conversion = new HtmlToPdfConverter(_fileStore, new ConfigService())
+            {
+                Logger = new ConsoleLogger()
+            };
+
+            conversion.Run("ziphtml");
+
+            var fi = _fileStore.GetDescriptor("ziphtml");
+            Assert.AreEqual("application/pdf", fi.ContentType);
         }
     }
 }

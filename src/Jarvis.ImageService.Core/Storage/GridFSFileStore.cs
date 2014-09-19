@@ -55,6 +55,9 @@ namespace Jarvis.ImageService.Core.Storage
         public string Download(string fileId, string folder)
         {
             fileId = fileId.ToLowerInvariant();
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
             var s = _gridFs.FindOneById(fileId);
             var localFileName = Path.Combine(folder, s.Name);
             _gridFs.Download(localFileName,s);
