@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Jarvis.ImageService.Core.Model;
+using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.Services;
 
 namespace Jarvis.ImageService.Core.Controllers
@@ -12,10 +13,11 @@ namespace Jarvis.ImageService.Core.Controllers
     public class FileUploadController : ApiController
     {
         readonly IFileService _fileService;
-
-        public FileUploadController(IFileService fileService)
+        readonly IConversionWorkflow _conversionWorkflow;
+        public FileUploadController(IFileService fileService, IConversionWorkflow conversionWorkflow)
         {
             _fileService = fileService;
+            _conversionWorkflow = conversionWorkflow;
         }
 
         [Route("file/upload/{fileId}")]
@@ -31,6 +33,8 @@ namespace Jarvis.ImageService.Core.Controllers
                     errorMessage
                 );
             }
+
+            _conversionWorkflow.Start(fileId);
 
             return Request.CreateResponse(HttpStatusCode.OK, fileId);
         }

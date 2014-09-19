@@ -15,14 +15,12 @@ namespace Jarvis.ImageService.Core.Jobs
 {
     public class JobsListener : IJobListener
     {
-        readonly IPipelineScheduler _pipelineScheduler;
-        readonly IFileService _fileService;
+        readonly IConversionWorkflow _conversionWorkflow;
         readonly ILogger _logger;
 
-        public JobsListener(ILogger logger, IPipelineScheduler pipelineScheduler, IFileService fileService)
+        public JobsListener(ILogger logger, IConversionWorkflow conversionWorkflow)
         {
-            _pipelineScheduler = pipelineScheduler;
-            _fileService = fileService;
+            _conversionWorkflow = conversionWorkflow;
             _logger = logger;
         }
 
@@ -37,6 +35,21 @@ namespace Jarvis.ImageService.Core.Jobs
 
         public void JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException)
         {
+            if (typeof (AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
+            {
+                _logger.DebugFormat("Handling job post-execution {0}", context.JobDetail.JobType);
+                HandleFileJob(context, jobException);
+            }
+            else
+            {
+                _logger.DebugFormat("Ignored job post-execution {0}", context.JobDetail.JobType);
+            }
+        }
+
+        void HandleFileJob(IJobExecutionContext context, JobExecutionException jobException)
+        {
+            var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+
             if (jobException != null)
             {
                 HandleErrors(context, jobException);
@@ -47,21 +60,7 @@ namespace Jarvis.ImageService.Core.Jobs
                 if (nextJob == null)
                     return;
 
-                var id = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
-                var fileInfo = _fileService.GetById(id);
-
-                switch (nextJob)
-                {
-                    case "thumbnail": _pipelineScheduler.QueueThumbnail(fileInfo);
-                        break;
-
-                    case "resize" : _pipelineScheduler.QueueResize(fileInfo);
-                        break;
-
-                    default:
-                        _logger.ErrorFormat("Job {0} not queued");
-                        break;
-                }
+                _conversionWorkflow.Next(fileId, nextJob);
             }
         }
 
@@ -77,7 +76,7 @@ namespace Jarvis.ImageService.Core.Jobs
             {
                 if (retries < 5)
                 {
-                    var rescheduleAt = DateTime.Now.AddSeconds(5*retries);
+                    var rescheduleAt = DateTime.Now.AddSeconds(5 * retries);
                     _logger.DebugFormat("Rescheduling job {0} at {1}", context.JobDetail.Key, rescheduleAt);
                     context.Scheduler.RescheduleJob(
                         context.Trigger.Key,

@@ -32,15 +32,14 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         public void SetUp()
         {
             _fileStore = Substitute.For<IFileStore>();
-            var pipeline = Substitute.For<IPipelineScheduler>();
+            var workflow = Substitute.For<IConversionWorkflow>();
             var imageService = new MongoDbFileService(
                 MongoDbTestConnectionProvider.TestDb,
-                pipeline,
                 _fileStore,
                 new ConfigService()
             );
 
-            _controller = new FileUploadController(imageService)
+            _controller = new FileUploadController(imageService, workflow)
             {
                 Request = new HttpRequestMessage() 
             };

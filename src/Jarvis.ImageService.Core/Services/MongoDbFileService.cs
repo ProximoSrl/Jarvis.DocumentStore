@@ -13,19 +13,16 @@ namespace Jarvis.ImageService.Core.Services
 {
     public class MongoDbFileService : IFileService
     {
-        readonly IPipelineScheduler _scheduler;
         readonly MongoCollection<FileInfo> _collection;
         readonly IFileStore _fileStore;
         readonly ConfigService _config;
 
         public MongoDbFileService(
             MongoDatabase db, 
-            IPipelineScheduler scheduler, 
             IFileStore fileStore, 
             ConfigService config
             )
         {
-            _scheduler = scheduler;
             _fileStore = fileStore;
             _config = config;
             _collection = db.GetCollection<FileInfo>("fileinfo");
@@ -49,27 +46,8 @@ namespace Jarvis.ImageService.Core.Services
                 fi.LinkSize(sizeInfo.Name, null);
             }
             Save(fi);
-
-            StartPipeline(fi);
         }
 
-        void StartPipeline(FileInfo fileInfo)
-        {
-            switch (fileInfo.GetFileExtension())
-            {
-                case ".pdf":
-                    _scheduler.QueueThumbnail(fileInfo);
-                    break;
-                
-                case ".htmlzip":
-                    _scheduler.QueueHtmlToPdfConversion(fileInfo);
-                    break;
-
-                default:
-                    _scheduler.QueuePdfConversion(fileInfo);
-                    break;
-            }
-        }
 
         public void LinkImage(FileId fileId, string size, FileId imageId)
         {
@@ -103,7 +81,7 @@ namespace Jarvis.ImageService.Core.Services
                 fileId,
                 provider.Filename,
                 _config.GetDefaultSizes()
-                );
+            );
 
             return null;
         }

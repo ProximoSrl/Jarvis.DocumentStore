@@ -11,20 +11,20 @@ using Quartz;
 namespace Jarvis.ImageService.Core.Jobs
 {
     /// <summary>
-    /// Converts a file to pdf using headless liberoffice
+    /// Converts a file to pdf using headless libreoffice
     /// </summary>
-    public class ConvertToPdfJob : IJob
+    public class LibreOfficeToPdfJob : AbstractFileJob
     {
         readonly LibreOfficeConversion _libreOfficeConversion;
 
         public ILogger Logger { get; set; }
 
-        public ConvertToPdfJob(LibreOfficeConversion libreOfficeConversion)
+        public LibreOfficeToPdfJob(LibreOfficeConversion libreOfficeConversion)
         {
             _libreOfficeConversion = libreOfficeConversion;
         }
 
-        public void Execute(IJobExecutionContext context)
+        public override void Execute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
             var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));

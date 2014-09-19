@@ -68,6 +68,9 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Pdf
             {
                 case CreatePdfImageTaskParams.ImageFormat.Png:
                     return MagickFormat.Png;
+
+                case CreatePdfImageTaskParams.ImageFormat.Jpg:
+                    return MagickFormat.Jpg;
                 
                 default:
                     throw new ArgumentOutOfRangeException("format");

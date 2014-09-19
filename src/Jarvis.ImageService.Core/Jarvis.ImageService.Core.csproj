@@ -93,9 +93,10 @@
     <Compile Include="Http\FileIdJsonConverter.cs" />
     <Compile Include="Http\FileIdTypeConverter.cs" />
     <Compile Include="Http\FileStoreMultipartStreamProvider.cs" />
-    <Compile Include="Jobs\ConvertHtmlToPdfJob.cs" />
-    <Compile Include="Jobs\ConvertToPdfJob.cs" />
+    <Compile Include="Jobs\HtmlToPdfJob.cs" />
+    <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />
     <Compile Include="Jobs\CreateThumbnailFromPdfJob.cs" />
+    <Compile Include="Jobs\AbstractFileJob.cs" />
     <Compile Include="Jobs\ImageResizeJob.cs" />
     <Compile Include="Jobs\JobDataMapExtensions.cs" />
     <Compile Include="Jobs\JobKeys.cs" />
@@ -107,10 +108,10 @@
     <Compile Include="ProcessingPipeline\Conversions\HtmlToPdfConverter.cs" />
     <Compile Include="ProcessingPipeline\Conversions\LibreOfficeConversion.cs" />
     <Compile Include="ProcessingPipeline\Conversions\MailMessageToPdfConverterTask.cs" />
-    <Compile Include="ProcessingPipeline\IPipelineScheduler.cs" />
+    <Compile Include="ProcessingPipeline\IConversionWorkflow.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreateImageFromPdfTask.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreatePdfImageTaskParams.cs" />
-    <Compile Include="ProcessingPipeline\PipelineScheduler.cs" />
+    <Compile Include="ProcessingPipeline\ConversionWorkflow.cs" />
     <Compile Include="ProcessingPipeline\Tools\ImageResizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CounterService.cs" />

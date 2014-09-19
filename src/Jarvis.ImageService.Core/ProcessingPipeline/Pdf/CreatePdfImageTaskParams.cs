@@ -4,7 +4,8 @@
     {
         public enum ImageFormat
         {
-            Png
+            Png,
+            Jpg
         }
 
         public CreatePdfImageTaskParams()

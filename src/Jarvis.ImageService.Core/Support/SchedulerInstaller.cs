@@ -39,14 +39,13 @@ namespace Jarvis.ImageService.Core.Support
                     .For<CreateImageFromPdfTask>()
                     .LifestyleTransient(),
                 Component
-                    .For<IPipelineScheduler>()
-                    .ImplementedBy<PipelineScheduler>()
+                    .For<IConversionWorkflow>()
+                    .ImplementedBy<ConversionWorkflow>()
             );
 
             container.Resolve<IScheduler>().ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<ILogger>(),
-                container.Resolve<IPipelineScheduler>(),
-                container.Resolve<IFileService>()
+                container.Resolve<IConversionWorkflow>()
             ));
         }
 
@@ -62,7 +61,7 @@ namespace Jarvis.ImageService.Core.Support
             quartz.CreateChild("item", "Quartz.Simpl.SimpleThreadPool, Quartz")
                     .Attribute("key", "quartz.threadPool.type");
 
-            quartz.CreateChild("item", "5")
+            quartz.CreateChild("item", Environment.ProcessorCount.ToString())
                     .Attribute("key", "quartz.threadPool.threadCount");
 
             quartz.CreateChild("item", "Normal")
