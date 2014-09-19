@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline.Conversions;
 using Quartz;
 
@@ -14,7 +15,6 @@ namespace Jarvis.ImageService.Core.Jobs
     /// </summary>
     public class ConvertToPdfJob : IJob
     {
-        private string FileId { get; set; }
         readonly LibreOfficeConversion _libreOfficeConversion;
 
         public ILogger Logger { get; set; }
@@ -27,18 +27,18 @@ namespace Jarvis.ImageService.Core.Jobs
         public void Execute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
-            FileId = jobDataMap.GetString(JobKeys.FileId);
+            var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
             string extension = jobDataMap.GetString(JobKeys.FileExtension);
 
             if (_libreOfficeConversion.CanHandle(extension))
             {
                 Logger.DebugFormat(
                     "Delegating conversion of file {0} ({1}) to libreoffice",
-                    FileId,
+                    fileId,
                     extension
                 );
                 DateTime start = DateTime.Now;
-                _libreOfficeConversion.Run(FileId, "pdf");
+                _libreOfficeConversion.Run(fileId, "pdf");
                 var elapsed = DateTime.Now - start;
                 Logger.DebugFormat("Libreoffice conversion task ended in {0}ms", elapsed.TotalMilliseconds);
                 return;

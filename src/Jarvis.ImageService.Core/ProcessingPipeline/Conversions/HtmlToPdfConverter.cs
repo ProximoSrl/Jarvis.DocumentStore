@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 using TuesPechkin;
@@ -26,7 +27,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
             _config = config;
         }
 
-        public void Run(string fileId)
+        public void Run(FileId fileId)
         {
             Logger.DebugFormat("Converting {0} to pdf", fileId);
             var localFileName = DownloadLocalCopy(fileId);
@@ -74,7 +75,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
             Logger.DebugFormat("Conversion of {0} to pdf done!", fileId);
         }
 
-        string DownloadLocalCopy(string fileId)
+        string DownloadLocalCopy(FileId fileId)
         {
             var folder = _config.GetWorkingFolder(fileId);
             if(Directory.Exists(folder))

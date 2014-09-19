@@ -70,7 +70,7 @@ namespace Jarvis.ImageService.Core.Services
             }
         }
 
-        public void LinkImage(FileId id, string size, string imageId)
+        public void LinkImage(FileId id, string size, FileId imageId)
         {
             var fi = GetById(id);
             fi.LinkSize(size, imageId);

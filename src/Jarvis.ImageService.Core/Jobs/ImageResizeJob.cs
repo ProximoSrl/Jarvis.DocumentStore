@@ -41,7 +41,7 @@ namespace Jarvis.ImageService.Core.Jobs
                     foreach (var size in imageSizes)
                     {
                         pageStream.Seek(0, SeekOrigin.Begin);
-                        var resizeId = fileId + "/thumbnail/" + size.Name;
+                        var resizeId = new FileId(fileId + "/thumbnail/" + size.Name);
                         Logger.DebugFormat("Resizing {0} - {1}", fileId, resizeId);
                         using (var destStream = FileStore.CreateNew(resizeId, fileId + "." + size.Name + ".png"))
                         {

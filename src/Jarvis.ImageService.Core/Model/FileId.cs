@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using Jarvis.ImageService.Core.Http;
 using Jarvis.ImageService.Core.Storage;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -7,6 +9,7 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Jarvis.ImageService.Core.Model
 {
     [BsonSerializer(typeof(FileIdSerializer))]
+    [TypeConverter(typeof(FileIdTypeConverter))]
     public class FileId
     {
         static readonly IEqualityComparer<FileId> IdComparerInstance = new IdEqualityComparer();

@@ -1,5 +1,6 @@
 using System.Web.Http;
 using Castle.Windsor;
+using Jarvis.ImageService.Core.Http;
 using Owin;
 
 namespace Jarvis.ImageService.Host.Support
@@ -17,10 +18,12 @@ namespace Jarvis.ImageService.Host.Support
             {
                 DependencyResolver = new WindsorResolver(
                     ContainerAccessor.Instance
-                    )
+                )
             };
 
             config.MapHttpAttributeRoutes();
+            config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new FileIdJsonConverter());
+
             application.UseWebApi(config);
         }
     }

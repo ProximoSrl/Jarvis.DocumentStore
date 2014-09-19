@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Jarvis.ImageService.Core.Model;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
@@ -19,9 +20,8 @@ namespace Jarvis.ImageService.Core.Storage
             _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
         }
 
-        public Stream CreateNew(string fileId, string fname)
+        public Stream CreateNew(FileId fileId, string fname)
         {
-            fileId = fileId.ToLowerInvariant();
             fname = fname.Replace("\"", "");
 
             Delete(fileId);
@@ -29,14 +29,13 @@ namespace Jarvis.ImageService.Core.Storage
             {
                 ContentType = MimeTypes.GetMimeType(fname),
                 UploadDate = DateTime.UtcNow,
-                Id = fileId
+                Id = (string)fileId
             });
         }
 
-        public IFileStoreDescriptor GetDescriptor(string fileId)
+        public IFileStoreDescriptor GetDescriptor(FileId fileId)
         {
-            fileId = fileId.ToLowerInvariant();
-            var s = _gridFs.FindOneById(fileId);
+            var s = _gridFs.FindOneById((string)fileId);
             if (s == null)
             {
                 var message = string.Format("Descriptor for file {0} not found!", fileId);
@@ -46,36 +45,32 @@ namespace Jarvis.ImageService.Core.Storage
             return new GridFsFileStoreDescriptor(s);
         }
 
-        public void Delete(string fileId)
+        public void Delete(FileId fileId)
         {
-            fileId = fileId.ToLowerInvariant();
-            _gridFs.DeleteById(fileId);
+            _gridFs.DeleteById((string)fileId);
         }
 
-        public string Download(string fileId, string folder)
+        public string Download(FileId fileId, string folder)
         {
-            fileId = fileId.ToLowerInvariant();
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            var s = _gridFs.FindOneById(fileId);
+            var s = _gridFs.FindOneById((string)fileId);
             var localFileName = Path.Combine(folder, s.Name);
             _gridFs.Download(localFileName,s);
             return localFileName;
         }
 
-        public void Upload(string fileId, string pathToFile)
+        public void Upload(FileId fileId, string pathToFile)
         {
-            fileId = fileId.ToLowerInvariant();
             using (var inStream = File.OpenRead(pathToFile))
             {
                 Upload(fileId, Path.GetFileName(pathToFile), inStream);
             }
         }
 
-        public void Upload(string fileId, string fileName, Stream sourceStrem)
+        public void Upload(FileId fileId, string fileName, Stream sourceStrem)
         {
-            fileId = fileId.ToLowerInvariant();
             using (var outStream = CreateNew(fileId, fileName))
             {
                 sourceStrem.CopyTo(outStream);

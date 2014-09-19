@@ -11,7 +11,7 @@ namespace Jarvis.ImageService.Core.Services
 {
     public interface IImageService
     {
-        void LinkImage(FileId id, string size, string imageId);
+        void LinkImage(FileId id, string size, FileId imageId);
         Task<string> ReadFromHttp(HttpContent httpContent, FileId fileId);
         IFileStoreDescriptor GetImageDescriptor(FileId fileId, string size);
         ImageInfo GetById(FileId id);

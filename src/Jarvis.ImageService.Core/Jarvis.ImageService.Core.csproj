@@ -90,6 +90,8 @@
   <ItemGroup>
     <Compile Include="Controllers\FileUploadController.cs" />
     <Compile Include="Controllers\ThumbnailController.cs" />
+    <Compile Include="Http\FileIdJsonConverter.cs" />
+    <Compile Include="Http\FileIdTypeConverter.cs" />
     <Compile Include="Http\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Jobs\ConvertHtmlToPdfJob.cs" />
     <Compile Include="Jobs\ConvertToPdfJob.cs" />

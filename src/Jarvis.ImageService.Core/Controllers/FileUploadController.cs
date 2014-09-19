@@ -4,10 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Jarvis.ImageService.Core.Http;
 using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.Services;
-using Jarvis.ImageService.Core.Storage;
 
 namespace Jarvis.ImageService.Core.Controllers
 {
@@ -22,10 +20,9 @@ namespace Jarvis.ImageService.Core.Controllers
 
         [Route("file/upload/{fileId}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Upload(string fileId)
+        public async Task<HttpResponseMessage> Upload(FileId fileId)
         {
-            var typedId = new FileId(fileId);
-            var errorMessage = await _imageService.ReadFromHttp(Request.Content, typedId);
+            var errorMessage = await _imageService.ReadFromHttp(Request.Content, fileId);
 
             if (errorMessage != null)
             {

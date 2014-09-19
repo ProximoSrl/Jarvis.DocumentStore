@@ -10,12 +10,12 @@ using System.Web.Http;
 using System.Web.Http.Hosting;
 using Castle.Core.Logging;
 using Jarvis.ImageService.Core.Controllers;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 using Jarvis.ImageService.Core.Tests.PipelineTests;
 using Jarvis.ImageService.Core.Tests.Support;
-using MongoDB.Driver;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -50,7 +50,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         [Test]
         public async void calling_upload_without_file_attachment_should_return_BadRequest()
         {
-            var response = await _controller.Upload("Document_1");
+            var response = await _controller.Upload(new FileId("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
@@ -58,7 +58,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         public async void calling_upload_with_empty_attachment_should_return_BadRequest()
         {
             _controller.Request.Content = new MultipartFormDataContent("test");
-            var response = await _controller.Upload("Document_1");
+            var response = await _controller.Upload(new FileId("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Attachment not found!", response.GetError().Message);
         }
@@ -78,7 +78,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
             HttpResponseMessage response = null;
             using (var stream = new MemoryStream())
             {
-                _fileStore.CreateNew(Arg.Any<string>(), Arg.Any<string>()).Returns(stream);
+                _fileStore.CreateNew(Arg.Any<FileId>(), Arg.Any<string>()).Returns(stream);
                 response = await upload_file(TestConfig.PathToDocumentPdf);
                 streamLen = stream.Length;
             }
@@ -101,7 +101,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
 
                 _controller.Request.Content = multipartFormDataContent;
 
-                return await _controller.Upload("Document_1");
+                return await _controller.Upload(new FileId("Document_1"));
             }        
         }
     }

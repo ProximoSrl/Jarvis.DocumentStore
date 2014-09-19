@@ -115,7 +115,7 @@
   <ItemGroup>
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\FileUploadControllerTests.cs" />
-    <Compile Include="Misc\FileIdTests.cs" />
+    <Compile Include="Misc\FileIdMongoTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="PipelineTests\ConvertHtmlToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />

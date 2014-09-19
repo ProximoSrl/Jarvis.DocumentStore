@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 
@@ -15,19 +16,19 @@ namespace Jarvis.ImageService.Core.Http
     public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider
     {
         readonly IFileStore _store;
-        readonly string _resourceId;
+        readonly FileId _fileId;
         readonly ConfigService _config;
         public string Filename { get; private set; }
         public bool IsInvalidFile { get; private set; }
 
         public FileStoreMultipartStreamProvider(
             IFileStore store, 
-            string resourceId,
+            FileId fileId,
             ConfigService config
         ) : base(Path.GetTempPath())
         {
             _store = store;
-            _resourceId = resourceId;
+            _fileId = fileId;
             _config = config;
         }
 
@@ -42,7 +43,7 @@ namespace Jarvis.ImageService.Core.Http
                 return new MemoryStream();
             }
 
-            return _store.CreateNew(_resourceId, Filename);
+            return _store.CreateNew(_fileId, Filename);
         }
     }
 }

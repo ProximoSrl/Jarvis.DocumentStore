@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.ImageService.Client;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline.Conversions;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
@@ -28,7 +29,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
 
             var client = new ImageServiceClient(TestConfig.ServerAddress);
             var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
-            _fileStore.Upload("ziphtml", zipped);
+            _fileStore.Upload(new FileId("ziphtml"), zipped);
         }
 
         [Test]
@@ -39,9 +40,9 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
                 Logger = new ConsoleLogger()
             };
 
-            conversion.Run("ziphtml");
+            conversion.Run(new FileId("ziphtml"));
 
-            var fi = _fileStore.GetDescriptor("ziphtml");
+            var fi = _fileStore.GetDescriptor(new FileId("ziphtml"));
             Assert.AreEqual("application/pdf", fi.ContentType);
         }
     }

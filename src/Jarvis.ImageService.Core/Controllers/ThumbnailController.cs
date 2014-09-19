@@ -21,12 +21,9 @@ namespace Jarvis.ImageService.Core.Controllers
 
         [Route("thumbnail/{fileId}/{size}")]
         [HttpGet]
-        public HttpResponseMessage GetThumbnail(string fileId, string size)
+        public HttpResponseMessage GetThumbnail(FileId fileId, string size)
         {
-            // todo: json converter
-            var typedId = new FileId(fileId);
-            
-            var imageDescriptor = _imageService.GetImageDescriptor(typedId, size);
+            var imageDescriptor = _imageService.GetImageDescriptor(fileId, size);
             if (imageDescriptor == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Image not found");
             

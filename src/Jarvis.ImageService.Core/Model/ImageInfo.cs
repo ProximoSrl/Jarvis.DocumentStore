@@ -18,17 +18,17 @@ namespace Jarvis.ImageService.Core.Model
 
             Id = id;
             Filename = filename.Replace("\"", "");
-            Sizes = new Dictionary<string, string>();
+            Sizes = new Dictionary<string, FileId>();
         }
 
-        public void LinkSize(string size, string fileId)
+        public void LinkSize(string size, FileId fileId)
         {
             Sizes[size.ToLowerInvariant()] = fileId;
         }
 
         public FileId Id { get; private set; }
         public string Filename { get; private set; }
-        public IDictionary<string, string> Sizes { get; private set; }
+        public IDictionary<string, FileId> Sizes { get; private set; }
 
         public string GetFileExtension()
         {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
 
@@ -28,7 +29,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline.Conversions
             _config = config;
         }
 
-        public void Run(string fileId, string outType)
+        public void Run(FileId fileId, string outType)
         {
             Logger.DebugFormat("Starting conversion of fileId {0} to {1}", fileId, outType);
             string pathToLibreOffice = _config.GetPathToLibreOffice();

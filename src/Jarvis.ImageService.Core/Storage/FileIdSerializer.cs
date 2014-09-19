@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jarvis.ImageService.Core.Model;
+using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 
 namespace Jarvis.ImageService.Core.Storage
 {
-    public class FileIdSerializer : IBsonSerializer 
+    public class FileIdSerializer : IBsonSerializer
     {
         public object Deserialize(BsonReader bsonReader, Type nominalType, IBsonSerializationOptions options)
         {
@@ -18,7 +19,13 @@ namespace Jarvis.ImageService.Core.Storage
 
         public object Deserialize(BsonReader bsonReader, Type nominalType, Type actualType, IBsonSerializationOptions options)
         {
-            var id= bsonReader.ReadString();
+            if (bsonReader.CurrentBsonType == BsonType.Null)
+            {
+                bsonReader.ReadNull();
+                return null;
+            }
+
+            var id = bsonReader.ReadString();
             return new FileId(id);
         }
 
@@ -29,8 +36,14 @@ namespace Jarvis.ImageService.Core.Storage
 
         public void Serialize(BsonWriter bsonWriter, Type nominalType, object value, IBsonSerializationOptions options)
         {
-            var id = (FileId) value;
-            bsonWriter.WriteString(id);
+            if (value == null)
+            {
+                bsonWriter.WriteNull();
+            }
+            else
+            {
+                bsonWriter.WriteString((FileId)value);
+            }
         }
     }
 }

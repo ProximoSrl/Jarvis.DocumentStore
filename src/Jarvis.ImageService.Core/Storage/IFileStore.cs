@@ -1,14 +1,15 @@
 using System.IO;
+using Jarvis.ImageService.Core.Model;
 
 namespace Jarvis.ImageService.Core.Storage
 {
     public interface IFileStore
     {
-        Stream CreateNew(string fileId, string fname);
-        IFileStoreDescriptor GetDescriptor(string fileId);
-        void Delete(string fileId);
-        string Download(string fileId, string folder);
-        void Upload(string fileId, string pathToFile);
-        void Upload(string fileId, string fileName, Stream sourceStrem);
+        Stream CreateNew(FileId fileId, string fname);
+        IFileStoreDescriptor GetDescriptor(FileId fileId);
+        void Delete(FileId fileId);
+        string Download(FileId fileId, string folder);
+        void Upload(FileId fileId, string pathToFile);
+        void Upload(FileId fileId, string fileName, Stream sourceStrem);
     }
 }
