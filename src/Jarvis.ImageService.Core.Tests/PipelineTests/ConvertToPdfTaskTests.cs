@@ -27,6 +27,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             _fileStore.Upload("docx", TestConfig.PathToWordDocument);
             _fileStore.Upload("xlsx", TestConfig.PathToExcelDocument);
             _fileStore.Upload("pptx", TestConfig.PathToPowerpointDocument);
+            _fileStore.Upload("ppsx", TestConfig.PathToPowerpointShow);
             _fileStore.Upload("txt", TestConfig.PathToTextDocument);
             _fileStore.Upload("odt", TestConfig.PathToOpenDocumentText);
             _fileStore.Upload("ods", TestConfig.PathToOpenDocumentSpreadsheet);
@@ -43,6 +44,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
         [TestCase("docx")]
         [TestCase("xlsx")]
         [TestCase("pptx")]
+        [TestCase("ppsx")]
         [TestCase("txt")]
         [TestCase("odt")]
         [TestCase("ods")]

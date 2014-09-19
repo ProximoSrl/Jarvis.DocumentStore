@@ -127,6 +127,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Docs\Architecture_files\css" />
+    <None Include="Docs\Powerpoint show.ppsx" />
     <None Include="Docs\RTF Document.rtf" />
     <None Include="Docs\file.invalid" />
     <None Include="Docs\A Powerpoint Document.pptx" />

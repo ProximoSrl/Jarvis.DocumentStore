@@ -24,6 +24,10 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "RTF Document.rtf"); }
         }
 
+        public static string PathToPowerpointShow{
+            get { return Path.Combine(DocumentsFolder, "Powerpoint show.ppsx"); }
+        }
+
         public static string PathToWordDocument{
             get { return Path.Combine(DocumentsFolder, "A Word Document.docx"); }
         }

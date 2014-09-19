@@ -37,6 +37,7 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
                 client.Upload(TestConfig.PathToWordDocument, "docx"),
                 client.Upload(TestConfig.PathToExcelDocument, "xlsx"),
                 client.Upload(TestConfig.PathToPowerpointDocument, "pptx"),
+                client.Upload(TestConfig.PathToPowerpointShow, "ppsx"),
                 client.Upload(TestConfig.PathToOpenDocumentText, "odt"),
                 client.Upload(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
                 client.Upload(TestConfig.PathToOpenDocumentPresentation, "odp"),

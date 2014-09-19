@@ -24,7 +24,7 @@ namespace Jarvis.ImageService.Core.Services
 
             _allowedExtensions = GetConfigValue(
                 "JARVIS_IMGSRVCS_ALLOWED_FILE_TYPES",
-                ".pdf|.xls|.xlsx|.docx|.doc|.ppt|.pptx|.rtf|.odt|.ods|.odp|.htmlzip"
+                ".pdf|.xls|.xlsx|.docx|.doc|.ppt|.pptx|.pps|.ppsx|.rtf|.odt|.ods|.odp|.htmlzip"
             ).ToLowerInvariant().Split('|');
         }
 
