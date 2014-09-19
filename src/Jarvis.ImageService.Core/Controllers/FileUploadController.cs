@@ -11,18 +11,18 @@ namespace Jarvis.ImageService.Core.Controllers
 {
     public class FileUploadController : ApiController
     {
-        readonly IImageService _imageService;
+        readonly IFileService _fileService;
 
-        public FileUploadController(IImageService imageService)
+        public FileUploadController(IFileService fileService)
         {
-            _imageService = imageService;
+            _fileService = fileService;
         }
 
         [Route("file/upload/{fileId}")]
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(FileId fileId)
         {
-            var errorMessage = await _imageService.ReadFromHttp(Request.Content, fileId);
+            var errorMessage = await _fileService.UploadFromHttpContent(Request.Content, fileId);
 
             if (errorMessage != null)
             {

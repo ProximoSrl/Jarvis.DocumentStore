@@ -9,9 +9,9 @@ using MongoDB.Bson.Serialization;
 
 namespace Jarvis.ImageService.Core.Model
 {
-    public class ImageInfo 
+    public class FileInfo 
     {
-        public ImageInfo(FileId id, string filename)
+        public FileInfo(FileId id, string filename)
         {
             if (id == null) throw new ArgumentNullException("id");
             if (filename == null) throw new ArgumentNullException("filename");

@@ -7,17 +7,18 @@ using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.Storage;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using FileInfo = Jarvis.ImageService.Core.Model.FileInfo;
 
 namespace Jarvis.ImageService.Core.Services
 {
-    public class MongoDbImageService : IImageService
+    public class MongoDbFileService : IFileService
     {
         readonly IPipelineScheduler _scheduler;
-        readonly MongoCollection<ImageInfo> _collection;
+        readonly MongoCollection<FileInfo> _collection;
         readonly IFileStore _fileStore;
         readonly ConfigService _config;
 
-        public MongoDbImageService(
+        public MongoDbFileService(
             MongoDatabase db, 
             IPipelineScheduler scheduler, 
             IFileStore fileStore, 
@@ -27,22 +28,22 @@ namespace Jarvis.ImageService.Core.Services
             _scheduler = scheduler;
             _fileStore = fileStore;
             _config = config;
-            _collection = db.GetCollection<ImageInfo>("fileinfo");
+            _collection = db.GetCollection<FileInfo>("fileinfo");
         }
 
-        public ImageInfo GetById(FileId id)
+        public FileInfo GetById(FileId fileId)
         {
-            return _collection.FindOneById((string)id);
+            return _collection.FindOneById((string)fileId);
         }
 
-        void Save(ImageInfo imageInfo)
+        void Save(FileInfo fileInfo)
         {
-            _collection.Save(imageInfo);
+            _collection.Save(fileInfo);
         }
 
         void Create(FileId id, string filename, ImageSizeInfo[] imageSizes)
         {
-            var fi = new ImageInfo(id, filename);
+            var fi = new FileInfo(id, filename);
             foreach (var sizeInfo in imageSizes)
             {
                 fi.LinkSize(sizeInfo.Name, null);
@@ -52,32 +53,32 @@ namespace Jarvis.ImageService.Core.Services
             StartPipeline(fi);
         }
 
-        void StartPipeline(ImageInfo imageInfo)
+        void StartPipeline(FileInfo fileInfo)
         {
-            switch (imageInfo.GetFileExtension())
+            switch (fileInfo.GetFileExtension())
             {
                 case ".pdf":
-                    _scheduler.QueueThumbnail(imageInfo);
+                    _scheduler.QueueThumbnail(fileInfo);
                     break;
                 
                 case ".htmlzip":
-                    _scheduler.QueueHtmlToPdfConversion(imageInfo);
+                    _scheduler.QueueHtmlToPdfConversion(fileInfo);
                     break;
 
                 default:
-                    _scheduler.QueuePdfConversion(imageInfo);
+                    _scheduler.QueuePdfConversion(fileInfo);
                     break;
             }
         }
 
-        public void LinkImage(FileId id, string size, FileId imageId)
+        public void LinkImage(FileId fileId, string size, FileId imageId)
         {
-            var fi = GetById(id);
+            var fi = GetById(fileId);
             fi.LinkSize(size, imageId);
             Save(fi);
         }
 
-        public async Task<string> ReadFromHttp(HttpContent httpContent, FileId fileId)
+        public async Task<string> UploadFromHttpContent(HttpContent httpContent, FileId fileId)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
             {
@@ -107,7 +108,7 @@ namespace Jarvis.ImageService.Core.Services
             return null;
         }
 
-        public IFileStoreDescriptor GetImageDescriptor(FileId fileId, string size)
+        public IFileStoreHandle GetImageDescriptor(FileId fileId, string size)
         {
             var fileInfo = GetById(fileId);
             if (fileInfo == null)

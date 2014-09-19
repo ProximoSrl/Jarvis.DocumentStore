@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Jarvis.ImageService.Core.Storage
 {
-    public interface IFileStoreDescriptor
+    public interface IFileStoreHandle
     {
         Stream OpenRead();
         string FileName { get; }

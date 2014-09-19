@@ -16,13 +16,13 @@ namespace Jarvis.ImageService.Core.Jobs
     public class JobsListener : IJobListener
     {
         readonly IPipelineScheduler _pipelineScheduler;
-        readonly IImageService _imageService;
+        readonly IFileService _fileService;
         readonly ILogger _logger;
 
-        public JobsListener(ILogger logger, IPipelineScheduler pipelineScheduler, IImageService imageService)
+        public JobsListener(ILogger logger, IPipelineScheduler pipelineScheduler, IFileService fileService)
         {
             _pipelineScheduler = pipelineScheduler;
-            _imageService = imageService;
+            _fileService = fileService;
             _logger = logger;
         }
 
@@ -48,7 +48,7 @@ namespace Jarvis.ImageService.Core.Jobs
                     return;
 
                 var id = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
-                var fileInfo = _imageService.GetById(id);
+                var fileInfo = _fileService.GetById(id);
 
                 switch (nextJob)
                 {

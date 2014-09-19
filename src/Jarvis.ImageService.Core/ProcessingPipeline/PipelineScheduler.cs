@@ -20,11 +20,11 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
             _scheduler = scheduler;
         }
 
-        public void QueueThumbnail(ImageInfo imageInfo)
+        public void QueueThumbnail(FileInfo fileInfo)
         {
             var job = JobBuilder
                 .Create<CreateThumbnailFromPdfJob>()
-                .UsingJobData(JobKeys.FileId, imageInfo.Id)
+                .UsingJobData(JobKeys.FileId, fileInfo.Id)
                 .UsingJobData(JobKeys.NextJob, "resize")
                 .StoreDurably(true)
                 .Build();
@@ -34,12 +34,12 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueResize(ImageInfo imageInfo)
+        public void QueueResize(FileInfo fileInfo)
         {
             var job = JobBuilder
                 .Create<ImageResizeJob>()
-                .UsingJobData(JobKeys.FileId, imageInfo.Id)
-                .UsingJobData(JobKeys.Sizes, String.Join("|", imageInfo.Sizes.Select(x => x.Key)))
+                .UsingJobData(JobKeys.FileId, fileInfo.Id)
+                .UsingJobData(JobKeys.Sizes, String.Join("|", fileInfo.Sizes.Select(x => x.Key)))
                 .StoreDurably(true)
                 .Build();
 
@@ -48,13 +48,13 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueuePdfConversion(ImageInfo imageInfo)
+        public void QueuePdfConversion(FileInfo fileInfo)
         {
-            var fileExtension = imageInfo.GetFileExtension();
+            var fileExtension = fileInfo.GetFileExtension();
 
             var job = JobBuilder
                 .Create<ConvertToPdfJob>()
-                .UsingJobData(JobKeys.FileId, imageInfo.Id)
+                .UsingJobData(JobKeys.FileId, fileInfo.Id)
                 .UsingJobData(JobKeys.FileExtension, fileExtension)
                 .UsingJobData(JobKeys.NextJob, "thumbnail")
                 .StoreDurably(true)
@@ -65,11 +65,11 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueHtmlToPdfConversion(ImageInfo imageInfo)
+        public void QueueHtmlToPdfConversion(FileInfo fileInfo)
         {
             var job = JobBuilder
                 .Create<ConvertHtmlToPdfJob>()
-                .UsingJobData(JobKeys.FileId, imageInfo.Id)
+                .UsingJobData(JobKeys.FileId, fileInfo.Id)
                 .UsingJobData(JobKeys.NextJob, "thumbnail")
                 .StoreDurably(true)
                 .Build();

@@ -46,7 +46,7 @@ namespace Jarvis.ImageService.Core.Support
             container.Resolve<IScheduler>().ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<ILogger>(),
                 container.Resolve<IPipelineScheduler>(),
-                container.Resolve<IImageService>()
+                container.Resolve<IFileService>()
             ));
         }
 

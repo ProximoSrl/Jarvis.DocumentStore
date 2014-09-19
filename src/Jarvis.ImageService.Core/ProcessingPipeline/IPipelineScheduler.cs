@@ -5,9 +5,9 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 {
     public interface IPipelineScheduler
     {
-        void QueueThumbnail(ImageInfo imageInfo);
-        void QueuePdfConversion(ImageInfo imageInfo);
-        void QueueHtmlToPdfConversion(ImageInfo imageInfo);
-        void QueueResize(ImageInfo imageInfo);
+        void QueueThumbnail(FileInfo fileInfo);
+        void QueuePdfConversion(FileInfo fileInfo);
+        void QueueHtmlToPdfConversion(FileInfo fileInfo);
+        void QueueResize(FileInfo fileInfo);
     }
 }

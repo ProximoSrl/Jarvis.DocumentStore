@@ -33,7 +33,7 @@ namespace Jarvis.ImageService.Core.Storage
             });
         }
 
-        public IFileStoreDescriptor GetDescriptor(FileId fileId)
+        public IFileStoreHandle GetDescriptor(FileId fileId)
         {
             var s = _gridFs.FindOneById((string)fileId);
             if (s == null)
@@ -42,7 +42,7 @@ namespace Jarvis.ImageService.Core.Storage
                 Logger.DebugFormat(message);
                 throw new Exception(message);
             }
-            return new GridFsFileStoreDescriptor(s);
+            return new GridFsFileStoreHandle(s);
         }
 
         public void Delete(FileId fileId)

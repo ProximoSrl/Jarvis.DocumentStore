@@ -19,7 +19,7 @@ namespace Jarvis.ImageService.Core.Jobs
         public ConfigService ConfigService { get; set; }
         public IFileStore FileStore { get; set; }
         public ILogger Logger { get; set; }
-        public IImageService ImageService { get; set; }
+        public IFileService FileService { get; set; }
 
         public void Execute(IJobExecutionContext context)
         {
@@ -48,7 +48,7 @@ namespace Jarvis.ImageService.Core.Jobs
                             ImageResizer.Shrink(pageStream, destStream, size.Width, size.Height);
                         }
 
-                        ImageService.LinkImage(fileId, size.Name, resizeId);
+                        FileService.LinkImage(fileId, size.Name, resizeId);
                     }
                 }
             }

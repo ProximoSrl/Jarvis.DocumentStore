@@ -18,6 +18,7 @@ using Jarvis.ImageService.Core.Tests.PipelineTests;
 using Jarvis.ImageService.Core.Tests.Support;
 using NSubstitute;
 using NUnit.Framework;
+using FileInfo = System.IO.FileInfo;
 
 namespace Jarvis.ImageService.Core.Tests.ControllerTests
 {
@@ -32,7 +33,7 @@ namespace Jarvis.ImageService.Core.Tests.ControllerTests
         {
             _fileStore = Substitute.For<IFileStore>();
             var pipeline = Substitute.For<IPipelineScheduler>();
-            var imageService = new MongoDbImageService(
+            var imageService = new MongoDbFileService(
                 MongoDbTestConnectionProvider.TestDb,
                 pipeline,
                 _fileStore,

@@ -6,7 +6,7 @@ namespace Jarvis.ImageService.Core.Storage
     public interface IFileStore
     {
         Stream CreateNew(FileId fileId, string fname);
-        IFileStoreDescriptor GetDescriptor(FileId fileId);
+        IFileStoreHandle GetDescriptor(FileId fileId);
         void Delete(FileId fileId);
         string Download(FileId fileId, string folder);
         void Upload(FileId fileId, string pathToFile);

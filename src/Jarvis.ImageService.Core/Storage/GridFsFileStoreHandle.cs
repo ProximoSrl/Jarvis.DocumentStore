@@ -4,11 +4,11 @@ using MongoDB.Driver.GridFS;
 
 namespace Jarvis.ImageService.Core.Storage
 {
-    public class GridFsFileStoreDescriptor : IFileStoreDescriptor
+    public class GridFsFileStoreHandle : IFileStoreHandle
     {
         readonly MongoGridFSFileInfo _mongoGridFsFileInfo;
 
-        public GridFsFileStoreDescriptor(MongoGridFSFileInfo mongoGridFsFileInfo)
+        public GridFsFileStoreHandle(MongoGridFSFileInfo mongoGridFsFileInfo)
         {
             if (mongoGridFsFileInfo == null) throw new ArgumentNullException("mongoGridFsFileInfo");
             _mongoGridFsFileInfo = mongoGridFsFileInfo;

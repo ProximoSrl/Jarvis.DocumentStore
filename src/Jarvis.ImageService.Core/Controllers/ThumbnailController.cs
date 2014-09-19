@@ -13,17 +13,17 @@ namespace Jarvis.ImageService.Core.Controllers
 {
     public class ThumbnailController : ApiController
     {
-        readonly IImageService _imageService;
-        public ThumbnailController(IImageService imageService)
+        readonly IFileService _fileService;
+        public ThumbnailController(IFileService fileService)
         {
-            _imageService = imageService;
+            _fileService = fileService;
         }
 
         [Route("thumbnail/{fileId}/{size}")]
         [HttpGet]
         public HttpResponseMessage GetThumbnail(FileId fileId, string size)
         {
-            var imageDescriptor = _imageService.GetImageDescriptor(fileId, size);
+            var imageDescriptor = _fileService.GetImageDescriptor(fileId, size);
             if (imageDescriptor == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Image not found");
             
