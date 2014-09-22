@@ -8,34 +8,80 @@ using Jarvis.ImageService.Core.Model;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.Services;
 using Jarvis.ImageService.Core.Storage;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 using Newtonsoft.Json;
 using Quartz;
 
 namespace Jarvis.ImageService.Core.Jobs
 {
+    public class JobTracker
+    {
+        public JobKey Id { get; private set; }
+        public string JobType { get; set; }
+        public FileId FileId { get; set; }
+        public DateTime Started { get; set; }
+        public DateTime? Ended { get; set; }
+        public string Message { get; set; }
+
+        public JobTracker(JobKey jobKey, FileId fileId, string jobType)
+        {
+            this.Id = jobKey;
+            this.FileId = fileId;
+            this.JobType = jobType;
+            this.Started = DateTime.Now;
+        }
+    }
+
     public class JobsListener : IJobListener
     {
         readonly IConversionWorkflow _conversionWorkflow;
         readonly ILogger _logger;
+        readonly MongoCollection<JobTracker> _trackerCollection;
 
-        public JobsListener(ILogger logger, IConversionWorkflow conversionWorkflow)
+        public JobsListener(ILogger logger, IConversionWorkflow conversionWorkflow, MongoDatabase db)
         {
             _conversionWorkflow = conversionWorkflow;
             _logger = logger;
+            _trackerCollection = db.GetCollection<JobTracker>("joblog");
         }
-
 
         public void JobToBeExecuted(IJobExecutionContext context)
         {
+            if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
+            {
+                var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+                _logger.DebugFormat(
+                    "Starting job {0} on FileId {1}", 
+                    context.JobDetail.JobType,
+                    fileId
+                );
+
+                _trackerCollection.Save(new JobTracker(
+                    context.JobDetail.Key,
+                    fileId, 
+                    context.JobDetail.JobType.Name
+                ));
+            }
         }
 
         public void JobExecutionVetoed(IJobExecutionContext context)
         {
+            if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
+            {
+                var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+                _logger.DebugFormat(
+                    "Veto on job {0} on FileId {1}",
+                    context.JobDetail.JobType,
+                    fileId
+                );
+            }
         }
 
         public void JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException)
         {
-            if (typeof (AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
+            if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
             {
                 _logger.DebugFormat("Handling job post-execution {0}", context.JobDetail.JobType);
                 HandleFileJob(context, jobException);
@@ -49,6 +95,15 @@ namespace Jarvis.ImageService.Core.Jobs
         void HandleFileJob(IJobExecutionContext context, JobExecutionException jobException)
         {
             var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+
+            string message = jobException != null ? jobException.GetBaseException().Message : null;
+
+            _trackerCollection.Update(
+                Query.EQ("_id", context.JobDetail.Key.ToBsonDocument()),
+                Update<JobTracker>
+                    .Set(x=>x.Ended, DateTime.Now)
+                    .Set(x=>x.Message, message)
+            );
 
             if (jobException != null)
             {

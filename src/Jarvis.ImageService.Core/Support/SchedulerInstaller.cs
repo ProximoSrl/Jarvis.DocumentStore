@@ -13,6 +13,7 @@ using Jarvis.ImageService.Core.Jobs;
 using Jarvis.ImageService.Core.ProcessingPipeline;
 using Jarvis.ImageService.Core.ProcessingPipeline.Pdf;
 using Jarvis.ImageService.Core.Services;
+using MongoDB.Driver;
 using Quartz;
 using Quartz.Impl.MongoDB;
 
@@ -45,7 +46,8 @@ namespace Jarvis.ImageService.Core.Support
 
             container.Resolve<IScheduler>().ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<ILogger>(),
-                container.Resolve<IConversionWorkflow>()
+                container.Resolve<IConversionWorkflow>(),
+                container.Resolve<MongoDatabase>()
             ));
         }
 

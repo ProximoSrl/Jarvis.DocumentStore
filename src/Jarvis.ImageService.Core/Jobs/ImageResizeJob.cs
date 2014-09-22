@@ -26,9 +26,10 @@ namespace Jarvis.ImageService.Core.Jobs
             var jobDataMap = context.JobDetail.JobDataMap;
             var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
             var fileExtension = jobDataMap.GetString(JobKeys.FileExtension);
-            var sizes = jobDataMap.GetString(JobKeys.Sizes).Split('|');
+            var sizesAsString = jobDataMap.GetString(JobKeys.Sizes);
+            var sizes = sizesAsString.Split('|');
 
-            Logger.DebugFormat("Starting resize job for {0} - {1}", fileId, sizes);
+            Logger.DebugFormat("Starting resize job for {0} - {1}", fileId, sizesAsString);
 
             var imageSizes = ConfigService.GetDefaultSizes().Where(x => sizes.Contains(x.Name)).ToArray();
 
@@ -59,7 +60,7 @@ namespace Jarvis.ImageService.Core.Jobs
             Logger.DebugFormat("Deleting file {0}", fileId);
             FileStore.Delete(fileId);
 
-            Logger.DebugFormat("Ended resize job for {0} - {1}", fileId, sizes);
+            Logger.DebugFormat("Ended resize job for {0} - {1}", fileId, sizesAsString);
         }
     }
 }
