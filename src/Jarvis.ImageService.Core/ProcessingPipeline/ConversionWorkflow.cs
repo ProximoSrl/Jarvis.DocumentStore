@@ -129,8 +129,12 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         private ITrigger CreateTrigger()
         {
             var trigger = TriggerBuilder.Create()
+#if DEBUG
                 .StartAt(DateTimeOffset.Now.AddSeconds(15))
-                .Build();
+#else
+                .StartAt(DateTimeOffset.Now)
+#endif
+.Build();
             return trigger;
         }
     }

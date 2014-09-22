@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.ImageService.Host", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.ImageService.Client", "Jarvis.ImageService.Client\Jarvis.ImageService.Client.csproj", "{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.ImageService.Uploader", "Jarvis.ImageService.Uploader\Jarvis.ImageService.Uploader.csproj", "{EB1C4ADB-6179-4228-B1BE-F9996A1A1041}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB1C4ADB-6179-4228-B1BE-F9996A1A1041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB1C4ADB-6179-4228-B1BE-F9996A1A1041}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB1C4ADB-6179-4228-B1BE-F9996A1A1041}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB1C4ADB-6179-4228-B1BE-F9996A1A1041}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
