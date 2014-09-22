@@ -55,8 +55,11 @@ namespace Jarvis.ImageService.Core.Support
             var quartz = new MutableConfiguration("quartz");
             config.Children.Add(quartz);
 
-            quartz.CreateChild("item", "Scheduler")
+            quartz.CreateChild("item", "jarvis")
                     .Attribute("key", "quartz.scheduler.instanceName");
+
+            quartz.CreateChild("item", Environment.MachineName + "-"+DateTime.Now.ToShortTimeString())
+                    .Attribute("key", "quartz.scheduler.instanceId");
 
             quartz.CreateChild("item", "Quartz.Simpl.SimpleThreadPool, Quartz")
                     .Attribute("key", "quartz.threadPool.type");

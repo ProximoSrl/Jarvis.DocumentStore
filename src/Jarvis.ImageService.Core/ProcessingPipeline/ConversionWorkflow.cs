@@ -29,12 +29,10 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 
         public void QueueThumbnail(FileInfo fileInfo)
         {
-            var job = JobBuilder
-                .Create<CreateThumbnailFromPdfJob>()
+            var job = GetBuilderForJob<CreateThumbnailFromPdfJob>()
                 .UsingJobData(JobKeys.FileId, fileInfo.Id)
                 .UsingJobData(JobKeys.FileExtension, ImageFormat)
                 .UsingJobData(JobKeys.NextJob, ResizeJobId)
-                .StoreDurably(true)
                 .Build();
 
             var trigger = CreateTrigger();
@@ -44,12 +42,10 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 
         public void QueueResize(FileInfo fileInfo)
         {
-            var job = JobBuilder
-                .Create<ImageResizeJob>()
+            var job = GetBuilderForJob<ImageResizeJob>()
                 .UsingJobData(JobKeys.FileId, fileInfo.Id)
                 .UsingJobData(JobKeys.FileExtension, ImageFormat)
                 .UsingJobData(JobKeys.Sizes, String.Join("|", fileInfo.Sizes.Select(x => x.Key)))
-                .StoreDurably(true)
                 .Build();
 
             var trigger = CreateTrigger();
@@ -75,16 +71,22 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
             }
         }
 
+        JobBuilder GetBuilderForJob<T>() where T : IJob
+        {
+            return JobBuilder
+                .Create<T>()
+                .RequestRecovery(true)
+                .StoreDurably(false);
+        }
+
         public void QueueLibreOfficeToPdfConversion(FileInfo fileInfo)
         {
             var fileExtension = fileInfo.GetFileExtension();
 
-            var job = JobBuilder
-                .Create<LibreOfficeToPdfJob>()
+            var job = GetBuilderForJob<LibreOfficeToPdfJob>()
                 .UsingJobData(JobKeys.FileId, fileInfo.Id)
                 .UsingJobData(JobKeys.FileExtension, fileExtension)
                 .UsingJobData(JobKeys.NextJob, ThumbnailJobId)
-                .StoreDurably(true)
                 .Build();
 
             var trigger = CreateTrigger();
@@ -94,11 +96,9 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
 
         public void QueueHtmlToPdfConversion(FileInfo fileInfo)
         {
-            var job = JobBuilder
-                .Create<HtmlToPdfJob>()
+            var job = GetBuilderForJob<HtmlToPdfJob>()
                 .UsingJobData(JobKeys.FileId, fileInfo.Id)
                 .UsingJobData(JobKeys.NextJob, ThumbnailJobId)
-                .StoreDurably(true)
                 .Build();
 
             var trigger = CreateTrigger();
@@ -129,7 +129,7 @@ namespace Jarvis.ImageService.Core.ProcessingPipeline
         private ITrigger CreateTrigger()
         {
             var trigger = TriggerBuilder.Create()
-                .StartAt(DateTimeOffset.Now)
+                .StartAt(DateTimeOffset.Now.AddSeconds(15))
                 .Build();
             return trigger;
         }
