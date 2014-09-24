@@ -94,7 +94,7 @@ namespace Jarvis.ImageService.Uploader
 
         static void PrintUsage()
         {
-            Console.WriteLine("Usage: Jarvis.ImageService.Uploader --host hostname");
+            Console.WriteLine("Usage: Jarvis.ImageService.Uploader --host hostname --folder folder");
             Console.WriteLine();
         }
     }

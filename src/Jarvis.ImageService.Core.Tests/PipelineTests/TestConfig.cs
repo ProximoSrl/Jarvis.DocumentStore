@@ -20,6 +20,10 @@ namespace Jarvis.ImageService.Core.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Document.pdf"); }
         }
 
+        public static string PathToEml{
+            get { return Path.Combine(DocumentsFolder, "eml sample.eml"); }
+        }
+
         public static string PathToRTFDocument{
             get { return Path.Combine(DocumentsFolder, "RTF Document.rtf"); }
         }
