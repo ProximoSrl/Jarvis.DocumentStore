@@ -1,0 +1,20 @@
+﻿using System.Diagnostics;
+using System.IO;
+using Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions;
+using NUnit.Framework;
+
+namespace Jarvis.DocumentStore.Tests.PipelineTests
+{
+    [TestFixture]
+    public class ConvertEmailTests
+    {
+        [Test]
+        public void convert()
+        {
+            var task = new MailMessageToHtmlConverterTask();
+            var file = task.Convert(TestConfig.PathToEml, Path.GetTempPath());
+            Debug.WriteLine("Saved to {0}", (object)file);
+            Assert.Inconclusive();
+        }
+    }
+}
