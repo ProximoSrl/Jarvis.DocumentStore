@@ -17,18 +17,9 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                 Logger = new ConsoleLogger()
             };
 
-            var tmpFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(TestConfig.PathToEml));
-            if(File.Exists(tmpFile))
-                File.Delete(tmpFile);
-
-            File.Copy(TestConfig.PathToEml, tmpFile);
-
-            var file = task.Convert(tmpFile, Path.GetTempPath());
+            var file = task.Convert(TestConfig.PathToEml, Path.GetTempPath());
             Debug.WriteLine("Saved to {0}", (object)file);
             
-            if (File.Exists(tmpFile))
-                File.Delete(tmpFile);
-
             Assert.Inconclusive();
         }
     }
