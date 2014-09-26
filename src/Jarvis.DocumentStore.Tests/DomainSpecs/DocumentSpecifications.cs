@@ -31,4 +31,14 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         It DocumentId_should_be_assigned = () =>
             Document.Id.ShouldBeLike(_id);
     }
+
+    public class when_a_document_is_ : DocumentSpecifications
+    {
+        Establish context = () => SetUp(new DocumentState()
+        {
+            
+        });
+
+//        Because of = () => { Document.AddFormat() };
+    }
 }
