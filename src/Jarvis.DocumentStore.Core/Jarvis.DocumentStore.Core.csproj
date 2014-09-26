@@ -93,6 +93,7 @@
   <ItemGroup>
     <Compile Include="Controllers\FileUploadController.cs" />
     <Compile Include="Controllers\ThumbnailController.cs" />
+    <Compile Include="Domain\Document\Document.cs" />
     <Compile Include="Http\FileIdJsonConverter.cs" />
     <Compile Include="Http\FileIdTypeConverter.cs" />
     <Compile Include="Http\FileStoreMultipartStreamProvider.cs" />
@@ -137,6 +138,16 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\cqrs\CQRS.Kernel\CQRS.Kernel.csproj">
+      <Project>{203AD69F-E839-46CF-A25A-0ED22EA1ABF8}</Project>
+      <Name>CQRS.Kernel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\cqrs\CQRS.Shared\CQRS.Shared.csproj">
+      <Project>{70B179ED-C419-4782-B080-0D1678C90279}</Project>
+      <Name>CQRS.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
