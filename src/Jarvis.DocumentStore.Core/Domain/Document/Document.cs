@@ -23,9 +23,9 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Create(DocumentId id)
+        public void Create(DocumentId id, FileId fileId)
         {
-            RaiseEvent(new DocumentCreated(id));
+            RaiseEvent(new DocumentCreated(id, fileId));
         }
 
         public void AddFormat(FormatId formatId, FileId fileId)
@@ -39,13 +39,36 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 RaiseEvent(new FormatAddedToDocument(formatId, fileId));
             }
         }
+
+        public void DeleteFormat(FormatId formatId)
+        {
+            if (!InternalState.HasFormat(formatId))
+            {
+                ThrowDomainException("Format non presente!");
+            }
+            RaiseEvent(new DocumentFormatHasBeenDeleted(formatId));
+        }
+
+        public void Delete()
+        {
+            RaiseEvent(new DocumentDeleted());
+        }
     }
 
     public class DocumentCreated : DomainEvent
     {
-        public DocumentCreated(DocumentId id)
+        public FileId FileId { get; private set; }
+        public DocumentCreated(DocumentId id,FileId fileId)
         {
+            FileId = fileId;
             this.AggregateId = id;
+        }
+    }
+
+    public class DocumentDeleted : DomainEvent
+    {
+        public DocumentDeleted()
+        {
         }
     }
 
@@ -73,12 +96,23 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         }
     }
 
+    public class DocumentFormatHasBeenDeleted : DomainEvent
+    {
+        public FormatId FormatId { get; private set; }
+
+        public DocumentFormatHasBeenDeleted(FormatId formatId)
+        {
+            FormatId = formatId;
+        }
+    }
+
 
     public class DocumentState : AggregateState
     {
         public IDictionary<FormatId, FileId> Formats { get; private set; }
 
-        public DocumentState(params KeyValuePair<FormatId, FileId>[] formats) : this()
+        public DocumentState(params KeyValuePair<FormatId, FileId>[] formats)
+            : this()
         {
             foreach (var keyValuePair in formats)
             {
@@ -99,6 +133,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         void When(FormatAddedToDocument e)
         {
             this.Formats.Add(e.FormatId, e.FileId);
+        }
+
+        void When(DocumentFormatHasBeenDeleted e)
+        {
+            this.Formats.Remove(e.FormatId);
         }
 
         public bool HasFormat(FormatId formatId)

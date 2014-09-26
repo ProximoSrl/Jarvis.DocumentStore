@@ -15,7 +15,9 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     public abstract class DocumentSpecifications : AggregateSpecification<Document, DocumentState>
     {
         protected static readonly DocumentId _id = new DocumentId(1);
-        protected static Document Document {
+        protected static readonly FileId _fileId = new FileId("newFile");
+        protected static Document Document
+        {
             get { return Aggregate; }
         }
     }
@@ -24,7 +26,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         Establish context = () => Create();
 
-        Because of = () => Document.Create(_id);
+        Because of = () => Document.Create(_id,_fileId);
 
         It DocumentCreatedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentCreated>().ShouldBeTrue();
@@ -37,8 +39,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         protected static readonly FormatId xmlFormatId = new FormatId("xml");
         protected static readonly FileId xmlFileId = new FileId("xml");
-        
-        Establish context = () => SetUp(new DocumentState(){});
+
+        Establish context = () => SetUp(new DocumentState() { });
 
         Because of = () => Document.AddFormat(xmlFormatId, xmlFileId);
 
@@ -68,7 +70,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         public class when_xml_format_is_added : document_with_xml_format
         {
             Establish context = () => SetUp(new DocumentState(
-                new KeyValuePair<FormatId,FileId>(xmlFormatId1, xmlFileId1))
+                new KeyValuePair<FormatId, FileId>(xmlFormatId1, xmlFileId1))
             );
 
             Because of = () => Document.AddFormat(xmlFormatId2, xmlFileId2);
@@ -83,5 +85,41 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
                 e.FormatId.ShouldBeTheSameAs(xmlFormatId2);
             };
         }
+    }
+
+    [Subject("DocumentFormats")]
+    public class when_document_format_has_been_deleted:DocumentSpecifications
+    {
+        protected static readonly FormatId xmlFormatId1 = new FormatId("xml");
+        protected static readonly FileId xmlFileId1 = new FileId("xml1");
+
+        private Establish context =
+            () => SetUp(new DocumentState(new KeyValuePair<FormatId, FileId>(xmlFormatId1, xmlFileId1)));
+
+        private Because of = () => Document.DeleteFormat(xmlFormatId1);
+
+        private It DocumentFormatHasBeenDeleted_event_should_have_been_raised =
+            () => EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeTrue();
+
+        private It document_format_do_not_contain_deleted_format =
+            () => Aggregate.InternalState.Formats.ContainsKey(xmlFormatId1).ShouldBeFalse();
+
+        private It document_format_do_not_contain_fileId =
+            () => Aggregate.InternalState.Formats.Values.ShouldNotContain(xmlFileId1);
+    }
+
+    [Subject("DocumentEvents")]
+    public class when_a_document_is_deleted : DocumentSpecifications
+    {
+        private Establish context = () => Create();
+
+        private Because of = () =>
+            {
+                Document.Create(_id,_fileId);
+                Document.Delete();
+            };
+
+        private It DocumentDeleted_event_should_have_been_raised = () =>
+            EventHasBeenRaised<DocumentDeleted>().ShouldBeTrue();
     }
 }
