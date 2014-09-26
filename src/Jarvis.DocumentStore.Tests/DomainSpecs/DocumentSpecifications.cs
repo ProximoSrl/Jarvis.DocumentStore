@@ -108,6 +108,19 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             () => Aggregate.InternalState.Formats.Values.ShouldNotContain(xmlFileId1);
     }
 
+    [Subject("DocumentFormats")]
+    public class when_document_format_deleted_will_be_deleted : DocumentSpecifications
+    {
+        protected static readonly FormatId xmlFormatId1 = new FormatId("xml");
+        private Establish context =
+            () => SetUp(new DocumentState());
+
+        private Because of = () => Document.DeleteFormat(xmlFormatId1);
+
+        private It DocumentFormatHasBeenDeleted_event_should_not_been_raised =
+            () => EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeFalse();
+    }
+
     [Subject("DocumentEvents")]
     public class when_a_document_is_deleted : DocumentSpecifications
     {
