@@ -4,7 +4,7 @@ using Owin;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
-    public class ImageServiceApplication
+    public class DocumentStoreApplication
     {
         public void Configuration(IAppBuilder application)
         {

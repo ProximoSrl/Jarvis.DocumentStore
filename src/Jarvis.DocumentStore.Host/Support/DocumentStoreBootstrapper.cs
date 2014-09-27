@@ -9,13 +9,13 @@ using Microsoft.Owin.Hosting;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
-    public class ImageServiceBootstrapper
+    public class DocumentStoreBootstrapper
     {
         IDisposable _webApplication;
         readonly Uri _serverAddress;
         IWindsorContainer _container;
 
-        public ImageServiceBootstrapper(Uri serverAddress)
+        public DocumentStoreBootstrapper(Uri serverAddress)
         {
             _serverAddress = serverAddress;
         }
@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Host.Support
             );
 
             _container.Resolve<ILogger>().InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
-            _webApplication = WebApp.Start<ImageServiceApplication>(_serverAddress.AbsoluteUri);
+            _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
         }
 
         public void Stop()

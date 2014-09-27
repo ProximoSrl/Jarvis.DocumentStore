@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Client
 {
-    public class ImageServiceClient
+    public class DocumentStoreServiceClient
     {
         readonly Uri _apiRoot;
         public string TempFolder { get; set; }
 
-        public ImageServiceClient(Uri apiRoot)
+        public DocumentStoreServiceClient(Uri apiRoot)
         {
             _apiRoot = apiRoot;
             TempFolder = Path.Combine(Path.GetTempPath(), "jarvis.client");

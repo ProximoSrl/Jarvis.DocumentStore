@@ -67,7 +67,7 @@ namespace Jarvis.DocumentStore.Uploader
             Console.WriteLine("\tFolder: {0}", _folder);
             Console.WriteLine("------------------------------------------");
 
-            var client = new ImageServiceClient(_endPoint);
+            var client = new DocumentStoreServiceClient(_endPoint);
             int counter = 1;
 
             Parallel.ForEach(Directory.GetFiles(_folder), file =>

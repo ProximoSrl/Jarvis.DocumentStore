@@ -9,12 +9,12 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     [TestFixture, Explicit]
     public class ClientIntegrationTests
     {
-        ImageServiceBootstrapper _app;
+        DocumentStoreBootstrapper _app;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            _app = new ImageServiceBootstrapper(TestConfig.ServerAddress);
+            _app = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _app.Start();
         }
 
@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [Test]
         public void should_upload_all_documents()
         {
-            var client = new ImageServiceClient(TestConfig.ServerAddress);
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress);
 
             Task.WaitAll(
                 client.Upload(TestConfig.PathToWordDocument, "docx"),

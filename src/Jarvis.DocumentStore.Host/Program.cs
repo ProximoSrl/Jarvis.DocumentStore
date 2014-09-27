@@ -12,9 +12,9 @@ namespace Jarvis.DocumentStore.Host
             {
                 host.UseOldLog4Net("log4net.config");
 
-                host.Service<ImageServiceBootstrapper>(service =>
+                host.Service<DocumentStoreBootstrapper>(service =>
                 {
-                    service.ConstructUsing(() => new ImageServiceBootstrapper( new Uri("http://localhost:5123")));
+                    service.ConstructUsing(() => new DocumentStoreBootstrapper( new Uri("http://localhost:5123")));
                     service.WhenStarted(s => s.Start());
                     service.WhenStopped(s => s.Stop());
                 });

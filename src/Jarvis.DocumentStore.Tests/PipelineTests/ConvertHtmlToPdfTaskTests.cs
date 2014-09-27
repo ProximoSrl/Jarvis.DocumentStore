@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             MongoDbTestConnectionProvider.TestDb.Drop();
             _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.TestDb);
 
-            var client = new ImageServiceClient(TestConfig.ServerAddress);
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress);
             var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
             _fileStore.Upload(new FileId("ziphtml"), zipped);
         }
