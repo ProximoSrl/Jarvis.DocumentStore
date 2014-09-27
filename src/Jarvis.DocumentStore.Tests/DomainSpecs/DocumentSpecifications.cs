@@ -38,12 +38,12 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
     public class when_a_format_is_added_to_a_document : DocumentSpecifications
     {
-        protected static readonly FormatId xmlFormatId = new FormatId("xml");
-        protected static readonly FileId xmlFileId = new FileId("xml");
+        protected static readonly FormatValue XmlFormatValue = new FormatValue("xml");
+        protected static readonly FileId XmlFileId = new FileId("xml");
 
         Establish context = () => SetUp(new DocumentState() { });
 
-        Because of = () => Document.AddFormat(xmlFormatId, xmlFileId);
+        Because of = () => Document.AddFormat(XmlFormatValue, XmlFileId);
 
         It FormatAddedToDocument_event_should_have_been_raised = () =>
             EventHasBeenRaised<FormatAddedToDocument>().ShouldBeTrue();
@@ -51,27 +51,27 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         It event_should_have_file_and_format_id = () =>
         {
             var e = RaisedEvent<FormatAddedToDocument>();
-            e.FileId.ShouldBeTheSameAs(xmlFileId);
-            e.FormatId.ShouldBeTheSameAs(xmlFormatId);
+            e.FileId.ShouldBeTheSameAs(XmlFileId);
+            e.FormatValue.ShouldBeTheSameAs(XmlFormatValue);
         };
 
         It state_should_have_xml_format = () =>
-            State.HasFormat(new FormatId("XML")).ShouldBeTrue();
+            State.HasFormat(new FormatValue("XML")).ShouldBeTrue();
     }
 
     [Subject("document with xml format")]
     public class document_with_xml_format : DocumentSpecifications
     {
-        protected static readonly FormatId xmlFormatId1 = new FormatId("xml");
+        protected static readonly FormatValue xmlFormatId1 = new FormatValue("xml");
         protected static readonly FileId xmlFileId1 = new FileId("xml1");
 
-        protected static readonly FormatId xmlFormatId2 = new FormatId("xml");
+        protected static readonly FormatValue xmlFormatId2 = new FormatValue("xml");
         protected static readonly FileId xmlFileId2 = new FileId("xml1");
 
         public class when_xml_format_is_added : document_with_xml_format
         {
             Establish context = () => SetUp(new DocumentState(
-                new KeyValuePair<FormatId, FileId>(xmlFormatId1, xmlFileId1))
+                new KeyValuePair<FormatValue, FileId>(xmlFormatId1, xmlFileId1))
             );
 
             Because of = () => Document.AddFormat(xmlFormatId2, xmlFileId2);
@@ -83,7 +83,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             {
                 var e = RaisedEvent<DocumentFormatHasBeenUpdated>();
                 e.FileId.ShouldBeTheSameAs(xmlFileId2);
-                e.FormatId.ShouldBeTheSameAs(xmlFormatId2);
+                e.FormatValue.ShouldBeTheSameAs(xmlFormatId2);
             };
         }
     }
@@ -91,11 +91,11 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     [Subject("DocumentFormats")]
     public class when_document_format_has_been_deleted:DocumentSpecifications
     {
-        protected static readonly FormatId xmlFormatId1 = new FormatId("xml");
+        protected static readonly FormatValue xmlFormatId1 = new FormatValue("xml");
         protected static readonly FileId xmlFileId1 = new FileId("xml1");
 
         private Establish context =
-            () => SetUp(new DocumentState(new KeyValuePair<FormatId, FileId>(xmlFormatId1, xmlFileId1)));
+            () => SetUp(new DocumentState(new KeyValuePair<FormatValue, FileId>(xmlFormatId1, xmlFileId1)));
 
         private Because of = () => Document.DeleteFormat(xmlFormatId1);
 
@@ -112,7 +112,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     [Subject("DocumentFormats")]
     public class when_document_format_deleted_will_be_deleted : DocumentSpecifications
     {
-        protected static readonly FormatId xmlFormatId1 = new FormatId("xml");
+        protected static readonly FormatValue xmlFormatId1 = new FormatValue("xml");
         private Establish context =
             () => SetUp(new DocumentState());
 

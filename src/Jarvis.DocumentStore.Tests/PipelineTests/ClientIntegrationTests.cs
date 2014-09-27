@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             _app = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _app.Start();
-//            Thread.Sleep(3000);
+            Thread.Sleep(3000);
         }
 
         [TestFixtureTearDown]
@@ -32,18 +32,29 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             var client = new DocumentStoreServiceClient(TestConfig.ServerAddress);
 
             Task.WaitAll(
-                client.Upload(TestConfig.PathToWordDocument, "docx"),
-                client.Upload(TestConfig.PathToExcelDocument, "xlsx"),
-                client.Upload(TestConfig.PathToPowerpointDocument, "pptx"),
-                client.Upload(TestConfig.PathToPowerpointShow, "ppsx"),
-                client.Upload(TestConfig.PathToOpenDocumentText, "odt"),
-                client.Upload(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
-                client.Upload(TestConfig.PathToOpenDocumentPresentation, "odp"),
-                client.Upload(TestConfig.PathToRTFDocument, "rtf"),
+                //client.Upload(TestConfig.PathToWordDocument, "docx"),
+                //client.Upload(TestConfig.PathToExcelDocument, "xlsx"),
+                //client.Upload(TestConfig.PathToPowerpointDocument, "pptx"),
+                //client.Upload(TestConfig.PathToPowerpointShow, "ppsx"),
+                //client.Upload(TestConfig.PathToOpenDocumentText, "odt"),
+                //client.Upload(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
+                //client.Upload(TestConfig.PathToOpenDocumentPresentation, "odp"),
+                //client.Upload(TestConfig.PathToRTFDocument, "rtf"),
                 client.Upload(TestConfig.PathToHtml, "html")
             );
 
             Debug.WriteLine("Done");
+        }
+    }
+
+    [TestFixture, Explicit]
+    public class upload_single_file
+    {
+        [Test]
+        public void upload()
+        {
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress);
+            client.Upload(TestConfig.PathToWordDocument, "doc").Wait();
         }
     }
 }

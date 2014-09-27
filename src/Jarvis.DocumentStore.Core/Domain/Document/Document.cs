@@ -26,23 +26,23 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             RaiseEvent(new DocumentCreated(id, fileId));
         }
 
-        public void AddFormat(FormatId formatId, FileId fileId)
+        public void AddFormat(FormatValue formatValue, FileId fileId)
         {
-            if (InternalState.HasFormat(formatId))
+            if (InternalState.HasFormat(formatValue))
             {
-                RaiseEvent(new DocumentFormatHasBeenUpdated(formatId, fileId));
+                RaiseEvent(new DocumentFormatHasBeenUpdated(formatValue, fileId));
             }
             else
             {
-                RaiseEvent(new FormatAddedToDocument(formatId, fileId));
+                RaiseEvent(new FormatAddedToDocument(formatValue, fileId));
             }
         }
 
-        public void DeleteFormat(FormatId formatId)
+        public void DeleteFormat(FormatValue formatValue)
         {
-            if (InternalState.HasFormat(formatId))
+            if (InternalState.HasFormat(formatValue))
             {
-                RaiseEvent(new DocumentFormatHasBeenDeleted(formatId));
+                RaiseEvent(new DocumentFormatHasBeenDeleted(formatValue));
             }
         }
 

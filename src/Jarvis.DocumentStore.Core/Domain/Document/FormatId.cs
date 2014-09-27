@@ -2,10 +2,10 @@ using CQRS.Shared.IdentitySupport;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
-    public class FormatId : LowercaseStringId
+    public class FormatValue : LowercaseStringValue
     {
-        public FormatId(string id)
-            : base(id)
+        public FormatValue(string value)
+            : base(value)
         {
         }
     }

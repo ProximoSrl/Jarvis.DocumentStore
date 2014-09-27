@@ -10,9 +10,9 @@ namespace Jarvis.DocumentStore.Core.Model
 {
     [BsonSerializer(typeof(FileIdSerializer))]
     [TypeConverter(typeof(FileIdTypeConverter))]
-    public class FileId : LowercaseStringId
+    public class FileId : LowercaseStringValue
     {
-        public FileId(string id) : base(id)
+        public FileId(string value) : base(value)
         {
         }
     }

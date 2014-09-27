@@ -4,11 +4,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 {
     public class DocumentFormatHasBeenDeleted : DomainEvent
     {
-        public FormatId FormatId { get; private set; }
+        public FormatValue FormatValue { get; private set; }
 
-        public DocumentFormatHasBeenDeleted(FormatId formatId)
+        public DocumentFormatHasBeenDeleted(FormatValue formatValue)
         {
-            FormatId = formatId;
+            FormatValue = formatValue;
         }
     }
 }

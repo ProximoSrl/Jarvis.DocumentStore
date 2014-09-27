@@ -7,9 +7,9 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 {
     public class DocumentState : AggregateState
     {
-        public IDictionary<FormatId, FileId> Formats { get; private set; }
+        public IDictionary<FormatValue, FileId> Formats { get; private set; }
 
-        public DocumentState(params KeyValuePair<FormatId, FileId>[] formats)
+        public DocumentState(params KeyValuePair<FormatValue, FileId>[] formats)
             : this()
         {
             foreach (var keyValuePair in formats)
@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public DocumentState()
         {
-            this.Formats = new Dictionary<FormatId, FileId>();
+            this.Formats = new Dictionary<FormatValue, FileId>();
         }
 
         void When(DocumentCreated e)
@@ -30,17 +30,17 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         void When(FormatAddedToDocument e)
         {
-            this.Formats.Add(e.FormatId, e.FileId);
+            this.Formats.Add(e.FormatValue, e.FileId);
         }
 
         void When(DocumentFormatHasBeenDeleted e)
         {
-            this.Formats.Remove(e.FormatId);
+            this.Formats.Remove(e.FormatValue);
         }
 
-        public bool HasFormat(FormatId formatId)
+        public bool HasFormat(FormatValue formatValue)
         {
-            return Formats.ContainsKey(formatId);
+            return Formats.ContainsKey(formatValue);
         }
     }
 }

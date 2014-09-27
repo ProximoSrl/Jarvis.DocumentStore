@@ -29,6 +29,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _identityGenerator = identityGenerator;
         }
 
+        [Route("file/upload/status")]
+        [HttpGet]
+        public string Status()
+        {
+            return "ok";
+        }
+
         [Route("file/upload/{fileId}")]
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(FileId fileId)
@@ -44,7 +51,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             var documentId = _identityGenerator.New<DocumentId>();
-            _commandBus.SendLocal(new CreateDocument(documentId, fileId));
+            _commandBus.SendLocal(new CreateDocument(documentId, fileId), "ds");
 
             return Request.CreateResponse(HttpStatusCode.OK, documentId);
         }
