@@ -90,8 +90,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\FileUploadController.cs" />
-    <Compile Include="Controllers\ThumbnailController.cs" />
     <Compile Include="Domain\Document\Document.cs" />
     <Compile Include="Domain\Document\DocumentId.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
@@ -103,7 +101,6 @@
     <Compile Include="Domain\Document\FormatId.cs" />
     <Compile Include="Http\FileIdJsonConverter.cs" />
     <Compile Include="Http\FileIdTypeConverter.cs" />
-    <Compile Include="Http\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />
@@ -136,7 +133,6 @@
     <Compile Include="Storage\GridFsFileStoreHandle.cs" />
     <Compile Include="Storage\IFileStore.cs" />
     <Compile Include="Storage\IFileStoreHandle.cs" />
-    <Compile Include="Support\ApiInstaller.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
     <Compile Include="Support\SchedulerInstaller.cs" />

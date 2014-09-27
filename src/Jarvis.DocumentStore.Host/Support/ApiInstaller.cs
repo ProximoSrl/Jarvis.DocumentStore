@@ -3,7 +3,7 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 
-namespace Jarvis.DocumentStore.Core.Support
+namespace Jarvis.DocumentStore.Host.Support
 {
     public class ApiInstaller : IWindsorInstaller
     {

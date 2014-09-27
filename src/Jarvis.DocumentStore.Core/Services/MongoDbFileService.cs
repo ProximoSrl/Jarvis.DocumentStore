@@ -53,35 +53,7 @@ namespace Jarvis.DocumentStore.Core.Services
             Save(fi);
         }
 
-        public async Task<string> UploadFromHttpContent(HttpContent httpContent, FileId fileId)
-        {
-            if (httpContent == null || !httpContent.IsMimeMultipartContent())
-            {
-                return "Attachment not found!";
-            }
 
-            var provider = await httpContent.ReadAsMultipartAsync(
-                new FileStoreMultipartStreamProvider(_fileStore, fileId,_config)
-            );
-
-            if (provider.Filename == null)
-            {
-                return "Attachment not found!";
-            }
-
-            if (provider.IsInvalidFile)
-            {
-                return string.Format("Unsupported file {0}", provider.Filename);
-            }
-
-            Create(
-                fileId,
-                provider.Filename,
-                _config.GetDefaultSizes()
-            );
-
-            return null;
-        }
 
         public IFileStoreHandle GetImageDescriptor(FileId fileId, string size)
         {

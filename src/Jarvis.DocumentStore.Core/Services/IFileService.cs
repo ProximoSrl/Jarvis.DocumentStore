@@ -19,14 +19,6 @@ namespace Jarvis.DocumentStore.Core.Services
         void LinkImage(FileId fileId, string size, FileId imageId);
 
         /// <summary>
-        /// Upload a file sent in an http request
-        /// </summary>
-        /// <param name="httpContent">request's content</param>
-        /// <param name="fileId">Id of the new file</param>
-        /// <returns>Error message or null</returns>
-        Task<string> UploadFromHttpContent(HttpContent httpContent, FileId fileId);
-        
-        /// <summary>
         /// Get the file descriptor for the required thumbnail size
         /// </summary>
         /// <param name="fileId">Id of the file</param>

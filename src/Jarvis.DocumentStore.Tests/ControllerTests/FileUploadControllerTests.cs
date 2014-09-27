@@ -4,11 +4,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Hosting;
-using Jarvis.DocumentStore.Core.Controllers;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Host.Controllers;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using NSubstitute;
@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 new ConfigService()
             );
 
-            _controller = new FileUploadController(imageService, workflow)
+            _controller = new FileUploadController(workflow, _fileStore, new ConfigService())
             {
                 Request = new HttpRequestMessage() 
             };

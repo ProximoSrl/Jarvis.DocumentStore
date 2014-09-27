@@ -113,8 +113,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\FileUploadController.cs" />
+    <Compile Include="Controllers\ThumbnailController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\FileStoreMultipartStreamProvider.cs" />
+    <Compile Include="Support\ApiInstaller.cs" />
     <Compile Include="Support\ContainerAccessor.cs" />
     <Compile Include="Support\DocumentStoreBootstrapper.cs" />
     <Compile Include="Support\DocumentStoreApplication.cs" />
@@ -129,6 +133,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\cqrs\CQRS.Kernel\CQRS.Kernel.csproj">
+      <Project>{203ad69f-e839-46cf-a25a-0ed22ea1abf8}</Project>
+      <Name>CQRS.Kernel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\cqrs\CQRS.Shared\CQRS.Shared.csproj">
+      <Project>{70b179ed-c419-4782-b080-0d1678c90279}</Project>
+      <Name>CQRS.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Core\Jarvis.DocumentStore.Core.csproj">
       <Project>{A03810AE-2905-4CEE-A5D9-5E25C9A6309A}</Project>
       <Name>Jarvis.DocumentStore.Core</Name>

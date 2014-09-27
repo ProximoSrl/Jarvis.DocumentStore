@@ -5,7 +5,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 
-namespace Jarvis.DocumentStore.Core.Http
+namespace Jarvis.DocumentStore.Host.Providers
 {
     public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider
     {

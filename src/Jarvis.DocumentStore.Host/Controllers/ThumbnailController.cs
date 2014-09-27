@@ -5,7 +5,7 @@ using System.Web.Http;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 
-namespace Jarvis.DocumentStore.Core.Controllers
+namespace Jarvis.DocumentStore.Host.Controllers
 {
     public class ThumbnailController : ApiController
     {
