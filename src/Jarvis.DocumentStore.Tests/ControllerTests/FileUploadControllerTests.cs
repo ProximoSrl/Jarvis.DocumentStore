@@ -4,8 +4,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Hosting;
+using CQRS.Shared.Commands;
+using CQRS.Shared.IdentitySupport;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Controllers;
@@ -27,14 +28,15 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void SetUp()
         {
             _fileStore = Substitute.For<IFileStore>();
-            var workflow = Substitute.For<IConversionWorkflow>();
+            var cmdBus = Substitute.For<ICommandBus>();
+            var im = Substitute.For<IIdentityGenerator>();
             var imageService = new MongoDbFileService(
                 MongoDbTestConnectionProvider.TestDb,
                 _fileStore,
                 new ConfigService()
             );
 
-            _controller = new FileUploadController(workflow, _fileStore, new ConfigService())
+            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im)
             {
                 Request = new HttpRequestMessage() 
             };

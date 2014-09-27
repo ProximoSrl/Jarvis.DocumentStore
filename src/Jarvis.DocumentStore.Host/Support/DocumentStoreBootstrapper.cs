@@ -32,6 +32,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 new ApiInstaller(), 
                 new CoreInstaller(connectionString),
                 new SchedulerInstaller(connectionString),
+                new EventStoreInstaller(),
                 new BusInstaller()
             );
 

@@ -13,7 +13,9 @@ using CQRS.Bus.Rebus.Integration.Adapters;
 using CQRS.Bus.Rebus.Integration.Support;
 using CQRS.Kernel.Commands;
 using CQRS.Shared.Commands;
+using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.CommandHandlers;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -21,7 +23,9 @@ namespace Jarvis.DocumentStore.Host.Support
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            string connectionString = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
+            string connectionString = ConfigurationManager.ConnectionStrings["rebus"].ConnectionString;
+            var logUrl = new MongoUrl(ConfigurationManager.ConnectionStrings["log"].ConnectionString);
+            var logDb = new MongoClient(logUrl).GetServer().GetDatabase(logUrl.DatabaseName);
             
             container.Register(
                 Component
@@ -45,7 +49,11 @@ namespace Jarvis.DocumentStore.Host.Support
                     .StartUsingMethod(x => x.Start),
                 Component
                     .For<ICommandBus>()
-                    .ImplementedBy<RebusCommandBus>()
+                    .ImplementedBy<RebusCommandBus>(),
+                Component
+                    .For<IMessagesTracker>()
+                    .ImplementedBy<MongoDbMessagesTracker>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(logDb))
                 );
         }
     }

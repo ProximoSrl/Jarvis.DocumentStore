@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Host.Support;
@@ -16,6 +17,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             _app = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _app.Start();
+//            Thread.Sleep(3000);
         }
 
         [TestFixtureTearDown]

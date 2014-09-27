@@ -2,6 +2,10 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using CQRS.Shared.Commands;
+using CQRS.Shared.IdentitySupport;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.Services;
@@ -13,13 +17,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
     public class FileUploadController : ApiController
     {
         readonly IFileStore _fileStore;
-        readonly IConversionWorkflow _conversionWorkflow;
         readonly ConfigService _configService;
-        public FileUploadController(IConversionWorkflow conversionWorkflow, IFileStore fileStore, ConfigService configService)
+        readonly ICommandBus _commandBus;
+        readonly IIdentityGenerator _identityGenerator;
+
+        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator)
         {
-            _conversionWorkflow = conversionWorkflow;
             _fileStore = fileStore;
             _configService = configService;
+            _commandBus = commandBus;
+            _identityGenerator = identityGenerator;
         }
 
         [Route("file/upload/{fileId}")]
@@ -36,9 +43,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            _conversionWorkflow.Start(fileId);
+            var documentId = _identityGenerator.New<DocumentId>();
+            _commandBus.SendLocal(new CreateDocument(documentId, fileId));
 
-            return Request.CreateResponse(HttpStatusCode.OK, fileId);
+            return Request.CreateResponse(HttpStatusCode.OK, documentId);
         }
 
         /// <summary>
