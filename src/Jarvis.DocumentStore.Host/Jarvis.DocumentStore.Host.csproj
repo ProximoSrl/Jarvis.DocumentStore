@@ -119,6 +119,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Support\ApiInstaller.cs" />
+    <Compile Include="Support\BusInstaller.cs" />
     <Compile Include="Support\ContainerAccessor.cs" />
     <Compile Include="Support\DocumentStoreBootstrapper.cs" />
     <Compile Include="Support\DocumentStoreApplication.cs" />
@@ -133,6 +134,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\cqrs\CQRS.Bus.Rebus.Integration\CQRS.Bus.Rebus.Integration.csproj">
+      <Project>{804D09EF-0E40-4C7C-8064-ADD92B7DE03F}</Project>
+      <Name>CQRS.Bus.Rebus.Integration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\cqrs\CQRS.Kernel\CQRS.Kernel.csproj">
       <Project>{203ad69f-e839-46cf-a25a-0ed22ea1abf8}</Project>
       <Name>CQRS.Kernel</Name>

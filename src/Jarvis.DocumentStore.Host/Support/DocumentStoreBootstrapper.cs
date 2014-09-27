@@ -31,7 +31,8 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.Install(
                 new ApiInstaller(), 
                 new CoreInstaller(connectionString),
-                new SchedulerInstaller(connectionString)
+                new SchedulerInstaller(connectionString),
+                new BusInstaller()
             );
 
             _container.Resolve<ILogger>().InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
