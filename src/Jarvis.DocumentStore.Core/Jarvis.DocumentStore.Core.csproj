@@ -45,7 +45,8 @@
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
     </Reference>
     <Reference Include="GraphicsMagick.NET-AnyCPU">
-      <HintPath>..\packages\GraphicsMagick.NET-Q8-AnyCPU.1.3.20.1\lib\net40-client\GraphicsMagick.NET-AnyCPU.dll</HintPath>
+      <HintPath>..\packages\GraphicsMagick.NET-Q8-AnyCPU.1.3.20.2\lib\net40-client\GraphicsMagick.NET-AnyCPU.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="MongoDB.Bson">
       <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Bson.dll</HintPath>
@@ -101,6 +102,7 @@
     <Compile Include="Domain\Document\Events\DocumentFormatHasBeenUpdated.cs" />
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\FormatId.cs" />
+    <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />
@@ -123,6 +125,7 @@
     <Compile Include="ProcessingPipeline\ConversionWorkflow.cs" />
     <Compile Include="ProcessingPipeline\Tools\ImageResizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadModel\DocumentReadModel.cs" />
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Services\IFileService.cs" />
     <Compile Include="Services\MongoDbFileService.cs" />
@@ -132,6 +135,7 @@
     <Compile Include="Storage\IFileStoreHandle.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
+    <Compile Include="Support\ProjectionsInstaller.cs" />
     <Compile Include="Support\SchedulerInstaller.cs" />
     <Compile Include="Support\SizeInfoHelper.cs" />
   </ItemGroup>
