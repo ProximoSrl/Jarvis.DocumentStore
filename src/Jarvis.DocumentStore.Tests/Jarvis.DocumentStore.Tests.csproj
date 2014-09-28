@@ -129,7 +129,7 @@
     <Compile Include="DomainSpecs\DocumentSpecifications.cs" />
     <Compile Include="Misc\ClassWithFileId.cs" />
     <Compile Include="Misc\FileIdJsonConverterTests.cs" />
-    <Compile Include="Misc\FileIdMongoTests.cs" />
+    <Compile Include="Misc\StringValueMongoTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />
     <Compile Include="PipelineTests\ConvertEmailTests.cs" />

@@ -1,6 +1,5 @@
 using System.Net.Http;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Http;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using MongoDB.Driver;

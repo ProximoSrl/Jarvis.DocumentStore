@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CQRS.Shared.Domain;
 using CQRS.Shared.IdentitySupport;
-using Jarvis.DocumentStore.Core.Http;
 using Jarvis.DocumentStore.Core.Storage;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Jarvis.DocumentStore.Core.Model
 {
-    [BsonSerializer(typeof(FileIdSerializer))]
-    [TypeConverter(typeof(FileIdTypeConverter))]
+    [BsonSerializer(typeof(StringValueSerializer))]
     public class FileId : LowercaseStringValue
     {
         public FileId(string value) : base(value)

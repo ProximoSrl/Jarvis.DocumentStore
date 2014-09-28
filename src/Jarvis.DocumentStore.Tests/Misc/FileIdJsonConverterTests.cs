@@ -1,4 +1,4 @@
-using Jarvis.DocumentStore.Core.Http;
+using CQRS.Shared.Domain;
 using Jarvis.DocumentStore.Core.Model;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Tests.Misc
             {
                 Converters = new JsonConverter[]
                 {
-                    new FileIdJsonConverter()
+                    new StringValueJsonConverter()
                 }
             };
         }

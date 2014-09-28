@@ -1,5 +1,5 @@
 using System.Web.Http;
-using Jarvis.DocumentStore.Core.Http;
+using CQRS.Shared.Domain;
 using Owin;
 
 namespace Jarvis.DocumentStore.Host.Support
@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Host.Support
             };
 
             config.MapHttpAttributeRoutes();
-            config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new FileIdJsonConverter());
+            config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());
 
             application.UseWebApi(config);
         }

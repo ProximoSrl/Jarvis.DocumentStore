@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace Jarvis.DocumentStore.Tests.Misc
 {
     [TestFixture]
-    public class FileIdMongoTests
+    public class StringValueMongoTests
     {
         [Test]
         public void should_serialize()
