@@ -9,6 +9,7 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Jarvis.DocumentStore.Core.Model
 {
     [BsonSerializer(typeof(StringValueSerializer))]
+    [TypeConverter(typeof(StringValueTypeConverter<FileId>))]
     public class FileId : LowercaseStringValue
     {
         public FileId(string value) : base(value)
