@@ -19,6 +19,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public DocumentProjection(ICollectionWrapper<DocumentReadModel, DocumentId> documents)
         {
             _documents = documents;
+            _documents.Attach(this,false);
         }
 
         public override void Drop()
