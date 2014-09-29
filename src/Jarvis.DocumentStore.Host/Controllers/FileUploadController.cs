@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Castle.Core.Logging;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
 using Jarvis.DocumentStore.Core.Domain.Document;
@@ -20,6 +21,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly ICommandBus _commandBus;
         readonly IIdentityGenerator _identityGenerator;
+
+        public ILogger Logger { get; set; }
 
         public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator)
         {
@@ -40,7 +43,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(FileId fileId)
         {
+            Logger.DebugFormat("Incoming file {0}", fileId);
             var errorMessage = await UploadFromHttpContent(Request.Content, fileId);
+            Logger.DebugFormat("File {0} processed with message {1}", fileId, errorMessage);
 
             if (errorMessage != null)
             {
@@ -52,6 +57,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             var documentId = _identityGenerator.New<DocumentId>();
             _commandBus.SendLocal(new CreateDocument(documentId, fileId), "ds");
+
+            Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 
             return Request.CreateResponse(HttpStatusCode.OK, documentId);
         }
