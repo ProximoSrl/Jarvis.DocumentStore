@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CQRS.Kernel.Engine;
 using CQRS.TestHelpers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
@@ -34,6 +35,25 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         It DocumentId_should_be_assigned = () =>
             Document.Id.ShouldBeTheSameAs(_id);
+    }
+
+    public class when_a_document_is_created_twice : DocumentSpecifications
+    {
+        private static Exception _ex;
+        private Establish context = () =>
+        {
+            Create();
+            Document.Create(_id, _fileId);
+        };
+        
+        Because of = () => _ex = Catch.Exception(()=> Document.Create(_id, _fileId));
+
+        private It a_domain_exception_should_be_thrown = () =>
+        {
+            _ex.ShouldNotBeNull();
+            _ex.ShouldBeAssignableTo<DomainException>();
+            _ex.ShouldContainErrorMessage("Already created");
+        };
     }
 
     public class when_a_format_is_added_to_a_document : DocumentSpecifications

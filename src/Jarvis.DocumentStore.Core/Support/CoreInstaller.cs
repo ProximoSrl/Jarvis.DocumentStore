@@ -1,4 +1,5 @@
-﻿using Castle.MicroKernel.Registration;
+﻿using System.Configuration;
+using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions;
@@ -19,6 +20,9 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            var sysUrl = new MongoUrl(ConfigurationManager.ConnectionStrings["system"].ConnectionString);
+            var sysdb = new MongoClient(sysUrl).GetServer().GetDatabase(sysUrl.DatabaseName);
+            
             container.Register(
                 Component
                     .For<IFileStore>()
@@ -31,6 +35,10 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<LibreOfficeConversion>()
                     .LifestyleTransient(),
+                Component
+                    .For<IDocumentMapper>()
+                    .ImplementedBy<DocumentMapper>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb)),
                 Component
                     .For<MongoDatabase>()
                     .Instance(GetDatabase())

@@ -23,6 +23,9 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Create(DocumentId id, FileId fileId)
         {
+            if(HasBeenCreated)
+                throw new DomainException((IIdentity) id, "Already created");
+
             RaiseEvent(new DocumentCreated(id, fileId));
         }
 
