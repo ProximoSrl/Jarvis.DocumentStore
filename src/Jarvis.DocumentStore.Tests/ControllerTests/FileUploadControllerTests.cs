@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Hosting;
+using Castle.Core.Logging;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
 using Jarvis.DocumentStore.Core.Model;
@@ -38,7 +39,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im)
             {
-                Request = new HttpRequestMessage() 
+                Request = new HttpRequestMessage(),
+                Logger = new ConsoleLogger()
             };
 
             _controller.Request.Properties.Add(HttpPropertyKeys.HttpConfigurationKey, new HttpConfiguration());
