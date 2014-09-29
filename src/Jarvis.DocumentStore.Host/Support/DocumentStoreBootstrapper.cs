@@ -6,8 +6,11 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using CQRS.Kernel.ProjectionEngine;
+using CQRS.Shared.Messages;
+using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
+using Rebus;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -38,7 +41,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 new SchedulerInstaller(connectionString),
                 new EventStoreInstaller(),
                 new BusInstaller(),
-                new ProjectionsInstaller()
+                new ProjectionsInstaller<NotifyReadModelChanges>()
             );
 
             _container.Resolve<ILogger>().InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
@@ -50,6 +53,21 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             _webApplication.Dispose();
             _container.Dispose();
+        }
+    }
+
+    public class NotifyReadModelChanges : INotifyToSubscribers
+    {
+        private readonly IBus _bus;
+
+        public NotifyReadModelChanges(IBus bus)
+        {
+            _bus = bus;
+        }
+
+        public void Send(object msg)
+        {
+            _bus.Publish(msg);
         }
     }
 }

@@ -11,13 +11,15 @@ using Castle.Windsor;
 using CQRS.Kernel.Events;
 using CQRS.Kernel.ProjectionEngine;
 using CQRS.Kernel.ProjectionEngine.Client;
+using CQRS.Shared.Messages;
+using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.EventHandlers;
 using MongoDB.Driver;
 using NEventStore;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
-    public class ProjectionsInstaller : IWindsorInstaller
+    public class ProjectionsInstaller<TNotifier> : IWindsorInstaller where TNotifier :INotifyToSubscribers
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
@@ -39,6 +41,10 @@ namespace Jarvis.DocumentStore.Core.Support
                     .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
                     .StartUsingMethod(x => x.Start)
                     .StopUsingMethod(x => x.Stop),
+                Classes
+                    .FromAssemblyContaining<DocumentProjection>()
+                    .BasedOn<IProjection>()
+                    .WithServiceAllInterfaces(),
                 Component
                     .For<IInitializeReadModelDb>()
                     .ImplementedBy<InitializeReadModelDb>(),
@@ -48,6 +54,21 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<IHousekeeper>()
                     .ImplementedBy<NullHouseKeeper>(),
+                Component
+                    .For<INotifyToSubscribers>()
+                    .ImplementedBy<TNotifier>(),
+                Component
+                    .For(new Type[]
+                        {
+                            typeof (ICollectionWrapper<,>),
+                            typeof (IReadOnlyCollectionWrapper<,>)
+                        })
+                    .ImplementedBy(typeof(CollectionWrapper<,>))
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
+                Component
+                    .For(typeof(IReader<,>), typeof(IMongoDbReader<,>))
+                    .ImplementedBy(typeof(MongoReaderForProjections<,>))
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 //Component
                 //    .For<IProjection>()
                 //    .ImplementedBy<DispatchEventsOnBusProjection>(),
@@ -78,4 +99,5 @@ namespace Jarvis.DocumentStore.Core.Support
             
         }
     }
+
 }

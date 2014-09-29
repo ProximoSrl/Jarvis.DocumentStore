@@ -89,6 +89,10 @@
     <Reference Include="Quartz.Impl.MongoDB">
       <HintPath>..\..\libs\quartz-mongo\Quartz.Impl.MongoDB.dll</HintPath>
     </Reference>
+    <Reference Include="Rebus, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rebus.0.71.1\lib\NET40\Rebus.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
