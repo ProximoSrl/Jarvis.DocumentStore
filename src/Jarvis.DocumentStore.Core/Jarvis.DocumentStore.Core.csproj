@@ -57,6 +57,9 @@
     <Reference Include="MsgReader">
       <HintPath>..\packages\MSGReader.1.7.4\lib\MsgReader.dll</HintPath>
     </Reference>
+    <Reference Include="NEventStore">
+      <HintPath>..\packages\NEventStore.5.1.0\lib\net40\NEventStore.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -103,6 +106,7 @@
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\FormatId.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
+    <Compile Include="EventHandlers\NullHouseKeeper.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />
