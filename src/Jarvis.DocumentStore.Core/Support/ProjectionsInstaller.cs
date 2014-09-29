@@ -31,6 +31,9 @@ namespace Jarvis.DocumentStore.Core.Support
             var mongoClient = new MongoClient(mongoUrl);
             var readModelDb = mongoClient.GetServer().GetDatabase(mongoUrl.DatabaseName);
 
+            // add rm prefix to collections
+            CollectionNames.Customize = n => "rm." + n;
+
             var config = new ProjectionEngineConfig()
             {
                 EventStoreConnectionString = "events",
