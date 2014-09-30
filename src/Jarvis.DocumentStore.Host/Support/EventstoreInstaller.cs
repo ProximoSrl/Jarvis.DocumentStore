@@ -12,7 +12,9 @@ using CommonDomain.Core;
 using CQRS.Kernel.Engine;
 using CQRS.Kernel.Engine.Snapshots;
 using CQRS.Kernel.Store;
+using CQRS.Shared.Events;
 using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.IdentitySupport.Serialization;
 using CQRS.Shared.Storage;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
@@ -61,7 +63,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 Component
                     .For<ICQRSRepository>()
                     .ImplementedBy<CQRSRepository>()
-                    .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), "eventStore"))
+                    .DependsOn(Dependency.OnComponent(typeof (IStoreEvents), "eventStore"))
                     .LifestyleTransient(),
                 Classes
                     .FromAssemblyContaining<Document>()
@@ -71,6 +73,13 @@ namespace Jarvis.DocumentStore.Host.Support
                 );
 
             var converter = container.Resolve<IdentityManager>();
+
+            EventStoreIdentityBsonSerializer.IdentityConverter = converter;
+
+            BsonClassMap.RegisterClassMap<DomainEvent>(map =>{
+                map.AutoMap();
+                map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
+            });
 
             MessagesRegistration.RegisterAssembly(typeof(Document).Assembly);
             MessagesRegistration.RegisterAssembly(typeof(DocumentCreated).Assembly);

@@ -11,18 +11,19 @@ namespace Jarvis.DocumentStore.Core.Support
 {
     public class CoreInstaller : IWindsorInstaller
     {
-        readonly string _connectionString;
+        readonly string _fileStore;
+        readonly string _sysDb;
 
-        public CoreInstaller(string connectionString)
+        public CoreInstaller(string fileStore, string sysDb)
         {
-            _connectionString = connectionString;
+            _fileStore = fileStore;
+            _sysDb = sysDb;
         }
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            var sysUrl = new MongoUrl(ConfigurationManager.ConnectionStrings["system"].ConnectionString);
-            var sysdb = new MongoClient(sysUrl).GetServer().GetDatabase(sysUrl.DatabaseName);
-            
+            var sysdb = GetDatabase(_sysDb);
+
             container.Register(
                 Component
                     .For<IFileStore>()
@@ -40,15 +41,19 @@ namespace Jarvis.DocumentStore.Core.Support
                     .ImplementedBy<DocumentMapper>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb)),
                 Component
+                    .For<IFileAliasMapper>()
+                    .ImplementedBy<FileAliasMapper>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb)),
+                Component
                     .For<MongoDatabase>()
-                    .Instance(GetDatabase())
+                    .Instance(GetDatabase(_fileStore))
             );
         }
 
-        MongoDatabase GetDatabase()
+        MongoDatabase GetDatabase(string cstring)
         {
-            var mongoUrl = new MongoUrl(_connectionString);
-            var client = new MongoClient(_connectionString);
+            var mongoUrl = new MongoUrl(cstring);
+            var client = new MongoClient(cstring);
             var db = client.GetServer().GetDatabase(mongoUrl.DatabaseName);
             return db;
         }

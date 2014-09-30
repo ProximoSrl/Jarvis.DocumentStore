@@ -1,4 +1,5 @@
 using CQRS.Shared.Domain;
+using CQRS.Shared.Domain.Serialization;
 using Jarvis.DocumentStore.Core.Model;
 using Newtonsoft.Json;
 using NUnit.Framework;

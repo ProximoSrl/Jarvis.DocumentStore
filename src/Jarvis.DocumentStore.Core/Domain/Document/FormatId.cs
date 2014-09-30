@@ -1,3 +1,4 @@
+using CQRS.Shared.Domain;
 using CQRS.Shared.IdentitySupport;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document

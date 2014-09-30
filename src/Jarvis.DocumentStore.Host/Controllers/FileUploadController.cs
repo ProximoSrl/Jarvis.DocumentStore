@@ -21,15 +21,17 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly ICommandBus _commandBus;
         readonly IIdentityGenerator _identityGenerator;
+        readonly IFileAliasMapper _mapper;
 
         public ILogger Logger { get; set; }
 
-        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator)
+        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IFileAliasMapper mapper)
         {
             _fileStore = fileStore;
             _configService = configService;
             _commandBus = commandBus;
             _identityGenerator = identityGenerator;
+            _mapper = mapper;
         }
 
         [Route("file/upload/status")]
@@ -39,11 +41,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return "ok";
         }
 
-        [Route("file/upload/{fileId}")]
+        [Route("file/upload/{*alias}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Upload(FileId fileId)
+        public async Task<HttpResponseMessage> Upload(FileAlias alias)
         {
-            Logger.DebugFormat("Incoming file {0}", fileId);
+            var documentId = _identityGenerator.New<DocumentId>();
+
+            Logger.DebugFormat("Incoming file {0}, assigned {1}", alias, documentId);
+            var fileId = new FileId(documentId);
             var errorMessage = await UploadFromHttpContent(Request.Content, fileId);
             Logger.DebugFormat("File {0} processed with message {1}", fileId, errorMessage);
 
@@ -55,7 +60,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            var documentId = _identityGenerator.New<DocumentId>();
+            _mapper.Associate(alias, documentId);
+
             _commandBus.SendLocal(new CreateDocument(documentId, fileId), "ds");
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);

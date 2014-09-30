@@ -31,13 +31,14 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             _fileStore = Substitute.For<IFileStore>();
             var cmdBus = Substitute.For<ICommandBus>();
             var im = Substitute.For<IIdentityGenerator>();
+            var mapper = Substitute.For<IFileAliasMapper>();
             var imageService = new MongoDbFileService(
                 MongoDbTestConnectionProvider.TestDb,
                 _fileStore,
                 new ConfigService()
             );
 
-            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im)
+            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im, mapper)
             {
                 Request = new HttpRequestMessage(),
                 Logger = new ConsoleLogger()
@@ -49,7 +50,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         [Test]
         public async void calling_upload_without_file_attachment_should_return_BadRequest()
         {
-            var response = await _controller.Upload(new FileId("Document_1"));
+            var response = await _controller.Upload(new FileAlias("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
@@ -57,7 +58,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public async void calling_upload_with_empty_attachment_should_return_BadRequest()
         {
             _controller.Request.Content = new MultipartFormDataContent("test");
-            var response = await _controller.Upload(new FileId("Document_1"));
+            var response = await _controller.Upload(new FileAlias("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Attachment not found!", response.GetError().Message);
         }
@@ -100,7 +101,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
                 _controller.Request.Content = multipartFormDataContent;
 
-                return await _controller.Upload(new FileId("Document_1"));
+                return await _controller.Upload(new FileAlias("Document_1"));
             }        
         }
     }

@@ -1,8 +1,11 @@
 using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.IdentitySupport.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
+    [BsonSerializer(typeof(EventStoreIdentityBsonSerializer))]
     public class DocumentId : EventStoreIdentity
     {
         [JsonConstructor]

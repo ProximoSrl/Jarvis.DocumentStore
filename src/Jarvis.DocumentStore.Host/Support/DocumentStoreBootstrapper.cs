@@ -34,11 +34,13 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.AddFacility<LoggingFacility>(f => f.UseLog4Net("log4net"));
             _container.AddFacility<StartableFacility>();
 
-            var connectionString = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
+            var fileStore = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
+            var sysDb = ConfigurationManager.ConnectionStrings["system"].ConnectionString;
+
             _container.Install(
                 new ApiInstaller(), 
-                new CoreInstaller(connectionString),
-                new SchedulerInstaller(connectionString),
+                new CoreInstaller(fileStore, sysDb),
+                new SchedulerInstaller(fileStore),
                 new EventStoreInstaller(),
                 new BusInstaller(),
                 new ProjectionsInstaller<NotifyReadModelChanges>()

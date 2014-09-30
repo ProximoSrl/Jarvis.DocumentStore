@@ -1,5 +1,6 @@
 using System.Web.Http;
 using CQRS.Shared.Domain;
+using CQRS.Shared.Domain.Serialization;
 using Owin;
 
 namespace Jarvis.DocumentStore.Host.Support
