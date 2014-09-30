@@ -107,6 +107,7 @@
     <Compile Include="Domain\Document\FormatId.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\NullHouseKeeper.cs" />
+    <Compile Include="EventHandlers\PipelineHandler.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />

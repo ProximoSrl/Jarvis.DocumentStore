@@ -18,6 +18,7 @@ using CQRS.Shared.IdentitySupport.Serialization;
 using CQRS.Shared.Storage;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using NEventStore;
@@ -74,12 +75,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             var converter = container.Resolve<IdentityManager>();
 
-            EventStoreIdentityBsonSerializer.IdentityConverter = converter;
-
-            BsonClassMap.RegisterClassMap<DomainEvent>(map =>{
-                map.AutoMap();
-                map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
-            });
+            EnableFlatIdMapping(converter);
 
             MessagesRegistration.RegisterAssembly(typeof(Document).Assembly);
             MessagesRegistration.RegisterAssembly(typeof(DocumentCreated).Assembly);
@@ -87,6 +83,20 @@ namespace Jarvis.DocumentStore.Host.Support
 
             converter.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
             IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentId).Assembly);
+
+            BsonClassMap.LookupClassMap(typeof (FileId));
+            BsonClassMap.LookupClassMap(typeof (FileAlias));
+        }
+
+        static void EnableFlatIdMapping(IdentityManager converter)
+        {
+            EventStoreIdentityBsonSerializer.IdentityConverter = converter;
+            BsonClassMap.RegisterClassMap<DomainEvent>(map =>
+            {
+                map.AutoMap();
+                map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
+            });
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
         }
     }
 }
