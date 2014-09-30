@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
@@ -10,50 +10,14 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using NSubstitute;
 using NUnit.Framework;
-using Quartz;
-using Quartz.Impl;
-using Quartz.Impl.Calendar;
-using Quartz.Impl.Triggers;
-using Quartz.Spi;
 
 namespace Jarvis.DocumentStore.Tests.JobTests
 {
-    public abstract class AbstractJobTest
-    {
-        protected IJobExecutionContext BuildContext(IJob job, IEnumerable<KeyValuePair<string, object>> map = null)
-        {
-            var scheduler = NSubstitute.Substitute.For<IScheduler>();
-            var firedBundle = new TriggerFiredBundle(
-              new JobDetailImpl("job", job.GetType()),
-              new SimpleTriggerImpl("trigger"),
-              new AnnualCalendar(),
-              false,
-              null, null, null, null
-            );
-
-            if (map != null)
-            {
-                foreach (var kvp in map)
-                {
-                    firedBundle.JobDetail.JobDataMap.Add(kvp);
-                }
-            }
-
-            return new JobExecutionContextImpl(scheduler, firedBundle, job);
-        }
-
-        protected IJobExecutionContext BuildContext(IJob job, object keyValMap)
-        {
-            var dictionary = keyValMap.GetType().GetProperties().ToDictionary(p => p.Name, p => p.GetValue(keyValMap));
-            return BuildContext(job, dictionary);
-        }
-    }
-
-    [TestFixture]
+    [TestFixture(Category = "jobs")]
     public class CreateThumbnailFromPdfJobTests : AbstractJobTest
     {
         [Test]
-        public void test()
+        public void should_convert_pdf_to_first_page_thumbnail()
         {
             var fileStore = NSubstitute.Substitute.For<IFileStore>();
             fileStore.GetDescriptor(new FileId("doc"))
@@ -68,6 +32,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                 {JobKeys.FileId, "doc"},
                 {JobKeys.FileExtension, "png"}
             }));
+
+            fileStore.Received().Upload(new FileId("doc.page.1.png"), Arg.Any<string>(), Arg.Any<Stream>());
         }
     }
 }
