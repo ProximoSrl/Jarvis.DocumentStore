@@ -30,14 +30,14 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         {
             _fileStore = Substitute.For<IFileStore>();
             var cmdBus = Substitute.For<ICommandBus>();
-            var mapper = Substitute.For<IDocumentMapper>();
+            var im = Substitute.For<IIdentityGenerator>();
             var imageService = new MongoDbFileService(
                 MongoDbTestConnectionProvider.TestDb,
                 _fileStore,
                 new ConfigService()
             );
 
-            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, mapper)
+            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im)
             {
                 Request = new HttpRequestMessage(),
                 Logger = new ConsoleLogger()

@@ -20,16 +20,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IFileStore _fileStore;
         readonly ConfigService _configService;
         readonly ICommandBus _commandBus;
-        readonly IDocumentMapper _mapper;
+        readonly IIdentityGenerator _identityGenerator;
 
         public ILogger Logger { get; set; }
 
-        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IDocumentMapper mapper)
+        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator)
         {
             _fileStore = fileStore;
             _configService = configService;
             _commandBus = commandBus;
-            _mapper = mapper;
+            _identityGenerator = identityGenerator;
         }
 
         [Route("file/upload/status")]
@@ -55,7 +55,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            var documentId = _mapper.Map(fileId);
+            var documentId = _identityGenerator.New<DocumentId>();
             _commandBus.SendLocal(new CreateDocument(documentId, fileId), "ds");
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
