@@ -59,6 +59,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public void Upload(FileId fileId, string pathToFile)
         {
+            Logger.DebugFormat("Uploading Id: {0} from file: {1}", fileId, pathToFile);
             using (var inStream = File.OpenRead(pathToFile))
             {
                 Upload(fileId, Path.GetFileName(pathToFile), inStream);
@@ -67,6 +68,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public void Upload(FileId fileId, string fileName, Stream sourceStrem)
         {
+            Logger.DebugFormat("Uploading Id: {0} Name: {1}", fileId, fileName);
             using (var outStream = CreateNew(fileId, fileName))
             {
                 sourceStrem.CopyTo(outStream);

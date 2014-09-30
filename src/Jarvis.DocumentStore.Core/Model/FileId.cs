@@ -18,6 +18,8 @@ namespace Jarvis.DocumentStore.Core.Model
     {
         public FileId(string value) : base(value)
         {
+            //if (value == null) 
+            //    throw new ArgumentNullException("value");
         }
     }
 

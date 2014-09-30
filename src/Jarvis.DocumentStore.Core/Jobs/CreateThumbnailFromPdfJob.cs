@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Pdf;
@@ -9,17 +10,27 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class CreateThumbnailFromPdfJob : AbstractFileJob
     {
+        FileId _fileId;
+        string _format;
+
+        public CreateThumbnailFromPdfJob(IFileStore fileStore)
+        {
+            FileStore = fileStore;
+        }
+
         public ILogger Logger { get; set; }
-        public IFileStore FileStore { get; set; }
+        private IFileStore FileStore { get; set; }
 
         public override void Execute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
-            var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
-            var format = jobDataMap.GetString(JobKeys.FileExtension);
+            this._fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
+            this._format = jobDataMap.GetString(JobKeys.FileExtension);
+
+            Logger.DebugFormat("Conversion of {0} in format {1} starting", _fileId,_format);
 
             var task = new CreateImageFromPdfTask();
-            var descriptor = FileStore.GetDescriptor(fileId);
+            var descriptor = FileStore.GetDescriptor(_fileId);
 
             using (var sourceStream = descriptor.OpenRead())
             {
@@ -28,17 +39,23 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     Dpi = jobDataMap.GetIntOrDefault(JobKeys.Dpi, 150),
                     FromPage = jobDataMap.GetIntOrDefault(JobKeys.PagesFrom, 1),
                     Pages = jobDataMap.GetIntOrDefault(JobKeys.PagesCount, 1),
-                    Format = (CreatePdfImageTaskParams.ImageFormat)Enum.Parse(typeof(CreatePdfImageTaskParams.ImageFormat), format,true)
+                    Format = (CreatePdfImageTaskParams.ImageFormat)Enum.Parse(typeof(CreatePdfImageTaskParams.ImageFormat), _format,true)
                 };
 
                 task.Run(
                     sourceStream, 
                     convertParams,
-                    (pageIndex, stream) => FileStore.Upload(fileId, "thumbnail_" + pageIndex + "."+format, stream)
+                    Write
                 );
             }
 
-            Logger.Debug("Task completed");
+            Logger.DebugFormat("Conversion of {0} in format {1} done", _fileId, _format);
+        }
+
+        void Write(int pageIndex, Stream stream)
+        {
+            var pageFileId = new FileId(_fileId + ".page." + pageIndex + "." + _format);
+            FileStore.Upload(pageFileId, pageFileId, stream);
         }
     }
 }

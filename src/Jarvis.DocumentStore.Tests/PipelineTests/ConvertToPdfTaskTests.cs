@@ -19,7 +19,10 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             MongoDbTestConnectionProvider.TestDb.Drop();
 
-            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.TestDb);
+            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.TestDb)
+            {
+                Logger = new ConsoleLogger()
+            };
             _fileStore.Upload(new FileId("docx"), TestConfig.PathToWordDocument);
             _fileStore.Upload(new FileId("xlsx"), TestConfig.PathToExcelDocument);
             _fileStore.Upload(new FileId("pptx"), TestConfig.PathToPowerpointDocument);

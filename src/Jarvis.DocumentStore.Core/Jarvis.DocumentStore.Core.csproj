@@ -136,6 +136,7 @@
     <Compile Include="Services\DocumentMapper.cs" />
     <Compile Include="Services\IFileService.cs" />
     <Compile Include="Services\MongoDbFileService.cs" />
+    <Compile Include="Storage\FsFileStoreHandle.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />
     <Compile Include="Storage\GridFsFileStoreHandle.cs" />
     <Compile Include="Storage\IFileStore.cs" />
