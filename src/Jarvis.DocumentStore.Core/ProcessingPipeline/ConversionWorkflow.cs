@@ -44,9 +44,10 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueResize(FileId fileId)
+        public void QueueResize(DocumentId documentId, FileId fileId)
         {
             var job = GetBuilderForJob<ImageResizeJob>()
+                .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.FileId, fileId)
                 .UsingJobData(JobKeys.FileExtension, ImageFormat)
                 .UsingJobData(JobKeys.Sizes, String.Join("|", _config.GetDefaultSizes().Select(x => x.Name)))
@@ -64,11 +65,10 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
                 case DocumentFormats.Pdf: QueueThumbnail(documentId, fileId);
                     break;
 
-                case DocumentFormats.RasterImage: QueueResize(fileId);
+                case DocumentFormats.RasterImage: QueueResize(documentId,fileId);
                     break;
 
                 default:
-                    Logger.ErrorFormat("Job {0} not queued");
                     break;
             }
         }
