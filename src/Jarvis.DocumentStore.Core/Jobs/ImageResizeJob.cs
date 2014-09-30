@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
+using CQRS.Shared.Commands;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Tools;
 using Jarvis.DocumentStore.Core.Services;
@@ -16,10 +18,12 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public ILogger Logger { get; set; }
         public IFileService FileService { get; set; }
 
-        public override void Execute(IJobExecutionContext context)
+        protected override void OnExecute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
             var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
+            var documentId = new DocumentId(jobDataMap.GetString(JobKeys.FileId));
+
             var fileExtension = jobDataMap.GetString(JobKeys.FileExtension);
             var sizesAsString = jobDataMap.GetString(JobKeys.Sizes);
             var sizes = sizesAsString.Split('|');
@@ -51,9 +55,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     }
                 }
             }
-
-            Logger.DebugFormat("Deleting file {0}", fileId);
-            FileStore.Delete(fileId);
 
             Logger.DebugFormat("Ended resize job for {0} - {1}", fileId, sizesAsString);
         }

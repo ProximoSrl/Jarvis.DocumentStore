@@ -13,14 +13,12 @@ namespace Jarvis.DocumentStore.Core.Jobs
     {
         readonly LibreOfficeConversion _libreOfficeConversion;
 
-        public ILogger Logger { get; set; }
-
         public LibreOfficeToPdfJob(LibreOfficeConversion libreOfficeConversion)
         {
             _libreOfficeConversion = libreOfficeConversion;
         }
 
-        public override void Execute(IJobExecutionContext context)
+        protected override void OnExecute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
             var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));

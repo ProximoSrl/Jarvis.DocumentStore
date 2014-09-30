@@ -5,7 +5,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 {
     public interface IConversionWorkflow
     {
-        void Next(DocumentId documentId, FileId fileId, string nextJob);
+        void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
         void Start(DocumentId documentId, FileId fileId);
     }
 }

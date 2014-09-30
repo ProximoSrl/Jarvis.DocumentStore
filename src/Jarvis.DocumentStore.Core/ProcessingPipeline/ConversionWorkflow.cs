@@ -10,11 +10,14 @@ using Quartz;
 
 namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 {
+    public static class DocumentFormats
+    {
+        public const string RasterImage = "raster";
+        public const string Pdf = "pdf";
+    }
+
     public class ConversionWorkflow : IConversionWorkflow
     {
-        const string ResizeJobId = "resize";
-        const string ThumbnailJobId = "thumbnail";
-        
         readonly IScheduler _scheduler;
         public ILogger Logger { get; set; }
         readonly IFileStore _fileStore;
@@ -34,7 +37,6 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.FileId, fileId)
                 .UsingJobData(JobKeys.FileExtension, ImageFormat)
-                .UsingJobData(JobKeys.NextJob, ResizeJobId)
                 .Build();
 
             var trigger = CreateTrigger();
@@ -55,14 +57,14 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void Next(DocumentId documentId, FileId fileId, string nextJob)
+        public void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
-            switch (nextJob)
+            switch (format)
             {
-                case ThumbnailJobId: QueueThumbnail(documentId, fileId);
+                case DocumentFormats.Pdf: QueueThumbnail(documentId, fileId);
                     break;
 
-                case ResizeJobId: QueueResize(fileId);
+                case DocumentFormats.RasterImage: QueueResize(fileId);
                     break;
 
                 default:
@@ -84,7 +86,6 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 
             var job = GetBuilderForJob<LibreOfficeToPdfJob>()
                 .UsingJobData(JobKeys.FileId, fileId)
-                .UsingJobData(JobKeys.NextJob, ThumbnailJobId)
                 .Build();
 
             var trigger = CreateTrigger();
@@ -96,7 +97,6 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
         {
             var job = GetBuilderForJob<HtmlToPdfJob>()
                 .UsingJobData(JobKeys.FileId, fileId)
-                .UsingJobData(JobKeys.NextJob, ThumbnailJobId)
                 .Build();
 
             var trigger = CreateTrigger();

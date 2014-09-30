@@ -20,14 +20,16 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         [Test]
         public void should_convert_pdf_to_first_page_thumbnail()
         {
-            var fileStore = NSubstitute.Substitute.For<IFileStore>();
+            var fileStore = Substitute.For<IFileStore>();
             fileStore.GetDescriptor(new FileId("doc"))
                 .Returns(new FsFileStoreHandle(TestConfig.PathToDocumentPdf));
 
             var commandBus = Substitute.For<ICommandBus>();
 
-            var job = new CreateThumbnailFromPdfJob(fileStore, commandBus)
+            var job = new CreateThumbnailFromPdfJob()
             {
+                CommandBus = commandBus,
+                FileStore = fileStore,
                 Logger = new ConsoleLogger()
             };
 

@@ -15,6 +15,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class PipelineHandler : AbstractProjection
         ,IEventHandler<DocumentCreated>
+        ,IEventHandler<FormatAddedToDocument>
     {
         readonly IFileStore _fileStore;
         public ILogger Logger { get; set; }
@@ -36,8 +37,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentCreated e)
         {
             var descriptor = _fileStore.GetDescriptor(e.FileId);
-            Logger.DebugFormat("Handling pipeline for document {0} {1}", e.FileId, descriptor.FileName);
+            Logger.DebugFormat("Starting conversion of document {0} {1}", e.FileId, descriptor.FileName);
             _conversionWorkflow.Start((DocumentId)e.AggregateId, e.FileId);
+        }
+
+        public void On(FormatAddedToDocument e)
+        {
+            var descriptor = _fileStore.GetDescriptor(e.FileId);
+            Logger.DebugFormat("Next conversion step for document {0} {1}", e.FileId, descriptor.FileName);
+            _conversionWorkflow.FormatAvailable((DocumentId)e.AggregateId, e.DocumentFormat, e.FileId);
         }
     }
 }
