@@ -7,13 +7,14 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
-    public class CreateDocument : DocumentCommand
+    public class AddFormatToDocument : DocumentCommand
     {
         public FileId FileId { get; private set; }
+        public FormatValue Format { get; private set; }
 
-        public CreateDocument(DocumentId documentId, FileId fileId)
-            :base(documentId)
+        public AddFormatToDocument(DocumentId aggregateId, FormatValue format, FileId fileId) : base(aggregateId)
         {
+            Format = format;
             FileId = fileId;
         }
     }

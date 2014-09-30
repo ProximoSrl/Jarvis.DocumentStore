@@ -16,6 +16,7 @@ using CQRS.Shared.Commands;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.CommandHandlers;
 using MongoDB.Driver;
+using Rebus;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -49,12 +50,25 @@ namespace Jarvis.DocumentStore.Host.Support
                     .StartUsingMethod(x => x.Start),
                 Component
                     .For<ICommandBus>()
-                    .ImplementedBy<RebusCommandBus>(),
+                    .ImplementedBy<DocumentStoreCommandBus>(),
                 Component
                     .For<IMessagesTracker>()
                     .ImplementedBy<MongoDbMessagesTracker>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(logDb))
                 );
+        }
+    }
+
+    public class DocumentStoreCommandBus : RebusCommandBus
+    {
+        public DocumentStoreCommandBus(IBus bus)
+            : base(bus)
+        {
+        }
+
+        protected override void PrepareCommand(ICommand command, string impersonatingUser)
+        {
+            base.PrepareCommand(command, impersonatingUser ?? "documentstore");
         }
     }
 }

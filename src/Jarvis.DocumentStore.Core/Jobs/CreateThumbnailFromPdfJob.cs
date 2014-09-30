@@ -3,6 +3,7 @@ using System.IO;
 using Castle.Core.Logging;
 using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Pdf;
 using Jarvis.DocumentStore.Core.Storage;
@@ -16,8 +17,9 @@ namespace Jarvis.DocumentStore.Core.Jobs
         string _format;
         DocumentId _documentId;
 
-        public CreateThumbnailFromPdfJob(IFileStore fileStore)
+        public CreateThumbnailFromPdfJob(IFileStore fileStore, ICommandBus commandBus)
         {
+            CommandBus = commandBus;
             FileStore = fileStore;
         }
 
@@ -61,8 +63,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             var pageFileId = new FileId(_fileId + ".page." + pageIndex + "." + _format);
             FileStore.Upload(pageFileId, pageFileId, stream);
-
-//            CommandBus.Send(new AddDo)
+            
+            var fileFormat = new FormatValue("thumbnail");
+            CommandBus.Send(
+                new AddFormatToDocument(_documentId, fileFormat, pageFileId)
+            );
         }
     }
 }

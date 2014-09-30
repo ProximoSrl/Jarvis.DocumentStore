@@ -6,10 +6,17 @@ using NUnit.Framework;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
-    public class upload_to_externa_service
+    public class upload_to_external_service
     {
         [Test]
-        public void upload_single()
+        public void upload_pdf()
+        {
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress);
+            client.Upload(TestConfig.PathToDocumentPdf, "Rev_1").Wait();
+        }
+
+        [Test]
+        public void upload_doc()
         {
             var client = new DocumentStoreServiceClient(TestConfig.ServerAddress);
             client.Upload(TestConfig.PathToWordDocument, "doc").Wait();

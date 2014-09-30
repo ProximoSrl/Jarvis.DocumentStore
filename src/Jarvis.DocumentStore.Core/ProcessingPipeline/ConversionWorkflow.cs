@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
@@ -27,9 +28,10 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _fileStore = fileStore;
         }
 
-        public void QueueThumbnail(FileId fileId)
+        public void QueueThumbnail(DocumentId documentId, FileId fileId)
         {
             var job = GetBuilderForJob<CreateThumbnailFromPdfJob>()
+                .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.FileId, fileId)
                 .UsingJobData(JobKeys.FileExtension, ImageFormat)
                 .UsingJobData(JobKeys.NextJob, ResizeJobId)
@@ -53,11 +55,11 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void Next(FileId fileId, string nextJob)
+        public void Next(DocumentId documentId, FileId fileId, string nextJob)
         {
             switch (nextJob)
             {
-                case ThumbnailJobId: QueueThumbnail(fileId);
+                case ThumbnailJobId: QueueThumbnail(documentId, fileId);
                     break;
 
                 case ResizeJobId: QueueResize(fileId);
@@ -102,14 +104,14 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void Start(FileId fileId)
+        public void Start(DocumentId documentId, FileId fileId)
         {
             var descriptor = _fileStore.GetDescriptor(fileId);
 
             switch (descriptor.FileExtension)
             {
                 case ".pdf":
-                    QueueThumbnail(fileId);
+                    QueueThumbnail(documentId, fileId);
                     break;
 
                 case ".htmlzip":
@@ -125,12 +127,8 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
         private ITrigger CreateTrigger()
         {
             var trigger = TriggerBuilder.Create()
-#if DEBUG
-                .StartAt(DateTimeOffset.Now.AddSeconds(15))
-#else
                 .StartAt(DateTimeOffset.Now)
-#endif
-.Build();
+                .Build();
             return trigger;
         }
     }

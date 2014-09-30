@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
@@ -23,7 +24,9 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             fileStore.GetDescriptor(new FileId("doc"))
                 .Returns(new FsFileStoreHandle(TestConfig.PathToDocumentPdf));
 
-            var job = new CreateThumbnailFromPdfJob(fileStore)
+            var commandBus = Substitute.For<ICommandBus>();
+
+            var job = new CreateThumbnailFromPdfJob(fileStore, commandBus)
             {
                 Logger = new ConsoleLogger()
             };

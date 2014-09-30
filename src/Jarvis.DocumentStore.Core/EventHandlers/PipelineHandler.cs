@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 using CQRS.Kernel.Events;
 using CQRS.Shared.Commands;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.Storage;
@@ -36,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             var descriptor = _fileStore.GetDescriptor(e.FileId);
             Logger.DebugFormat("Handling pipeline for document {0} {1}", e.FileId, descriptor.FileName);
-            _conversionWorkflow.Start(e.FileId);
+            _conversionWorkflow.Start((DocumentId)e.AggregateId, e.FileId);
         }
     }
 }

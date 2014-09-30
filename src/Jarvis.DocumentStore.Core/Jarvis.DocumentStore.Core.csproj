@@ -94,8 +94,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandHandlers\AddFormatToDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\CreateDocumentCommandHandler.cs" />
+    <Compile Include="Domain\Document\Commands\AddFormatToDocument.cs" />
     <Compile Include="Domain\Document\Commands\CreateDocument.cs" />
+    <Compile Include="Domain\Document\Commands\DocumentCommand.cs" />
     <Compile Include="Domain\Document\Document.cs" />
     <Compile Include="Domain\Document\DocumentId.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
