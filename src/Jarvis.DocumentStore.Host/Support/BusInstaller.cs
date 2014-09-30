@@ -47,7 +47,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .DependsOn(Dependency.OnValue<IWindsorContainer>(container))
                     .DependsOn(Dependency.OnValue("connectionString",connectionString))
                     .DependsOn(Dependency.OnValue("prefix", "ds"))
-                    .StartUsingMethod(x => x.Start),
+                    .StartUsingMethod(x => x.StartWithAppConfig),
                 Component
                     .For<ICommandBus>()
                     .ImplementedBy<DocumentStoreCommandBus>(),
