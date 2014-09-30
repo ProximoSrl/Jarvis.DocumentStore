@@ -132,6 +132,7 @@
     <Compile Include="Support\DocumentStoreBootstrapper.cs" />
     <Compile Include="Support\DocumentStoreApplication.cs" />
     <Compile Include="Support\EventstoreInstaller.cs" />
+    <Compile Include="Support\RolesHelper.cs" />
     <Compile Include="Support\WindsorDependencyScope.cs" />
     <Compile Include="Support\WindsorResolver.cs" />
   </ItemGroup>

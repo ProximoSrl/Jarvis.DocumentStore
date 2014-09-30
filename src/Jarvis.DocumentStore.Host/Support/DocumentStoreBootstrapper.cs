@@ -37,23 +37,43 @@ namespace Jarvis.DocumentStore.Host.Support
             var fileStore = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
             var sysDb = ConfigurationManager.ConnectionStrings["system"].ConnectionString;
 
+            var logger = _container.Resolve<ILoggerFactory>().Create(GetType());
+            logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
+
             _container.Install(
-                new ApiInstaller(), 
                 new CoreInstaller(fileStore, sysDb),
-                new SchedulerInstaller(fileStore),
                 new EventStoreInstaller(),
-                new BusInstaller(),
-                new ProjectionsInstaller<NotifyReadModelChanges>()
+                new BusInstaller()
             );
 
-            _container.Resolve<ILogger>().InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
+            if (RolesHelper.IsWorker)
+            {
+                logger.Debug("Configured Scheduler");
+                _container.Install(new SchedulerInstaller(fileStore));
+            }
 
-            _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
+            if (RolesHelper.IsReadmodelBuilder)
+            {
+                logger.Debug("Configured Projections");
+                _container.Install(new ProjectionsInstaller<NotifyReadModelChanges>());
+            }
+
+
+            if (RolesHelper.IsApiServer)
+            {
+                logger.Debug("Configured API server");
+                _container.Install(new ApiInstaller());
+                _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
+            }
         }
 
         public void Stop()
         {
-            _webApplication.Dispose();
+            if (_webApplication != null)
+            {
+                _webApplication.Dispose();
+            }
+            
             _container.Dispose();
         }
     }
