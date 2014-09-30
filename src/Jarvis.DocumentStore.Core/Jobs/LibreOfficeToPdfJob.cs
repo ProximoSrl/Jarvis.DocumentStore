@@ -1,6 +1,9 @@
 ﻿using System;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions;
 using Quartz;
 
@@ -20,16 +23,20 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         protected override void OnExecute(IJobExecutionContext context)
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
-            var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
-
             Logger.DebugFormat(
                 "Delegating conversion of file {0} to libreoffice",
-                fileId
+                this.FileId
             );
             
             DateTime start = DateTime.Now;
-            _libreOfficeConversion.Run(fileId, "pdf");
+            var newFileId = _libreOfficeConversion.Run(this.FileId, "pdf");
+
+            CommandBus.Send(new AddFormatToDocument(
+                this.DocumentId, 
+                new DocumentFormat(DocumentFormats.Pdf), 
+                newFileId
+            ));
+            
             var elapsed = DateTime.Now - start;
             Logger.DebugFormat("Libreoffice conversion task ended in {0}ms", elapsed.TotalMilliseconds);
         }

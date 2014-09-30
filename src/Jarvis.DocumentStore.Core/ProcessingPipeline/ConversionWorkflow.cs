@@ -81,10 +81,10 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
                 .StoreDurably(false);
         }
 
-        public void QueueLibreOfficeToPdfConversion(FileId fileId)
+        public void QueueLibreOfficeToPdfConversion(DocumentId documentId, FileId fileId)
         {
-
             var job = GetBuilderForJob<LibreOfficeToPdfJob>()
+                .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.FileId, fileId)
                 .Build();
 
@@ -119,7 +119,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
                     break;
 
                 default:
-                    QueueLibreOfficeToPdfConversion(fileId);
+                    QueueLibreOfficeToPdfConversion(documentId, fileId);
                     break;
             }
         }

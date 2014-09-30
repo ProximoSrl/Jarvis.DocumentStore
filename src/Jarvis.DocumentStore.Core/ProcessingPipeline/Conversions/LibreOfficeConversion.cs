@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
             _config = config;
         }
 
-        public void Run(FileId fileId, string outType)
+        public FileId Run(FileId fileId, string outType)
         {
             Logger.DebugFormat("Starting conversion of fileId {0} to {1}", fileId, outType);
             string pathToLibreOffice = _config.GetPathToLibreOffice();
@@ -61,7 +61,8 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
             if(!File.Exists(outputFile))
                 throw new Exception("Conversion failed");
 
-            _fileStore.Upload(fileId, outputFile);
+            var newFileId = new FileId(fileId + "." + outType);
+            _fileStore.Upload(newFileId, outputFile);
 
             try
             {
@@ -72,6 +73,8 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
             {
                 Logger.ErrorFormat(ex, "Unable to delete folder {0}", workingFolder);
             }
+
+            return newFileId;
         }
     }
 }
