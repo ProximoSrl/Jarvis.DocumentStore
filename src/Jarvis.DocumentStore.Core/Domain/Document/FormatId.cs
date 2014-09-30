@@ -1,11 +1,15 @@
+using System.ComponentModel;
 using CQRS.Shared.Domain;
-using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.Domain.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
-    public class FormatValue : LowercaseStringValue
+    [BsonSerializer(typeof(StringValueBsonSerializer))]
+    [TypeConverter(typeof(StringValueTypeConverter<DocumentFormat>))]
+    public class DocumentFormat : LowercaseStringValue
     {
-        public FormatValue(string value)
+        public DocumentFormat(string value)
             : base(value)
         {
         }

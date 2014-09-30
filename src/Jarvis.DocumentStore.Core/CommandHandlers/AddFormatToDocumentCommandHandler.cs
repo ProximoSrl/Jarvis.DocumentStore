@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers
     {
         protected override void Execute(AddFormatToDocument cmd)
         {
-            FindAndModify(cmd.AggregateId, doc => doc.AddFormat(cmd.Format, cmd.FileId));
+            FindAndModify(cmd.AggregateId, doc => doc.AddFormat(cmd.DocumentFormat, cmd.FileId));
         }
     }
 }

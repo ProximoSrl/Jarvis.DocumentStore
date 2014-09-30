@@ -5,12 +5,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 {
     public class FormatAddedToDocument : DomainEvent
     {
-        public FormatValue FormatValue { get; private set; }
+        public DocumentFormat DocumentFormat { get; private set; }
         public FileId FileId { get; private set; }
 
-        public FormatAddedToDocument(FormatValue formatValue, FileId fileId)
+        public FormatAddedToDocument(DocumentFormat documentFormat, FileId fileId)
         {
-            FormatValue = formatValue;
+            DocumentFormat = documentFormat;
             FileId = fileId;
         }
     }

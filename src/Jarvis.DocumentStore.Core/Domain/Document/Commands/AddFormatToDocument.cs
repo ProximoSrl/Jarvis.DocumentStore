@@ -10,11 +10,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
     public class AddFormatToDocument : DocumentCommand
     {
         public FileId FileId { get; private set; }
-        public FormatValue Format { get; private set; }
+        public DocumentFormat DocumentFormat { get; private set; }
 
-        public AddFormatToDocument(DocumentId aggregateId, FormatValue format, FileId fileId) : base(aggregateId)
+        public AddFormatToDocument(DocumentId aggregateId, DocumentFormat documentFormat, FileId fileId) : base(aggregateId)
         {
-            Format = format;
+            DocumentFormat = documentFormat;
             FileId = fileId;
         }
     }

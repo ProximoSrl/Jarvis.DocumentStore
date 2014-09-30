@@ -64,7 +64,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var pageFileId = new FileId(_fileId + ".page." + pageIndex + "." + _format);
             FileStore.Upload(pageFileId, pageFileId, stream);
             
-            var fileFormat = new FormatValue("thumbnail");
+            var fileFormat = new DocumentFormat("thumbnail");
             CommandBus.Send(
                 new AddFormatToDocument(_documentId, fileFormat, pageFileId)
             );
