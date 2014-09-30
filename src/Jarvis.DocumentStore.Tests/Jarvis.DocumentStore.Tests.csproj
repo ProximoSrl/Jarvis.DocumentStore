@@ -136,8 +136,9 @@
     <Compile Include="PipelineTests\ConvertHtmlToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\TestConfig.cs" />
-    <Compile Include="PipelineTests\ClientIntegrationTests.cs" />
+    <Compile Include="SelfHostIntegratonTests\upload_in_self_host_service.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelfHostIntegratonTests\upload_to_externa_service.cs" />
     <Compile Include="Support\MongoDbTestConnectionProvider.cs" />
   </ItemGroup>
   <ItemGroup>
