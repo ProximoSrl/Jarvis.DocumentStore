@@ -1,5 +1,8 @@
 ﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
@@ -13,15 +16,17 @@ namespace Jarvis.DocumentStore.Core.Jobs
         
         protected override void OnExecute(IJobExecutionContext context)
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
-            var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
-
             var converter = new HtmlToPdfConverter(FileStore, ConfigService)
             {
                 Logger = Logger
             };
 
-            converter.Run(fileId);
+            var pdfId = converter.Run(this.FileId);
+            CommandBus.Send(new AddFormatToDocument(
+                this.DocumentId,
+                new DocumentFormat(DocumentFormats.Pdf),
+                pdfId
+            ));
         }
     }
 }

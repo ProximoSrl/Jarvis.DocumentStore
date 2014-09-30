@@ -38,7 +38,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Pdf
                         {
                             images.Read(sourceStream, settings);
                             done = true;
-                            _firstDone = true;
+//                            _firstDone = true;
                         }
                     }
                 }

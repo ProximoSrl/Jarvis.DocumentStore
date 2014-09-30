@@ -9,6 +9,7 @@ using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
+    [DisallowConcurrentExecution]
     public class CreateThumbnailFromPdfJob : AbstractFileJob
     {
         string _format;

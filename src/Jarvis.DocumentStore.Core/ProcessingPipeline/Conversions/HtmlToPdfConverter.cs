@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
             _config = config;
         }
 
-        public void Run(FileId fileId)
+        public FileId Run(FileId fileId)
         {
             Logger.DebugFormat("Converting {0} to pdf", fileId);
             var localFileName = DownloadLocalCopy(fileId);
@@ -57,18 +57,24 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
 
             var converter = Factory.Create();
             var pdf = converter.Convert(document);
+            var pdfFileId = new FileId(fileId + ".pdf");
+
             using (var source = new MemoryStream(pdf))
             {
                 _fileStore.Upload(
-                    fileId, 
+                    pdfFileId, 
                     Path.ChangeExtension(Path.GetFileName(uri.LocalPath), "pdf"),
                     source
                 );
+
+                
             }
 
             Logger.DebugFormat("Deleting {0}", localFileName);
             File.Delete(localFileName);
             Logger.DebugFormat("Conversion of {0} to pdf done!", fileId);
+
+            return pdfFileId;
         }
 
         string DownloadLocalCopy(FileId fileId)

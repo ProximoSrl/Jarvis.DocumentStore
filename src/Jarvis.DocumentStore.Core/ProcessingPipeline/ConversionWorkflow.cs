@@ -93,9 +93,10 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueHtmlToPdfConversion(FileId fileId)
+        public void QueueHtmlToPdfConversion(DocumentId documentId, FileId fileId)
         {
             var job = GetBuilderForJob<HtmlToPdfJob>()
+                .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.FileId, fileId)
                 .Build();
 
@@ -115,7 +116,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
                     break;
 
                 case ".htmlzip":
-                    QueueHtmlToPdfConversion(fileId);
+                    QueueHtmlToPdfConversion(documentId,fileId);
                     break;
 
                 default:
