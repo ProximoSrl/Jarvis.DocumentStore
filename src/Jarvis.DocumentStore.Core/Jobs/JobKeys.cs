@@ -2,6 +2,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public static class JobKeys
     {
+        public const string DocumentId = "document_id";
         public const string FileId = "file_id";
         public const string FileExtension = "file_ext";
         public const string NextJob = "next_job";

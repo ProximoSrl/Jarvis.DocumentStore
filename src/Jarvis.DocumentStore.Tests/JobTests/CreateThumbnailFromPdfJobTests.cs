@@ -29,6 +29,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             };
 
             job.Execute(BuildContext(job, new Dictionary<string, object>{
+                {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.FileId, "doc"},
                 {JobKeys.FileExtension, "png"}
             }));
