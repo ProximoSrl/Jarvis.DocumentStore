@@ -51,8 +51,8 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestCase("rtf")]
         public void processing_file_should_succeed(string fileId)
         {
-            _withLibreOfficeConversion.Run(new FileId(fileId), "pdf");
-            Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(new FileId(fileId)).ContentType);
+            var outputFileId = _withLibreOfficeConversion.Run(new FileId(fileId), "pdf");
+            Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(new FileId(outputFileId)).ContentType);
         }
     }
 }
