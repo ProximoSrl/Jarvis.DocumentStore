@@ -23,6 +23,10 @@ namespace Jarvis.DocumentStore.Core.Storage
             get { return _mongoGridFsFileInfo.Name;}
         }
 
+        public string FileExtension {
+            get { return Path.GetExtension(FileName).ToLowerInvariant(); }
+        }
+
         public string ContentType {
             get { return _mongoGridFsFileInfo.ContentType; }
         }

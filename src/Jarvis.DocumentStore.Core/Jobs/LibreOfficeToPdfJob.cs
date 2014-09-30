@@ -24,23 +24,16 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             var jobDataMap = context.JobDetail.JobDataMap;
             var fileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
-            string extension = jobDataMap.GetString(JobKeys.FileExtension);
 
-            if (_libreOfficeConversion.CanHandle(extension))
-            {
-                Logger.DebugFormat(
-                    "Delegating conversion of file {0} ({1}) to libreoffice",
-                    fileId,
-                    extension
-                );
-                DateTime start = DateTime.Now;
-                _libreOfficeConversion.Run(fileId, "pdf");
-                var elapsed = DateTime.Now - start;
-                Logger.DebugFormat("Libreoffice conversion task ended in {0}ms", elapsed.TotalMilliseconds);
-                return;
-            }
-
-            Logger.Error("Conversion handler not found");
+            Logger.DebugFormat(
+                "Delegating conversion of file {0} to libreoffice",
+                fileId
+            );
+            
+            DateTime start = DateTime.Now;
+            _libreOfficeConversion.Run(fileId, "pdf");
+            var elapsed = DateTime.Now - start;
+            Logger.DebugFormat("Libreoffice conversion task ended in {0}ms", elapsed.TotalMilliseconds);
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Jarvis.DocumentStore.Core.Storage
     {
         Stream OpenRead();
         string FileName { get; }
+        string FileExtension { get; }
         string ContentType { get; }
     }
 }

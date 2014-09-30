@@ -4,6 +4,7 @@ using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Core.Storage;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.ProcessingPipeline
@@ -15,19 +16,21 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
         
         readonly IScheduler _scheduler;
         public ILogger Logger { get; set; }
-        readonly IFileService _fileService;
+        readonly IFileStore _fileStore;
         const string ImageFormat = "png";
+        ConfigService _config;
 
-        public ConversionWorkflow(IScheduler scheduler, IFileService fileService)
+        public ConversionWorkflow(IScheduler scheduler, ConfigService config, IFileStore fileStore)
         {
             _scheduler = scheduler;
-            _fileService = fileService;
+            _config = config;
+            _fileStore = fileStore;
         }
 
-        public void QueueThumbnail(FileInfo fileInfo)
+        public void QueueThumbnail(FileId fileId)
         {
             var job = GetBuilderForJob<CreateThumbnailFromPdfJob>()
-                .UsingJobData(JobKeys.FileId, fileInfo.Id)
+                .UsingJobData(JobKeys.FileId, fileId)
                 .UsingJobData(JobKeys.FileExtension, ImageFormat)
                 .UsingJobData(JobKeys.NextJob, ResizeJobId)
                 .Build();
@@ -37,12 +40,12 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueResize(FileInfo fileInfo)
+        public void QueueResize(FileId fileId)
         {
             var job = GetBuilderForJob<ImageResizeJob>()
-                .UsingJobData(JobKeys.FileId, fileInfo.Id)
+                .UsingJobData(JobKeys.FileId, fileId)
                 .UsingJobData(JobKeys.FileExtension, ImageFormat)
-                .UsingJobData(JobKeys.Sizes, String.Join("|", fileInfo.Sizes.Select(x => x.Key)))
+                .UsingJobData(JobKeys.Sizes, String.Join("|", _config.GetDefaultSizes().Select(x => x.Name)))
                 .Build();
 
             var trigger = CreateTrigger();
@@ -52,14 +55,12 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 
         public void Next(FileId fileId, string nextJob)
         {
-            var fileInfo = _fileService.GetById(fileId);
-
             switch (nextJob)
             {
-                case ThumbnailJobId: QueueThumbnail(fileInfo);
+                case ThumbnailJobId: QueueThumbnail(fileId);
                     break;
 
-                case ResizeJobId: QueueResize(fileInfo);
+                case ResizeJobId: QueueResize(fileId);
                     break;
 
                 default:
@@ -76,13 +77,11 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
                 .StoreDurably(false);
         }
 
-        public void QueueLibreOfficeToPdfConversion(FileInfo fileInfo)
+        public void QueueLibreOfficeToPdfConversion(FileId fileId)
         {
-            var fileExtension = fileInfo.GetFileExtension();
 
             var job = GetBuilderForJob<LibreOfficeToPdfJob>()
-                .UsingJobData(JobKeys.FileId, fileInfo.Id)
-                .UsingJobData(JobKeys.FileExtension, fileExtension)
+                .UsingJobData(JobKeys.FileId, fileId)
                 .UsingJobData(JobKeys.NextJob, ThumbnailJobId)
                 .Build();
 
@@ -91,10 +90,10 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueHtmlToPdfConversion(FileInfo fileInfo)
+        public void QueueHtmlToPdfConversion(FileId fileId)
         {
             var job = GetBuilderForJob<HtmlToPdfJob>()
-                .UsingJobData(JobKeys.FileId, fileInfo.Id)
+                .UsingJobData(JobKeys.FileId, fileId)
                 .UsingJobData(JobKeys.NextJob, ThumbnailJobId)
                 .Build();
 
@@ -105,20 +104,20 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 
         public void Start(FileId fileId)
         {
-            var fileInfo = _fileService.GetById(fileId);
+            var descriptor = _fileStore.GetDescriptor(fileId);
 
-            switch (fileInfo.GetFileExtension())
+            switch (descriptor.FileExtension)
             {
                 case ".pdf":
-                    QueueThumbnail(fileInfo);
+                    QueueThumbnail(fileId);
                     break;
 
                 case ".htmlzip":
-                    QueueHtmlToPdfConversion(fileInfo);
+                    QueueHtmlToPdfConversion(fileId);
                     break;
 
                 default:
-                    QueueLibreOfficeToPdfConversion(fileInfo);
+                    QueueLibreOfficeToPdfConversion(fileId);
                     break;
             }
         }

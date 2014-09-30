@@ -73,10 +73,5 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
                 Logger.ErrorFormat(ex, "Unable to delete folder {0}", workingFolder);
             }
         }
-
-        public bool CanHandle(string extension)
-        {
-            return true;
-        }
     }
 }

@@ -7,6 +7,7 @@ using Castle.Core.Logging;
 using CQRS.Kernel.Events;
 using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
@@ -14,14 +15,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     public class PipelineHandler : AbstractProjection
         ,IEventHandler<DocumentCreated>
     {
-        readonly ICommandBus _commandBus;
         readonly IFileStore _fileStore;
         public ILogger Logger { get; set; }
+        IConversionWorkflow _conversionWorkflow;
 
-        public PipelineHandler(ICommandBus commandBus, IFileStore fileStore)
+        public PipelineHandler(IFileStore fileStore, IConversionWorkflow conversionWorkflow)
         {
-            _commandBus = commandBus;
             _fileStore = fileStore;
+            _conversionWorkflow = conversionWorkflow;
         }
 
         public override void Drop()
@@ -35,6 +36,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             var descriptor = _fileStore.GetDescriptor(e.FileId);
             Logger.DebugFormat("Handling pipeline for document {0} {1}", e.FileId, descriptor.FileName);
+            _conversionWorkflow.Start(e.FileId);
         }
     }
 }
