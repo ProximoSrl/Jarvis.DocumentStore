@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Castle.Core.Logging;
 using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
@@ -31,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         protected string DownloadFile(FileId id)
         {
-            var workingFolder = ConfigService.GetWorkingFolder(id);
+            var workingFolder = Path.Combine(ConfigService.GetWorkingFolder(id), GetType().Name);
             return FileStore.Download(id, workingFolder);
         }
     }

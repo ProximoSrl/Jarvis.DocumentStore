@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
         public ILogger Logger { get; set; }
         readonly IFileStore _fileStore;
         const string ImageFormat = "png";
-        ConfigService _config;
+        readonly ConfigService _config;
 
         public ConversionWorkflow(IScheduler scheduler, ConfigService config, IFileStore fileStore)
         {
@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _fileStore = fileStore;
         }
 
-        public void QueueThumbnail(DocumentId documentId, FileId fileId)
+        void QueueThumbnail(DocumentId documentId, FileId fileId)
         {
             var job = GetBuilderForJob<CreateThumbnailFromPdfJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueResize(DocumentId documentId, FileId fileId)
+        void QueueResize(DocumentId documentId, FileId fileId)
         {
             var job = GetBuilderForJob<ImageResizeJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
@@ -81,7 +81,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
                 .StoreDurably(false);
         }
 
-        public void QueueLibreOfficeToPdfConversion(DocumentId documentId, FileId fileId)
+        void QueueLibreOfficeToPdfConversion(DocumentId documentId, FileId fileId)
         {
             var job = GetBuilderForJob<LibreOfficeToPdfJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
@@ -93,9 +93,21 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueHtmlToPdfConversion(DocumentId documentId, FileId fileId)
+        void QueueHtmlToPdfConversion(DocumentId documentId, FileId fileId)
         {
             var job = GetBuilderForJob<HtmlToPdfJob>()
+                .UsingJobData(JobKeys.DocumentId, documentId)
+                .UsingJobData(JobKeys.FileId, fileId)
+                .Build();
+
+            var trigger = CreateTrigger();
+
+            _scheduler.ScheduleJob(job, trigger);
+        }
+
+        void QueueTikaAnalyzer(DocumentId documentId, FileId fileId)
+        {
+            var job = GetBuilderForJob<ExtractTextWithTikaJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.FileId, fileId)
                 .Build();
@@ -113,6 +125,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
             {
                 case ".pdf":
                     QueueThumbnail(documentId, fileId);
+                    QueueTikaAnalyzer(documentId, fileId);
                     break;
 
                 case ".htmlzip":
@@ -121,6 +134,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 
                 default:
                     QueueLibreOfficeToPdfConversion(documentId, fileId);
+                    QueueTikaAnalyzer(documentId, fileId);
                     break;
             }
         }

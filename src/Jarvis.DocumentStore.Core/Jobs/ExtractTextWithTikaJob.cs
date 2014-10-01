@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CQRS.Shared.Commands;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions;
 using Quartz;
@@ -28,6 +31,12 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 {
                     FileStore.Upload(tikaFileId, tikaFileId, htmlReader);
                 }
+
+                CommandBus.Send(new AddFormatToDocument(
+                    this.DocumentId,
+                    new DocumentFormat("tika"),
+                    tikaFileId
+                ));
 
                 Logger.DebugFormat("Tika result: file {1} has {0} chars", FileId, content.Length);
             });
