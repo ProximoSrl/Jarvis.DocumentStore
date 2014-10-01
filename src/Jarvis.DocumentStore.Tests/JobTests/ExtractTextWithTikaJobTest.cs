@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
@@ -15,22 +16,21 @@ using NUnit.Framework;
 namespace Jarvis.DocumentStore.Tests.JobTests
 {
     [TestFixture(Category = "jobs")]
-    public class CreateThumbnailFromPdfJobTests : AbstractJobTest
+    public class ExtractTextWithTikaJobTest : AbstractJobTest
     {
         [Test]
-        public void should_convert_pdf_to_first_page_thumbnail()
+        public void should_extract_html_from_pdf()
         {
-            ConfigureGetFile("doc", TestConfig.PathToDocumentPdf);
+            ConfigureFileDownload("pdf", TestConfig.PathToDocumentPdf);
 
-            var job = BuildJob<CreateThumbnailFromPdfJob>();
-            
+            var job = BuildJob<ExtractTextWithTikaJob>();
+
             job.Execute(BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.FileId, "doc"},
-                {JobKeys.FileExtension, "png"}
+                {JobKeys.FileId, "pdf"}
             }));
 
-            FileStore.Received().Upload(new FileId("doc.page.1.png"), Arg.Any<string>(), Arg.Any<Stream>());
+            FileStore.Received().Upload(new FileId("pdf.tika.html"), Arg.Any<string>(), Arg.Any<Stream>());
         }
     }
 }

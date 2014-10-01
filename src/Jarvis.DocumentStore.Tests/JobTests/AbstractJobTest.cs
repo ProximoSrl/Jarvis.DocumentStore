@@ -1,5 +1,15 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Castle.Core.Logging;
+using CQRS.Shared.Commands;
+using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Tests.PipelineTests;
+using NSubstitute;
+using NUnit.Framework;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Calendar;
@@ -10,6 +20,9 @@ namespace Jarvis.DocumentStore.Tests.JobTests
 {
     public abstract class AbstractJobTest
     {
+        protected IFileStore FileStore;
+        protected ICommandBus CommandBus;
+
         protected IJobExecutionContext BuildContext(IJob job, IEnumerable<KeyValuePair<string, object>> map = null)
         {
             var scheduler = NSubstitute.Substitute.For<IScheduler>();
@@ -36,6 +49,48 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         {
             var dictionary = keyValMap.GetType().GetProperties().ToDictionary(p => p.Name, p => p.GetValue(keyValMap));
             return BuildContext(job, dictionary);
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            FileStore = Substitute.For<IFileStore>();
+            CommandBus = Substitute.For<ICommandBus>();
+        }
+
+        protected T BuildJob<T>() where T : AbstractFileJob, new()
+        {
+            var job = new T()
+            {
+                CommandBus = CommandBus,
+                FileStore = FileStore,
+                Logger = new ConsoleLogger(),
+                ConfigService = new ConfigService()
+            };
+
+            return job;
+        }
+
+        protected void ConfigureGetFile(string fileId, string pathToFile)
+        {
+            FileStore
+                .GetDescriptor(new FileId(fileId))
+                .Returns(new FsFileStoreHandle(pathToFile));
+        }
+
+        protected void ConfigureFileDownload(string fileId, string pathToFile)
+        {
+            FileStore
+                .Download(new FileId(fileId), Arg.Any<string>())
+                .Returns(info =>
+                {
+                    string tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetFileName(pathToFile));
+                    if(File.Exists(tmpFileName))
+                        File.Delete(tmpFileName);
+
+                    File.Copy(pathToFile, tmpFileName);
+                    return tmpFileName;
+                });
         }
     }
 }

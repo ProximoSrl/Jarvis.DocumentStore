@@ -129,6 +129,7 @@
     <Compile Include="DomainSpecs\DocumentSpecifications.cs" />
     <Compile Include="JobTests\AbstractJobTest.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
+    <Compile Include="JobTests\ExtractTextWithTikaJobTest.cs" />
     <Compile Include="Misc\ClassWithFileId.cs" />
     <Compile Include="Misc\FileIdJsonConverterTests.cs" />
     <Compile Include="Misc\StringValueMongoTests.cs" />
