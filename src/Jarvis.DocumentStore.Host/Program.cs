@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Configuration;
+using CQRS.Kernel.ProjectionEngine.Client;
 using Jarvis.DocumentStore.Host.Support;
 using Topshelf;
 
@@ -8,6 +10,8 @@ namespace Jarvis.DocumentStore.Host
     {
         static int Main(string[] args)
         {
+            ConfigureRebuild();
+
             var exitCode = HostFactory.Run(host =>
             {
                 host.UseOldLog4Net("log4net.config");
@@ -21,12 +25,60 @@ namespace Jarvis.DocumentStore.Host
 
                 host.RunAsNetworkService();
 
-                host.SetDescription("Image service for JARVIS");
-                host.SetDisplayName("Jarvis - Image service");
-                host.SetServiceName("JarvisImageService");
+                host.SetDescription("Jarvis - Document Store");
+                host.SetDisplayName("Jarvis - Document Store");
+                host.SetServiceName("JarvisDocumentStore");
             });
 
             return (int)exitCode;
         }
+
+        static void ConfigureRebuild()
+        {
+            if (!Environment.UserInteractive)
+                return;
+
+            if (!RolesHelper.IsReadmodelBuilder)
+                return;
+
+            Console.Title = "JARVIS :: Document Store Service";
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.Clear();
+            Banner();
+
+            RebuildSettings.Init(
+                ConfigurationManager.AppSettings["rebuild"] == "true",
+                ConfigurationManager.AppSettings["nitro-mode"] == "true"
+            );
+
+            if (RebuildSettings.ShouldRebuild)
+            {
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine("---> Rebuild the readmodel (y/N)?");
+
+                var res = Console.ReadLine().Trim().ToLowerInvariant();
+                if (res != "y")
+                {
+                    RebuildSettings.DisableRebuild();
+                }
+            }
+        }
+
+        private static void Banner()
+        {
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("===================================================================");
+            Console.WriteLine("Jarvis Document Store - Proximo srl");
+            Console.WriteLine("===================================================================");
+            Console.WriteLine("  install                        -> install service");
+            Console.WriteLine("  uninstall                      -> remove service");
+            Console.WriteLine("  net start JarvisDocumentStore  -> start service");
+            Console.WriteLine("  net stop JarvisDocumentStore   -> stop service");
+            Console.WriteLine("===================================================================");
+            Console.WriteLine();
+            Console.WriteLine();
+        }    
     }
 }

@@ -36,6 +36,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentCreated e)
         {
+            if (IsReplay)
+                return;
+
             var descriptor = _fileStore.GetDescriptor(e.FileId);
             Logger.DebugFormat("Starting conversion of document {0} {1}", e.FileId, descriptor.FileName);
             _conversionWorkflow.Start((DocumentId)e.AggregateId, e.FileId);
@@ -43,6 +46,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(FormatAddedToDocument e)
         {
+            if (IsReplay)
+                return;
+
             var descriptor = _fileStore.GetDescriptor(e.FileId);
             Logger.DebugFormat("Next conversion step for document {0} {1}", e.FileId, descriptor.FileName);
             _conversionWorkflow.FormatAvailable((DocumentId)e.AggregateId, e.DocumentFormat, e.FileId);

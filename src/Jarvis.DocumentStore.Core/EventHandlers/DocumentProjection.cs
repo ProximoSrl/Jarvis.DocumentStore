@@ -12,7 +12,9 @@ using Jarvis.DocumentStore.Core.ReadModel;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentProjection : AbstractProjection,
-        IEventHandler<DocumentCreated>
+        IEventHandler<DocumentCreated>,
+        IEventHandler<FormatAddedToDocument>
+
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
 
@@ -37,6 +39,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             {
                 Id = (DocumentId)e.AggregateId,
                 FileId = e.FileId
+            });
+        }
+
+        public void On(FormatAddedToDocument e)
+        {
+            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => {
+                d.AddFormat(e.DocumentFormat, e.FileId);
             });
         }
     }
