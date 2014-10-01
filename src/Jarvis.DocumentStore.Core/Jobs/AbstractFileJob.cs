@@ -1,7 +1,9 @@
-﻿using Castle.Core.Logging;
+﻿using System;
+using Castle.Core.Logging;
 using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Quartz;
 
@@ -15,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public ICommandBus CommandBus { get; set; }
         public ILogger Logger { get; set; }
         public IFileStore FileStore { get; set; }
-
+        public ConfigService ConfigService { get; set; }
         public void Execute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
@@ -26,5 +28,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
         }
 
         protected abstract void OnExecute(IJobExecutionContext context);
+
+        protected string DownloadFile(FileId id)
+        {
+            var workingFolder = ConfigService.GetWorkingFolder(id);
+            return FileStore.Download(id, workingFolder);
+        }
     }
 }

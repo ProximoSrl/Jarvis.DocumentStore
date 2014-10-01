@@ -111,6 +111,7 @@
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\NullHouseKeeper.cs" />
     <Compile Include="EventHandlers\PipelineHandler.cs" />
+    <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="ProcessingPipeline\Conversions\HtmlToPdfConverter.cs" />
     <Compile Include="ProcessingPipeline\Conversions\LibreOfficeConversion.cs" />
     <Compile Include="ProcessingPipeline\Conversions\MailMessageToHtmlConverterTask.cs" />
+    <Compile Include="ProcessingPipeline\Conversions\TikaAnalyzer.cs" />
     <Compile Include="ProcessingPipeline\IConversionWorkflow.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreateImageFromPdfTask.cs" />
     <Compile Include="ProcessingPipeline\Pdf\CreatePdfImageTaskParams.cs" />

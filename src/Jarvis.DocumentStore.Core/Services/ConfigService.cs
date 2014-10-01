@@ -35,6 +35,32 @@ namespace Jarvis.DocumentStore.Core.Services
             return GetConfigValue("LIBREOFFICE_PATH");
         }
 
+        public string GetPathToJava()
+        {
+            var javaHome = GetConfigValue("JAVA_HOME");
+            if (String.IsNullOrEmpty(javaHome))
+                throw new Exception("Please set JAVA_HOME in app.config or env variable");
+
+            var pathToJavaExe = Path.Combine(javaHome, "bin\\java.exe");
+            if (!File.Exists(pathToJavaExe))
+            {
+                throw new Exception(string.Format("Java not found on {0}", pathToJavaExe));
+            }
+
+            return pathToJavaExe;
+        }
+
+        public string GetPathToTika()
+        {
+            var pathToTika = GetConfigValue("TIKA_HOME");
+            if (!File.Exists(pathToTika))
+            {
+                throw new Exception(string.Format("Tika not found on {0}", pathToTika));
+            }
+
+            return pathToTika;
+        }
+        
         public string GetWorkingFolder(string fileId)
         {
             return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), fileId));
