@@ -29,9 +29,6 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<IFileStore>()
                     .ImplementedBy<GridFSFileStore>(),
                 Component
-                    .For<IFileService>()
-                    .ImplementedBy<MongoDbFileService>(),
-                Component
                     .For<ConfigService>(),
                 Component
                     .For<LibreOfficeConversion>()

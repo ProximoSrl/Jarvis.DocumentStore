@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Tests.PipelineTests;
@@ -21,6 +22,16 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             _client.Upload(TestConfig.PathToDocumentPdf, "Rev_1").Wait();
         }
+
+        [Test]
+        public void upload_lots_of_pdf()
+        {
+            Parallel.ForEach(Enumerable.Range(1, 100), i =>
+            {
+                _client.Upload(TestConfig.PathToDocumentPdf, "Rev_"+i).Wait();
+            });
+        }
+
 
         [Test]
         public void upload_doc()
