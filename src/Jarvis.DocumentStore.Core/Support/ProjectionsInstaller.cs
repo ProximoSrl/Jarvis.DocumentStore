@@ -12,6 +12,7 @@ using CQRS.Kernel.Engine.Snapshots;
 using CQRS.Kernel.Events;
 using CQRS.Kernel.ProjectionEngine;
 using CQRS.Kernel.ProjectionEngine.Client;
+using CQRS.Kernel.ProjectionEngine.RecycleBin;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.Messages;
 using CQRS.Shared.ReadModel;
@@ -94,7 +95,11 @@ namespace Jarvis.DocumentStore.Core.Support
                     .DependsOn(Dependency.OnValue<bool>(RebuildSettings.NitroMode)),
                 Component
                     .For<IMongoStorageFactory>()
-                    .ImplementedBy<MongoStorageFactory>()
+                    .ImplementedBy<MongoStorageFactory>(),
+                Component
+                    .For<IRecycleBin>()
+                    .ImplementedBy<RecycleBin>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
             );
 
             var im = container.Resolve<IdentityManager>();

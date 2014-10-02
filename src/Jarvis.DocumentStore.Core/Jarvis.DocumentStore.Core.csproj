@@ -116,6 +116,7 @@
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\NullHouseKeeper.cs" />
     <Compile Include="EventHandlers\PipelineHandler.cs" />
+    <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
