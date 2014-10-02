@@ -9,6 +9,7 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Machine.Specifications;
+using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
 
@@ -19,6 +20,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         protected static readonly DocumentId _id = new DocumentId(1);
         protected static readonly FileId _fileId = new FileId("newFile");
         protected static readonly FileAlias _alias = new FileAlias("alias-to-file");
+
         protected static Document Document
         {
             get { return Aggregate; }
@@ -29,7 +31,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         Establish context = () => Create();
 
-        Because of = () => Document.Create(_id,_fileId, _alias);
+        Because of = () => Document.Create(_id, _fileId, _alias);
 
         It DocumentCreatedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentCreated>().ShouldBeTrue();
@@ -40,16 +42,17 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
     public class when_a_document_is_created_twice : DocumentSpecifications
     {
-        private static Exception _ex;
-        private Establish context = () =>
+        static Exception _ex;
+
+        Establish context = () =>
         {
             Create();
-            Document.Create(_id, _fileId,_alias);
+            Document.Create(_id, _fileId, _alias);
         };
-        
-        Because of = () => _ex = Catch.Exception(()=> Document.Create(_id, _fileId, _alias));
 
-        private It a_domain_exception_should_be_thrown = () =>
+        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, _alias));
+
+        It a_domain_exception_should_be_thrown = () =>
         {
             _ex.ShouldNotBeNull();
             _ex.ShouldBeAssignableTo<DomainException>();
@@ -93,7 +96,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         {
             Establish context = () => SetUp(new DocumentState(
                 new KeyValuePair<DocumentFormat, FileId>(XmlDocumentFormatId1, xmlFileId1))
-            );
+                );
 
             Because of = () => Document.AddFormat(XmlDocumentFormatId2, xmlFileId2);
 
@@ -110,23 +113,23 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     }
 
     [Subject("DocumentFormats")]
-    public class when_document_format_has_been_deleted:DocumentSpecifications
+    public class when_document_format_has_been_deleted : DocumentSpecifications
     {
         protected static readonly DocumentFormat XmlDocumentFormatId1 = new DocumentFormat("xml");
         protected static readonly FileId xmlFileId1 = new FileId("xml1");
 
-        private Establish context =
+        Establish context =
             () => SetUp(new DocumentState(new KeyValuePair<DocumentFormat, FileId>(XmlDocumentFormatId1, xmlFileId1)));
 
-        private Because of = () => Document.DeleteFormat(XmlDocumentFormatId1);
+        Because of = () => Document.DeleteFormat(XmlDocumentFormatId1);
 
-        private It DocumentFormatHasBeenDeleted_event_should_have_been_raised =
+        It DocumentFormatHasBeenDeleted_event_should_have_been_raised =
             () => EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeTrue();
 
-        private It document_format_do_not_contain_deleted_format =
+        It document_format_do_not_contain_deleted_format =
             () => Aggregate.InternalState.Formats.ContainsKey(XmlDocumentFormatId1).ShouldBeFalse();
 
-        private It document_format_do_not_contain_fileId =
+        It document_format_do_not_contain_fileId =
             () => Aggregate.InternalState.Formats.Values.ShouldNotContain(xmlFileId1);
     }
 
@@ -134,27 +137,49 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     public class when_document_format_deleted_will_be_deleted : DocumentSpecifications
     {
         protected static readonly DocumentFormat XmlDocumentFormatId1 = new DocumentFormat("xml");
-        private Establish context =
+
+        Establish context =
             () => SetUp(new DocumentState());
 
-        private Because of = () => Document.DeleteFormat(XmlDocumentFormatId1);
+        Because of = () => Document.DeleteFormat(XmlDocumentFormatId1);
 
-        private It DocumentFormatHasBeenDeleted_event_should_not_been_raised =
+        It DocumentFormatHasBeenDeleted_event_should_not_been_raised =
             () => EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeFalse();
     }
 
     [Subject("DocumentEvents")]
     public class when_a_document_is_deleted : DocumentSpecifications
     {
-        private Establish context = () => Create();
+        Establish context = () => Create();
 
-        private Because of = () =>
-            {
-                Document.Create(_id,_fileId,_alias);
-                Document.Delete();
-            };
+        Because of = () =>
+        {
+            Document.Create(_id, _fileId, _alias);
+            Document.Delete();
+        };
 
-        private It DocumentDeleted_event_should_have_been_raised = () =>
+        It DocumentDeleted_event_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentDeleted>().ShouldBeTrue();
+    }
+
+    [Subject("with a document")]
+    public class when_a_document_is_deduplicated : DocumentSpecifications
+    {
+        static readonly FileAlias _otherAlias = new FileAlias("other_alias");
+        static readonly DocumentId _otherDocumentId = new DocumentId("Document_2");
+
+        Establish context = () => SetUp(new DocumentState());
+
+        Because of = () => Document.Deduplicate(_otherDocumentId, _otherAlias);
+
+        It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
+            EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
+
+        It DocumentHasBeenDeduplicated_event_should_have_documentId_and_alias = () =>
+        {
+            var e = RaisedEvent<DocumentHasBeenDeduplicated>();
+            Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
+            Assert.AreSame(_otherAlias, e.OtherFileAlias);
+        };
     }
 }

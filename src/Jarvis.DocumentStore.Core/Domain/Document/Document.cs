@@ -23,8 +23,8 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Create(DocumentId id, FileId fileId, FileAlias alias)
         {
-            if(HasBeenCreated)
-                throw new DomainException((IIdentity) id, "Already created");
+            if (HasBeenCreated)
+                throw new DomainException((IIdentity)id, "Already created");
 
             RaiseEvent(new DocumentCreated(id, fileId, alias));
         }
@@ -51,7 +51,15 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Delete()
         {
-            RaiseEvent(new DocumentDeleted());
+            RaiseEvent(new DocumentDeleted(
+                InternalState.FileId, 
+                InternalState.Formats.Select(x=>x.Value).ToArray()
+            ));
+        }
+
+        public void Deduplicate(DocumentId documentId, FileAlias alias)
+        {
+            RaiseEvent(new DocumentHasBeenDeduplicated(documentId, alias));
         }
     }
 }

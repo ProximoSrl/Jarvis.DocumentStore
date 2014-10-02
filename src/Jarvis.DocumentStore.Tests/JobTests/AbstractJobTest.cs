@@ -75,7 +75,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         {
             FileStore
                 .GetDescriptor(new FileId(fileId))
-                .Returns(new FsFileStoreHandle(pathToFile));
+                .Returns(new FsFileDescriptor(pathToFile));
         }
 
         protected void ConfigureFileDownload(string fileId, string pathToFile)

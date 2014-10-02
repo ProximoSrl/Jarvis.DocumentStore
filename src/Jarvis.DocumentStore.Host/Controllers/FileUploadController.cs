@@ -8,7 +8,6 @@ using CQRS.Shared.IdentitySupport;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Providers;
@@ -21,17 +20,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly ICommandBus _commandBus;
         readonly IIdentityGenerator _identityGenerator;
-        readonly IFileAliasMapper _mapper;
 
         public ILogger Logger { get; set; }
 
-        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IFileAliasMapper mapper)
+        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator)
         {
             _fileStore = fileStore;
             _configService = configService;
             _commandBus = commandBus;
             _identityGenerator = identityGenerator;
-            _mapper = mapper;
         }
 
         [Route("file/upload/status")]
@@ -59,8 +56,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     errorMessage
                 );
             }
-
-            _mapper.Associate(alias, documentId);
 
             _commandBus.Send(new CreateDocument(documentId, fileId,alias));
 

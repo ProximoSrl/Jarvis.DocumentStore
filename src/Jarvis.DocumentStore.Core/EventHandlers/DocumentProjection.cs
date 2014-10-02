@@ -13,7 +13,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentProjection : AbstractProjection,
         IEventHandler<DocumentCreated>,
-        IEventHandler<FormatAddedToDocument>
+        IEventHandler<FormatAddedToDocument>,
+        IEventHandler<DocumentDeleted>
 
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
@@ -47,6 +48,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => {
                 d.AddFormat(e.DocumentFormat, e.FileId);
             });
+        }
+
+        public void On(DocumentDeleted e)
+        {
+            _documents.Delete(e, (DocumentId) e.AggregateId);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             });
         }
 
-        public IFileStoreHandle GetDescriptor(FileId fileId)
+        public IFileDescriptor GetDescriptor(FileId fileId)
         {
             var s = _gridFs.FindOneById((string)fileId);
             if (s == null)
@@ -38,7 +38,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Logger.DebugFormat(message);
                 throw new Exception(message);
             }
-            return new GridFsFileStoreHandle(s);
+            return new GridFsFileDescriptor(s);
         }
 
         public void Delete(FileId fileId)

@@ -8,7 +8,8 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
     public class DocumentState : AggregateState
     {
         public IDictionary<DocumentFormat, FileId> Formats { get; private set; }
-
+        public FileId FileId { get; private set; }
+        
         public DocumentState(params KeyValuePair<DocumentFormat, FileId>[] formats)
             : this()
         {
@@ -26,6 +27,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         void When(DocumentCreated e)
         {
             this.AggregateId = e.AggregateId;
+            this.FileId = e.FileId;
         }
 
         void When(FormatAddedToDocument e)

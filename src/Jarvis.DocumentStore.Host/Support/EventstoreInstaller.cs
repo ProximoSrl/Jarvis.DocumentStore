@@ -100,6 +100,7 @@ namespace Jarvis.DocumentStore.Host.Support
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
             StringValueCustomBsonTypeMapper.Register<FileId>();
             StringValueCustomBsonTypeMapper.Register<FileAlias>();
+            StringValueCustomBsonTypeMapper.Register<FileHash>();
         }
     }
 }

@@ -4,14 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
-    public class FsFileStoreHandle : IFileStoreHandle
+    public class FsFileDescriptor : IFileDescriptor
     {
         readonly string _pathToFile;
 
-        public FsFileStoreHandle(string pathToFile)
+        public FsFileDescriptor(string pathToFile)
         {
             _pathToFile = pathToFile;
         }
@@ -33,6 +34,14 @@ namespace Jarvis.DocumentStore.Core.Storage
         
         public string ContentType {
             get { return MimeTypes.GetMimeType(FileName); }
+        }
+
+        public FileHash Hash {
+            get { throw new NotImplementedException(); }
+        }
+
+        public long Length {
+            get { return new FileInfo(_pathToFile).Length; }
         }
     }
 }

@@ -1,11 +1,17 @@
 using CQRS.Shared.Events;
+using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 {
     public class DocumentDeleted : DomainEvent
     {
-        public DocumentDeleted()
+        public FileId FileId { get; private set; }
+        public FileId[] FileFormatsId { get; private set; }
+
+        public DocumentDeleted(FileId fileId, FileId[] formats)
         {
+            FileId = fileId;
+            FileFormatsId = formats;
         }
     }
 }

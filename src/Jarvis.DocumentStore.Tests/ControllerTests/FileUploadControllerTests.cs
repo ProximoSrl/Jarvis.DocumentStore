@@ -31,9 +31,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             _fileStore = Substitute.For<IFileStore>();
             var cmdBus = Substitute.For<ICommandBus>();
             var im = Substitute.For<IIdentityGenerator>();
-            var mapper = Substitute.For<IFileAliasMapper>();
 
-            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im, mapper)
+            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im)
             {
                 Request = new HttpRequestMessage(),
                 Logger = new ConsoleLogger()
