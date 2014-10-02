@@ -18,6 +18,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         protected static readonly DocumentId _id = new DocumentId(1);
         protected static readonly FileId _fileId = new FileId("newFile");
+        protected static readonly FileAlias _alias = new FileAlias("alias-to-file");
         protected static Document Document
         {
             get { return Aggregate; }
@@ -28,7 +29,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         Establish context = () => Create();
 
-        Because of = () => Document.Create(_id,_fileId);
+        Because of = () => Document.Create(_id,_fileId, _alias);
 
         It DocumentCreatedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentCreated>().ShouldBeTrue();
@@ -43,10 +44,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         private Establish context = () =>
         {
             Create();
-            Document.Create(_id, _fileId);
+            Document.Create(_id, _fileId,_alias);
         };
         
-        Because of = () => _ex = Catch.Exception(()=> Document.Create(_id, _fileId));
+        Because of = () => _ex = Catch.Exception(()=> Document.Create(_id, _fileId, _alias));
 
         private It a_domain_exception_should_be_thrown = () =>
         {
@@ -149,7 +150,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         private Because of = () =>
             {
-                Document.Create(_id,_fileId);
+                Document.Create(_id,_fileId,_alias);
                 Document.Delete();
             };
 

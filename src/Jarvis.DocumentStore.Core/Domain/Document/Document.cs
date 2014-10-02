@@ -21,12 +21,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Create(DocumentId id, FileId fileId)
+        public void Create(DocumentId id, FileId fileId, FileAlias alias)
         {
             if(HasBeenCreated)
                 throw new DomainException((IIdentity) id, "Already created");
 
-            RaiseEvent(new DocumentCreated(id, fileId));
+            RaiseEvent(new DocumentCreated(id, fileId, alias));
         }
 
         public void AddFormat(DocumentFormat documentFormat, FileId fileId)

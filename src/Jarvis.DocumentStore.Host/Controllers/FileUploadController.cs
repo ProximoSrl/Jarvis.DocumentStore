@@ -62,7 +62,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             _mapper.Associate(alias, documentId);
 
-            _commandBus.Send(new CreateDocument(documentId, fileId));
+            _commandBus.Send(new CreateDocument(documentId, fileId,alias));
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 

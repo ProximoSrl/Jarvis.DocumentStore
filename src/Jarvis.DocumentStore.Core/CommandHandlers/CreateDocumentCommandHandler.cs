@@ -19,7 +19,11 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers
     {
         protected override void Execute(CreateDocument cmd)
         {
-            FindAndModify(cmd.AggregateId, doc=>doc.Create(cmd.AggregateId, cmd.FileId), true);
+            FindAndModify(cmd.AggregateId, doc=>doc.Create(
+                cmd.AggregateId, 
+                cmd.FileId,
+                cmd.Alias
+            ), true);
         }
     }
 }

@@ -12,6 +12,7 @@ using CommonDomain.Core;
 using CQRS.Kernel.Engine;
 using CQRS.Kernel.Engine.Snapshots;
 using CQRS.Kernel.Store;
+using CQRS.Shared.Domain.Serialization;
 using CQRS.Shared.Events;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.IdentitySupport.Serialization;
@@ -36,7 +37,7 @@ namespace Jarvis.DocumentStore.Host.Support
             container.Register(
                 Component
                     .For<EventStoreFactory>()
-                    .DependsOn(Dependency.OnValue("connectionString", "events"))
+                    .DependsOn(Dependency.OnValue("connectionString", ConfigurationManager.ConnectionStrings["events"].ConnectionString))
                     .LifestyleSingleton(),
                 Component
                     .For<IStoreEvents>()
@@ -97,6 +98,8 @@ namespace Jarvis.DocumentStore.Host.Support
                 map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
             });
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
+            StringValueCustomBsonTypeMapper.Register<FileId>();
+            StringValueCustomBsonTypeMapper.Register<FileAlias>();
         }
     }
 }
