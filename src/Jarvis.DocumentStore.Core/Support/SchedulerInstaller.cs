@@ -40,7 +40,6 @@ namespace Jarvis.DocumentStore.Core.Support
 
             container.Resolve<IScheduler>().ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<ILogger>(),
-                container.Resolve<IConversionWorkflow>(),
                 container.Resolve<MongoDatabase>()
             ));
         }

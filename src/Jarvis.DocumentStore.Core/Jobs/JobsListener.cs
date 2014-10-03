@@ -1,7 +1,6 @@
 ﻿using System;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -12,13 +11,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class JobsListener : IJobListener
     {
-        readonly IConversionWorkflow _conversionWorkflow;
         readonly ILogger _logger;
         readonly MongoCollection<JobTracker> _trackerCollection;
 
-        public JobsListener(ILogger logger, IConversionWorkflow conversionWorkflow, MongoDatabase db)
+        public JobsListener(ILogger logger, MongoDatabase db)
         {
-            _conversionWorkflow = conversionWorkflow;
             _logger = logger;
             _trackerCollection = db.GetCollection<JobTracker>("joblog");
         }
