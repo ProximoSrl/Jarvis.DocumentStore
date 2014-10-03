@@ -20,10 +20,10 @@ using Jarvis.DocumentStore.Core.Storage;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class PipelineHandler : AbstractProjection
-        ,IEventHandler<DocumentCreated>
-        ,IEventHandler<FormatAddedToDocument>
-        ,IEventHandler<DocumentHasBeenDeduplicated>
-        ,IEventHandler<DocumentDeleted>
+        , IEventHandler<DocumentCreated>
+        , IEventHandler<FormatAddedToDocument>
+        , IEventHandler<DocumentHasBeenDeduplicated>
+        , IEventHandler<DocumentDeleted>
     {
         public ILogger Logger { get; set; }
         readonly IFileStore _fileStore;
@@ -55,8 +55,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentCreated e)
         {
-            var documentId = (DocumentId) e.AggregateId;
-            
+            var documentId = (DocumentId)e.AggregateId;
+
             var descriptor = _fileStore.GetDescriptor(e.FileId);
             _aliasToDoc.Upsert(e, e.Alias, CreateNewMapping(e), UpdateCurrentMapping(e));
 
@@ -74,7 +74,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 foreach (var link in hashToDoc.Documents)
                 {
                     // skip self
-                    if(link.FileId == e.FileId)
+                    if (link.FileId == e.FileId)
                         continue;
 
                     var otherFileDescriptor = this._fileStore.GetDescriptor(link.FileId);
@@ -84,13 +84,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                         if (otherFileDescriptor.Length == descriptor.Length)
                         {
                             // binary check
-                            using(var otherStream = otherFileDescriptor.OpenRead())
+                            using (var otherStream = otherFileDescriptor.OpenRead())
                             using (var thisStream = descriptor.OpenRead())
                             {
                                 if (StreamsContentsAreEqual(otherStream, thisStream))
                                 {
                                     Logger.DebugFormat(
-                                        "Deduplicating file {0} -> {1}", 
+                                        "Deduplicating file {0} -> {1}",
                                         e.FileId,
                                         link.FileId
                                     );
@@ -174,7 +174,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentHasBeenDeduplicated e)
         {
-            this._aliasToDoc.FindAndModify(e, e.OtherFileAlias, m=> m.DocumentId = (DocumentId)e.AggregateId);
+            _aliasToDoc.FindAndModify(e,
+                e.OtherFileAlias,
+                map => map.DocumentId = (DocumentId)e.AggregateId
+            );
 
             if (IsReplay)
                 return;

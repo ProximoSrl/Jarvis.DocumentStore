@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
             var config = new ProjectionEngineConfig()
             {
-                EventStoreConnectionString = "events",
+                EventStoreConnectionString = ConfigurationManager.ConnectionStrings["events"].ConnectionString,
                 Slots = ConfigurationManager.AppSettings["engine-slots"].Split(','),
                 PollingMsInterval = int.Parse(ConfigurationManager.AppSettings["polling-interval-ms"]),
                 ForcedGcSecondsInterval = int.Parse(ConfigurationManager.AppSettings["memory-collect-seconds"])

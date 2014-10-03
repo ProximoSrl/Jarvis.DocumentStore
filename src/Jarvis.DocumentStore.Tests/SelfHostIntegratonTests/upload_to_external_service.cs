@@ -24,6 +24,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_same_pdf_with_two_aliases()
+        {
+            _client.Upload(TestConfig.PathToDocumentPdf, "Pdf_1").Wait();
+            _client.Upload(TestConfig.PathToDocumentPdf, "Pdf_2").Wait();
+        }
+
+        [Test]
         public void upload_lots_of_pdf()
         {
             Parallel.ForEach(Enumerable.Range(1, 100), i =>

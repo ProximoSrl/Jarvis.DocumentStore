@@ -21,6 +21,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override void Drop()
         {
+            _recycleBin.Drop();
         }
 
         public override void SetUp()
@@ -29,7 +30,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDeleted e)
         {
-            _recycleBin.Delete("Jarvis", e.AggregateId);
+            var files = e.FileFormatsId.Concat(new []{ e.FileId}).ToArray();
+            _recycleBin.Delete("Jarvis", e.AggregateId, new { files });
         }
     }
 }
