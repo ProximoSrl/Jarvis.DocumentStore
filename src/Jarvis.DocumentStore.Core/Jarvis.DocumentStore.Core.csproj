@@ -117,6 +117,7 @@
     <Compile Include="EventHandlers\NullHouseKeeper.cs" />
     <Compile Include="EventHandlers\PipelineHandler.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
+    <Compile Include="Jobs\CleanupJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
@@ -155,6 +156,7 @@
     <Compile Include="Support\ProjectionsInstaller.cs" />
     <Compile Include="Support\SchedulerInstaller.cs" />
     <Compile Include="Support\SizeInfoHelper.cs" />
+    <Compile Include="Support\StartupCoordinator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

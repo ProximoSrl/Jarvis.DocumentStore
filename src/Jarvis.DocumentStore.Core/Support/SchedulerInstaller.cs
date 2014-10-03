@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Castle.Core.Configuration;
 using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
@@ -38,10 +39,33 @@ namespace Jarvis.DocumentStore.Core.Support
                     .ImplementedBy<ConversionWorkflow>()
             );
 
-            container.Resolve<IScheduler>().ListenerManager.AddJobListener(new JobsListener(
+            var scheduler = container.Resolve<IScheduler>();
+//            scheduler.PauseAll();
+
+            scheduler.ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<ILogger>(),
                 container.Resolve<MongoDatabase>()
             ));
+
+            SetupCleanupJob(scheduler);
+        }
+
+        void SetupCleanupJob(IScheduler scheduler)
+        {
+            scheduler.DeleteJob(JobKey.Create("sys.cleanup"));
+
+            var job = JobBuilder
+                .Create<CleanupJob>()
+                .WithIdentity("sys.cleanup")
+                .Build();
+
+            var trigger = TriggerBuilder.Create()
+                .StartAt(DateTimeOffset.Now)
+                .WithSimpleSchedule(b=>b.RepeatForever().WithIntervalInMinutes(5))
+                .WithPriority(10)
+                .Build();
+
+            scheduler.ScheduleJob(job, trigger);
         }
 
         IConfiguration CreateDefaultConfiguration()
@@ -50,7 +74,7 @@ namespace Jarvis.DocumentStore.Core.Support
             var quartz = new MutableConfiguration("quartz");
             config.Children.Add(quartz);
 
-            quartz.CreateChild("item", "jarvis")
+            quartz.CreateChild("item", "jarvis.documentstore")
                     .Attribute("key", "quartz.scheduler.instanceName");
 
             quartz.CreateChild("item", Environment.MachineName + "-"+DateTime.Now.ToShortTimeString())
