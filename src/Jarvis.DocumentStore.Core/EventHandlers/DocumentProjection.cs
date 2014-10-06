@@ -23,6 +23,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _documents = documents;
             _documents.Attach(this,false);
+
+            _documents.OnSave = d =>
+            {
+                d.AliasesCount = d.Aliases.Count;
+                d.FormatsCount = d.Formats.Count;
+            };
         }
 
         public override void Drop()

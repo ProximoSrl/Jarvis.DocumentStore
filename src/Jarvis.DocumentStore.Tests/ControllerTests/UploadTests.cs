@@ -188,9 +188,10 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var fileAlias = new FileAlias("doc");
             var format = new DocumentFormat("original");
 
+            var fileId = new FileId("file_1");
             var doc = new DocumentReadModel(
                 new DocumentId(1), 
-                new FileId("file_1"), 
+                fileId, 
                 fileAlias,
                 new FileNameWithExtension("A document.docx")
             );
@@ -198,7 +199,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupFileAlias(fileAlias, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(doc.FileId).Returns(i => null );
+            FileStore.GetDescriptor(fileId).Returns(i => null);
 
             // act
             var response = Controller.GetFormat(fileAlias, format).Result;
@@ -216,9 +217,10 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var fileAlias = new FileAlias("doc");
             var format = new DocumentFormat("original");
 
+            var fileId = new FileId("file_1");
             var doc = new DocumentReadModel(
                 new DocumentId(1),
-                new FileId("file_1"),
+                fileId,
                 fileAlias,
                 new FileNameWithExtension("A document.docx")
             );
@@ -227,7 +229,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupFileAlias(fileAlias, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(doc.FileId).Returns(i => new FsFileDescriptor(TestConfig.PathToWordDocument));
+            FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(TestConfig.PathToWordDocument));
 
             // act
             using (var response = Controller.GetFormat(fileAlias, format).Result)
