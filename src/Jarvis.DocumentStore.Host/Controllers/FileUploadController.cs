@@ -1,13 +1,17 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Providers;
@@ -20,17 +24,20 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly ICommandBus _commandBus;
         readonly IIdentityGenerator _identityGenerator;
-
+        readonly IReader<AliasToDocument, FileAlias> _aliasToDocument;
+        readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
         FileNameWithExtension _fileName;
 
 
-        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator)
+        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IReader<AliasToDocument, FileAlias> aliasToDocument, IReader<DocumentReadModel, DocumentId> documentReader)
         {
             _fileStore = fileStore;
             _configService = configService;
             _commandBus = commandBus;
             _identityGenerator = identityGenerator;
+            _aliasToDocument = aliasToDocument;
+            _documentReader = documentReader;
         }
 
         [Route("file/upload/status")]
@@ -40,7 +47,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return "ok";
         }
 
-        [Route("file/upload/{*alias}")]
+        [Route("file/upload/{alias}")]
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(FileAlias alias)
         {
@@ -90,6 +97,48 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _fileName = provider.Filename;
 
             return null;
+        }
+
+        [Route("file/{alias}/{format}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetFormat(FileAlias alias, DocumentFormat format)
+        {
+            var mapping = _aliasToDocument.FindOneById(alias);
+            if (mapping == null)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("Document {0} not found", alias)
+                );
+            }
+
+            var document = _documentReader.FindOneById(mapping.DocumentId);
+            if (document == null)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("Document {0} not found", mapping.DocumentId)
+                );
+            }
+
+            FileId formatFileId = null;
+            if (!document.Formats.TryGetValue(format, out formatFileId))
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("Document {0} doesn't have format {1}",
+                        alias,
+                        format
+                    )
+                );
+            }
+
+            var descriptor = _fileStore.GetDescriptor(formatFileId);
+
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StreamContent(descriptor.OpenRead());
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+            return response;
         }
     }
 }

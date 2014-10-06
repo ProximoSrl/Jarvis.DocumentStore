@@ -7,7 +7,10 @@ using System.Web.Http.Hosting;
 using Castle.Core.Logging;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.ReadModel;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Controllers;
@@ -31,8 +34,12 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             _fileStore = Substitute.For<IFileStore>();
             var cmdBus = Substitute.For<ICommandBus>();
             var im = Substitute.For<IIdentityGenerator>();
+            var aliasToDocumentReader = Substitute.For<IReader<AliasToDocument, FileAlias>>();
+            var documentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
 
-            _controller = new FileUploadController(_fileStore, new ConfigService(),cmdBus, im)
+
+
+            _controller = new FileUploadController(_fileStore, new ConfigService(), cmdBus, im,aliasToDocumentReader, documentReader)
             {
                 Request = new HttpRequestMessage(),
                 Logger = new ConsoleLogger()
@@ -63,8 +70,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var response = await upload_file(TestConfig.PathToInvalidFile);
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Unsupported file file.invalid", response.GetError().Message);
-        } 
-        
+        }
+
         [Test]
         public async void calling_upload_with_supported_file_type_should_return_Ok()
         {
@@ -96,7 +103,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 _controller.Request.Content = multipartFormDataContent;
 
                 return await _controller.Upload(new FileAlias("Document_1"));
-            }        
+            }
         }
     }
 }
