@@ -14,6 +14,7 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
     {
         public const string RasterImage = "raster";
         public const string Pdf = "pdf";
+        public const string Original = "original";
     }
 
     public class ConversionWorkflow : IConversionWorkflow

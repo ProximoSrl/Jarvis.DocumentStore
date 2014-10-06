@@ -11,6 +11,7 @@ using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
@@ -38,13 +39,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _identityGenerator = identityGenerator;
             _aliasToDocument = aliasToDocument;
             _documentReader = documentReader;
-        }
-
-        [Route("file/upload/status")]
-        [HttpGet]
-        public string Status()
-        {
-            return "ok";
         }
 
         [Route("file/upload/{alias}")]
@@ -108,7 +102,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
-                    string.Format("Document {0} not found", alias)
+                    string.Format("Document not found for alias {0}", alias)
                 );
             }
 
@@ -121,9 +115,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            if (format == "original")
+            if (format == DocumentFormats.Original)
             {
-                return StreamFile(document.FileId);
+                return StreamFile(document.FileId, document.FileName);
             }
 
             FileId formatFileId = null;
@@ -141,12 +135,30 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return StreamFile(formatFileId);
         }
 
-        HttpResponseMessage StreamFile(FileId formatFileId)
+        HttpResponseMessage StreamFile(FileId formatFileId, FileNameWithExtension fileName = null)
         {
             var descriptor = _fileStore.GetDescriptor(formatFileId);
+
+            if (descriptor == null)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("File {0} not found",formatFileId)
+                );
+            }
+
             var response = Request.CreateResponse(HttpStatusCode.OK);
             response.Content = new StreamContent(descriptor.OpenRead());
             response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+
+            if (fileName != null)
+            {
+                response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                {
+                    FileName = fileName
+                };
+            }
+
             return response;
         }
     }

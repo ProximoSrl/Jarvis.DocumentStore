@@ -125,7 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
-    <Compile Include="ControllerTests\FileUploadControllerTests.cs" />
+    <Compile Include="ControllerTests\UploadTests.cs" />
     <Compile Include="DomainSpecs\DocumentSpecifications.cs" />
     <Compile Include="DomainSpecs\FileNameWithExtensionSpecs.cs" />
     <Compile Include="JobTests\AbstractJobTest.cs" />
