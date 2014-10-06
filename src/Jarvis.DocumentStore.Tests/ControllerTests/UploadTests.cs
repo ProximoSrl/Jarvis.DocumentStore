@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -48,13 +49,9 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             Controller.Request.Properties.Add(HttpPropertyKeys.HttpConfigurationKey, new HttpConfiguration());
         }
 
-        protected void SetupDocumentModel(DocumentId documentId, FileId fileId, string aDocumentDocx)
+        protected void SetupDocumentModel(DocumentReadModel doc)
         {
-            this.DocumentReader.FindOneById(documentId).Returns(info => new DocumentReadModel()
-            {
-                FileId = fileId,
-                FileName = new FileNameWithExtension(aDocumentDocx)
-            });
+            this.DocumentReader.FindOneById(doc.Id).Returns(info => doc);
         }
 
         protected void SetupFileAlias(FileAlias fileAlias, DocumentId documentId)
@@ -141,14 +138,14 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
             Assert.AreEqual("Document not found for alias not_in_store", response.GetError().Message);
-        }    
-        
+        }
+
         [Test]
-        public void request_for_missing_format_should_404()
+        public void request_for_missing_document_should_404()
         {
             // arrange
             var fileAlias = new FileAlias("doc");
-            var format = new DocumentFormat("missing");
+            var format = new DocumentFormat("any_format");
             SetupFileAlias(fileAlias, new DocumentId(1));
 
             // act
@@ -160,25 +157,114 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         }
 
         [Test]
-        public void should_download_original_file()
+        public void request_for_missing_format_should_404()
         {
             // arrange
             var fileAlias = new FileAlias("doc");
-            var format = new DocumentFormat("original");
-            var documentId = new DocumentId(1);
-            var fileId = new FileId("File_1");
+            var format = new DocumentFormat("missing");
 
-            SetupFileAlias(fileAlias, documentId);
-            SetupDocumentModel(documentId,fileId, "A document.docx");
+            var doc = new DocumentReadModel()
+            {
+                Id = new DocumentId(1),
+                FileId = new FileId("file_1"),
+                FileName = new FileNameWithExtension("document.docx")
+            };
 
-            FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(TestConfig.PathToWordDocument));
+            SetupFileAlias(fileAlias, doc.Id);
+            SetupDocumentModel(doc);
 
             // act
             var response = Controller.GetFormat(fileAlias, format).Result;
 
             // assert
-            response.EnsureSuccessStatusCode();
-            Assert.AreEqual("\"A document.docx\"", response.Content.Headers.ContentDisposition.FileName);
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.AreEqual("Document doc doesn't have format missing", response.GetError().Message);
+        }
+
+        [Test]
+        public void when_file_is_not_found_should_return_404()
+        {
+            // arrange
+            var fileAlias = new FileAlias("doc");
+            var format = new DocumentFormat("original");
+
+            var doc = new DocumentReadModel()
+            {
+                Id = new DocumentId(1),
+                FileId = new FileId("file_1"),
+                FileName = new FileNameWithExtension("A document.docx")
+            };
+
+            SetupFileAlias(fileAlias, doc.Id);
+            SetupDocumentModel(doc);
+
+            FileStore.GetDescriptor(doc.FileId).Returns(i => null );
+
+            // act
+            var response = Controller.GetFormat(fileAlias, format).Result;
+
+            // assert
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.AreEqual("File file_1 not found", response.GetError().Message);
+        }
+
+
+        [Test]
+        public void should_download_original_file()
+        {
+            // arrange
+            var fileAlias = new FileAlias("doc");
+            var format = new DocumentFormat("original");
+
+            var doc = new DocumentReadModel()
+            {
+                Id = new DocumentId(1),
+                FileId = new FileId("file_1"),
+                FileName = new FileNameWithExtension("A document.docx")
+            };
+
+            SetupFileAlias(fileAlias, doc.Id);
+            SetupDocumentModel(doc);
+
+            FileStore.GetDescriptor(doc.FileId).Returns(i => new FsFileDescriptor(TestConfig.PathToWordDocument));
+
+            // act
+            using (var response = Controller.GetFormat(fileAlias, format).Result)
+            {
+                // assert
+                response.EnsureSuccessStatusCode();
+                Assert.AreEqual("\"A document.docx\"", response.Content.Headers.ContentDisposition.FileName);
+            }
+        }
+
+        [Test]
+        public void should_download_pdf_format()
+        {
+            // arrange
+            var fileAlias = new FileAlias("doc");
+            var format = new DocumentFormat("pdf");
+            var pdfFileId = new FileId("pdf");
+
+            var doc = new DocumentReadModel()
+            {
+                Id = new DocumentId(1),
+                FileId = new FileId("file_1"),
+                FileName = new FileNameWithExtension("A document.docx")
+            };
+            doc.AddFormat(format, pdfFileId);
+
+            SetupFileAlias(fileAlias, doc.Id);
+            SetupDocumentModel(doc);
+
+            FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileDescriptor(TestConfig.PathToDocumentPdf));
+
+            // act
+            using (var response = Controller.GetFormat(fileAlias, format).Result)
+            {
+                // assert
+                response.EnsureSuccessStatusCode();
+                Assert.AreEqual("application/pdf", response.Content.Headers.ContentType.MediaType);
+            }
         }
     }
 }
