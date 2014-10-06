@@ -117,7 +117,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (format == DocumentFormats.Original)
             {
-                return StreamFile(document.FileId, document.FileName);
+                return StreamFile(document.FileId, document.GetFileName(alias));
             }
 
             FileId formatFileId = null;

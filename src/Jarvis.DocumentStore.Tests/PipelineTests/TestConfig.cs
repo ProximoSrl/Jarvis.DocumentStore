@@ -19,6 +19,10 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Document.pdf"); }
         }
 
+        public static string PathToDocumentCopyPdf{
+            get { return Path.Combine(DocumentsFolder, "Document_Copy.pdf"); }
+        }
+
         public static string PathToEml{
             get { return Path.Combine(DocumentsFolder, "eml sample.eml"); }
         }

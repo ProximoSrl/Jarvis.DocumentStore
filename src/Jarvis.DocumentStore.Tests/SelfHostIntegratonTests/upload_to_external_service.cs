@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             Parallel.ForEach(Enumerable.Range(1, 100), i =>
             {
-                _client.Upload(TestConfig.PathToDocumentPdf, "Rev_"+i).Wait();
+                _client.Upload(TestConfig.PathToDocumentPdf, "Rev_" + i).Wait();
             });
         }
 
@@ -44,8 +44,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload_doc()
         {
             _client.Upload(TestConfig.PathToWordDocument, "doc").Wait();
-        }        
-        
+        }
+
+        [Test]
+        public void upload_pdf_with_aliasA_and_aliasB()
+        {
+            Task.WaitAll(
+                _client.Upload(TestConfig.PathToDocumentCopyPdf, "a"),
+                _client.Upload(TestConfig.PathToDocumentPdf, "b")
+            );
+        }
+
         [Test]
         public void upload_html()
         {
@@ -56,8 +65,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload_excel()
         {
             _client.Upload(TestConfig.PathToExcelDocument, "xlsx").Wait();
-        }      
-        
+        }
+
         [Test]
         public void upload_ppt()
         {

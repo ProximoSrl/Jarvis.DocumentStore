@@ -12,7 +12,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
     public class DocumentReadModel : AbstractReadModel<DocumentId>
     {
         public FileId FileId { get; private set; }
-        public FileNameWithExtension FileName { get; private set; }
         public IDictionary<DocumentFormat, FileId> Formats { get; private set; }
         public IDictionary<FileAlias, FileNameWithExtension> Aliases { get; private set; }
 
@@ -23,7 +22,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             
             this.Id = id;
             this.FileId = fileId;
-            this.FileName = fileName;
             
             AddAlias(alias, fileName);
         }
@@ -36,6 +34,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void AddAlias(FileAlias alias, FileNameWithExtension fileName)
         {
             this.Aliases[alias] = fileName;
+        }
+
+        public FileNameWithExtension GetFileName(FileAlias @alias)
+        {
+            return this.Aliases[alias];
         }
     }
 }
