@@ -15,7 +15,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
         IEventHandler<DocumentDeleted>
-
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
 
@@ -39,7 +38,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.Insert(e, new DocumentReadModel()
             {
                 Id = (DocumentId)e.AggregateId,
-                FileId = e.FileId
+                FileId = e.FileId,
+                FileName = e.FileName
             });
         }
 

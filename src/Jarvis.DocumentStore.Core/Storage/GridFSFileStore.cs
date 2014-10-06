@@ -16,10 +16,8 @@ namespace Jarvis.DocumentStore.Core.Storage
             _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
         }
 
-        public Stream CreateNew(FileId fileId, string fname)
+        public Stream CreateNew(FileId fileId, FileNameWithExtension fname)
         {
-            fname = fname.Replace("\"", "");
-
             Delete(fileId);
             return _gridFs.Create(fname, new MongoGridFSCreateOptions()
             {
@@ -62,11 +60,11 @@ namespace Jarvis.DocumentStore.Core.Storage
             Logger.DebugFormat("Uploading Id: {0} from file: {1}", fileId, pathToFile);
             using (var inStream = File.OpenRead(pathToFile))
             {
-                Upload(fileId, Path.GetFileName(pathToFile), inStream);
+                Upload(fileId, new FileNameWithExtension(Path.GetFileName(pathToFile)), inStream);
             }
         }
 
-        public void Upload(FileId fileId, string fileName, Stream sourceStrem)
+        public void Upload(FileId fileId, FileNameWithExtension fileName, Stream sourceStrem)
         {
             Logger.DebugFormat("Uploading Id: {0} Name: {1}", fileId, fileName);
             using (var outStream = CreateNew(fileId, fileName))

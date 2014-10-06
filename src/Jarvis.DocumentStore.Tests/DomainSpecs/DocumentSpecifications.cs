@@ -20,6 +20,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         protected static readonly DocumentId _id = new DocumentId(1);
         protected static readonly FileId _fileId = new FileId("newFile");
         protected static readonly FileAlias _alias = new FileAlias("alias-to-file");
+        protected static readonly FileNameWithExtension _fname = new FileNameWithExtension("pathTo.file");
 
         protected static Document Document
         {
@@ -31,13 +32,21 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         Establish context = () => Create();
 
-        Because of = () => Document.Create(_id, _fileId, _alias);
+        Because of = () => Document.Create(_id, _fileId, _alias, _fname);
 
         It DocumentCreatedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentCreated>().ShouldBeTrue();
 
         It DocumentId_should_be_assigned = () =>
             Document.Id.ShouldBeTheSameAs(_id);
+
+        It created_event_should_store_relevant_info = () =>
+        {
+            var e = RaisedEvent<DocumentCreated>();
+            e.Alias.ShouldBeLike(_alias);
+            e.FileId.ShouldBeLike(_fileId);
+            e.FileName.ShouldBeLike(_fname);
+        };
     }
 
     public class when_a_document_is_created_twice : DocumentSpecifications
@@ -47,10 +56,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         Establish context = () =>
         {
             Create();
-            Document.Create(_id, _fileId, _alias);
+            Document.Create(_id, _fileId, _alias,_fname);
         };
 
-        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, _alias));
+        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, _alias,_fname));
 
         It a_domain_exception_should_be_thrown = () =>
         {
@@ -154,7 +163,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         Because of = () =>
         {
-            Document.Create(_id, _fileId, _alias);
+            Document.Create(_id, _fileId, _alias,_fname);
             Document.Delete();
         };
 
@@ -167,10 +176,11 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         static readonly FileAlias _otherAlias = new FileAlias("other_alias");
         static readonly DocumentId _otherDocumentId = new DocumentId("Document_2");
+        static readonly FileNameWithExtension _otherFileName= new FileNameWithExtension("Another.document");
 
         Establish context = () => SetUp(new DocumentState());
 
-        Because of = () => Document.Deduplicate(_otherDocumentId, _otherAlias);
+        Because of = () => Document.Deduplicate(_otherDocumentId, _otherAlias,_otherFileName);
 
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
             EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
@@ -180,6 +190,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             var e = RaisedEvent<DocumentHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
             Assert.AreSame(_otherAlias, e.OtherFileAlias);
+            Assert.AreSame(_otherFileName, e.OtherFileName);
         };
     }
 }

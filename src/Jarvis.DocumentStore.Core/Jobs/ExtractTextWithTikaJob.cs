@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 var tikaFileId = new FileId(this.FileId + ".tika.html");
                 using (var htmlReader = new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 {
-                    FileStore.Upload(tikaFileId, tikaFileId, htmlReader);
+                    FileStore.Upload(tikaFileId, new FileNameWithExtension(tikaFileId), htmlReader);
                 }
 
                 CommandBus.Send(new AddFormatToDocument(

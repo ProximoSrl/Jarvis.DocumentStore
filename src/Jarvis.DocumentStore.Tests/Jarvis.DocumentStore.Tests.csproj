@@ -127,11 +127,13 @@
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\FileUploadControllerTests.cs" />
     <Compile Include="DomainSpecs\DocumentSpecifications.cs" />
+    <Compile Include="DomainSpecs\FileNameWithExtensionSpecs.cs" />
     <Compile Include="JobTests\AbstractJobTest.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
     <Compile Include="JobTests\ExtractTextWithTikaJobTest.cs" />
     <Compile Include="Misc\ClassWithFileId.cs" />
     <Compile Include="Misc\FileIdJsonConverterTests.cs" />
+    <Compile Include="Misc\FileNameWithExtensionTests.cs" />
     <Compile Include="Misc\StringValueMongoTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />

@@ -22,6 +22,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IIdentityGenerator _identityGenerator;
 
         public ILogger Logger { get; set; }
+        FileNameWithExtension _fileName;
+
 
         public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator)
         {
@@ -57,7 +59,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            _commandBus.Send(new CreateDocument(documentId, fileId,alias));
+            _commandBus.Send(new CreateDocument(documentId, fileId, alias, _fileName));
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 
@@ -73,23 +75,19 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private async Task<string> UploadFromHttpContent(HttpContent httpContent, FileId fileId)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
-            {
                 return "Attachment not found!";
-            }
 
             var provider = await httpContent.ReadAsMultipartAsync(
                 new FileStoreMultipartStreamProvider(_fileStore, fileId, _configService)
             );
 
             if (provider.Filename == null)
-            {
                 return "Attachment not found!";
-            }
 
             if (provider.IsInvalidFile)
-            {
                 return string.Format("Unsupported file {0}", provider.Filename);
-            }
+
+            _fileName = provider.Filename;
 
             return null;
         }

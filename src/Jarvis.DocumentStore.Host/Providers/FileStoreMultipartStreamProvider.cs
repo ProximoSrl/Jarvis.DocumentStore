@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Host.Providers
         readonly IFileStore _store;
         readonly FileId _fileId;
         readonly ConfigService _config;
-        public string Filename { get; private set; }
+        public FileNameWithExtension Filename { get; private set; }
         public bool IsInvalidFile { get; private set; }
 
         public FileStoreMultipartStreamProvider(
@@ -28,8 +28,7 @@ namespace Jarvis.DocumentStore.Host.Providers
 
         public override Stream GetStream(HttpContent parent, HttpContentHeaders headers)
         {
-            Filename  = headers.ContentDisposition.FileName;
-//            var extension = Path.GetExtension(Filename.Replace('\"', ' ').Trim());
+            Filename  = new FileNameWithExtension(headers.ContentDisposition.FileName);
 
             if (!_config.IsFileAllowed(Filename))
             {

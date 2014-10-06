@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                         pageStream.Seek(0, SeekOrigin.Begin);
                         var resizeId = new FileId(this.FileId + "/thumbnail/" + size.Name);
                         Logger.DebugFormat("Resizing {0} - {1}", this.FileId, resizeId);
-                        var resizedImageFileName = this.FileId + "." + size.Name + "." + fileExtension;
+                        var resizedImageFileName = new FileNameWithExtension(this.FileId + "." + size.Name + "." + fileExtension);
 
                         using (var destStream = FileStore.CreateNew(resizeId, resizedImageFileName))
                         {

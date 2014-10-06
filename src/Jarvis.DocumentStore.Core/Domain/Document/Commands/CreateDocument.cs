@@ -11,11 +11,13 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
     {
         public FileId FileId { get; private set; }
         public FileAlias Alias { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
 
-        public CreateDocument(DocumentId documentId, FileId fileId, FileAlias alias)
+        public CreateDocument(DocumentId documentId, FileId fileId, FileAlias alias, FileNameWithExtension fileName)
             :base(documentId)
         {
             Alias = alias;
+            FileName = fileName;
             FileId = fileId;
         }
     }

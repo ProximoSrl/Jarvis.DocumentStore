@@ -12,6 +12,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
     public class DocumentReadModel : AbstractReadModel<DocumentId>
     {
         public FileId FileId { get; set; }
+        public FileNameWithExtension FileName { get; set; }
         public IDictionary<DocumentFormat, FileId> Formats { get; private set; }
 
         public DocumentReadModel()

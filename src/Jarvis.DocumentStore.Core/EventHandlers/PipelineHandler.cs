@@ -98,7 +98,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                                     // send commands to
                                     // 1 - link alias to already present document
                                     // 2 - delete "new" document
-                                    _commandBus.Send(new DeduplicateDocument(link.DocumentId, documentId, e.Alias));
+                                    _commandBus.Send(new DeduplicateDocument(link.DocumentId, documentId, e.Alias,e.FileName));
                                     return;
                                 }
                             }

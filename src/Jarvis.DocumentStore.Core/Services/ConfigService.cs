@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Core.Services
 
             _allowedExtensions = GetConfigValue(
                 "JARVIS_IMGSRVCS_ALLOWED_FILE_TYPES",
-                ".pdf|.xls|.xlsx|.docx|.doc|.ppt|.pptx|.pps|.ppsx|.rtf|.odt|.ods|.odp|.htmlzip"
+                "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip"
             ).ToLowerInvariant().Split('|');
         }
 
@@ -81,10 +81,9 @@ namespace Jarvis.DocumentStore.Core.Services
             return folder;
         }
 
-        public bool IsFileAllowed(string filename)
+        public bool IsFileAllowed(FileNameWithExtension filename)
         {
-            var ext = Path.GetExtension(filename.Replace("\"", "")).ToLowerInvariant();
-            return _allowedExtensions.Contains(ext);
+            return _allowedExtensions.Contains(filename.Extension);
         }
     }
 }

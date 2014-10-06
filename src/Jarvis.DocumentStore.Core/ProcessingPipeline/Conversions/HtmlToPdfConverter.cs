@@ -63,11 +63,9 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
             {
                 _fileStore.Upload(
                     pdfFileId, 
-                    Path.ChangeExtension(Path.GetFileName(uri.LocalPath), "pdf"),
+                    new FileNameWithExtension(Path.ChangeExtension(Path.GetFileName(uri.LocalPath), "pdf")),
                     source
                 );
-
-                
             }
 
             Logger.DebugFormat("Deleting {0}", localFileName);

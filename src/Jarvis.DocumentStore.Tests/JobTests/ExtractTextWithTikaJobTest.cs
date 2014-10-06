@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                 {JobKeys.FileId, "pdf"}
             }));
 
-            FileStore.Received().Upload(new FileId("pdf.tika.html"), Arg.Any<string>(), Arg.Any<Stream>());
+            FileStore.Received().Upload(new FileId("pdf.tika.html"), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
         }
     }
 }
