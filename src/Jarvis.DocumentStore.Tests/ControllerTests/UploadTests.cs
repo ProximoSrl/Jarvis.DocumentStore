@@ -163,12 +163,12 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var fileAlias = new FileAlias("doc");
             var format = new DocumentFormat("missing");
 
-            var doc = new DocumentReadModel()
-            {
-                Id = new DocumentId(1),
-                FileId = new FileId("file_1"),
-                FileName = new FileNameWithExtension("document.docx")
-            };
+            var doc = new DocumentReadModel(
+                new DocumentId(1),
+                new FileId("file_1"),
+                fileAlias,
+                new FileNameWithExtension("document.docx")
+            );
 
             SetupFileAlias(fileAlias, doc.Id);
             SetupDocumentModel(doc);
@@ -188,12 +188,12 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var fileAlias = new FileAlias("doc");
             var format = new DocumentFormat("original");
 
-            var doc = new DocumentReadModel()
-            {
-                Id = new DocumentId(1),
-                FileId = new FileId("file_1"),
-                FileName = new FileNameWithExtension("A document.docx")
-            };
+            var doc = new DocumentReadModel(
+                new DocumentId(1), 
+                new FileId("file_1"), 
+                fileAlias,
+                new FileNameWithExtension("A document.docx")
+            );
 
             SetupFileAlias(fileAlias, doc.Id);
             SetupDocumentModel(doc);
@@ -216,12 +216,13 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var fileAlias = new FileAlias("doc");
             var format = new DocumentFormat("original");
 
-            var doc = new DocumentReadModel()
-            {
-                Id = new DocumentId(1),
-                FileId = new FileId("file_1"),
-                FileName = new FileNameWithExtension("A document.docx")
-            };
+            var doc = new DocumentReadModel(
+                new DocumentId(1),
+                new FileId("file_1"),
+                fileAlias,
+                new FileNameWithExtension("A document.docx")
+            );
+
 
             SetupFileAlias(fileAlias, doc.Id);
             SetupDocumentModel(doc);
@@ -245,12 +246,13 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var format = new DocumentFormat("pdf");
             var pdfFileId = new FileId("pdf");
 
-            var doc = new DocumentReadModel()
-            {
-                Id = new DocumentId(1),
-                FileId = new FileId("file_1"),
-                FileName = new FileNameWithExtension("A document.docx")
-            };
+            var doc = new DocumentReadModel(
+                new DocumentId(1),
+                new FileId("file_1"),
+                fileAlias,
+                new FileNameWithExtension("A document.docx")
+            );
+
             doc.AddFormat(format, pdfFileId);
 
             SetupFileAlias(fileAlias, doc.Id);

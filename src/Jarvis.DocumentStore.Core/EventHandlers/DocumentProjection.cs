@@ -14,7 +14,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     public class DocumentProjection : AbstractProjection,
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
-        IEventHandler<DocumentDeleted>
+        IEventHandler<DocumentDeleted>,
+        IEventHandler<DocumentHasBeenDeduplicated>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
 
@@ -35,12 +36,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentCreated e)
         {
-            _documents.Insert(e, new DocumentReadModel()
-            {
-                Id = (DocumentId)e.AggregateId,
-                FileId = e.FileId,
-                FileName = e.FileName
-            });
+            _documents.Insert(e, new DocumentReadModel(
+                (DocumentId)e.AggregateId,
+                e.FileId,
+                e.Alias,
+                e.FileName
+            ));
         }
 
         public void On(FormatAddedToDocument e)
@@ -53,6 +54,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentDeleted e)
         {
             _documents.Delete(e, (DocumentId) e.AggregateId);
+        }
+
+        public void On(DocumentHasBeenDeduplicated e)
+        {
+            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
+            {
+                d.AddAlias(e.OtherFileAlias, e.OtherFileName);
+            });
         }
     }
 }

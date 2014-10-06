@@ -11,18 +11,31 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 {
     public class DocumentReadModel : AbstractReadModel<DocumentId>
     {
-        public FileId FileId { get; set; }
-        public FileNameWithExtension FileName { get; set; }
+        public FileId FileId { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
         public IDictionary<DocumentFormat, FileId> Formats { get; private set; }
+        public IDictionary<FileAlias, FileNameWithExtension> Aliases { get; private set; }
 
-        public DocumentReadModel()
+        public DocumentReadModel(DocumentId id, FileId fileId, FileAlias alias, FileNameWithExtension fileName)
         {
             this.Formats = new Dictionary<DocumentFormat, FileId>();
+            this.Aliases = new Dictionary<FileAlias, FileNameWithExtension>();
+            
+            this.Id = id;
+            this.FileId = fileId;
+            this.FileName = fileName;
+            
+            AddAlias(alias, fileName);
         }
 
         public void AddFormat(DocumentFormat format, FileId fileId)
         {
             this.Formats[format] = fileId;
+        }
+
+        public void AddAlias(FileAlias alias, FileNameWithExtension fileName)
+        {
+            this.Aliases[alias] = fileName;
         }
     }
 }
