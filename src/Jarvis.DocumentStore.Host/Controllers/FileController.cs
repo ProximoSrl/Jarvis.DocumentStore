@@ -18,7 +18,7 @@ using Jarvis.DocumentStore.Host.Providers;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
-    public class FileUploadController : ApiController
+    public class FileController : ApiController
     {
         readonly IFileStore _fileStore;
         readonly ConfigService _configService;
@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         FileNameWithExtension _fileName;
 
 
-        public FileUploadController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IReader<AliasToDocument, FileAlias> aliasToDocument, IReader<DocumentReadModel, DocumentId> documentReader)
+        public FileController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IReader<AliasToDocument, FileAlias> aliasToDocument, IReader<DocumentReadModel, DocumentId> documentReader)
         {
             _fileStore = fileStore;
             _configService = configService;
@@ -121,6 +121,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
+            if (format == "original")
+            {
+                return StreamFile(document.FileId);
+            }
+
             FileId formatFileId = null;
             if (!document.Formats.TryGetValue(format, out formatFileId))
             {
@@ -133,8 +138,12 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            var descriptor = _fileStore.GetDescriptor(formatFileId);
+            return StreamFile(formatFileId);
+        }
 
+        HttpResponseMessage StreamFile(FileId formatFileId)
+        {
+            var descriptor = _fileStore.GetDescriptor(formatFileId);
             var response = Request.CreateResponse(HttpStatusCode.OK);
             response.Content = new StreamContent(descriptor.OpenRead());
             response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);

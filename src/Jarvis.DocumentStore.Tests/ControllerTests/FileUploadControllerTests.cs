@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
     [TestFixture]
     public class FileUploadControllerTests
     {
-        FileUploadController _controller;
+        FileController _controller;
         private IFileStore _fileStore;
 
         [SetUp]
@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
 
 
-            _controller = new FileUploadController(_fileStore, new ConfigService(), cmdBus, im,aliasToDocumentReader, documentReader)
+            _controller = new FileController(_fileStore, new ConfigService(), cmdBus, im,aliasToDocumentReader, documentReader)
             {
                 Request = new HttpRequestMessage(),
                 Logger = new ConsoleLogger()
