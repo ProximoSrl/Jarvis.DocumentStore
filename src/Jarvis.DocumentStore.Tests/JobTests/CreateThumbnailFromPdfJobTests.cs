@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                 {JobKeys.FileExtension, "png"}
             }));
 
-            FileStore.Received().Upload(new FileId("doc.page.1.png"), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
+            FileStore.Received().Upload(new FileId("doc.page_1.png"), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
         }
     }
 }

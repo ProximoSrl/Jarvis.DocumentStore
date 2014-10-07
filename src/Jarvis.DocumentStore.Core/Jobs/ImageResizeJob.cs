@@ -28,6 +28,9 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var imageSizes = ConfigService.GetDefaultSizes().Where(x => sizes.Contains(x.Name)).ToArray();
 
             var descriptor = FileStore.GetDescriptor(this.FileId);
+
+            var fileIdName = new FileNameWithExtension(this.FileId);
+
             using (var sourceStream = descriptor.OpenRead())
             {
                 using (var pageStream = new MemoryStream())
@@ -37,7 +40,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     foreach (var size in imageSizes)
                     {
                         pageStream.Seek(0, SeekOrigin.Begin);
-                        var resizeId = new FileId(this.FileId + "/thumbnail/" + size.Name);
+                        var resizeId = new FileId(fileIdName.FileName + "." + size.Name+"."+fileIdName.Extension);
                         Logger.DebugFormat("Resizing {0} - {1}", this.FileId, resizeId);
                         var resizedImageFileName = new FileNameWithExtension(this.FileId + "." + size.Name + "." + fileExtension);
 

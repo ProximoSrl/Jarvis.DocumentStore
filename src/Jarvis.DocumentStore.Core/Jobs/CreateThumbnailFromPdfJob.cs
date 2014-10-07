@@ -46,7 +46,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         void Write(int pageIndex, Stream stream)
         {
-            var pageFileId = new FileId(FileId + ".page." + pageIndex + "." + _format);
+            var pageFileId = new FileId(FileId + ".page_" + pageIndex + "." + _format);
             FileStore.Upload(pageFileId, new FileNameWithExtension(pageFileId), stream);
             
             var fileFormat = new DocumentFormat(DocumentFormats.RasterImage);
