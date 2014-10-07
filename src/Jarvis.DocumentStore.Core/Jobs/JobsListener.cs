@@ -54,41 +54,20 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException)
         {
-            if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
-            {
-                _logger.DebugFormat("Handling job post-execution {0}", context.JobDetail.JobType);
-                HandleFileJob(context, jobException);
-            }
-            else
-            {
-                _logger.DebugFormat("Ignored job post-execution {0}", context.JobDetail.JobType);
-            }
-        }
-
-        void HandleFileJob(IJobExecutionContext context, JobExecutionException jobException)
-        {
-            var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
-
+            _logger.DebugFormat("Handling job post-execution {0}", context.JobDetail.JobType);
+            
             string message = jobException != null ? jobException.GetBaseException().Message : null;
 
             _trackerCollection.Update(
                 Query.EQ("_id", context.JobDetail.Key.ToBsonDocument()),
                 Update<JobTracker>
-                    .Set(x=>x.Ended, DateTime.Now)
+                    .Inc(x => x.Elapsed, DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond)
                     .Set(x=>x.Message, message)
             );
 
             if (jobException != null)
             {
                 HandleErrors(context, jobException);
-            }
-            else
-            {
-                var nextJob = context.JobDetail.JobDataMap.GetString(JobKeys.NextJob);
-                if (nextJob == null)
-                    return;
-
-//                _conversionWorkflow.Next(fileId, nextJob);
             }
         }
 
@@ -120,7 +99,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     _logger.ErrorFormat("Too many errors on job {0} with data {1}",
                         context.JobDetail.JobType,
                         JsonConvert.SerializeObject(context.JobDetail.JobDataMap)
-                        );
+                    );
                 }
             }
             catch (Exception rescheduleException)

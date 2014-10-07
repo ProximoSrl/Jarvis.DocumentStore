@@ -9,8 +9,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public JobKey Id { get; private set; }
         public string JobType { get; set; }
         public FileId FileId { get; set; }
-        public DateTime Started { get; set; }
-        public DateTime? Ended { get; set; }
+        public long Elapsed { get; set; }
         public string Message { get; set; }
 
         public JobTracker(JobKey jobKey, FileId fileId, string jobType)
@@ -18,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             this.Id = jobKey;
             this.FileId = fileId;
             this.JobType = jobType;
-            this.Started = DateTime.Now;
+            this.Elapsed = - DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         }
     }
 }
