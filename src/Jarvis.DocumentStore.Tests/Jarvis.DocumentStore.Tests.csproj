@@ -131,6 +131,7 @@
     <Compile Include="JobTests\AbstractJobTest.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
     <Compile Include="JobTests\ExtractTextWithTikaJobTest.cs" />
+    <Compile Include="JobTests\ResizeImageJobTests.cs" />
     <Compile Include="Misc\ClassWithFileId.cs" />
     <Compile Include="Misc\FileIdJsonConverterTests.cs" />
     <Compile Include="Misc\FileNameWithExtensionTests.cs" />
@@ -222,6 +223,7 @@
     <Content Include="Docs\Architecture_files\RicciGmProfilePhoto.jpg" />
     <Content Include="Docs\Architecture_files\saved_resource.htm" />
     <Content Include="Docs\Architecture_files\scripts.min.js" />
+    <Content Include="Docs\document_1.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

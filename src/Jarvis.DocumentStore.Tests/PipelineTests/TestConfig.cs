@@ -72,5 +72,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             get { return Path.Combine(DocumentsFolder, "Architecture.htm"); }
         }
+
+        public static string PathToDocumentPng
+        {
+            get { return Path.Combine(DocumentsFolder, "document_1.png"); }
+        }
+
     }
 }
