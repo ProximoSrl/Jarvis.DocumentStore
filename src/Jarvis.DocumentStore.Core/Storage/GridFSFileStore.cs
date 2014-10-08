@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Logger.DebugFormat(message);
                 throw new Exception(message);
             }
-            return new GridFsFileDescriptor(s);
+            return new GridFsFileDescriptor(fileId, s);
         }
 
         public void Delete(FileId fileId)

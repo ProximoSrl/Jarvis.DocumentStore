@@ -51,7 +51,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             
             var fileFormat = new DocumentFormat(DocumentFormats.RasterImage);
             CommandBus.Send(
-                new AddFormatToDocument(DocumentId, fileFormat, pageFileId)
+                new AddFormatToDocument(DocumentId, fileFormat, pageFileId, this.PipelineId)
             );
         }
     }

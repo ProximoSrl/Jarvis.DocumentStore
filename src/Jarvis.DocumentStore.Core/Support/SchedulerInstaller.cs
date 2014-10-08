@@ -35,8 +35,15 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<CreateImageFromPdfTask>()
                     .LifestyleTransient(),
                 Component
-                    .For<IConversionWorkflow>()
-                    .ImplementedBy<ConversionWorkflow>()
+                    .For<IPipelineManager>()
+                    .ImplementedBy<PipelineManager>(),
+                Component
+                    .For<IJobHelper>()
+                    .ImplementedBy<JobHelper>(),
+                Classes
+                    .FromAssemblyInThisApplication()
+                    .BasedOn<IPipeline>()
+                    .WithServiceFirstInterface()
             );
 
             var scheduler = container.Resolve<IScheduler>();

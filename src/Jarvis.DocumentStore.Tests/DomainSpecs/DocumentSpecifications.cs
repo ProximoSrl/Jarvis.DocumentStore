@@ -43,9 +43,9 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         It created_event_should_store_relevant_info = () =>
         {
             var e = RaisedEvent<DocumentCreated>();
-            e.Alias.ShouldBeLike(_alias);
-            e.FileId.ShouldBeLike(_fileId);
-            e.FileName.ShouldBeLike(_fname);
+            e.Alias.ShouldEqual(_alias);
+            e.FileId.ShouldEqual(_fileId);
+            e.FileName.ShouldEqual(_fname);
         };
     }
 
@@ -73,10 +73,11 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         protected static readonly DocumentFormat XmlDocumentFormat = new DocumentFormat("xml");
         protected static readonly FileId XmlFileId = new FileId("xml");
+        protected static readonly PipelineId XmlPiplePipelineId = new PipelineId("xml");
 
         Establish context = () => SetUp(new DocumentState() { });
 
-        Because of = () => Document.AddFormat(XmlDocumentFormat, XmlFileId);
+        Because of = () => Document.AddFormat(XmlDocumentFormat, XmlFileId,XmlPiplePipelineId);
 
         It FormatAddedToDocument_event_should_have_been_raised = () =>
             EventHasBeenRaised<FormatAddedToDocument>().ShouldBeTrue();
@@ -100,6 +101,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         protected static readonly DocumentFormat XmlDocumentFormatId2 = new DocumentFormat("xml");
         protected static readonly FileId xmlFileId2 = new FileId("xml1");
+        protected static readonly PipelineId XmlPiplePipelineId = new PipelineId("xml");
 
         public class when_xml_format_is_added : document_with_xml_format
         {
@@ -107,7 +109,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
                 new KeyValuePair<DocumentFormat, FileId>(XmlDocumentFormatId1, xmlFileId1))
                 );
 
-            Because of = () => Document.AddFormat(XmlDocumentFormatId2, xmlFileId2);
+            Because of = () => Document.AddFormat(XmlDocumentFormatId2, xmlFileId2, XmlPiplePipelineId);
 
             It DocumentFormatHasBeenUpdated_event_should_have_been_raised = () =>
                 EventHasBeenRaised<DocumentFormatHasBeenUpdated>().ShouldBeTrue();

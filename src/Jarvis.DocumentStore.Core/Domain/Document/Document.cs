@@ -29,15 +29,15 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             RaiseEvent(new DocumentCreated(id, fileId, alias, fileName));
         }
 
-        public void AddFormat(DocumentFormat documentFormat, FileId fileId)
+        public void AddFormat(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)
         {
             if (InternalState.HasFormat(documentFormat))
             {
-                RaiseEvent(new DocumentFormatHasBeenUpdated(documentFormat, fileId));
+                RaiseEvent(new DocumentFormatHasBeenUpdated(documentFormat, fileId, createdBy));
             }
             else
             {
-                RaiseEvent(new FormatAddedToDocument(documentFormat, fileId));
+                RaiseEvent(new FormatAddedToDocument(documentFormat, fileId, createdBy));
             }
         }
 

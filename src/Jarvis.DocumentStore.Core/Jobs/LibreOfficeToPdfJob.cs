@@ -34,7 +34,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
             CommandBus.Send(new AddFormatToDocument(
                 this.DocumentId, 
                 new DocumentFormat(DocumentFormats.Pdf), 
-                newFileId
+                newFileId,
+                this.PipelineId
             ));
             
             var elapsed = DateTime.Now - start;

@@ -229,7 +229,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupFileAlias(fileAlias, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(TestConfig.PathToWordDocument));
+            FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(fileId,TestConfig.PathToWordDocument));
 
             // act
             using (var response = Controller.GetFormat(fileAlias, format).Result)
@@ -255,12 +255,12 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 new FileNameWithExtension("A document.docx")
             );
 
-            doc.AddFormat(format, pdfFileId);
+            doc.AddFormat(new PipelineId("abc"), format, pdfFileId);
 
             SetupFileAlias(fileAlias, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileDescriptor(TestConfig.PathToDocumentPdf));
+            FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileDescriptor(pdfFileId, TestConfig.PathToDocumentPdf));
 
             // act
             using (var response = Controller.GetFormat(fileAlias, format).Result)

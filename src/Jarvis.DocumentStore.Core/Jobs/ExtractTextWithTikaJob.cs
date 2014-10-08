@@ -35,7 +35,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 CommandBus.Send(new AddFormatToDocument(
                     this.DocumentId,
                     new DocumentFormat("tika"),
-                    tikaFileId
+                    tikaFileId,
+                    this.PipelineId
                 ));
 
                 Logger.DebugFormat("Tika result: file {1} has {0} chars", FileId, content.Length);

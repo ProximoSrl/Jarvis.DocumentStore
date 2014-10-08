@@ -7,11 +7,13 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
     {
         public DocumentFormat DocumentFormat { get; private set; }
         public FileId FileId { get; private set; }
+        public PipelineId CreatedBy { get; private set; }
 
-        public FormatAddedToDocument(DocumentFormat documentFormat, FileId fileId)
+        public FormatAddedToDocument(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)
         {
             DocumentFormat = documentFormat;
             FileId = fileId;
+            CreatedBy = createdBy;
         }
     }
 }

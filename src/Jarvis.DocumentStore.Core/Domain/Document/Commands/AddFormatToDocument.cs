@@ -11,11 +11,17 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
     {
         public FileId FileId { get; private set; }
         public DocumentFormat DocumentFormat { get; private set; }
-
-        public AddFormatToDocument(DocumentId aggregateId, DocumentFormat documentFormat, FileId fileId) : base(aggregateId)
+        public PipelineId CreatedBy { get; private set; }
+        
+        public AddFormatToDocument(
+            DocumentId aggregateId, 
+            DocumentFormat documentFormat, 
+            FileId fileId,
+            PipelineId createdById) : base(aggregateId)
         {
             DocumentFormat = documentFormat;
             FileId = fileId;
+            CreatedBy = createdById;
         }
     }
 }

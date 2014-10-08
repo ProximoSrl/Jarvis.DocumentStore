@@ -5,9 +5,9 @@ namespace Jarvis.DocumentStore.Core.Storage
 {
     public interface IFileDescriptor
     {
+        FileId FileId { get; }
         Stream OpenRead();
-        string FileName { get; }
-        string FileExtension { get; }
+        FileNameWithExtension FileNameWithExtension { get; }
         string ContentType { get; }
         FileHash Hash { get; }
         long Length { get; }

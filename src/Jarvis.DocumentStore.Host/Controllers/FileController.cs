@@ -123,8 +123,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            FileId formatFileId = null;
-            if (!document.Formats.TryGetValue(format, out formatFileId))
+            FileId formatFileId = document.GetFormatFileId(format);
+            if (formatFileId == FileId.Null)
             {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,

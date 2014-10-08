@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(FormatAddedToDocument e)
         {
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => {
-                d.AddFormat(e.DocumentFormat, e.FileId);
+                d.AddFormat(e.CreatedBy, e.DocumentFormat, e.FileId);
             });
         }
 

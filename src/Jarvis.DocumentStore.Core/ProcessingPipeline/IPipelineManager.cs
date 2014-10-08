@@ -3,9 +3,9 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 {
-    public interface IConversionWorkflow
+    public interface IPipelineManager
     {
-        void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
+        void FormatAvailable(PipelineId pipelineId, DocumentId documentId, DocumentFormat format, FileId fileId);
         void Start(DocumentId documentId, FileId fileId);
     }
 }

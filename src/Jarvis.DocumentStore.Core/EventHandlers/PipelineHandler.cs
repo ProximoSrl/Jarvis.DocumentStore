@@ -27,14 +27,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     {
         public ILogger Logger { get; set; }
         readonly IFileStore _fileStore;
-        readonly IConversionWorkflow _conversionWorkflow;
+        readonly IPipelineManager _pipelineManager;
         readonly ICollectionWrapper<AliasToDocument, FileAlias> _aliasToDoc;
         readonly ICollectionWrapper<HashToDocuments, FileHash> _hashToDocs;
         readonly ICommandBus _commandBus;
-        public PipelineHandler(IFileStore fileStore, IConversionWorkflow conversionWorkflow, ICollectionWrapper<AliasToDocument, FileAlias> aliasToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus)
+        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<AliasToDocument, FileAlias> aliasToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus)
         {
             _fileStore = fileStore;
-            _conversionWorkflow = conversionWorkflow;
+            _pipelineManager = pipelineManager;
             _aliasToDoc = aliasToDoc;
             _hashToDocs = hashToDocs;
             _commandBus = commandBus;
@@ -107,8 +107,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 }
             }
 
-            Logger.DebugFormat("Starting conversion of document {0} {1}", e.FileId, descriptor.FileName);
-            _conversionWorkflow.Start(documentId, e.FileId);
+            Logger.DebugFormat("Starting conversion of document {0} {1}", e.FileId, descriptor.FileNameWithExtension);
+            _pipelineManager.Start(documentId, e.FileId);
         }
 
         public void On(FormatAddedToDocument e)
@@ -117,8 +117,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 return;
 
             var descriptor = _fileStore.GetDescriptor(e.FileId);
-            Logger.DebugFormat("Next conversion step for document {0} {1}", e.FileId, descriptor.FileName);
-            _conversionWorkflow.FormatAvailable((DocumentId)e.AggregateId, e.DocumentFormat, e.FileId);
+            Logger.DebugFormat("Next conversion step for document {0} {1}", e.FileId, descriptor.FileNameWithExtension);
+            _pipelineManager.FormatAvailable(
+                e.CreatedBy,
+                (DocumentId)e.AggregateId, 
+                e.DocumentFormat, 
+                e.FileId
+            );
         }
 
         private Action<AliasToDocument> UpdateCurrentMapping(DocumentCreated e)

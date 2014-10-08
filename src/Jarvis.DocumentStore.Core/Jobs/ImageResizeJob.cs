@@ -1,13 +1,11 @@
 ﻿using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
-using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Tools;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Core.Storage;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
@@ -52,7 +50,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
                         CommandBus.Send(new AddFormatToDocument(
                             DocumentId,
                             new DocumentFormat("thumb." + size.Name),
-                            resizeId
+                            resizeId,
+                            this.PipelineId
                         ));
                     }
                 }

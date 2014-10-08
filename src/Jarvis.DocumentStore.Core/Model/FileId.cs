@@ -5,6 +5,7 @@ using System.IO;
 using CQRS.Shared.Domain;
 using CQRS.Shared.Domain.Serialization;
 using CQRS.Shared.IdentitySupport;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Storage;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
@@ -23,6 +24,8 @@ namespace Jarvis.DocumentStore.Core.Model
             //if (value == null) 
             //    throw new ArgumentNullException("value");
         }
+
+        public static readonly FileId Null = new FileId("null");
     }
 
     /// <summary>
@@ -48,6 +51,21 @@ namespace Jarvis.DocumentStore.Core.Model
             : base(value)
         {
         }
+    }
+
+    /// <summary>
+    /// PipelineId
+    /// </summary>
+    [BsonSerializer(typeof(StringValueBsonSerializer))]
+    [TypeConverter(typeof(StringValueTypeConverter<PipelineId>))]
+    public class PipelineId : LowercaseStringValue
+    {
+        public PipelineId(string value)
+            : base(value)
+        {
+        }
+
+        public static readonly PipelineId Null = new PipelineId("null");
     }
 
     public class FileNameWithExtension

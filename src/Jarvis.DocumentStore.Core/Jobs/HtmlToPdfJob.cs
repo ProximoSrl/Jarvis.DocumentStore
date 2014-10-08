@@ -25,7 +25,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
             CommandBus.Send(new AddFormatToDocument(
                 this.DocumentId,
                 new DocumentFormat(DocumentFormats.Pdf),
-                pdfId
+                pdfId,
+                this.PipelineId
             ));
         }
     }
