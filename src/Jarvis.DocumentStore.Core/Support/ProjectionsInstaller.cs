@@ -20,7 +20,6 @@ using CQRS.Shared.Storage;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.EventHandlers;
 using MongoDB.Driver;
-using NEventStore;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -111,13 +110,4 @@ namespace Jarvis.DocumentStore.Core.Support
             im.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
         }
     }
-
-    public class NullNotifyCommitHandled : INotifyCommitHandled
-    {
-        public void SetDispatched(ICommit commit)
-        {
-            
-        }
-    }
-
 }

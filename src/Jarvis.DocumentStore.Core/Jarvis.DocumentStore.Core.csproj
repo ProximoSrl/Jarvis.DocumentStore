@@ -98,6 +98,7 @@
     <Compile Include="CommandHandlers\CreateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DeduplicateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DeleteDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentCommandHandler.cs" />
     <Compile Include="Domain\Document\Commands\AddFormatToDocument.cs" />
     <Compile Include="Domain\Document\Commands\CreateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeduplicateDocument.cs" />
@@ -112,7 +113,7 @@
     <Compile Include="Domain\Document\Events\DocumentFormatHasBeenDeleted.cs" />
     <Compile Include="Domain\Document\Events\DocumentFormatHasBeenUpdated.cs" />
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
-    <Compile Include="Domain\Document\FormatId.cs" />
+    <Compile Include="Domain\Document\DocumentFormat.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\NullHouseKeeper.cs" />
     <Compile Include="EventHandlers\PipelineHandler.cs" />
@@ -129,13 +130,19 @@
     <Compile Include="Jobs\JobKeys.cs" />
     <Compile Include="Jobs\JobsListener.cs" />
     <Compile Include="MimeTypes.cs" />
+    <Compile Include="Model\FileAlias.cs" />
+    <Compile Include="Model\FileHash.cs" />
     <Compile Include="Model\FileId.cs" />
+    <Compile Include="Model\FileNameWithExtension.cs" />
     <Compile Include="Model\ImageSizeInfo.cs" />
+    <Compile Include="Model\PipelineId.cs" />
+    <Compile Include="ProcessingPipeline\AbstractPipeline.cs" />
     <Compile Include="ProcessingPipeline\Conversions\HtmlToPdfConverter.cs" />
     <Compile Include="ProcessingPipeline\Conversions\LibreOfficeConversion.cs" />
     <Compile Include="ProcessingPipeline\Conversions\MailMessageToHtmlConverterTask.cs" />
     <Compile Include="ProcessingPipeline\Conversions\TikaAnalyzer.cs" />
     <Compile Include="ProcessingPipeline\DocumentFormats.cs" />
+    <Compile Include="ProcessingPipeline\IJobHelper.cs" />
     <Compile Include="ProcessingPipeline\IPipeline.cs" />
     <Compile Include="ProcessingPipeline\IPipelineManager.cs" />
     <Compile Include="ProcessingPipeline\JobHelper.cs" />
@@ -150,9 +157,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadModel\AliasToDocument.cs" />
     <Compile Include="ReadModel\DocumentReadModel.cs" />
+    <Compile Include="ReadModel\HashToDocuments.cs" />
     <Compile Include="Services\ConfigService.cs" />
+    <Compile Include="Services\FileAliasMapper.cs" />
     <Compile Include="Services\IDocumentMapper.cs" />
     <Compile Include="Services\DocumentMapper.cs" />
+    <Compile Include="Services\IFileAliasMapper.cs" />
     <Compile Include="Storage\FsFileDescriptor.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />
     <Compile Include="Storage\GridFsFileDescriptor.cs" />
@@ -160,6 +170,7 @@
     <Compile Include="Storage\IFileDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
+    <Compile Include="Support\NullNotifyCommitHandled.cs" />
     <Compile Include="Support\ProjectionsInstaller.cs" />
     <Compile Include="Support\SchedulerInstaller.cs" />
     <Compile Include="Support\SizeInfoHelper.cs" />

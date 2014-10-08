@@ -8,15 +8,6 @@ using Quartz;
 
 namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 {
-    public interface IJobHelper
-    {
-        void QueueThumbnail(PipelineId pipelineId, DocumentId documentId, FileId fileId,string imageFormat);
-        void QueueResize(PipelineId pipelineId, DocumentId documentId, FileId fileId, string imageFormat);
-        void QueueLibreOfficeToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId);
-        void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId);
-        void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, FileId fileId);
-    }
-
     public class JobHelper : IJobHelper
     {
         readonly IScheduler _scheduler;
