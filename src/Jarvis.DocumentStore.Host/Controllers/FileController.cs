@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -39,6 +40,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _identityGenerator = identityGenerator;
             _aliasToDocument = aliasToDocument;
             _documentReader = documentReader;
+        }
+
+        [HttpGet]
+        [Route("status")]
+        public string GetStatus()
+        {
+            return DateTime.UtcNow.ToLongTimeString();
         }
 
         [Route("file/upload/{alias}")]

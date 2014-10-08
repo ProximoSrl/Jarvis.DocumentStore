@@ -18,7 +18,8 @@ namespace Jarvis.DocumentStore.Host
 
                 host.Service<DocumentStoreBootstrapper>(service =>
                 {
-                    service.ConstructUsing(() => new DocumentStoreBootstrapper( new Uri("http://localhost:5123")));
+                    var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
+                    service.ConstructUsing(() => new DocumentStoreBootstrapper( uri ));
                     service.WhenStarted(s => s.Start());
                     service.WhenStopped(s => s.Stop());
                 });
