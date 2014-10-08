@@ -13,37 +13,30 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
 {
     public class PipelineManager : IPipelineManager
     {
-        public ILogger Logger { get; set; }
+        ILogger _logger;
         readonly IFileStore _fileStore;
 
         readonly IDictionary<PipelineId, IPipeline> _pipelines;
-        readonly IJobHelper _jobHelper;
 
-        public PipelineManager(IJobHelper jobHelper, IFileStore fileStore, IPipeline[] pipelines)
+        public PipelineManager(IFileStore fileStore, IPipeline[] pipelines, ILogger logger)
         {
-            _jobHelper = jobHelper;
             _fileStore = fileStore;
+            _logger = logger;
             _pipelines = pipelines.ToDictionary(x=>x.Id, x=>x);
+
+            _logger.Debug("Configuring pipelines");
+            foreach (var pipeline in pipelines)
+            {
+                _logger.DebugFormat("...added {0}", pipeline.Id);
+                pipeline.Attach(this);
+            }
+            _logger.Debug("Pipelines config done");
         }
 
         public void FormatAvailable(PipelineId pipelineId, DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             var pipeline = _pipelines[pipelineId];
             pipeline.FormatAvailable(documentId, format, fileId);
-
-            //switch (format)
-            //{
-            //    case DocumentFormats.Pdf:
-            //        _jobHelper.QueueThumbnail(documentId, fileId);
-            //        break;
-
-            //    case DocumentFormats.RasterImage:
-            //        _jobHelper.QueueResize(documentId,fileId);
-            //        break;
-
-            //    default:
-            //        break;
-            //}
         }
 
         public void Start(DocumentId documentId, FileId fileId)

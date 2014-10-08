@@ -13,13 +13,14 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
         bool ShouldHandleFile(DocumentId documentId, IFileDescriptor filename);
         void Start(DocumentId documentId, IFileDescriptor descriptor);
         void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
+        void Attach(IPipelineManager manager);
     }
 
     public abstract class AbstractPipeline : IPipeline
     {
         public ILogger Logger { get; set; }
         public IJobHelper JobHelper { get; set; }
-        public IPipelineManager PipelineManager { get; set; }
+        protected IPipelineManager PipelineManager { get; private set; }
         
         protected AbstractPipeline(string id)
         {
@@ -30,5 +31,9 @@ namespace Jarvis.DocumentStore.Core.ProcessingPipeline
         public abstract bool ShouldHandleFile(DocumentId documentId, IFileDescriptor filename);
         public abstract void Start(DocumentId documentId, IFileDescriptor descriptor);
         public abstract void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
+        public void Attach(IPipelineManager manager)
+        {
+            this.PipelineManager = manager;
+        }
     }
 }
