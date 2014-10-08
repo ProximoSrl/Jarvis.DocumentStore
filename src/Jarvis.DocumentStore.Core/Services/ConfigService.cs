@@ -19,10 +19,12 @@ namespace Jarvis.DocumentStore.Core.Services
                 "small:200x200|large:800x800"
             ).ToLowerInvariant());
 
-            _allowedExtensions = GetConfigValue(
+            var configExtensions = GetConfigValue(
                 "JARVIS_IMGSRVCS_ALLOWED_FILE_TYPES",
                 "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip"
-            ).ToLowerInvariant().Split('|');
+                ).ToLowerInvariant();
+
+            _allowedExtensions = configExtensions != "*" ? configExtensions.Split('|') : null;
         }
 
         public ImageSizeInfo[] GetDefaultSizes()
@@ -83,6 +85,9 @@ namespace Jarvis.DocumentStore.Core.Services
 
         public bool IsFileAllowed(FileNameWithExtension filename)
         {
+            if (_allowedExtensions == null)
+                return true;
+
             return _allowedExtensions.Contains(filename.Extension);
         }
     }
