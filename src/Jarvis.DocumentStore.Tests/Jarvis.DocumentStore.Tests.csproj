@@ -139,7 +139,6 @@
     <Compile Include="Misc\StringValueMongoTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />
-    <Compile Include="PipelineTests\ConvertEmailTests.cs" />
     <Compile Include="PipelineTests\ConvertHtmlToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\TestConfig.cs" />

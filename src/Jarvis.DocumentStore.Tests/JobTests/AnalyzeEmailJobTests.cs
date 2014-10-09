@@ -20,7 +20,6 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         public void should_upload_zip_file_and_send_new_format_command()
         {
             // arrange
-            var job = BuildJob<AnalyzeEmailJob>();
 
             string storedFileName = null;
             ICommand command = null;
@@ -28,6 +27,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             ConfigureFileDownload("file_1", TestConfig.PathToEml);
             ExpectFileUpload("file_1.email.zip", f => storedFileName = f);
             CaptureCommand(c => command = c);
+
+            var job = BuildJob<AnalyzeEmailJob>();
             
             // act
             job.Execute(BuildContext(job, new Dictionary<string, object>{
