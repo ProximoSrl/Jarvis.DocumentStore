@@ -3,7 +3,7 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline
+namespace Jarvis.DocumentStore.Core.Processing
 {
     public abstract class AbstractPipeline : IPipeline
     {

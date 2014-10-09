@@ -8,7 +8,7 @@ using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using TuesPechkin;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
+namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
     public class HtmlToPdfConverter
     {

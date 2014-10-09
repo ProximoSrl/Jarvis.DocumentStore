@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions;
+using Jarvis.DocumentStore.Core.Processing.Conversions;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests

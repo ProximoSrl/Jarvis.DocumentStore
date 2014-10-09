@@ -1,4 +1,4 @@
-﻿namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Pdf
+﻿namespace Jarvis.DocumentStore.Core.Processing.Pdf
 {
     public class CreatePdfImageTaskParams
     {

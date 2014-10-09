@@ -6,7 +6,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
+namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
     /// <summary>
     /// Office / OpenOffice => pdf with Headless Libreoffice

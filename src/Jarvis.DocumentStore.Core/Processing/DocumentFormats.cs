@@ -1,4 +1,4 @@
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline
+namespace Jarvis.DocumentStore.Core.Processing
 {
     public static class DocumentFormats
     {

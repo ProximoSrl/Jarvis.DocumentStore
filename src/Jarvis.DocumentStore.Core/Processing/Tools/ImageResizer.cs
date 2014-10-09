@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Tools
+namespace Jarvis.DocumentStore.Core.Processing.Tools
 {
     public static class ImageResizer
     {

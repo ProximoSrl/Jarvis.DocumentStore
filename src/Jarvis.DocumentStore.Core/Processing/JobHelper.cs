@@ -6,7 +6,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Quartz;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline
+namespace Jarvis.DocumentStore.Core.Processing
 {
     public class JobHelper : IJobHelper
     {

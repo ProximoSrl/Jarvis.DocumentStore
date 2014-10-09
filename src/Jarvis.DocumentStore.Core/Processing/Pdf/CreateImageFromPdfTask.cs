@@ -3,7 +3,7 @@ using System.IO;
 using Castle.Core.Logging;
 using GraphicsMagick;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Pdf
+namespace Jarvis.DocumentStore.Core.Processing.Pdf
 {
     public class CreateImageFromPdfTask
     {

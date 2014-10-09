@@ -6,6 +6,8 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Processing;
+using Jarvis.DocumentStore.Core.Processing.Pdf;
 using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.ProcessingPipeline.Pdf;
 using MongoDB.Driver;

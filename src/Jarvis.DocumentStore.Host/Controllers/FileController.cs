@@ -12,6 +12,7 @@ using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.ProcessingPipeline;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;

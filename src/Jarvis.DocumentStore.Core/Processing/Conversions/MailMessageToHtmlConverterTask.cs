@@ -3,7 +3,7 @@ using System.IO.Compression;
 using Castle.Core.Logging;
 using MsgReader;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
+namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
     /// <summary>
     /// Outlook email & msg conversion

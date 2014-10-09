@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 
-namespace Jarvis.DocumentStore.Core.ProcessingPipeline.Conversions
+namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
     public class TikaAnalyzer
     {
