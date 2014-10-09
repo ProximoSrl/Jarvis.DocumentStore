@@ -1,9 +1,12 @@
+using Jarvis.DocumentStore.Core.Domain.Document;
+
 namespace Jarvis.DocumentStore.Core.Processing
 {
     public static class DocumentFormats
     {
-        public const string RasterImage = "raster";
-        public const string Pdf = "pdf";
-        public const string Original = "original";
+        public static readonly DocumentFormat RasterImage = new DocumentFormat("RasterImage");
+        public static readonly DocumentFormat Pdf = new DocumentFormat("pdf");
+        public static readonly DocumentFormat Original = new DocumentFormat("original");
+        public static readonly DocumentFormat Email = new DocumentFormat("email");
     }
 }

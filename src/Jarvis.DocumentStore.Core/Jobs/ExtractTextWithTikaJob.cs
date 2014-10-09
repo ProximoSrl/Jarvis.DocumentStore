@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 Logger = this.Logger
             };
 
-            string pathToFile = DownloadFile(this.FileId);
+            string pathToFile = DownloadFileToWorkingFolder(this.FileId);
 
             analyzer.Run(pathToFile, content =>
             {

@@ -12,6 +12,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public abstract class AbstractFileJob : IJob
     {
+        string _workingFolder;
         protected DocumentId DocumentId { get; private set; }
         protected FileId FileId { get; private set; }
         protected PipelineId PipelineId { get; private set; }
@@ -28,15 +29,31 @@ namespace Jarvis.DocumentStore.Core.Jobs
             FileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
             PipelineId = new PipelineId(jobDataMap.GetString(JobKeys.PipelineId));
             
+            _workingFolder = Path.Combine(ConfigService.GetWorkingFolder(FileId), GetType().Name);
+            
             OnExecute(context);
+
+            try
+            {
+                if (Directory.Exists(_workingFolder))
+                    Directory.Delete(_workingFolder,true);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorFormat(ex, "Error deleting {0}", _workingFolder);
+            }
         }
 
         protected abstract void OnExecute(IJobExecutionContext context);
 
-        protected string DownloadFile(FileId id)
+        protected string DownloadFileToWorkingFolder(FileId id)
         {
-            var workingFolder = Path.Combine(ConfigService.GetWorkingFolder(id), GetType().Name);
-            return FileStore.Download(id, workingFolder);
+            return FileStore.Download(id, _workingFolder);
+        }
+
+        protected string WorkingFolder
+        {
+            get { return _workingFolder; }
         }
     }
 }

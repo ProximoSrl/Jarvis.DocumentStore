@@ -33,6 +33,19 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);
         }
 
+        public void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, FileId fileId)
+        {
+            var job = GetBuilderForJob<AnalyzeEmailJob>()
+                .UsingJobData(JobKeys.DocumentId, documentId)
+                .UsingJobData(JobKeys.FileId, fileId)
+                .UsingJobData(JobKeys.PipelineId, pipelineId)
+                .Build();
+
+            var trigger = CreateTrigger();
+
+            _scheduler.ScheduleJob(job, trigger);        
+        }
+
         public void QueueResize(PipelineId pipelineId, DocumentId documentId, FileId fileId,string imageFormat)
         {
             var job = GetBuilderForJob<ImageResizeJob>()

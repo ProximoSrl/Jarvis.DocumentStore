@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -79,10 +80,13 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                 .Returns(new FsFileDescriptor(id,pathToFile));
         }
 
-        protected void ConfigureFileDownload(string fileId, string pathToFile)
+        protected void ConfigureFileDownload(string fileId, string pathToFile, Action<string> action = null)
         {
+            if(action == null)
+                action = s => { };
+
             FileStore
-                .Download(new FileId(fileId), Arg.Any<string>())
+                .Download(new FileId(fileId), Arg.Do( action ))
                 .Returns(info =>
                 {
                     string tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetFileName(pathToFile));
@@ -92,6 +96,22 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                     File.Copy(pathToFile, tmpFileName);
                     return tmpFileName;
                 });
+        }
+
+        protected void ExpectFileUpload(string fileId, Action<string> action = null)
+        {
+            if(action == null)
+                action = s => { };
+
+            var id = new FileId(fileId);
+            FileStore
+                .Upload(id, Arg.Do( action ));
+
+        }
+
+        protected void CaptureCommand(Action<ICommand> action)
+        {
+            CommandBus.Send(Arg.Do(action));
         }
     }
 }

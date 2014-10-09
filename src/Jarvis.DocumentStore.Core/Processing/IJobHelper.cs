@@ -10,5 +10,6 @@ namespace Jarvis.DocumentStore.Core.Processing
         void QueueLibreOfficeToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId);
         void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId);
         void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, FileId fileId);
+        void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, FileId fileId);
     }
 }

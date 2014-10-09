@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,11 +26,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         public override void Start(DocumentId documentId, IFileDescriptor descriptor)
         {
             Logger.DebugFormat("Processing email {0}", descriptor.FileNameWithExtension);
+            JobHelper.QueueEmailToHtml(Id, documentId, descriptor.FileId);
         }
 
         public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
-
+            Logger.DebugFormat("Email {0} has been converted to format {1}: {2}", documentId, format, fileId);
         }
     }
 }

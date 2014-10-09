@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Model;
 using MsgReader;
 
 namespace Jarvis.DocumentStore.Core.Processing.Conversions
@@ -18,22 +20,29 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             set { _logger = value; }
         }
 
-        public string Convert(string pathToEml, string workingFolder)
+        public string Convert(FileId fileId, string pathToEml, string workingFolder)
         {
             Logger.DebugFormat("Coverting {0} in working folder {1}", pathToEml, workingFolder);
 
             var reader = new Reader();
-            var fname = Path.GetFileNameWithoutExtension(pathToEml);
-            var outFolder = Path.Combine(workingFolder, fname);
+            var outFolder = Path.Combine(workingFolder, fileId);
 
             Logger.DebugFormat("Creating message working folder is {0}", outFolder);
 
             Directory.CreateDirectory(outFolder);
 
             Logger.Debug("Extracting files");
-            reader.ExtractToFolder(pathToEml, outFolder);
+            var files = reader.ExtractToFolder(pathToEml, outFolder);
+            if (Logger.IsDebugEnabled)
+            {
+                foreach (var file in files)
+                {
+                    Logger.DebugFormat("\t{0}", Path.GetFileName(file));
+                }
+                Logger.DebugFormat("Total files {0}", files.Length);
+            }
 
-            var pathToZip = Path.Combine(workingFolder, Path.ChangeExtension(fname, "htmlzip"));
+            var pathToZip = Path.Combine(workingFolder, fileId + ".email.zip");
 
             Logger.DebugFormat("New zip file is {0}", pathToZip);
 
