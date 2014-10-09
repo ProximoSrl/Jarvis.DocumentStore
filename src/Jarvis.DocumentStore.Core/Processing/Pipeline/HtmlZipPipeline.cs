@@ -2,7 +2,7 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 
-namespace Jarvis.DocumentStore.Core.Processing
+namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 {
     public class HtmlZipPipeline: AbstractPipeline
     {

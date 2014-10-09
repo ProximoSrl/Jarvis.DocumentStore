@@ -5,7 +5,6 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Tools;
-using Jarvis.DocumentStore.Core.ProcessingPipeline.Tools;
 using Jarvis.DocumentStore.Core.Services;
 using Quartz;
 

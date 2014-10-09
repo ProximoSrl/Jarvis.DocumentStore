@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 
-namespace Jarvis.DocumentStore.Core.Processing
+namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 {
     public class PipelineManager : IPipelineManager
     {

@@ -1,7 +1,7 @@
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 
-namespace Jarvis.DocumentStore.Core.Processing
+namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 {
     public interface IPipelineManager
     {
