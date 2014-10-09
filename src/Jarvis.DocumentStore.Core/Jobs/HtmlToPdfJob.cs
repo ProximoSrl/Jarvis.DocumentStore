@@ -12,8 +12,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class HtmlToPdfJob : AbstractFileJob
     {
-        public ConfigService ConfigService { get; set; }
-        
         protected override void OnExecute(IJobExecutionContext context)
         {
             var converter = new HtmlToPdfConverter(FileStore, ConfigService)

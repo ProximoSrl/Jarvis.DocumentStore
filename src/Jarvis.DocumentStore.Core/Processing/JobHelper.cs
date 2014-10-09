@@ -66,7 +66,7 @@ namespace Jarvis.DocumentStore.Core.Processing
             return JobBuilder
                 .Create<T>()
                 .RequestRecovery(true)
-                .StoreDurably(false);
+                .StoreDurably(true);
         }
 
         public void QueueLibreOfficeToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId)
