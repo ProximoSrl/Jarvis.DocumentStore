@@ -224,6 +224,7 @@
     <Content Include="Docs\Architecture_files\saved_resource.htm" />
     <Content Include="Docs\Architecture_files\scripts.min.js" />
     <Content Include="Docs\document_1.png" />
+    <Content Include="Docs\medium_image.jpg" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

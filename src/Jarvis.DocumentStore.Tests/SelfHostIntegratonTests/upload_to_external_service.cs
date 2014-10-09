@@ -116,6 +116,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_medium_jpg()
+        {
+            _client.Upload(TestConfig.PathToMediumJpg, "jpg_1").Wait();
+        }
+
+        [Test]
         public void upload_multi()
         {
             Task.WaitAll(
