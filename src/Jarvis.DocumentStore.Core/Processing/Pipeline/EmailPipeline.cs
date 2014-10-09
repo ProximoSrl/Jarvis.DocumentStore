@@ -32,6 +32,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             Logger.DebugFormat("Email {0} has been converted to format {1}: {2}", documentId, format, fileId);
+            PipelineManager.Start(documentId, fileId);
         }
     }
 }

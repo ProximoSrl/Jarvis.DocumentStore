@@ -7,14 +7,24 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
     public class HtmlZipPipeline: AbstractPipeline
     {
         readonly IJobHelper _jobHelper;
-        public HtmlZipPipeline(IJobHelper jobHelper) :base("htmpzip")
+        public HtmlZipPipeline(IJobHelper jobHelper) :base("htmlzip")
         {
             _jobHelper = jobHelper;
         }
 
         public override bool ShouldHandleFile(DocumentId documentId, IFileDescriptor descriptor)
         {
-            return descriptor.FileNameWithExtension.Extension == "htmlzip";
+            if (descriptor.FileNameWithExtension.Extension == "htmlzip")
+                return true;
+
+            string id = descriptor.FileId;
+
+            if (id.EndsWith("email.zip"))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public override void Start(DocumentId documentId, IFileDescriptor descriptor)
@@ -24,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 
         public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
-
+            PipelineManager.Start(documentId, fileId);
         }
     }
 }

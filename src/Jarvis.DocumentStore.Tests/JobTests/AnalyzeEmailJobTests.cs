@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             // assert
             FileStore.Received(1).Upload(new FileId("file_1.email.zip"), Arg.Any<string>());
             Assert.NotNull(storedFileName);
-            Assert.IsTrue(storedFileName.EndsWith("file_1.email.zip"));
+            Assert.IsTrue(storedFileName.EndsWith("message.email.zip"));
 
             Assert.IsNotNull(command);
             Assert.IsAssignableFrom<AddFormatToDocument>(command);

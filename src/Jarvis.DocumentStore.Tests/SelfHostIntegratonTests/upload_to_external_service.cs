@@ -110,6 +110,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_eml()
+        {
+            _client.Upload(TestConfig.PathToEml, "eml_1").Wait();
+        }
+
+        [Test]
         public void upload_multi()
         {
             Task.WaitAll(

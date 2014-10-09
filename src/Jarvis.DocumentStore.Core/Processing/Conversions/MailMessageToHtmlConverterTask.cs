@@ -41,8 +41,8 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
                 }
                 Logger.DebugFormat("Total files {0}", files.Length);
             }
-
-            var pathToZip = Path.Combine(workingFolder, fileId + ".email.zip");
+            var htmlName = Path.GetFileNameWithoutExtension(files.First(x => x.ToLowerInvariant().EndsWith(".htm")));
+            var pathToZip = Path.Combine(workingFolder, htmlName + ".email.zip");
 
             Logger.DebugFormat("New zip file is {0}", pathToZip);
 

@@ -12,8 +12,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class ImageResizeJob : AbstractFileJob
     {
-        public ConfigService ConfigService { get; set; }
-
         protected override void OnExecute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
