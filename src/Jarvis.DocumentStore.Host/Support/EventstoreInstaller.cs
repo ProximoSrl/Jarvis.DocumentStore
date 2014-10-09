@@ -87,6 +87,13 @@ namespace Jarvis.DocumentStore.Host.Support
 
             BsonClassMap.LookupClassMap(typeof (FileId));
             BsonClassMap.LookupClassMap(typeof (FileAlias));
+
+            BsonClassMap.RegisterClassMap<FileNameWithExtension>(m =>
+            {
+                m.AutoMap();
+                m.MapProperty(x => x.FileName).SetElementName("name");
+                m.MapProperty(x => x.Extension).SetElementName("ext");
+            });
         }
 
         static void EnableFlatIdMapping(IdentityManager converter)

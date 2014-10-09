@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         }
 
         public PipelineId Id { get; private set; }
-        public abstract bool ShouldHandleFile(DocumentId documentId, IFileDescriptor filename);
+        public abstract bool ShouldHandleFile(DocumentId documentId, IFileDescriptor descriptor);
         public abstract void Start(DocumentId documentId, IFileDescriptor descriptor);
         public abstract void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
         public void Attach(IPipelineManager manager)

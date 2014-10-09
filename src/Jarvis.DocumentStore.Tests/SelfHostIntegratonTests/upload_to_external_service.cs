@@ -104,6 +104,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_msg()
+        {
+            _client.Upload(TestConfig.PathToMsg, "outlook_1").Wait();
+        }
+
+        [Test]
         public void upload_multi()
         {
             Task.WaitAll(

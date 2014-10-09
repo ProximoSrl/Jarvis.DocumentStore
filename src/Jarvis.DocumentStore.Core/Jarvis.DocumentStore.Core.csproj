@@ -144,6 +144,7 @@
     <Compile Include="Processing\IJobHelper.cs" />
     <Compile Include="Processing\JobHelper.cs" />
     <Compile Include="Processing\Pipeline\AbstractPipeline.cs" />
+    <Compile Include="Processing\Pipeline\EmailPipeline.cs" />
     <Compile Include="Processing\Pipeline\HtmlZipPipeline.cs" />
     <Compile Include="Processing\Pipeline\IPipeline.cs" />
     <Compile Include="Processing\Pipeline\IPipelineManager.cs" />
