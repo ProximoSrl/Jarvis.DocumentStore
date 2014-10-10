@@ -2,40 +2,38 @@
 using System.Diagnostics;
 using System.IO;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
+    public interface ILibreOfficeConversion
+    {
+        string Run(string sourceFile, string outType);
+    }
+
     /// <summary>
     /// Office / OpenOffice => pdf with Headless Libreoffice
     /// TODO: switch to https://wiki.openoffice.org/wiki/AODL when complete pdf support is available
     /// </summary>
-    public class LibreOfficeConversion
+    public class LibreOfficeConversion : ILibreOfficeConversion
     {
         public ILogger Logger { get; set; }
         
-        readonly IFileStore _fileStore;
         readonly ConfigService _config;
 
-        public LibreOfficeConversion(IFileStore fileStore, ConfigService config)
+        public LibreOfficeConversion(ConfigService config)
         {
-            _fileStore = fileStore;
             _config = config;
         }
 
-        public FileId Run(FileId fileId, string outType)
+        public string Run(string sourceFile, string outType)
         {
-            Logger.DebugFormat("Starting conversion of fileId {0} to {1}", fileId, outType);
+            Logger.DebugFormat("Starting conversion of fileId {0} to {1}", sourceFile, outType);
             string pathToLibreOffice = _config.GetPathToLibreOffice();
-            var workingFolder = _config.GetWorkingFolder(fileId);
-
-            var sourceFile = _fileStore.Download(fileId, workingFolder);
             var outputFile = Path.ChangeExtension(sourceFile, outType);
 
             string arguments = string.Format("--headless -convert-to {2} -outdir \"{0}\"  \"{1}\" ",
-                workingFolder,
+                Path.GetDirectoryName(sourceFile),
                 sourceFile,
                 outType
             );
@@ -61,20 +59,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             if(!File.Exists(outputFile))
                 throw new Exception("Conversion failed");
 
-            var newFileId = new FileId(fileId + "." + outType);
-            _fileStore.Upload(newFileId, outputFile);
-
-            try
-            {
-                Logger.DebugFormat("Removing working folder {0}", workingFolder);
-                Directory.Delete(workingFolder, true);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorFormat(ex, "Unable to delete folder {0}", workingFolder);
-            }
-
-            return newFileId;
+            return outputFile;
         }
     }
 }

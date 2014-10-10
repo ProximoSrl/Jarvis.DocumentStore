@@ -157,7 +157,7 @@
     <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="Model\PipelineId.cs" />
     <Compile Include="Processing\Conversions\HtmlToPdfConverter.cs" />
-    <Compile Include="Processing\Conversions\LibreOfficeUnoConverion.cs" />
+    <Compile Include="Processing\Conversions\LibreOfficeUnoConversion.cs" />
     <Compile Include="Processing\Conversions\LibreOfficeConversion.cs" />
     <Compile Include="Processing\Conversions\MailMessageToHtmlConverterTask.cs" />
     <Compile Include="Processing\Conversions\TikaAnalyzer.cs" />

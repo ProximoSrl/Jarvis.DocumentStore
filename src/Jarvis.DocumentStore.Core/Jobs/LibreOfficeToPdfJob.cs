@@ -14,9 +14,9 @@ namespace Jarvis.DocumentStore.Core.Jobs
     /// </summary>
     public class LibreOfficeToPdfJob : AbstractFileJob
     {
-        readonly LibreOfficeConversion _libreOfficeConversion;
+        readonly ILibreOfficeConversion _libreOfficeConversion;
 
-        public LibreOfficeToPdfJob(LibreOfficeConversion libreOfficeConversion)
+        public LibreOfficeToPdfJob(ILibreOfficeConversion libreOfficeConversion)
         {
             _libreOfficeConversion = libreOfficeConversion;
         }
@@ -27,19 +27,19 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 "Delegating conversion of file {0} to libreoffice",
                 this.FileId
             );
-            
-            DateTime start = DateTime.Now;
-            var newFileId = _libreOfficeConversion.Run(this.FileId, "pdf");
 
+            var sourceFile = DownloadFileToWorkingFolder(this.FileId);
+            var outputFile = _libreOfficeConversion.Run(sourceFile, "pdf");
+
+            var newFileId = new FileId(FileId+ ".pdf");
+            FileStore.Upload(newFileId, outputFile);
+            
             CommandBus.Send(new AddFormatToDocument(
                 this.DocumentId, 
                 new DocumentFormat(DocumentFormats.Pdf), 
                 newFileId,
                 this.PipelineId
             ));
-            
-            var elapsed = DateTime.Now - start;
-            Logger.DebugFormat("Libreoffice conversion task ended in {0}ms", elapsed.TotalMilliseconds);
         }
     }
 }

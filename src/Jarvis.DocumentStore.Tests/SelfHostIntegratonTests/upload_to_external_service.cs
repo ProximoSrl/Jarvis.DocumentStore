@@ -47,6 +47,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_lots_of_doc()
+        {
+            Parallel.ForEach(Enumerable.Range(1, 100), i =>
+            {
+                _client.Upload(TestConfig.PathToWordDocument, "doc_" + i).Wait();
+            });
+        }
+
+        [Test]
         public void upload_pdf_with_aliasA_and_aliasB()
         {
             Task.WaitAll(

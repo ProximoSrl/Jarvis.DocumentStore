@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
@@ -12,35 +14,31 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     [TestFixture(Category = "integration")]
     public class ConvertToPdfTaskTests
     {
-        GridFSFileStore _fileStore;
         LibreOfficeConversion _withLibreOfficeConversion;
         LibreOfficeUnoConversion _unoConversion;
+        private IDictionary<string, string> _mapping = new Dictionary<string, string>();
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
             MongoDbTestConnectionProvider.TestDb.Drop();
 
-            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.TestDb)
-            {
-                Logger = new ConsoleLogger()
-            };
-            _fileStore.Upload(new FileId("docx"), TestConfig.PathToWordDocument);
-            _fileStore.Upload(new FileId("xlsx"), TestConfig.PathToExcelDocument);
-            _fileStore.Upload(new FileId("pptx"), TestConfig.PathToPowerpointDocument);
-            _fileStore.Upload(new FileId("ppsx"), TestConfig.PathToPowerpointShow);
-            _fileStore.Upload(new FileId("txt"), TestConfig.PathToTextDocument);
-            _fileStore.Upload(new FileId("odt"), TestConfig.PathToOpenDocumentText);
-            _fileStore.Upload(new FileId("ods"), TestConfig.PathToOpenDocumentSpreadsheet);
-            _fileStore.Upload(new FileId("odp"), TestConfig.PathToOpenDocumentPresentation);
-            _fileStore.Upload(new FileId("rtf"), TestConfig.PathToRTFDocument);
+            _mapping["docx"] = TestConfig.PathToWordDocument;
+            _mapping["xlsx"] = TestConfig.PathToExcelDocument;
+            _mapping["pptx"] = TestConfig.PathToPowerpointDocument;
+            _mapping["ppsx"] = TestConfig.PathToPowerpointShow;
+            _mapping["txt"] = TestConfig.PathToTextDocument;
+            _mapping["odt"] = TestConfig.PathToOpenDocumentText;
+            _mapping["ods"] = TestConfig.PathToOpenDocumentSpreadsheet;
+            _mapping["odp"] = TestConfig.PathToOpenDocumentPresentation;
+            _mapping["rtf"] = TestConfig.PathToRTFDocument;
 
-            _withLibreOfficeConversion = new LibreOfficeConversion(_fileStore, new ConfigService())
+            _withLibreOfficeConversion = new LibreOfficeConversion(new ConfigService())
             {
                 Logger = new ConsoleLogger()
             };
 
-            _unoConversion = new LibreOfficeUnoConversion(_fileStore, new ConfigService())
+            _unoConversion = new LibreOfficeUnoConversion(new ConfigService())
             {
                 Logger = new ConsoleLogger()
             };
@@ -60,11 +58,9 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             var s = new Stopwatch();
             s.Start();
-            var outputFileId = _withLibreOfficeConversion.Run(new FileId(fileId), "pdf");
+            _withLibreOfficeConversion.Run(_mapping[fileId], "pdf");
             s.Stop();
             Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
-
-            Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(new FileId(outputFileId)).ContentType);
         }
 
         [Test]
@@ -81,12 +77,19 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             var s = new Stopwatch();
             s.Start();
-            var outputFileId = _unoConversion.Run(new FileId(fileId), "pdf");
+            _unoConversion.Run(_mapping[fileId], "pdf");
             s.Stop();
             Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
-
-            Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(new FileId(outputFileId)).ContentType);
         }
 
+        [Test]
+        public void parallel_convesion_should_not_throw_exceptions()
+        {
+            Parallel.ForEach(
+                _mapping.Keys,
+//                new ParallelOptions() { MaxDegreeOfParallelism = 2 },
+                k => _unoConversion.Run(_mapping[k], "pdf")
+            );
+        }
     }
 }

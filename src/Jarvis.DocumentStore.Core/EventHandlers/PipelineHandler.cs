@@ -16,6 +16,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
@@ -32,13 +33,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         readonly ICollectionWrapper<AliasToDocument, FileAlias> _aliasToDoc;
         readonly ICollectionWrapper<HashToDocuments, FileHash> _hashToDocs;
         readonly ICommandBus _commandBus;
-        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<AliasToDocument, FileAlias> aliasToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus)
+        readonly ConfigService _configService;
+        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<AliasToDocument, FileAlias> aliasToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus, ConfigService configService)
         {
             _fileStore = fileStore;
             _pipelineManager = pipelineManager;
             _aliasToDoc = aliasToDoc;
             _hashToDocs = hashToDocs;
             _commandBus = commandBus;
+            _configService = configService;
 
             _aliasToDoc.Attach(this, false);
             _hashToDocs.Attach(this, false);
@@ -70,7 +73,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay)
                 return;
 
-            if (hashToDoc.Documents.Count > 1)
+            if (_configService.IsDeduplicationActive && hashToDoc.Documents.Count > 1)
             {
                 foreach (var link in hashToDoc.Documents)
                 {

@@ -31,8 +31,8 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<ConfigService>(),
                 Component
-                    .For<LibreOfficeConversion>()
-                    .LifestyleTransient(),
+                    .For<ILibreOfficeConversion>()
+                    .ImplementedBy<LibreOfficeUnoConversion>(),
                 Component
                     .For<IDocumentMapper>()
                     .ImplementedBy<DocumentMapper>()

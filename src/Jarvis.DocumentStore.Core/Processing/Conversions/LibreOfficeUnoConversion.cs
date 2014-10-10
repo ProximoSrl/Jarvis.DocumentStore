@@ -3,9 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Core.Storage;
 using uno;
 using uno.util;
 using unoidl.com.sun.star.beans;
@@ -18,47 +16,35 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
     /// <summary>
     /// http://tinyway.wordpress.com/2011/03/30/how-to-convert-office-documents-to-pdf-using-open-office-in-c/
     /// </summary>
-    public class LibreOfficeUnoConversion
+    public class LibreOfficeUnoConversion : ILibreOfficeConversion
     {
+        static readonly object LockRoot = new object();
+
         public ILogger Logger { get; set; }
-        
-        readonly IFileStore _fileStore;
+
         readonly ConfigService _config;
 
-        public LibreOfficeUnoConversion(IFileStore fileStore, ConfigService config)
+        public LibreOfficeUnoConversion(ConfigService config)
         {
-            _fileStore = fileStore;
             _config = config;
         }
 
-        public FileId Run(FileId fileId, string outType)
+        public string Run(string sourceFile, string outType)
         {
-            Logger.DebugFormat("Starting conversion of fileId {0} to {1}", fileId, outType);
-            var workingFolder = _config.GetWorkingFolder(fileId);
-
-            var sourceFile = _fileStore.Download(fileId, workingFolder);
             var outputFile = Path.ChangeExtension(sourceFile, outType);
 
             Logger.DebugFormat("Converting: {0} to {1}", sourceFile, outputFile);
-            ConvertToPdf(sourceFile, outputFile);
 
-            if(!File.Exists(outputFile))
+            lock (LockRoot) // -> single runner (todo: more user profiles)
+            {
+                ConvertToPdf(sourceFile, outputFile);
+            }
+
+            if (!File.Exists(outputFile))
                 throw new Exception("Conversion failed");
 
-            var newFileId = new FileId(fileId + "." + outType);
-            _fileStore.Upload(newFileId, outputFile);
 
-            try
-            {
-                Logger.DebugFormat("Removing working folder {0}", workingFolder);
-                Directory.Delete(workingFolder, true);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorFormat(ex, "Unable to delete folder {0}", workingFolder);
-            }
-
-            return newFileId;
+            return outputFile;
         }
 
         public void ConvertToPdf(string inputFile, string outputFile)
@@ -69,22 +55,17 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             StartOpenOffice();
 
             //Get a ComponentContext
-            var xLocalContext =
-                Bootstrap.bootstrap();
+            var xLocalContext = Bootstrap.bootstrap();
             //Get MultiServiceFactory
-            var xRemoteFactory =
-                (XMultiServiceFactory)
-                xLocalContext.getServiceManager();
+            var xRemoteFactory = (XMultiServiceFactory)xLocalContext.getServiceManager();
             //Get a CompontLoader
-            var aLoader =
-                (XComponentLoader)xRemoteFactory.createInstance("com.sun.star.frame.Desktop");
+            var aLoader = (XComponentLoader)xRemoteFactory.createInstance("com.sun.star.frame.Desktop");
             //Load the sourcefile
 
             XComponent xComponent = null;
             try
             {
-                xComponent = InitDocument(aLoader,
-                                          PathConverter(inputFile), "_blank");
+                xComponent = InitDocument(aLoader, PathConverter(inputFile), "_blank");
                 //Wait for loading
                 while (xComponent == null)
                 {
@@ -99,23 +80,30 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
                 if (xComponent != null) xComponent.dispose();
             }
         }
-        
+
         private void StartOpenOffice()
         {
-            var ps = Process.GetProcessesByName("soffice.exe");
-            if (ps.Length != 0)
-                throw new InvalidProgramException("OpenOffice not found.  Is OpenOffice installed?");
+            var ps = Process.GetProcessesByName("soffice");
             if (ps.Length > 0)
                 return;
+
+            var pathToLibreOffice = _config.GetPathToLibreOffice();
             var p = new Process
             {
                 StartInfo =
                 {
                     Arguments = "-headless -nofirststartwizard",
-                    FileName = "soffice.exe",
+                    FileName = pathToLibreOffice,
                     CreateNoWindow = true
                 }
             };
+
+            Logger.DebugFormat(
+                "Starting liberoffice headless {0} {1}",
+                p.StartInfo.FileName,
+                p.StartInfo.Arguments
+            );
+
             var result = p.Start();
 
             if (result == false)

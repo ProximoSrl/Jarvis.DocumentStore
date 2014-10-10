@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     this.PipelineId
                 ));
 
-                Logger.DebugFormat("Tika result: file {1} has {0} chars", FileId, content.Length);
+                Logger.DebugFormat("Tika result: file {0} has {1} chars", FileId, content.Length);
             });
         }
     }

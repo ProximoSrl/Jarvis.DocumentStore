@@ -25,7 +25,14 @@ namespace Jarvis.DocumentStore.Core.Services
                 ).ToLowerInvariant();
 
             _allowedExtensions = configExtensions != "*" ? configExtensions.Split('|') : null;
+
+            IsDeduplicationActive = GetConfigValue(
+                "JARVIS_DOCUMENTSTORE_DEDUPLICATION",
+                "onx"
+            ).ToLowerInvariant() == "on";
         }
+
+        public bool IsDeduplicationActive { get; private set; }
 
         public ImageSizeInfo[] GetDefaultSizes()
         {
