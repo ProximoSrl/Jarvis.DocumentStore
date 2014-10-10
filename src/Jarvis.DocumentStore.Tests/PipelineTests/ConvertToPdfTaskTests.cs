@@ -1,4 +1,5 @@
-﻿using Castle.Core.Logging;
+﻿using System.Diagnostics;
+using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
@@ -8,11 +9,12 @@ using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
-    [TestFixture (Category = "integration")]
+    [TestFixture(Category = "integration")]
     public class ConvertToPdfTaskTests
     {
         GridFSFileStore _fileStore;
         LibreOfficeConversion _withLibreOfficeConversion;
+        LibreOfficeUnoConversion _unoConversion;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -37,6 +39,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             {
                 Logger = new ConsoleLogger()
             };
+
+            _unoConversion = new LibreOfficeUnoConversion(_fileStore, new ConfigService())
+            {
+                Logger = new ConsoleLogger()
+            };
         }
 
         [Test]
@@ -51,8 +58,35 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestCase("rtf")]
         public void processing_file_should_succeed(string fileId)
         {
+            var s = new Stopwatch();
+            s.Start();
             var outputFileId = _withLibreOfficeConversion.Run(new FileId(fileId), "pdf");
+            s.Stop();
+            Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
+
             Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(new FileId(outputFileId)).ContentType);
         }
+
+        [Test]
+        [TestCase("docx")]
+        [TestCase("xlsx")]
+        [TestCase("pptx")]
+        [TestCase("ppsx")]
+        [TestCase("txt")]
+        [TestCase("odt")]
+        [TestCase("ods")]
+        [TestCase("odp")]
+        [TestCase("rtf")]
+        public void processing_file_with_sdk_should_succeed(string fileId)
+        {
+            var s = new Stopwatch();
+            s.Start();
+            var outputFileId = _unoConversion.Run(new FileId(fileId), "pdf");
+            s.Stop();
+            Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
+
+            Assert.AreEqual("application/pdf", _fileStore.GetDescriptor(new FileId(outputFileId)).ContentType);
+        }
+
     }
 }
