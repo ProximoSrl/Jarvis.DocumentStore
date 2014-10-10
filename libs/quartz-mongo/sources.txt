@@ -1,0 +1,1 @@
+https://github.com/andreabalducci/quartznet-mongodb/commit/b0b17fdf91911c7b099aad1489adc8ae1360f1ba

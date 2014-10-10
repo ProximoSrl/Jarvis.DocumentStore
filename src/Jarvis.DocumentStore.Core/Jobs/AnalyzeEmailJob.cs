@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var localFile = DownloadFileToWorkingFolder(this.FileId);
             var zipFile = task.Convert(this.FileId, localFile, WorkingFolder);
 
-            var emailFileId = new FileId(this.FileId + ".email.zip");
+            var emailFileId = new FileId(this.FileId + ".ezip");
             FileStore.Upload(emailFileId, zipFile);
 
             CommandBus.Send(new AddFormatToDocument(

@@ -17,12 +17,8 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             if (descriptor.FileNameWithExtension.Extension == "htmlzip")
                 return true;
 
-            string id = descriptor.FileId;
-
-            if (id.EndsWith("email.zip"))
-            {
+            if (descriptor.FileNameWithExtension.Extension == "ezip")
                 return true;
-            }
 
             return false;
         }
