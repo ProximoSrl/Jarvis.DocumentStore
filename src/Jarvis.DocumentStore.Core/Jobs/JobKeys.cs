@@ -10,5 +10,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public const string PagesCount = "pages_count";
         public const string Sizes = "sizes";
         public const string PipelineId = "pipeline_id";
+        public const string Command = "cmd";
     }
 }

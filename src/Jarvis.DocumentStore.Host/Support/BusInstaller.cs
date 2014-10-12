@@ -9,13 +9,14 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using CQRS.Bus.Rebus.Integration.Adapters;
-using CQRS.Bus.Rebus.Integration.Support;
 using CQRS.Kernel.Commands;
 using CQRS.Shared.Commands;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.CommandHandlers;
+using Jarvis.DocumentStore.Core.Processing;
+using Jarvis.DocumentStore.Host.Commands;
 using MongoDB.Driver;
+using Quartz;
 using Rebus;
 
 namespace Jarvis.DocumentStore.Host.Support
@@ -30,7 +31,7 @@ namespace Jarvis.DocumentStore.Host.Support
             
             container.Register(
                 Component
-                    .For<CommandHandlersRegistration>()
+                    .For<JobHandlersRegistration>()
                     .DependsOn(Dependency.OnValue<IWindsorContainer>(container))
                     .DependsOn(Dependency.OnValue<Assembly[]>(new[]
                         {
@@ -43,12 +44,6 @@ namespace Jarvis.DocumentStore.Host.Support
                     .WithServiceFirstInterface()
                     .LifestyleTransient(),
                 Component
-                    .For<BusBootstrapper>()
-                    .DependsOn(Dependency.OnValue<IWindsorContainer>(container))
-                    .DependsOn(Dependency.OnValue("connectionString",connectionString))
-                    .DependsOn(Dependency.OnValue("prefix", "ds"))
-                    .StartUsingMethod(x => x.StartWithAppConfig),
-                Component
                     .For<ICommandBus>()
                     .ImplementedBy<DocumentStoreCommandBus>(),
                 Component
@@ -59,16 +54,29 @@ namespace Jarvis.DocumentStore.Host.Support
         }
     }
 
-    public class DocumentStoreCommandBus : RebusCommandBus
+    public class DocumentStoreCommandBus : ICommandBus
     {
-        public DocumentStoreCommandBus(IBus bus)
-            : base(bus)
+        private readonly IJobHelper _jobHelper;
+
+        public DocumentStoreCommandBus(IJobHelper jobHelper)
         {
+            _jobHelper = jobHelper;
         }
 
-        protected override void PrepareCommand(ICommand command, string impersonatingUser)
+        public ICommand Send(ICommand command, string impersonatingUser = null)
         {
-            base.PrepareCommand(command, impersonatingUser ?? "documentstore");
+            _jobHelper.QueueCommand(command, impersonatingUser);
+            return command;
+        }
+
+        public ICommand Defer(TimeSpan delay, ICommand command, string impersonatingUser = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICommand SendLocal(ICommand command, string impersonatingUser = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

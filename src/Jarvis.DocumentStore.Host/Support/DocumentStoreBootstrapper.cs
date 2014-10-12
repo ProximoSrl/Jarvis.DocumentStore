@@ -80,16 +80,12 @@ namespace Jarvis.DocumentStore.Host.Support
 
     public class NotifyReadModelChanges : INotifyToSubscribers
     {
-        private readonly IBus _bus;
-
-        public NotifyReadModelChanges(IBus bus)
+        public NotifyReadModelChanges()
         {
-            _bus = bus;
         }
 
         public void Send(object msg)
         {
-            _bus.Publish(msg);
         }
     }
 }

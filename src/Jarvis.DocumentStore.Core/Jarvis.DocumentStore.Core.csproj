@@ -139,6 +139,7 @@
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
     <Compile Include="Jobs\CleanupJob.cs" />
+    <Compile Include="Jobs\CommandRunnerJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />

@@ -1,3 +1,4 @@
+using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 
@@ -11,5 +12,6 @@ namespace Jarvis.DocumentStore.Core.Processing
         void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId);
         void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, FileId fileId);
         void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, FileId fileId);
+        void QueueCommand(ICommand command, string asUser);
     }
 }

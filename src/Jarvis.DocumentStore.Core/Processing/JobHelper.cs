@@ -1,13 +1,47 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
+using CQRS.Shared.Commands;
+using CQRS.Shared.Domain.Serialization;
+using CQRS.Shared.Messages;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
+using Newtonsoft.Json;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Processing
 {
+    public static class CommandSerializer
+    {
+        private static JsonSerializerSettings _settings;
+
+        static CommandSerializer ()
+        {
+            _settings = new JsonSerializerSettings()
+            {
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+                Converters = new JsonConverter[]
+                {
+                    new StringValueJsonConverter()
+                },
+                ContractResolver = new MessagesContractResolver(),
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+            };
+        }
+
+        public static string Serialize(ICommand command)
+        {
+            return JsonConvert.SerializeObject(command, _settings);
+        }
+
+        public static T Deserialize<T>(string command) where T : ICommand
+        {
+            return JsonConvert.DeserializeObject<T>(command, _settings);
+        }
+    }
+
     public class JobHelper : IJobHelper
     {
         readonly IScheduler _scheduler;
@@ -46,6 +80,18 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);        
         }
 
+        public void QueueCommand(ICommand command, string asUser)
+        {
+            var jobType = typeof (CommandRunnerJob<>).MakeGenericType(new[] {command.GetType()});
+            var job = GetBuilderForJob(jobType)
+                .UsingJobData(JobKeys.Command, CommandSerializer.Serialize(command))
+                .Build();
+
+            var trigger = CreateTrigger();
+            trigger.Priority = 100;
+            _scheduler.ScheduleJob(job, trigger);
+        }
+
         public void QueueResize(PipelineId pipelineId, DocumentId documentId, FileId fileId,string imageFormat)
         {
             var job = GetBuilderForJob<ImageResizeJob>()
@@ -65,6 +111,14 @@ namespace Jarvis.DocumentStore.Core.Processing
         {
             return JobBuilder
                 .Create<T>()
+                .RequestRecovery(true)
+                .StoreDurably(true);
+        }
+
+        JobBuilder GetBuilderForJob(Type jobType) 
+        {
+            return JobBuilder
+                .Create(jobType)
                 .RequestRecovery(true)
                 .StoreDurably(true);
         }

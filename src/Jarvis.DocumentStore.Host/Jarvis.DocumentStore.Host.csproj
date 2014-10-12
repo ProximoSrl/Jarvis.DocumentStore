@@ -147,6 +147,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\JobHandlersRegistration.cs" />
     <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -169,10 +170,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\cqrs\CQRS.Bus.Rebus.Integration\CQRS.Bus.Rebus.Integration.csproj">
-      <Project>{804D09EF-0E40-4C7C-8064-ADD92B7DE03F}</Project>
-      <Name>CQRS.Bus.Rebus.Integration</Name>
-    </ProjectReference>
     <ProjectReference Include="..\cqrs\CQRS.Kernel\CQRS.Kernel.csproj">
       <Project>{203ad69f-e839-46cf-a25a-0ed22ea1abf8}</Project>
       <Name>CQRS.Kernel</Name>
@@ -186,6 +183,7 @@
       <Name>Jarvis.DocumentStore.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
