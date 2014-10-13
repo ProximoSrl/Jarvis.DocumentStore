@@ -6,7 +6,6 @@
     dashboardData.$inject= ['$http'];
 
     function dashboardData($http) {
-        debugger;
         var service = {
             getMeters: getMeters
         };

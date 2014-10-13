@@ -1304,6 +1304,7 @@
     <Content Include="app\routeConfig.js" />
     <Content Include="app\shared\fileSizeFilter.js" />
     <Content Include="app\shared\shared.js" />
+    <Content Include="app\shared\updateTitle.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

@@ -15,11 +15,13 @@
         $stateProvider
             .state('dashboard', {
                 url: "/dashboard",
-                templateUrl: "dashboard/dashboard.html"
+                templateUrl: "dashboard/dashboard.html",
+                data : { pageTitle: 'Dashboard', description: 'metrics' }
             })
             .state('info', {
                 url: "/info",
-                templateUrl: "info/info.html"
-            });
+                templateUrl: "info/info.html",
+                data : { pageTitle: 'About' }
+    });
     }
 })(window, window.angular);
