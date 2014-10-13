@@ -8,7 +8,14 @@
     function Dashboard(dashboardData) {
         var vm = this;
 
-        vm.meters = {};
+        vm.meters = {
+            "documents": 0,
+            "docBytes": 0,
+            "handles": 0,
+            "files": 0,
+            "jobs": 0
+        };
+
 
         dashboardData.getMeters().then(function(d) {
             vm.meters = d;
