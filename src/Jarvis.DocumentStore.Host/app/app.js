@@ -1,5 +1,10 @@
 ﻿(function(window, angular, undefined) {'use strict';
 
-    angular.module('admin', ['admin.layout', 'admin.dashboard']);
+    angular.module('admin', [
+        'ui.router',
+        'admin.layout',
+        'admin.dashboard',
+        'admin.info'
+    ]);
 
 })(window, window.angular);

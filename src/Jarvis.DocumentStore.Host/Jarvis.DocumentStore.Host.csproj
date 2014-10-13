@@ -247,8 +247,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\app.js" />
+    <Content Include="app\dashboard\dashboard.html" />
     <Content Include="app\dashboard\dashboard.js" />
     <Content Include="app\index.html" />
+    <Content Include="app\info\info.html" />
+    <Content Include="app\info\info.js" />
     <Content Include="app\layout\sidebar.js" />
     <Content Include="app\layout\header.html" />
     <Content Include="app\layout\header.js" />
@@ -1019,6 +1022,7 @@
     <Content Include="app\lib\font-awesome-4.2.0\fonts\fontawesome-webfont.svg" />
     <Content Include="app\lib\ionicons-v1.5.2\css\ionicons.min.css" />
     <Content Include="app\lib\ionicons-v1.5.2\fonts\ionicons.svg" />
+    <Content Include="app\lib\misc\angular-ui-router.js" />
     <Content Include="app\lib\misc\jquery-2.1.1.min.js" />
     <Content Include="app\lib\skin\css\AdminLTE.css" />
     <Content Include="app\lib\skin\css\bootstrap-slider\slider.css" />
@@ -1294,6 +1298,7 @@
     <Content Include="app\lib\skin\js\plugins\sparkline\jquery.sparkline.min.js" />
     <Content Include="app\lib\skin\js\plugins\timepicker\bootstrap-timepicker.js" />
     <Content Include="app\lib\skin\js\plugins\timepicker\bootstrap-timepicker.min.js" />
+    <Content Include="app\routeConfig.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
