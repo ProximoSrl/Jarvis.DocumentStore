@@ -111,6 +111,7 @@ namespace Jarvis.DocumentStore.Core.Processing
         {
             return JobBuilder
                 .Create<T>()
+                .WithIdentity(JobKey.Create(Guid.NewGuid().ToString(), typeof(T).Name))
                 .RequestRecovery(true)
                 .StoreDurably(true);
         }
