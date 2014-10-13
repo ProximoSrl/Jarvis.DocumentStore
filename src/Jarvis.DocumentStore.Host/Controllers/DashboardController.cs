@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using CQRS.Shared.ReadModel;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Storage.Stats;
@@ -20,6 +21,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
     {
         public GridFsFileStoreStats FileStoreStats { get; set; }
         public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
+        public IReader<HandleToDocument, FileHandle> Handles { get; set; }
 
         [HttpGet]
         [Route("dashboard")]
@@ -37,12 +39,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             int documents = result != null ? result["documents"].AsInt32 : 0;
             long bytes = result != null ? result["bytes"].AsInt64 : 0;
             int files = totals != null ? totals.Files : 0;
-            Thread.Sleep(10000);
+
+
             var stats = new
             {
                 Documents = documents,
                 DocBytes = bytes,
-                Handles = 222,
+                Handles = Handles.AllUnsorted.LongCount(),
                 Files = files,
                 Jobs = 444
             };

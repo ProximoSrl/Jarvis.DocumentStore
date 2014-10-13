@@ -69,7 +69,11 @@ namespace Jarvis.DocumentStore.Core.Support
 
             var trigger = TriggerBuilder.Create()
                 .StartAt(DateTimeOffset.Now)
+#if DEBUG
+                .WithSimpleSchedule(b => b.RepeatForever().WithIntervalInSeconds(30))
+#else
                 .WithSimpleSchedule(b=>b.RepeatForever().WithIntervalInMinutes(5))
+#endif
                 .WithPriority(10)
                 .Build();
 

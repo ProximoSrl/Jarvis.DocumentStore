@@ -8,8 +8,6 @@ using CQRS.Kernel.ProjectionEngine.RecycleBin;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using NEventStore;
-using NEventStore.Persistence;
-using NEventStore.Serialization;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
@@ -29,7 +27,10 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            var list = RecycleBin.Slots.Where(x => x.Id.StreamId.StartsWith("Document_")).Take(50).ToArray();
+            var list = RecycleBin.Slots
+                .Where(x => x.Id.StreamId.StartsWith("Document_"))
+                .Take(200)
+                .ToArray();
 
             foreach (var slot in list)
             {
