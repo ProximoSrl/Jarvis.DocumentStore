@@ -9,10 +9,10 @@ namespace Jarvis.DocumentStore.Core.Model
     /// Public file handle
     /// </summary>
     [BsonSerializer(typeof(StringValueBsonSerializer))]
-    [TypeConverter(typeof(StringValueTypeConverter<FileAlias>))]
-    public class FileAlias : LowercaseStringValue
+    [TypeConverter(typeof(StringValueTypeConverter<FileHandle>))]
+    public class FileHandle : LowercaseStringValue
     {
-        public FileAlias(string value) : base(value)
+        public FileHandle(string value) : base(value)
         {
         }
     }

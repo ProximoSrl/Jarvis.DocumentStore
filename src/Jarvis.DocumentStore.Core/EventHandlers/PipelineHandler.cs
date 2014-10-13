@@ -30,26 +30,26 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public ILogger Logger { get; set; }
         readonly IFileStore _fileStore;
         readonly IPipelineManager _pipelineManager;
-        readonly ICollectionWrapper<AliasToDocument, FileAlias> _aliasToDoc;
+        readonly ICollectionWrapper<HandleToDocument, FileHandle> _handleToDoc;
         readonly ICollectionWrapper<HashToDocuments, FileHash> _hashToDocs;
         readonly ICommandBus _commandBus;
         readonly ConfigService _configService;
-        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<AliasToDocument, FileAlias> aliasToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus, ConfigService configService)
+        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<HandleToDocument, FileHandle> handleToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus, ConfigService configService)
         {
             _fileStore = fileStore;
             _pipelineManager = pipelineManager;
-            _aliasToDoc = aliasToDoc;
+            _handleToDoc = handleToDoc;
             _hashToDocs = hashToDocs;
             _commandBus = commandBus;
             _configService = configService;
 
-            _aliasToDoc.Attach(this, false);
+            _handleToDoc.Attach(this, false);
             _hashToDocs.Attach(this, false);
         }
 
         public override void Drop()
         {
-            _aliasToDoc.Drop();
+            _handleToDoc.Drop();
             _hashToDocs.Drop();
         }
 
@@ -62,7 +62,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var documentId = (DocumentId)e.AggregateId;
 
             var descriptor = _fileStore.GetDescriptor(e.FileId);
-            _aliasToDoc.Upsert(e, e.Alias, CreateNewMapping(e), UpdateCurrentMapping(e));
+            _handleToDoc.Upsert(e, e.Handle, CreateNewMapping(e), UpdateCurrentMapping(e));
 
             var hash = descriptor.Hash;
             var hashToDoc = _hashToDocs.Upsert(e, hash,
@@ -100,9 +100,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                                     );
 
                                     // send commands to
-                                    // 1 - link alias to already present document
+                                    // 1 - link handle to already present document
                                     // 2 - delete "new" document
-                                    _commandBus.Send(new DeduplicateDocument(link.DocumentId, documentId, e.Alias,e.FileName));
+                                    _commandBus.Send(new DeduplicateDocument(link.DocumentId, documentId, e.Handle,e.FileName));
                                     return;
                                 }
                             }
@@ -130,14 +130,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             );
         }
 
-        private Action<AliasToDocument> UpdateCurrentMapping(DocumentCreated e)
+        private Action<HandleToDocument> UpdateCurrentMapping(DocumentCreated e)
         {
             return m => m.DocumentId = (DocumentId)e.AggregateId;
         }
 
-        private Func<AliasToDocument> CreateNewMapping(DocumentCreated e)
+        private Func<HandleToDocument> CreateNewMapping(DocumentCreated e)
         {
-            return () => new AliasToDocument()
+            return () => new HandleToDocument()
             {
                 DocumentId = (DocumentId)e.AggregateId
             };
@@ -183,8 +183,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentHasBeenDeduplicated e)
         {
-            _aliasToDoc.FindAndModify(e,
-                e.OtherFileAlias,
+            _handleToDoc.FindAndModify(e,
+                e.OtherFileHandle,
                 map => map.DocumentId = (DocumentId)e.AggregateId
             );
 

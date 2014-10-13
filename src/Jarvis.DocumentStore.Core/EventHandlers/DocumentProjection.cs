@@ -26,7 +26,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
             _documents.OnSave = d =>
             {
-                d.AliasesCount = d.Aliases.Count;
+                d.HandlesCount = d.Handles.Count;
                 d.FormatsCount = d.Formats.Count;
             };
         }
@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.Insert(e, new DocumentReadModel(
                 (DocumentId)e.AggregateId,
                 e.FileId,
-                e.Alias,
+                e.Handle,
                 e.FileName
             ));
         }
@@ -66,7 +66,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
             {
-                d.AddAlias(e.OtherFileAlias, e.OtherFileName);
+                d.AddHandle(e.OtherFileHandle, e.OtherFileName);
             });
         }
     }

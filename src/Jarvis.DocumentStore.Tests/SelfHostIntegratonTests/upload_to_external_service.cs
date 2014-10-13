@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_same_pdf_with_two_aliases()
+        public void upload_same_pdf_with_two_handles()
         {
             _client.Upload(TestConfig.PathToDocumentPdf, "Pdf_1").Wait();
             _client.Upload(TestConfig.PathToDocumentPdf, "Pdf_2").Wait();
@@ -56,7 +56,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_pdf_with_aliasA_and_aliasB()
+        public void upload_pdf_with_handleA_and_handleB()
         {
             Task.WaitAll(
                 _client.Upload(TestConfig.PathToDocumentCopyPdf, "a"),

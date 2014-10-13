@@ -25,19 +25,19 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         }
 
         public IDictionary<DocumentFormat, FormatInfo> Formats { get; private set; }
-        public IDictionary<FileAlias, FileNameWithExtension> Aliases { get; private set; }
+        public IDictionary<FileHandle, FileNameWithExtension> Handles { get; private set; }
         public int FormatsCount { get; set; }
-        public int AliasesCount { get; set; }
+        public int HandlesCount { get; set; }
 
-        public DocumentReadModel(DocumentId id, FileId fileId, FileAlias alias, FileNameWithExtension fileName)
+        public DocumentReadModel(DocumentId id, FileId fileId, FileHandle handle, FileNameWithExtension fileName)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
-            this.Aliases = new Dictionary<FileAlias, FileNameWithExtension>();
+            this.Handles = new Dictionary<FileHandle, FileNameWithExtension>();
             
             this.Id = id;
 
             AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), fileId);
-            AddAlias(alias, fileName);
+            AddHandle(handle, fileName);
         }
 
         public void AddFormat(PipelineId pipelineId, DocumentFormat format, FileId fileId)
@@ -45,14 +45,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             this.Formats[format] = new FormatInfo(fileId, pipelineId);
         }
 
-        public void AddAlias(FileAlias alias, FileNameWithExtension fileName)
+        public void AddHandle(FileHandle handle, FileNameWithExtension fileName)
         {
-            this.Aliases[alias] = fileName;
+            this.Handles[handle] = fileName;
         }
 
-        public FileNameWithExtension GetFileName(FileAlias @alias)
+        public FileNameWithExtension GetFileName(FileHandle handle)
         {
-            return this.Aliases[alias];
+            return this.Handles[handle];
         }
 
         public FileId GetFormatFileId(DocumentFormat format)

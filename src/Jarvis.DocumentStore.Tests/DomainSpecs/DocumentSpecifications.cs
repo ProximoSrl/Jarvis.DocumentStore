@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         protected static readonly DocumentId _id = new DocumentId(1);
         protected static readonly FileId _fileId = new FileId("newFile");
-        protected static readonly FileAlias _alias = new FileAlias("alias-to-file");
+        protected static readonly FileHandle Handle = new FileHandle("handle-to-file");
         protected static readonly FileNameWithExtension _fname = new FileNameWithExtension("pathTo.file");
 
         protected static Document Document
@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         Establish context = () => Create();
 
-        Because of = () => Document.Create(_id, _fileId, _alias, _fname);
+        Because of = () => Document.Create(_id, _fileId, Handle, _fname);
 
         It DocumentCreatedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentCreated>().ShouldBeTrue();
@@ -43,7 +43,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         It created_event_should_store_relevant_info = () =>
         {
             var e = RaisedEvent<DocumentCreated>();
-            e.Alias.ShouldEqual(_alias);
+            e.Handle.ShouldEqual(Handle);
             e.FileId.ShouldEqual(_fileId);
             e.FileName.ShouldEqual(_fname);
         };
@@ -56,10 +56,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         Establish context = () =>
         {
             Create();
-            Document.Create(_id, _fileId, _alias,_fname);
+            Document.Create(_id, _fileId, Handle,_fname);
         };
 
-        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, _alias,_fname));
+        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, Handle,_fname));
 
         It a_domain_exception_should_be_thrown = () =>
         {
@@ -165,7 +165,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         Because of = () =>
         {
-            Document.Create(_id, _fileId, _alias,_fname);
+            Document.Create(_id, _fileId, Handle,_fname);
             Document.Delete();
         };
 
@@ -176,22 +176,22 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     [Subject("with a document")]
     public class when_a_document_is_deduplicated : DocumentSpecifications
     {
-        static readonly FileAlias _otherAlias = new FileAlias("other_alias");
+        static readonly FileHandle OtherHandle = new FileHandle("other_handle");
         static readonly DocumentId _otherDocumentId = new DocumentId("Document_2");
         static readonly FileNameWithExtension _otherFileName= new FileNameWithExtension("Another.document");
 
         Establish context = () => SetUp(new DocumentState());
 
-        Because of = () => Document.Deduplicate(_otherDocumentId, _otherAlias,_otherFileName);
+        Because of = () => Document.Deduplicate(_otherDocumentId, OtherHandle,_otherFileName);
 
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
             EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
 
-        It DocumentHasBeenDeduplicated_event_should_have_documentId_and_alias = () =>
+        It DocumentHasBeenDeduplicated_event_should_have_documentId_and_handle = () =>
         {
             var e = RaisedEvent<DocumentHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
-            Assert.AreSame(_otherAlias, e.OtherFileAlias);
+            Assert.AreSame(OtherHandle, e.OtherFileHandle);
             Assert.AreSame(_otherFileName, e.OtherFileName);
         };
     }

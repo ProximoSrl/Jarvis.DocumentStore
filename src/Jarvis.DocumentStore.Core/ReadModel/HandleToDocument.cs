@@ -8,7 +8,7 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
-    public class AliasToDocument : AbstractReadModel<FileAlias>
+    public class HandleToDocument : AbstractReadModel<FileHandle>
     {
         public DocumentId DocumentId { get; set; }
     }

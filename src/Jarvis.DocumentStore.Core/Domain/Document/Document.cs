@@ -21,12 +21,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Create(DocumentId id, FileId fileId, FileAlias alias, FileNameWithExtension fileName)
+        public void Create(DocumentId id, FileId fileId, FileHandle handle, FileNameWithExtension fileName)
         {
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "Already created");
 
-            RaiseEvent(new DocumentCreated(id, fileId, alias, fileName));
+            RaiseEvent(new DocumentCreated(id, fileId, handle, fileName));
         }
 
         public void AddFormat(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)
@@ -57,9 +57,9 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             ));
         }
 
-        public void Deduplicate(DocumentId documentId, FileAlias alias, FileNameWithExtension fileName)
+        public void Deduplicate(DocumentId documentId, FileHandle handle, FileNameWithExtension fileName)
         {
-            RaiseEvent(new DocumentHasBeenDeduplicated(documentId, alias, fileName));
+            RaiseEvent(new DocumentHasBeenDeduplicated(documentId, handle, fileName));
         }
     }
 }

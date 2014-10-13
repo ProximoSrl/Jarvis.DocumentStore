@@ -26,19 +26,19 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly ICommandBus _commandBus;
         readonly IIdentityGenerator _identityGenerator;
-        readonly IReader<AliasToDocument, FileAlias> _aliasToDocument;
+        readonly IReader<HandleToDocument, FileHandle> _handleToDocument;
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
         FileNameWithExtension _fileName;
 
 
-        public FileController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IReader<AliasToDocument, FileAlias> aliasToDocument, IReader<DocumentReadModel, DocumentId> documentReader)
+        public FileController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IReader<HandleToDocument, FileHandle> handleToDocument, IReader<DocumentReadModel, DocumentId> documentReader)
         {
             _fileStore = fileStore;
             _configService = configService;
             _commandBus = commandBus;
             _identityGenerator = identityGenerator;
-            _aliasToDocument = aliasToDocument;
+            _handleToDocument = handleToDocument;
             _documentReader = documentReader;
         }
 
@@ -49,13 +49,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return DateTime.UtcNow.ToLongTimeString();
         }
 
-        [Route("file/upload/{alias}")]
+        [Route("file/upload/{handle}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Upload(FileAlias alias)
+        public async Task<HttpResponseMessage> Upload(FileHandle handle)
         {
             var documentId = _identityGenerator.New<DocumentId>();
 
-            Logger.DebugFormat("Incoming file {0}, assigned {1}", alias, documentId);
+            Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
             var fileId = new FileId(documentId);
             var errorMessage = await UploadFromHttpContent(Request.Content, fileId);
             Logger.DebugFormat("File {0} processed with message {1}", fileId, errorMessage);
@@ -68,7 +68,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            _commandBus.Send(new CreateDocument(documentId, fileId, alias, _fileName));
+            _commandBus.Send(new CreateDocument(documentId, fileId, handle, _fileName));
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 
@@ -101,16 +101,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return null;
         }
 
-        [Route("file/{alias}/{format}")]
+        [Route("file/{handle}/{format}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetFormat(FileAlias alias, DocumentFormat format)
+        public async Task<HttpResponseMessage> GetFormat(FileHandle handle, DocumentFormat format)
         {
-            var mapping = _aliasToDocument.FindOneById(alias);
+            var mapping = _handleToDocument.FindOneById(handle);
             if (mapping == null)
             {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
-                    string.Format("Document not found for alias {0}", alias)
+                    string.Format("Document not found for handle {0}", handle)
                 );
             }
 
@@ -127,7 +127,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 return StreamFile(
                     document.GetFormatFileId(format), 
-                    document.GetFileName(alias)
+                    document.GetFileName(handle)
                 );
             }
 
@@ -137,7 +137,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
                     string.Format("Document {0} doesn't have format {1}",
-                        alias,
+                        handle,
                         format
                     )
                 );

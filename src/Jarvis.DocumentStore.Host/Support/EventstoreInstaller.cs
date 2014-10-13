@@ -86,7 +86,7 @@ namespace Jarvis.DocumentStore.Host.Support
             IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentId).Assembly);
 
             BsonClassMap.LookupClassMap(typeof (FileId));
-            BsonClassMap.LookupClassMap(typeof (FileAlias));
+            BsonClassMap.LookupClassMap(typeof (FileHandle));
 
             BsonClassMap.RegisterClassMap<FileNameWithExtension>(m =>
             {
@@ -106,7 +106,7 @@ namespace Jarvis.DocumentStore.Host.Support
             });
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
             StringValueCustomBsonTypeMapper.Register<FileId>();
-            StringValueCustomBsonTypeMapper.Register<FileAlias>();
+            StringValueCustomBsonTypeMapper.Register<FileHandle>();
             StringValueCustomBsonTypeMapper.Register<FileHash>();
         }
     }

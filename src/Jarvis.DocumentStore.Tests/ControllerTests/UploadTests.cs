@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected IFileStore FileStore;
         protected ICommandBus CommandBus;
         protected IIdentityGenerator IdentityGenerator;
-        protected IReader<AliasToDocument, FileAlias> AliasToDocumentReader;
+        protected IReader<HandleToDocument, FileHandle> HandleToDocumentReader;
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
 
         [SetUp]
@@ -37,10 +37,10 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             FileStore = Substitute.For<IFileStore>();
             CommandBus = Substitute.For<ICommandBus>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
-            AliasToDocumentReader = Substitute.For<IReader<AliasToDocument, FileAlias>>();
+            HandleToDocumentReader = Substitute.For<IReader<HandleToDocument, FileHandle>>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
 
-            Controller = new FileController(FileStore, new ConfigService(), CommandBus, IdentityGenerator, AliasToDocumentReader, DocumentReader)
+            Controller = new FileController(FileStore, new ConfigService(), CommandBus, IdentityGenerator, HandleToDocumentReader, DocumentReader)
             {
                 Request = new HttpRequestMessage(),
                 Logger = new ConsoleLogger()
@@ -54,9 +54,9 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             this.DocumentReader.FindOneById(doc.Id).Returns(info => doc);
         }
 
-        protected void SetupFileAlias(FileAlias fileAlias, DocumentId documentId)
+        protected void SetupFileHandle(FileHandle fileHandle, DocumentId documentId)
         {
-            AliasToDocumentReader.FindOneById(fileAlias).Returns(info => new AliasToDocument()
+            HandleToDocumentReader.FindOneById(fileHandle).Returns(info => new HandleToDocument()
             {
                 DocumentId = documentId
             });
@@ -69,7 +69,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         [Test]
         public async void calling_upload_without_file_attachment_should_return_BadRequest()
         {
-            var response = await Controller.Upload(new FileAlias("Document_1"));
+            var response = await Controller.Upload(new FileHandle("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
@@ -77,7 +77,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public async void calling_upload_with_empty_attachment_should_return_BadRequest()
         {
             Controller.Request.Content = new MultipartFormDataContent("test");
-            var response = await Controller.Upload(new FileAlias("Document_1"));
+            var response = await Controller.Upload(new FileHandle("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Attachment not found!", response.GetError().Message);
         }
@@ -120,7 +120,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
                 Controller.Request.Content = multipartFormDataContent;
 
-                return await Controller.Upload(new FileAlias("Document_1"));
+                return await Controller.Upload(new FileHandle("Document_1"));
             }
         }
     }
@@ -129,27 +129,27 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
     public class DownloadTests : AbstractFileControllerTests
     {
         [Test]
-        public void request_for_invalid_file_alias_should_404()
+        public void request_for_invalid_file_handle_should_404()
         {
-            var fileAlias = new FileAlias("not_in_store");
+            var filehandle = new FileHandle("not_in_store");
             var format = new DocumentFormat("any_format");
 
-            var response = Controller.GetFormat(fileAlias, format).Result;
+            var response = Controller.GetFormat(filehandle, format).Result;
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-            Assert.AreEqual("Document not found for alias not_in_store", response.GetError().Message);
+            Assert.AreEqual("Document not found for handle not_in_store", response.GetError().Message);
         }
 
         [Test]
         public void request_for_missing_document_should_404()
         {
             // arrange
-            var fileAlias = new FileAlias("doc");
+            var filehandle = new FileHandle("doc");
             var format = new DocumentFormat("any_format");
-            SetupFileAlias(fileAlias, new DocumentId(1));
+            SetupFileHandle(filehandle, new DocumentId(1));
 
             // act
-            var response = Controller.GetFormat(fileAlias, format).Result;
+            var response = Controller.GetFormat(filehandle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -160,21 +160,21 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void request_for_missing_format_should_404()
         {
             // arrange
-            var fileAlias = new FileAlias("doc");
+            var filehandle = new FileHandle("doc");
             var format = new DocumentFormat("missing");
 
             var doc = new DocumentReadModel(
                 new DocumentId(1),
                 new FileId("file_1"),
-                fileAlias,
+                filehandle,
                 new FileNameWithExtension("document.docx")
             );
 
-            SetupFileAlias(fileAlias, doc.Id);
+            SetupFileHandle(filehandle, doc.Id);
             SetupDocumentModel(doc);
 
             // act
-            var response = Controller.GetFormat(fileAlias, format).Result;
+            var response = Controller.GetFormat(filehandle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -185,24 +185,24 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void when_file_is_not_found_should_return_404()
         {
             // arrange
-            var fileAlias = new FileAlias("doc");
+            var filehandle = new FileHandle("doc");
             var format = new DocumentFormat("original");
 
             var fileId = new FileId("file_1");
             var doc = new DocumentReadModel(
                 new DocumentId(1), 
                 fileId, 
-                fileAlias,
+                filehandle,
                 new FileNameWithExtension("A document.docx")
             );
 
-            SetupFileAlias(fileAlias, doc.Id);
+            SetupFileHandle(filehandle, doc.Id);
             SetupDocumentModel(doc);
 
             FileStore.GetDescriptor(fileId).Returns(i => null);
 
             // act
-            var response = Controller.GetFormat(fileAlias, format).Result;
+            var response = Controller.GetFormat(filehandle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -214,25 +214,25 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void should_download_original_file()
         {
             // arrange
-            var fileAlias = new FileAlias("doc");
+            var filehandle = new FileHandle("doc");
             var format = new DocumentFormat("original");
 
             var fileId = new FileId("file_1");
             var doc = new DocumentReadModel(
                 new DocumentId(1),
                 fileId,
-                fileAlias,
+                filehandle,
                 new FileNameWithExtension("A document.docx")
             );
 
 
-            SetupFileAlias(fileAlias, doc.Id);
+            SetupFileHandle(filehandle, doc.Id);
             SetupDocumentModel(doc);
 
             FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(fileId,TestConfig.PathToWordDocument));
 
             // act
-            using (var response = Controller.GetFormat(fileAlias, format).Result)
+            using (var response = Controller.GetFormat(filehandle, format).Result)
             {
                 // assert
                 response.EnsureSuccessStatusCode();
@@ -244,26 +244,26 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void should_download_pdf_format()
         {
             // arrange
-            var fileAlias = new FileAlias("doc");
+            var filehandle = new FileHandle("doc");
             var format = new DocumentFormat("pdf");
             var pdfFileId = new FileId("pdf");
 
             var doc = new DocumentReadModel(
                 new DocumentId(1),
                 new FileId("file_1"),
-                fileAlias,
+                filehandle,
                 new FileNameWithExtension("A document.docx")
             );
 
             doc.AddFormat(new PipelineId("abc"), format, pdfFileId);
 
-            SetupFileAlias(fileAlias, doc.Id);
+            SetupFileHandle(filehandle, doc.Id);
             SetupDocumentModel(doc);
 
             FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileDescriptor(pdfFileId, TestConfig.PathToDocumentPdf));
 
             // act
-            using (var response = Controller.GetFormat(fileAlias, format).Result)
+            using (var response = Controller.GetFormat(filehandle, format).Result)
             {
                 // assert
                 response.EnsureSuccessStatusCode();

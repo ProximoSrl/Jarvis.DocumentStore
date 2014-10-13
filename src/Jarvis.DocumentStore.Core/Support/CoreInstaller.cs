@@ -45,8 +45,8 @@ namespace Jarvis.DocumentStore.Core.Support
                     .ImplementedBy<DocumentMapper>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb)),
                 Component
-                    .For<IFileAliasMapper>()
-                    .ImplementedBy<FileAliasMapper>()
+                    .For<IFileHandleMapper>()
+                    .ImplementedBy<FileHandleMapper>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb)),
                 Component
                     .For<MongoDatabase>()

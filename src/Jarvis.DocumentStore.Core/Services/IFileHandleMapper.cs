@@ -3,8 +3,8 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Services
 {
-    public interface IFileAliasMapper
+    public interface IFileHandleMapper
     {
-        void Associate(FileAlias alias, DocumentId documentId);
+        void Associate(FileHandle handle, DocumentId documentId);
     }
 }
