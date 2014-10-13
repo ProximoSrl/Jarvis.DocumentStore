@@ -5,6 +5,7 @@ using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Storage.Stats;
 using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.Support
@@ -24,10 +25,16 @@ namespace Jarvis.DocumentStore.Core.Support
         {
             var sysdb = GetDatabase(_sysDb);
 
+            var fileStoreDb = GetDatabase(_fileStore);
+
             container.Register(
                 Component
                     .For<IFileStore>()
-                    .ImplementedBy<GridFSFileStore>(),
+                    .ImplementedBy<GridFSFileStore>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(fileStoreDb)),
+                Component
+                    .For<GridFsFileStoreStats>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(fileStoreDb)),
                 Component
                     .For<ConfigService>(),
                 Component
@@ -43,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb)),
                 Component
                     .For<MongoDatabase>()
-                    .Instance(GetDatabase(_fileStore))
+                    .Instance(sysdb)
             );
         }
 

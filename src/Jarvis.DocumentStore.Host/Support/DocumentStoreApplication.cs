@@ -5,6 +5,7 @@ using System.Web.Http;
 using CQRS.Shared.Domain.Serialization;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
+using Newtonsoft.Json.Serialization;
 using Owin;
 
 namespace Jarvis.DocumentStore.Host.Support
@@ -58,11 +59,12 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 DependencyResolver = new WindsorResolver(
                     ContainerAccessor.Instance
-                    )
+                )
             };
 
             config.MapHttpAttributeRoutes();
             config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());
+            config.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
             application.UseWebApi(config);
         }

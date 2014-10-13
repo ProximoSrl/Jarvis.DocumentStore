@@ -1,1 +1,80 @@
-﻿HELLO DASHBOARD
+﻿<div class="row" ng-controller="Dashboard as dashboard">
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-aqua">
+            <div class="inner">
+                <h3>
+                    {{dashboard.meters.documents}}
+                </h3>
+                <p>
+                    Documents
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-document-text"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-green">
+            <div class="inner">
+                <h3>
+                    {{dashboard.meters.handles}}
+                </h3>
+                <p>
+                    Document handles
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-at"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>
+                    {{dashboard.meters.files}}
+                </h3>
+                <p>
+                    Files
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-document"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-red">
+            <div class="inner">
+                <h3>
+                    {{dashboard.meters.docBytes | fileSize}}
+                </h3>
+                <p>
+                    Jobs
+                </p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-clock"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fa fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div><!-- ./col -->
+    <pre>{{dashboard |json}}</pre>
+
+</div><!-- /.row -->

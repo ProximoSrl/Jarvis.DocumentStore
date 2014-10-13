@@ -134,6 +134,7 @@
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\DocumentFormat.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
+    <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
     <Compile Include="EventHandlers\NullHouseKeeper.cs" />
     <Compile Include="EventHandlers\PipelineHandler.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
@@ -181,12 +182,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadModel\AliasToDocument.cs" />
     <Compile Include="ReadModel\DocumentReadModel.cs" />
+    <Compile Include="ReadModel\DocumentStats.cs" />
     <Compile Include="ReadModel\HashToDocuments.cs" />
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Services\FileAliasMapper.cs" />
     <Compile Include="Services\IDocumentMapper.cs" />
     <Compile Include="Services\DocumentMapper.cs" />
     <Compile Include="Services\IFileAliasMapper.cs" />
+    <Compile Include="Storage\Stats\FileStoreStats.cs" />
     <Compile Include="Storage\FsFileDescriptor.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />
     <Compile Include="Storage\GridFsFileDescriptor.cs" />

@@ -1,7 +1,12 @@
 ﻿(function (window, angular, undefined) {
     'use strict';
 
-    angular.module('admin').config(function ($stateProvider, $urlRouterProvider) {
+    angular
+        .module('admin')
+        .config(config);
+
+    /**/ 
+    function config($stateProvider, $urlRouterProvider) {
         //
         // For any unmatched url, redirect to /state1
         $urlRouterProvider.otherwise("/dashboard");
@@ -16,6 +21,5 @@
                 url: "/info",
                 templateUrl: "info/info.html"
             });
-    });
-
+    }
 })(window, window.angular);
