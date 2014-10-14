@@ -19,6 +19,7 @@ namespace Jarvis.DocumentStore.Host.Support
         IDisposable _webApplication;
         readonly Uri _serverAddress;
         IWindsorContainer _container;
+        ILogger _logger;
 
         public DocumentStoreBootstrapper(Uri serverAddress)
         {
@@ -37,8 +38,8 @@ namespace Jarvis.DocumentStore.Host.Support
             var fileStore = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
             var sysDb = ConfigurationManager.ConnectionStrings["system"].ConnectionString;
 
-            var logger = _container.Resolve<ILoggerFactory>().Create(GetType());
-            logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
+            _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
+            _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
 
             _container.Install(
                 new CoreInstaller(fileStore, sysDb),
@@ -48,20 +49,20 @@ namespace Jarvis.DocumentStore.Host.Support
 
             if (RolesHelper.IsWorker)
             {
-                logger.Debug("Configured Scheduler");
+                _logger.Debug("Configured Scheduler");
                 _container.Install(new SchedulerInstaller(fileStore));
             }
 
             if (RolesHelper.IsReadmodelBuilder)
             {
-                logger.Debug("Configured Projections");
+                _logger.Debug("Configured Projections");
                 _container.Install(new ProjectionsInstaller<NotifyReadModelChanges>());
             }
 
 
             if (RolesHelper.IsApiServer)
             {
-                logger.Debug("Configured API server");
+                _logger.Debug("Configured API server");
                 _container.Install(new ApiInstaller());
                 _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
             }
@@ -73,7 +74,13 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 _webApplication.Dispose();
             }
-            
+
+            foreach (var act in _container.ResolveAll<IShutdownActivity>())
+            {
+                _logger.DebugFormat("Shutting down activity: {0}", act.GetType().FullName);
+                act.Shutdown();
+            }
+
             _container.Dispose();
         }
     }

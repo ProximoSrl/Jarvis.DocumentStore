@@ -31,9 +31,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_lots_of_pdf()
+        public void upload_same_pdf_100_times_with_unique_handle()
         {
-            Parallel.ForEach(Enumerable.Range(1, 100), i =>
+            Parallel.ForEach(Enumerable.Range(1, 100), 
+//                new ParallelOptions(){MaxDegreeOfParallelism = 1},
+                i =>
             {
                 _client.Upload(TestConfig.PathToDocumentPdf, "Rev_" + i).Wait();
             });
@@ -47,7 +49,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_lots_of_doc()
+        public void upload_same_doc_100_times_with_unique_handle()
         {
             Parallel.ForEach(Enumerable.Range(1, 100), i =>
             {

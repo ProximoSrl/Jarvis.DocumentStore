@@ -44,7 +44,11 @@ namespace Jarvis.DocumentStore.Core.Support
                 Classes
                     .FromAssemblyInThisApplication()
                     .BasedOn<IPipeline>()
-                    .WithServiceFirstInterface()
+                    .WithServiceFirstInterface(),
+                Component
+                    .For<IShutdownActivity>()
+                    .ImplementedBy<SchedulerShutdown>()
+                    .Named("SchedulerShoutdown")
             );
 
             var scheduler = container.Resolve<IScheduler>();
@@ -70,11 +74,11 @@ namespace Jarvis.DocumentStore.Core.Support
             var trigger = TriggerBuilder.Create()
                 .StartAt(DateTimeOffset.Now)
 #if DEBUG
-                .WithSimpleSchedule(b => b.RepeatForever().WithIntervalInSeconds(30))
+                .WithSimpleSchedule(b => b.RepeatForever().WithIntervalInSeconds(15))
 #else
                 .WithSimpleSchedule(b=>b.RepeatForever().WithIntervalInMinutes(5))
 #endif
-                .WithPriority(10)
+                .WithPriority(1)
                 .Build();
 
             scheduler.ScheduleJob(job, trigger);

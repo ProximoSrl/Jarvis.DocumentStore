@@ -197,9 +197,11 @@
     <Compile Include="Storage\IFileDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
+    <Compile Include="Support\IShutdownActivity.cs" />
     <Compile Include="Support\NullNotifyCommitHandled.cs" />
     <Compile Include="Support\ProjectionsInstaller.cs" />
     <Compile Include="Support\SchedulerInstaller.cs" />
+    <Compile Include="Support\SchedulerShutdown.cs" />
     <Compile Include="Support\SizeInfoHelper.cs" />
     <Compile Include="Support\StartupCoordinator.cs" />
   </ItemGroup>
