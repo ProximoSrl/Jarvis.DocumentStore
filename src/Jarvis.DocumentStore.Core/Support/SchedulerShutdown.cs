@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public void Shutdown()
         {
-            _scheduler.Shutdown();
+            _scheduler.Shutdown(true);
         }
     }
 }

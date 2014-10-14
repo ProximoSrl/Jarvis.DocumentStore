@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             var aggregation = new AggregateArgs()
             {
-                Pipeline = new[] { BsonDocument.Parse("{$group:{_id:1, bytes:{$sum:'$Bytes'}, documents:{$sum:1}}}") }
+                Pipeline = new[] { BsonDocument.Parse("{$group:{_id:1, bytes:{$sum:'$Bytes'}, documents:{$sum:'$Files'}}}") }
             };
 
             var result = DocStats.Aggregate(aggregation).SingleOrDefault();
