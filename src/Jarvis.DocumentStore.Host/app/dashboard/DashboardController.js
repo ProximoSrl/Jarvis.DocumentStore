@@ -3,9 +3,9 @@
 
     angular.module('admin.dashboard').controller('Dashboard', Dashboard);
 
-    Dashboard.$inject = ['dashboardData'];
+    Dashboard.$inject = ['dashboardData','$interval','$scope'];
 
-    function Dashboard(dashboardData) {
+    function Dashboard(dashboardData, $interval,$scope) {
         var vm = this;
 
         vm.meters = {
@@ -16,9 +16,15 @@
             "jobs": 0
         };
 
+        /* */
+        var stop = $interval(function() {
+            dashboardData.getMeters().then(function(d) {
+                vm.meters = d;
+            });
+        },1000);
 
-        dashboardData.getMeters().then(function(d) {
-            vm.meters = d;
+        $scope.$on('$destroy', function () {
+            $interval.cancel(stop);
         });
     }
 })(window, window.angular);
