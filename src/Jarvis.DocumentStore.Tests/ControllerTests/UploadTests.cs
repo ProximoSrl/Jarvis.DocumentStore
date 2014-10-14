@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Hosting;
 using Castle.Core.Logging;
+using CQRS.Kernel.Store;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.ReadModel;
@@ -26,7 +27,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
     {
         protected FileController Controller;
         protected IFileStore FileStore;
-        protected ICommandBus CommandBus;
+        protected ICQRSRepository Repository;
         protected IIdentityGenerator IdentityGenerator;
         protected IReader<HandleToDocument, FileHandle> HandleToDocumentReader;
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
@@ -35,12 +36,12 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void SetUp()
         {
             FileStore = Substitute.For<IFileStore>();
-            CommandBus = Substitute.For<ICommandBus>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
+            Repository = Substitute.For<ICQRSRepository>();
             HandleToDocumentReader = Substitute.For<IReader<HandleToDocument, FileHandle>>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
 
-            Controller = new FileController(FileStore, new ConfigService(), CommandBus, IdentityGenerator, HandleToDocumentReader, DocumentReader)
+            Controller = new FileController(FileStore, new ConfigService(), IdentityGenerator, HandleToDocumentReader, DocumentReader, Repository)
             {
                 Request = new HttpRequestMessage(),
                 Logger = new ConsoleLogger()
@@ -48,6 +49,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             Controller.Request.Properties.Add(HttpPropertyKeys.HttpConfigurationKey, new HttpConfiguration());
         }
+
 
         protected void SetupDocumentModel(DocumentReadModel doc)
         {

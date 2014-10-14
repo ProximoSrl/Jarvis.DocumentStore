@@ -156,6 +156,7 @@
     <Compile Include="Commands\JobHandlersRegistration.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\FileController.cs" />
+    <Compile Include="Logging\Log4NetExceptionLogger.cs" />
     <Compile Include="Logging\MongoDBAppender.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

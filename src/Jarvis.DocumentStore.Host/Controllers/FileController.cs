@@ -3,9 +3,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
+using CQRS.Kernel.Store;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.ReadModel;
@@ -24,29 +27,21 @@ namespace Jarvis.DocumentStore.Host.Controllers
     {
         readonly IFileStore _fileStore;
         readonly ConfigService _configService;
-        readonly ICommandBus _commandBus;
         readonly IIdentityGenerator _identityGenerator;
         readonly IReader<HandleToDocument, FileHandle> _handleToDocument;
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
         FileNameWithExtension _fileName;
+        readonly ICQRSRepository _repository;
 
-
-        public FileController(IFileStore fileStore, ConfigService configService, ICommandBus commandBus, IIdentityGenerator identityGenerator, IReader<HandleToDocument, FileHandle> handleToDocument, IReader<DocumentReadModel, DocumentId> documentReader)
+        public FileController(IFileStore fileStore, ConfigService configService, IIdentityGenerator identityGenerator, IReader<HandleToDocument, FileHandle> handleToDocument, IReader<DocumentReadModel, DocumentId> documentReader, ICQRSRepository repository)
         {
             _fileStore = fileStore;
             _configService = configService;
-            _commandBus = commandBus;
             _identityGenerator = identityGenerator;
             _handleToDocument = handleToDocument;
             _documentReader = documentReader;
-        }
-
-        [HttpGet]
-        [Route("status")]
-        public string GetStatus()
-        {
-            return DateTime.UtcNow.ToLongTimeString();
+            _repository = repository;
         }
 
         [Route("file/upload/{handle}")]
@@ -68,11 +63,22 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            _commandBus.Send(new CreateDocument(documentId, fileId, handle, _fileName));
+            CreateDocument(documentId, fileId, handle, _fileName);
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 
             return Request.CreateResponse(HttpStatusCode.OK, documentId);
+        }
+
+        private void CreateDocument(DocumentId documentId, FileId fileId, FileHandle handle, FileNameWithExtension fileName)
+        {
+            Thread.CurrentPrincipal = new GenericPrincipal(
+                new GenericIdentity("api"), new string[] { }
+            );
+
+            var document = new Document();
+            document.Create(documentId, fileId, handle, fileName);
+            this._repository.Save(document, Guid.NewGuid(), d => { });
         }
 
         /// <summary>

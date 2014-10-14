@@ -2,7 +2,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.ExceptionHandling;
+using Castle.Core.Logging;
 using CQRS.Shared.Domain.Serialization;
+using Jarvis.DocumentStore.Host.Logging;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using Newtonsoft.Json.Serialization;
@@ -65,6 +68,11 @@ namespace Jarvis.DocumentStore.Host.Support
             config.MapHttpAttributeRoutes();
             config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());
             config.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+
+            config.Services.Add(
+                typeof(IExceptionLogger), 
+                new Log4NetExceptionLogger(ContainerAccessor.Instance.Resolve<ILoggerFactory>())
+            );
 
             application.UseWebApi(config);
         }
