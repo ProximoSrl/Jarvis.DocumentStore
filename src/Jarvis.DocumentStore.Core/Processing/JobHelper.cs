@@ -87,7 +87,7 @@ namespace Jarvis.DocumentStore.Core.Processing
                 .UsingJobData(JobKeys.Command, CommandSerializer.Serialize(command))
                 .Build();
 
-            var trigger = CreateTrigger();
+            var trigger = CreateTrigger(TimeSpan.FromDays(-1));
             trigger.Priority = 100;
             _scheduler.ScheduleJob(job, trigger);
         }
@@ -165,8 +165,13 @@ namespace Jarvis.DocumentStore.Core.Processing
 
         ITrigger CreateTrigger()
         {
+            return CreateTrigger(TimeSpan.Zero);
+        }
+
+        ITrigger CreateTrigger(TimeSpan delay)
+        {
             var trigger = TriggerBuilder.Create()
-                .StartAt(DateTimeOffset.Now)
+                .StartAt(DateTimeOffset.Now + delay)
                 .Build();
             return trigger;
         }
