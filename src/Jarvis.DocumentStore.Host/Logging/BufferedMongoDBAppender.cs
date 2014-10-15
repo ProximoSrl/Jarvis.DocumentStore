@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Collections;
+using System.Linq;
 using log4net.Appender;
 using log4net.Core;
 using log4net.Util;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
 namespace Jarvis.DocumentStore.Host.Logging
 {
-    public class MongoDBAppender : AppenderSkeleton
+    public  class BufferedMongoDBAppender : BufferingAppenderSkeleton
     {
         const string DefaultConnectionString = "mongodb://localhost/log4net";
         const string DefaultCollectionName = "logs";
-        const Int32 DefaultCappedSize = 500*1000*1000;
+        const Int32 DefaultCappedSize = 500 * 1000 * 1000;
 
         string _machineName;
 
@@ -99,9 +99,9 @@ namespace Jarvis.DocumentStore.Host.Logging
                 LogCollection.CreateIndex(IndexKeys
                     .Descending(FieldNames.Timestamp)
                     .Ascending(FieldNames.Level, FieldNames.Thread, FieldNames.Loggername)
-                );
+                    );
 
-//                BsonSerializer.RegisterSerializationProvider(new LoggerBsonSerializerProvider());
+                //                BsonSerializer.RegisterSerializationProvider(new LoggerBsonSerializerProvider());
             }
             catch (Exception e)
             {
@@ -113,18 +113,6 @@ namespace Jarvis.DocumentStore.Host.Logging
         {
             LogCollection = null;
             base.OnClose();
-        }
-
-        protected override void Append(LoggingEvent loggingEvent)
-        {
-            if (LogCollection != null)
-            {
-                BsonDocument doc = LoggingEventToBSON(loggingEvent);
-                if (doc != null)
-                {
-                    LogCollection.Insert(doc);
-                }
-            }
         }
 
         /// <summary>
@@ -208,21 +196,14 @@ namespace Jarvis.DocumentStore.Host.Logging
 
             return toReturn;
         }
-    }
 
-    public class LoggerBsonSerializerProvider : IBsonSerializationProvider
-    {
-        public IBsonSerializer GetSerializer(Type type)
+        protected override void SendBuffer(LoggingEvent[] events)
         {
-            //This was done to avoid serializing every nhibernate ilist object
-            //if (type.FullName.Contains("Nhibernate", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    if (type.TypeImplementsGenericInterface(typeof(IList<>)))
-            //    {
-            //        return BsonNullSerializer.Instance;
-            //    }
-            //}
-            return null;
+            if (LogCollection != null)
+            {
+                var docs = events.Select(LoggingEventToBSON).Where(x=> x != null).ToArray();
+                LogCollection.InsertBatch(docs);
+            }
         }
     }
 }
