@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Host.Logging
 
             public TimeSpan ToTimeSpan()
             {
-                return new TimeSpan(Days,Hours,Minutes,0);
+                return new TimeSpan(Days, Hours, Minutes, 0);
             }
         }
 
@@ -49,12 +49,37 @@ namespace Jarvis.DocumentStore.Host.Logging
             _logCollection = db.GetCollection(CollectionName);
             var builder = new IndexOptionsBuilder();
 
-            if (ExpireAfter != null)
+            const string ttlIndex = FieldNames.Timestamp + "_-1";
+            var index = _logCollection.GetIndexes().SingleOrDefault(x => x.Name == ttlIndex);
+            if (index != null)
             {
-                builder.SetTimeToLive(ExpireAfter.ToTimeSpan());
+                if (index.TimeToLive != ExpireAfter.ToTimeSpan())
+                {
+                    var d = new CommandDocument()
+                    {
+                        {   "collMod", CollectionName   },
+                        {
+                            "index", new BsonDocument
+                            {
+                                {"keyPattern", new BsonDocument {{FieldNames.Timestamp, -1}}},
+                                {"expireAfterSeconds", (int)(ExpireAfter.ToTimeSpan().TotalSeconds)}
+                            }
+                        }
+                    };
+
+                    db.RunCommand(d);
+                }
+            }
+            else
+            {
+                if (ExpireAfter != null)
+                {
+                    builder.SetTimeToLive(ExpireAfter.ToTimeSpan());
+                }
+
+                _logCollection.CreateIndex(IndexKeys.Descending(FieldNames.Timestamp), builder);
             }
 
-            _logCollection.CreateIndex(IndexKeys.Descending(FieldNames.Timestamp), builder);
             _logCollection.CreateIndex(IndexKeys
                 .Ascending(FieldNames.Level, FieldNames.Thread, FieldNames.Loggername)
             );
@@ -143,7 +168,7 @@ namespace Jarvis.DocumentStore.Host.Logging
 
         public void InsertBatch(LoggingEvent[] events)
         {
-            if (_logCollection!= null)
+            if (_logCollection != null)
             {
                 var docs = events.Select(LoggingEventToBSON).Where(x => x != null).ToArray();
                 _logCollection.InsertBatch(docs);
