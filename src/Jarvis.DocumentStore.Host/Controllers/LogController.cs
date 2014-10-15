@@ -60,7 +60,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (!request.IsEmpty)
             {
-                cursor = Logs.FindAs<BsonDocument>(Query.EQ(FieldNames.Level, request.Level));
+                var levels = request.Level.Split(',').Select(x=>x.Trim()).ToArray();
+                cursor = Logs.FindAs<BsonDocument>(Query.In(FieldNames.Level, levels.Select(BsonValue.Create)));
             }
             else
             {
