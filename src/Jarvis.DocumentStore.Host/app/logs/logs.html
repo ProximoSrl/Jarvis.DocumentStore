@@ -1,0 +1,8 @@
+﻿<ul>
+    <li dir-paginate="log in logs.items | itemsPerPage: 5">
+        <pre>{{ log | json}}</pre>
+    </li>
+</ul>
+
+
+<dir-pagination-controls template-url="logs/log.tpl.html"></dir-pagination-controls>

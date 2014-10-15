@@ -6,7 +6,9 @@
         'admin.layout',
         'admin.dashboard',
         'admin.info',
-        'angularUtils.directives.uiBreadcrumbs'
+        'admin.logs',
+        'angularUtils.directives.uiBreadcrumbs',
+        'angularUtils.directives.dirPagination'
     ]);
 
 })(window, window.angular);

@@ -51,7 +51,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
 
         [HttpPost]
-        [Route("log")]
+        [Route("diagnostic/log")]
         public object Get(LogSearchRequest request)
         {
             request = request ?? new LogSearchRequest();

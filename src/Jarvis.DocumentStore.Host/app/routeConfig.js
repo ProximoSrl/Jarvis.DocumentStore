@@ -18,6 +18,12 @@
                 templateUrl: "dashboard/dashboard.html",
                 data : { pageTitle: 'Dashboard', description: 'metrics' }
             })
+            .state('logs', {
+                url: "/logs",
+                templateUrl: "logs/logs.html",
+                controller:"LogsController as logs",
+                data : { pageTitle: 'Logs', description: 'what\'s happening...' }
+            })
             .state('info', {
                 url: "/info",
                 templateUrl: "info/info.html",

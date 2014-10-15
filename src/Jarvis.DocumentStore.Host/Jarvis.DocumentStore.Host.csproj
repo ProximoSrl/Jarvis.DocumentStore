@@ -1033,6 +1033,8 @@
     <Content Include="app\lib\ionicons-v1.5.2\css\ionicons.min.css" />
     <Content Include="app\lib\ionicons-v1.5.2\fonts\ionicons.svg" />
     <Content Include="app\lib\misc\angular-ui-router.js" />
+    <Content Include="app\lib\misc\dirPagination.js" />
+    <Content Include="app\lib\misc\dirPagination.tpl.html" />
     <Content Include="app\lib\misc\jquery-2.1.1.min.js" />
     <Content Include="app\lib\misc\uiBreadcrumbs.js" />
     <Content Include="app\lib\misc\uiBreadcrumbs.tpl.html" />
@@ -1310,6 +1312,11 @@
     <Content Include="app\lib\skin\js\plugins\sparkline\jquery.sparkline.min.js" />
     <Content Include="app\lib\skin\js\plugins\timepicker\bootstrap-timepicker.js" />
     <Content Include="app\lib\skin\js\plugins\timepicker\bootstrap-timepicker.min.js" />
+    <Content Include="app\logs\log.tpl.html" />
+    <Content Include="app\logs\logs.html" />
+    <Content Include="app\logs\logs.js" />
+    <Content Include="app\logs\LogsController.js" />
+    <Content Include="app\logs\logsData.js" />
     <Content Include="app\routeConfig.js" />
     <Content Include="app\shared\fileSizeFilter.js" />
     <Content Include="app\shared\shared.js" />
