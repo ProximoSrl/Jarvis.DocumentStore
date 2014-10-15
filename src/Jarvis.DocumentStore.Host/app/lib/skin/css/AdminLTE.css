@@ -550,7 +550,7 @@ body > .header .logo .icon {
   padding-left: 4px;
   font-weight: 300;
 }
-.right-side > .content-header > .breadcrumb {
+.right-side > .content-header .breadcrumb {
   float: right;
   background: transparent;
   margin-top: 0px;
@@ -564,20 +564,20 @@ body > .header .logo .icon {
   -moz-border-radius: 2px;
   border-radius: 2px;
 }
-.right-side > .content-header > .breadcrumb > li > a {
+.right-side > .content-header .breadcrumb > li > a {
   color: #444;
   text-decoration: none;
 }
-.right-side > .content-header > .breadcrumb > li > a > .fa,
-.right-side > .content-header > .breadcrumb > li > a > .glyphicon,
-.right-side > .content-header > .breadcrumb > li > a > .ion {
+.right-side > .content-header .breadcrumb > li > a > .fa,
+.right-side > .content-header .breadcrumb > li > a > .glyphicon,
+.right-side > .content-header .breadcrumb > li > a > .ion {
   margin-right: 5px;
 }
-.right-side > .content-header > .breadcrumb > li + li:before {
+.right-side > .content-header .breadcrumb > li + li:before {
   content: '>\00a0';
 }
 @media screen and (max-width: 767px) {
-  .right-side > .content-header > .breadcrumb {
+  .right-side > .content-header .breadcrumb {
     position: relative;
     margin-top: 5px;
     top: 0;

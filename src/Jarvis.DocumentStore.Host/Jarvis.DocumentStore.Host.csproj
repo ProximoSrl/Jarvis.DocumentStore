@@ -267,6 +267,7 @@
     <Content Include="app\layout\layout.js" />
     <Content Include="app\layout\LayoutController.js" />
     <Content Include="app\layout\sidebar.html" />
+    <Content Include="app\layout\uiBreadcrumbs.tpl.html" />
     <Content Include="app\lib\angular-1.3.0\angular-animate.js" />
     <Content Include="app\lib\angular-1.3.0\angular-animate.min.js" />
     <Content Include="app\lib\angular-1.3.0\angular-aria.js" />
@@ -1033,6 +1034,8 @@
     <Content Include="app\lib\ionicons-v1.5.2\fonts\ionicons.svg" />
     <Content Include="app\lib\misc\angular-ui-router.js" />
     <Content Include="app\lib\misc\jquery-2.1.1.min.js" />
+    <Content Include="app\lib\misc\uiBreadcrumbs.js" />
+    <Content Include="app\lib\misc\uiBreadcrumbs.tpl.html" />
     <Content Include="app\lib\skin\css\AdminLTE.css" />
     <Content Include="app\lib\skin\css\bootstrap-slider\slider.css" />
     <Content Include="app\lib\skin\css\bootstrap-wysihtml5\bootstrap3-wysihtml5.css" />

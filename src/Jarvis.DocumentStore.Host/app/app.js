@@ -5,7 +5,8 @@
         'admin.shared',
         'admin.layout',
         'admin.dashboard',
-        'admin.info'
+        'admin.info',
+        'angularUtils.directives.uiBreadcrumbs'
     ]);
 
 })(window, window.angular);
