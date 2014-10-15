@@ -24,7 +24,6 @@ namespace Jarvis.DocumentStore.Host.Logging
         }
 
         string _machineName;
-        MongoCollection<BsonDocument> _logCollection;
 
         public string MachineName
         {
@@ -46,11 +45,11 @@ namespace Jarvis.DocumentStore.Host.Logging
             var client = new MongoClient(uri);
             MongoDatabase db = client.GetServer().GetDatabase(uri.DatabaseName);
 
-            _logCollection = db.GetCollection(CollectionName);
+            LogCollection = db.GetCollection(CollectionName);
             var builder = new IndexOptionsBuilder();
 
             const string ttlIndex = FieldNames.Timestamp + "_-1";
-            var index = _logCollection.GetIndexes().SingleOrDefault(x => x.Name == ttlIndex);
+            var index = LogCollection.GetIndexes().SingleOrDefault(x => x.Name == ttlIndex);
             if (index != null)
             {
                 if (index.TimeToLive != ExpireAfter.ToTimeSpan())
@@ -77,10 +76,10 @@ namespace Jarvis.DocumentStore.Host.Logging
                     builder.SetTimeToLive(ExpireAfter.ToTimeSpan());
                 }
 
-                _logCollection.CreateIndex(IndexKeys.Descending(FieldNames.Timestamp), builder);
+                LogCollection.CreateIndex(IndexKeys.Descending(FieldNames.Timestamp), builder);
             }
 
-            _logCollection.CreateIndex(IndexKeys
+            LogCollection.CreateIndex(IndexKeys
                 .Ascending(FieldNames.Level, FieldNames.Thread, FieldNames.Loggername)
             );
         }
@@ -166,23 +165,25 @@ namespace Jarvis.DocumentStore.Host.Logging
         public string CollectionName { get; set; }
         public TimeToLive ExpireAfter { get; set; }
 
+        public MongoCollection<BsonDocument> LogCollection { get; private set; }
+
         public void InsertBatch(LoggingEvent[] events)
         {
-            if (_logCollection != null)
+            if (LogCollection != null)
             {
                 var docs = events.Select(LoggingEventToBSON).Where(x => x != null).ToArray();
-                _logCollection.InsertBatch(docs);
+                LogCollection.InsertBatch(docs);
             }
         }
 
         public void Insert(LoggingEvent loggingEvent)
         {
-            if (_logCollection != null)
+            if (LogCollection != null)
             {
                 BsonDocument doc = LoggingEventToBSON(loggingEvent);
                 if (doc != null)
                 {
-                    _logCollection.Insert(doc);
+                    LogCollection.Insert(doc);
                 }
             }
         }

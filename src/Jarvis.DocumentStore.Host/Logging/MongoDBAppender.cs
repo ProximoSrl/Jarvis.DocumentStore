@@ -2,10 +2,16 @@
 using System.Collections;
 using log4net.Appender;
 using log4net.Core;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Logging
 {
-    public class MongoDBAppender : AppenderSkeleton
+    public interface IMongoAppenderCollectionProvider
+    {
+        MongoCollection GetCollection();
+    }
+
+    public class MongoDBAppender : AppenderSkeleton, IMongoAppenderCollectionProvider
     {
         public MongoLog Settings { get; set; }
 
@@ -29,6 +35,11 @@ namespace Jarvis.DocumentStore.Host.Logging
         protected override void Append(LoggingEvent loggingEvent)
         {
             Settings.Insert(loggingEvent);
+        }
+
+        public MongoCollection GetCollection()
+        {
+            return Settings.LogCollection;
         }
     }
 }

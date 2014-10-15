@@ -10,7 +10,7 @@ using MongoDB.Driver.Builders;
 
 namespace Jarvis.DocumentStore.Host.Logging
 {
-    public class BufferedMongoDBAppender : BufferingAppenderSkeleton
+    public class BufferedMongoDBAppender : BufferingAppenderSkeleton, IMongoAppenderCollectionProvider
     {
         public MongoLog Settings { get; set; }
 
@@ -34,6 +34,11 @@ namespace Jarvis.DocumentStore.Host.Logging
         protected override void SendBuffer(LoggingEvent[] events)
         {
             Settings.InsertBatch(events);
+        }
+
+        public MongoCollection GetCollection()
+        {
+            return Settings.LogCollection;
         }
     }
 }
