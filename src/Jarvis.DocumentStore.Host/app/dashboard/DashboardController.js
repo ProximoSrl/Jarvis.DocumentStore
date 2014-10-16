@@ -3,9 +3,9 @@
 
     angular.module('admin.dashboard').controller('Dashboard', Dashboard);
 
-    Dashboard.$inject = ['dashboardData','$interval','$scope'];
+    Dashboard.$inject = ['dashboardData', '$interval', '$scope'];
 
-    function Dashboard(dashboardData, $interval,$scope) {
+    function Dashboard(dashboardData, $interval, $scope) {
         var vm = this;
 
         vm.meters = {
@@ -17,11 +17,11 @@
         };
 
         /* */
-        var stop = $interval(function() {
-            dashboardData.getMeters().then(function(d) {
+        var stop = $interval(function () {
+            dashboardData.getMeters().then(function (d) {
                 vm.meters = d;
             });
-        },1000);
+        }, 2500);
 
         $scope.$on('$destroy', function () {
             $interval.cancel(stop);

@@ -157,6 +157,7 @@
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Controllers\LogController.cs" />
+    <Compile Include="Controllers\SchedulerController.cs" />
     <Compile Include="Logging\BufferedMongoDBAppender.cs" />
     <Compile Include="Logging\FieldNames.cs" />
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
@@ -255,12 +256,10 @@
   <ItemGroup>
     <Content Include="app\app.js" />
     <Content Include="app\dashboard\dashboard.html" />
-    <Content Include="app\dashboard\dashboard.js" />
+    <Content Include="app\dashboard\dashboardModule.js" />
     <Content Include="app\dashboard\DashboardController.js" />
     <Content Include="app\dashboard\dashboardData.js" />
     <Content Include="app\index.html" />
-    <Content Include="app\info\info.html" />
-    <Content Include="app\info\info.js" />
     <Content Include="app\layout\sidebar.js" />
     <Content Include="app\layout\header.html" />
     <Content Include="app\layout\header.js" />
@@ -1316,12 +1315,16 @@
     <Content Include="app\lib\skin\js\plugins\timepicker\bootstrap-timepicker.min.js" />
     <Content Include="app\logs\log.tpl.html" />
     <Content Include="app\logs\logs.html" />
-    <Content Include="app\logs\logs.js" />
+    <Content Include="app\logs\logsModule.js" />
     <Content Include="app\logs\LogsController.js" />
     <Content Include="app\logs\logsData.js" />
     <Content Include="app\routeConfig.js" />
+    <Content Include="app\scheduler\scheduler.html" />
+    <Content Include="app\scheduler\SchedulerController.js" />
+    <Content Include="app\scheduler\schedulerData.js" />
+    <Content Include="app\scheduler\schedulerModule.js" />
     <Content Include="app\shared\fileSizeFilter.js" />
-    <Content Include="app\shared\shared.js" />
+    <Content Include="app\shared\sharedModule.js" />
     <Content Include="app\shared\updateTitle.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

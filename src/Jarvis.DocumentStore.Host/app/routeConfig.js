@@ -16,6 +16,7 @@
             .state('dashboard', {
                 url: "/dashboard",
                 templateUrl: "dashboard/dashboard.html",
+                controller: "Dashboard as dashboard",
                 data : { pageTitle: 'Dashboard', description: 'metrics' }
             })
             .state('logs', {
@@ -24,10 +25,11 @@
                 controller:"LogsController as logs",
                 data : { pageTitle: 'Logs', description: 'what\'s happening...' }
             })
-            .state('info', {
-                url: "/info",
-                templateUrl: "info/info.html",
-                data : { pageTitle: 'About' }
+            .state('scheduler', {
+                url: "/scheduler",
+                templateUrl: "scheduler/scheduler.html",
+                controller: "SchedulerController as scheduler",
+                data: { pageTitle: 'Scheduler' }
     });
     }
 })(window, window.angular);

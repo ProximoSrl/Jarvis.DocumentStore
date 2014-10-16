@@ -6,7 +6,7 @@
         'admin.shared',
         'admin.layout',
         'admin.dashboard',
-        'admin.info',
+        'admin.scheduler',
         'admin.logs',
         'angularUtils.directives.uiBreadcrumbs',
         'angularUtils.directives.dirPagination'

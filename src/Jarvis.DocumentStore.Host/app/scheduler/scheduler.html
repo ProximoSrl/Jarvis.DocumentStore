@@ -1,0 +1,16 @@
+﻿<div class="row" >
+    <div class="col-xs-12">
+        <div class="btn-group">
+            <button class="btn btn-primary" 
+                    ng-click="scheduler.start()" 
+                    ng-class="{active:scheduler.status == 'on'}">
+                On
+            </button>
+            <button class="btn btn-danger active" 
+                    ng-click="scheduler.stop()"
+                    ng-class="{active:scheduler.status == 'off'}">
+                Off
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,1 +1,1 @@
-https://github.com/andreabalducci/quartznet-mongodb/commit/8f7238f1f71f51021522d1ff5cf9edea48a15559
+https://github.com/andreabalducci/quartznet-mongodb/commit/9b1bb8d2b0db1abc22a58329d0017d6109fe2e58
