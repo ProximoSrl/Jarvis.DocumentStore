@@ -1882,6 +1882,7 @@ Component: timeline
 }
 .btn.btn-default:hover,
 .btn.btn-default:active,
+.btn.btn-default.active,
 .btn.btn-default.hover {
   background-color: #f4f4f4!important;
 }
@@ -1894,6 +1895,7 @@ Component: timeline
 }
 .btn.btn-primary:hover,
 .btn.btn-primary:active,
+.btn.btn-primary.active,
 .btn.btn-primary.hover {
   background-color: #367fa9;
 }
@@ -1903,6 +1905,7 @@ Component: timeline
 }
 .btn.btn-success:hover,
 .btn.btn-success:active,
+.btn.btn-success.active,
 .btn.btn-success.hover {
   background-color: #008d4c;
 }
@@ -1912,6 +1915,7 @@ Component: timeline
 }
 .btn.btn-info:hover,
 .btn.btn-info:active,
+.btn.btn-info.active,
 .btn.btn-info.hover {
   background-color: #00acd6;
 }
@@ -1921,7 +1925,8 @@ Component: timeline
 }
 .btn.btn-danger:hover,
 .btn.btn-danger:active,
-.btn.btn-danger.hover {
+.btn.btn-danger.hover,
+.btn.btn-danger.active {
   background-color: #f4543c;
 }
 .btn.btn-warning {
@@ -1930,6 +1935,7 @@ Component: timeline
 }
 .btn.btn-warning:hover,
 .btn.btn-warning:active,
+.btn.btn-warning.active,
 .btn.btn-warning.hover {
   background-color: #e08e0b;
 }

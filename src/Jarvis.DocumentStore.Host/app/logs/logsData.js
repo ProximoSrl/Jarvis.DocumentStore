@@ -12,11 +12,12 @@
 
         return service;
 
-        function getLogs(filters) {
+        function getLogs(filters, page) {
           
             var request = {
                 level: undefined,
-
+                logsPerPage: 5,
+                page: page,
                 appendLevel: function(l) {
                     if (this.level === undefined) {
                         this.level = l;

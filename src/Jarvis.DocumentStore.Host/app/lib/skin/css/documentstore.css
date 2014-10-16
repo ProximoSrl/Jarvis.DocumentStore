@@ -1,0 +1,19 @@
+﻿.logentry.DEBUG {
+    background-color: #3c8dbc;
+    color: white;
+}
+
+.logentry.INFO {
+    background-color: #00c0ef;
+    color: white;
+}
+
+.logentry.ERROR {
+    background-color: #f4543c;
+    color: white;
+}
+
+.logentry.WARN {
+    background-color: #e08e0b;
+    color: white;
+}

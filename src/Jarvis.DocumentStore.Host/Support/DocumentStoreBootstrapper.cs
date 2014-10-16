@@ -41,6 +41,9 @@ namespace Jarvis.DocumentStore.Host.Support
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
             _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
 
+            _logger.Warn("This is a Warn!");
+            _logger.Error("This is an Error!");
+
             _container.Install(
                 new CoreInstaller(fileStore, sysDb),
                 new EventStoreInstaller(),

@@ -1,20 +1,20 @@
 ﻿<div class="row">
     <div class="col-xs-12">
         <div class="btn-group" data-toggle="btn-toggle">
-            <button type="button" class="btn btn-primary" ng-model="logs.filters.debug"
-                    btn-checkbox title="Debug" >
+            <button type="button" class="btn btn-flat btn-primary" ng-model="logs.filters.debug"
+                    btn-checkbox title="Debug">
                 <i class="fa fa-bug"></i>
             </button>
-            <button type="button" class="btn btn-info" ng-model="logs.filters.info"
-                    btn-checkbox title="Info" >
+            <button type="button" class="btn btn-flat btn-info" ng-model="logs.filters.info"
+                    btn-checkbox title="Info">
                 <i class=" fa fa-info-circle"></i>
             </button>
-            <button type="button" class="btn btn-warning" ng-model="logs.filters.warn"
-                    btn-checkbox title="Warn" >
+            <button type="button" class="btn btn-flat btn-warning" ng-model="logs.filters.warn"
+                    btn-checkbox title="Warn">
                 <i class=" fa fa-exclamation-triangle"></i>
             </button>
-            <button type="button" class="btn btn-danger" ng-model="logs.filters.error"
-                    btn-checkbox title="Error" >
+            <button type="button" class="btn btn-flat btn-danger" ng-model="logs.filters.error"
+                    btn-checkbox title="Error">
                 <i class=" fa fa-times-circle"></i>
             </button>
         </div>
@@ -23,15 +23,16 @@
 </div>
 <div class="row">
     <div class="col-xs-12">
-        <ul>
-            <li dir-paginate="log in logs.items | itemsPerPage: 5">
-                <pre>{{ log | json}}</pre>
-            </li>
-        </ul>
-        <dir-pagination-controls template-url="logs/log.tpl.html"></dir-pagination-controls>
+        <div dir-paginate="log in logs.items | itemsPerPage: 5" class="logentry" ng-class="log.le" total-items="logs.totalItems">
+            <div class="col-xs-12">
+                <h5 class="pull-left">{{::log.me}}</h5>
+                <div class="pull-right">{{::log.ts}}</div>
+            </div>
+            <pre>{{ log | json}}</pre>
+        </div>
+        <dir-pagination-controls 
+            template-url="logs/log.tpl.html" 
+            on-page-change="logs.pageChanged(newPageNumber)">
+        </dir-pagination-controls>
     </div>
 </div>
-<pre>{{logs | json}}</pre>
-
-
-

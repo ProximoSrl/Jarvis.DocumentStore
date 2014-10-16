@@ -35,6 +35,12 @@ namespace Jarvis.DocumentStore.Host.Controllers
         }
     }
 
+    public class LogSearchResponse
+    {
+        public IEnumerable<IDictionary<string, object>> Items { get; set; }
+        public long Count { get; set; }
+    }
+
     public class LogController : ApiController
     {
         private static MongoCollection Logs { get; set; }
@@ -52,7 +58,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [HttpPost]
         [Route("diagnostic/log")]
-        public object Get(LogSearchRequest request)
+        public LogSearchResponse Get(LogSearchRequest request)
         {
             request = request ?? new LogSearchRequest();
 
@@ -67,11 +73,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 cursor = Logs.FindAllAs<BsonDocument>();
             }
-            return cursor
-                .SetSortOrder(SortBy.Descending(FieldNames.Timestamp))
-                .SetSkip(request.LogsPerPage * (request.Page - 1))
-                .SetLimit(request.LogsPerPage)
-                .Select(x => x.ToDictionary());
+
+            var response = new LogSearchResponse
+            {
+                Items = cursor
+                    .SetSortOrder(SortBy.Descending(FieldNames.Timestamp))
+                    .SetSkip(request.LogsPerPage*(request.Page - 1))
+                    .SetLimit(request.LogsPerPage)
+                    .Select(x => x.ToDictionary()),
+                Count = cursor.Count()
+            };
+
+            return response;
         }
     }
 }

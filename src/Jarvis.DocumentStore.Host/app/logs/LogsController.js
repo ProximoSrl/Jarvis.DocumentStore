@@ -9,6 +9,7 @@
         var vm = this;
 
         vm.items = [];
+        vm.totalItems = 0;
         vm.filters = {
             info: false,
             warn: false,
@@ -17,18 +18,25 @@
         };
 
         vm.refresh = refresh;
+        vm.page = 1;
+        vm.pageChanged = pageChanged;
 
         start();
 
         /* */
         function start() {
+        };
+
+        function pageChanged(newPage) {
+            vm.page = newPage;
             refresh();
         };
 
         function refresh() {
-            logsData.getLogs(vm.filters).then(function (data) {
+            logsData.getLogs(vm.filters, vm.page).then(function (data) {
                 console.log('logs from server', data);
-                vm.items = data;
+                vm.items = data.items;
+                vm.totalItems = data.count;
             });
         };
 
