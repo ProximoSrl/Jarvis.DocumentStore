@@ -18,6 +18,7 @@
                 level: undefined,
                 logsPerPage: 5,
                 page: page,
+                query : filters.searchText,
                 appendLevel: function(l) {
                     if (this.level === undefined) {
                         this.level = l;

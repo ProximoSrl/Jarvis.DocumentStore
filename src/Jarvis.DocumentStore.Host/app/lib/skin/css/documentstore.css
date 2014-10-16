@@ -17,3 +17,11 @@
     background-color: #e08e0b;
     color: white;
 }
+
+.btn.active {
+    opacity: 1;
+}
+
+.btn {
+    opacity: 0.6;
+}

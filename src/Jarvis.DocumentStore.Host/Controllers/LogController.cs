@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Jarvis.DocumentStore.Host.Logging;
 using log4net;
+using log4net.Repository.Hierarchy;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -16,7 +18,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
     public class LogSearchRequest
     {
         public string Level { get; set; }
-
+        public string Query { get; set; }
         public int Page { get; set; }
         public int LogsPerPage { get; set; }
 
@@ -30,7 +32,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             get
             {
-                return String.IsNullOrWhiteSpace(Level);
+                return String.IsNullOrWhiteSpace(Level) && String.IsNullOrWhiteSpace(Query);
             }
         }
     }
@@ -66,8 +68,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (!request.IsEmpty)
             {
-                var levels = request.Level.Split(',').Select(x=>x.Trim()).ToArray();
-                cursor = Logs.FindAs<BsonDocument>(Query.In(FieldNames.Level, levels.Select(BsonValue.Create)));
+                var and = new List<IMongoQuery>();
+
+                if (!String.IsNullOrWhiteSpace(request.Query))
+                {
+                    var queryExpr = new BsonRegularExpression(new Regex(request.Query, RegexOptions.IgnoreCase));
+                    and.Add(Query.Or(
+                        Query.Matches(FieldNames.Message, queryExpr),
+                        Query.Matches(FieldNames.Loggername, queryExpr)
+                    ));
+                }
+
+                if (!String.IsNullOrWhiteSpace(request.Level))
+                {
+                    var levels = request.Level.Split(',').Select(x => x.Trim()).ToArray();
+                    and.Add(Query.In(FieldNames.Level, levels.Select(BsonValue.Create)));
+                }
+
+                cursor = Logs.FindAs<BsonDocument>(Query.And(and));
+
             }
             else
             {

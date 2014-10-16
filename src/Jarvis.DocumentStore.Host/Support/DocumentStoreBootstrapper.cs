@@ -4,6 +4,7 @@ using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
+using Castle.Services.Logging.Log4netIntegration;
 using Castle.Windsor;
 using CQRS.Kernel.ProjectionEngine;
 using CQRS.Shared.Messages;
@@ -32,7 +33,7 @@ namespace Jarvis.DocumentStore.Host.Support
             ContainerAccessor.Instance = _container;
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
-            _container.AddFacility<LoggingFacility>(f => f.UseLog4Net("log4net"));
+            _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
             _container.AddFacility<StartableFacility>();
 
             var fileStore = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
@@ -40,9 +41,6 @@ namespace Jarvis.DocumentStore.Host.Support
 
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
             _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
-
-            _logger.Warn("This is a Warn!");
-            _logger.Error("This is an Error!");
 
             _container.Install(
                 new CoreInstaller(fileStore, sysDb),
@@ -69,6 +67,15 @@ namespace Jarvis.DocumentStore.Host.Support
                 _container.Install(new ApiInstaller());
                 _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
             }
+
+            //try
+            //{
+            //    throw new Exception("WROOOOOONG!");
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.ErrorFormat(ex, "something went damn wrong");
+            //}
         }
 
         public void Stop()
@@ -81,7 +88,14 @@ namespace Jarvis.DocumentStore.Host.Support
             foreach (var act in _container.ResolveAll<IShutdownActivity>())
             {
                 _logger.DebugFormat("Shutting down activity: {0}", act.GetType().FullName);
-                act.Shutdown();
+                try
+                {
+                    act.Shutdown();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorFormat(ex, "Shutting down {0}", act.GetType().FullName);
+                }
             }
 
             _container.Dispose();

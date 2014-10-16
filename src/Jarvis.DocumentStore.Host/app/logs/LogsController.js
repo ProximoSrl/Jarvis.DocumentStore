@@ -14,8 +14,10 @@
             info: false,
             warn: false,
             error: false,
-            debug: false
+            debug: false,
+            searchText : ''
         };
+
 
         vm.refresh = refresh;
         vm.page = 1;
@@ -44,7 +46,8 @@
             return vm.filters.info + '|'
                 + vm.filters.debug + '|'
                 + vm.filters.warn + '|'
-                + vm.filters.error;
+                + vm.filters.error + '|'
+                + vm.filters.searchText;
         }, function() {
             refresh();
         });

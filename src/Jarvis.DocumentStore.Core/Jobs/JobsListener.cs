@@ -11,10 +11,10 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class JobsListener : IJobListener
     {
-        readonly ILogger _logger;
+        readonly IExtendedLogger _logger;
         readonly MongoCollection<JobTracker> _trackerCollection;
 
-        public JobsListener(ILogger logger, MongoDatabase db)
+        public JobsListener(IExtendedLogger logger, MongoDatabase db)
         {
             _logger = logger;
             _trackerCollection = db.GetCollection<JobTracker>("joblog");
@@ -77,7 +77,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             var ex = jobException.GetBaseException();
             var retries = context.Trigger.JobDataMap.GetIntValue("_retrycount") + 1;
-            _logger.ErrorFormat(ex, "Refire count {0}", retries);
+
+            _logger.ThreadProperties["job-data-map"] = context.JobDetail.JobDataMap;
+            _logger.ErrorFormat(ex, "Job id: {0}.{1} refire count {2}", 
+                context.JobDetail.Key.Group, 
+                context.JobDetail.Key.Name,
+                retries
+            );
 
             try
             {

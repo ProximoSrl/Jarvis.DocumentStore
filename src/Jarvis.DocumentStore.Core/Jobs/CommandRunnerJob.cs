@@ -22,8 +22,15 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public void Execute(IJobExecutionContext context)
         {
             var cmdString = context.JobDetail.JobDataMap.GetString(JobKeys.Command);
-            Logger.DebugFormat("Executing {0}", cmdString);
             var command = CommandSerializer.Deserialize<T>(cmdString);
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.DebugFormat("Executing command {0}\n{1}", 
+                    command.MessageId,
+                    cmdString
+                );
+            }
+
             int i = 0;
             bool done = false;
 
@@ -33,11 +40,12 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 {
                     CommandHandler.Handle(command);
                     done = true;
+                    Logger.DebugFormat("Executed command {0}", command.MessageId);
                 }
                 catch (ConflictingCommandException ex)
                 {
                     // retry
-                    Logger.DebugFormat("Handled {0} {1}, concurrency exception. Retrying",
+                    Logger.WarnFormat("Handled {0} {1}, concurrency exception. Retrying",
                         command.GetType().FullName, command.MessageId);
                     if (i++ > 5)
                     {
@@ -50,7 +58,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     done = true;
                 }
             }
-            Logger.DebugFormat("Executed {0}", cmdString);
         }
     }
 }

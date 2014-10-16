@@ -55,7 +55,7 @@ namespace Jarvis.DocumentStore.Core.Support
 //            scheduler.PauseAll();
 
             scheduler.ListenerManager.AddJobListener(new JobsListener(
-                container.Resolve<ILogger>(),
+                container.Resolve<IExtendedLogger>(),
                 container.Resolve<MongoDatabase>()
             ));
 

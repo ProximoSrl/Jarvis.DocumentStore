@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _logger.Debug("Configuring pipelines");
             foreach (var pipeline in pipelines)
             {
-                _logger.DebugFormat("...added {0}", pipeline.Id);
+                _logger.DebugFormat("...adding {0}", pipeline.Id);
                 pipeline.Attach(this);
             }
             _logger.Debug("Pipelines config done");
