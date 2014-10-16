@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,12 +22,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Create(DocumentId id, FileId fileId, FileHandle handle, FileNameWithExtension fileName)
+        public void Create(DocumentId id, FileId fileId, FileHandle handle, FileNameWithExtension fileName, IDictionary<string, object> customData = null)
         {
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "Already created");
 
-            RaiseEvent(new DocumentCreated(id, fileId, handle, fileName));
+            RaiseEvent(new DocumentCreated(id, fileId, handle, fileName, customData));
         }
 
         public void AddFormat(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)

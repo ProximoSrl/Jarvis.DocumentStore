@@ -81,6 +81,16 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             }
         }
 
+        public void CloseOpenOffice()
+        {
+            var ps = Process.GetProcessesByName("soffice");
+            foreach (var process in ps)
+            {
+                Logger.DebugFormat("Closing openoffice pid: {0}", process.Id);
+                process.Kill();
+            }
+        }
+
         private void StartOpenOffice()
         {
             var ps = Process.GetProcessesByName("soffice");

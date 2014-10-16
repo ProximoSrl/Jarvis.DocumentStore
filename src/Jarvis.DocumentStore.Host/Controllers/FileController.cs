@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,17 +10,16 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
 using CQRS.Kernel.Store;
-using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Providers;
+using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -33,6 +33,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public ILogger Logger { get; set; }
         FileNameWithExtension _fileName;
         readonly ICQRSRepository _repository;
+        private IDictionary<string, object> _customData;
 
         public FileController(IFileStore fileStore, ConfigService configService, IIdentityGenerator identityGenerator, IReader<HandleToDocument, FileHandle> handleToDocument, IReader<DocumentReadModel, DocumentId> documentReader, ICQRSRepository repository)
         {
@@ -63,21 +64,27 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            CreateDocument(documentId, fileId, handle, _fileName);
+            CreateDocument(documentId, fileId, handle, _fileName, _customData);
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 
             return Request.CreateResponse(HttpStatusCode.OK, documentId);
         }
 
-        private void CreateDocument(DocumentId documentId, FileId fileId, FileHandle handle, FileNameWithExtension fileName)
+        private void CreateDocument(
+            DocumentId documentId, 
+            FileId fileId, 
+            FileHandle handle, 
+            FileNameWithExtension fileName, 
+            IDictionary<string, object> customData
+        )
         {
             Thread.CurrentPrincipal = new GenericPrincipal(
                 new GenericIdentity("api"), new string[] { }
             );
 
             var document = new Document();
-            document.Create(documentId, fileId, handle, fileName);
+            document.Create(documentId, fileId, handle, fileName, customData);
             this._repository.Save(document, Guid.NewGuid(), d => { });
         }
 
@@ -102,9 +109,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (provider.IsInvalidFile)
                 return string.Format("Unsupported file {0}", provider.Filename);
 
+            if (provider.FormData["custom-data"] != null)
+            {
+                _customData = JsonConvert.DeserializeObject<IDictionary<string, object>>(provider.FormData["custom-data"]);
+            }
+
             _fileName = provider.Filename;
 
             return null;
+        }
+
+        [Route("file/{handle}/@customdata")]
+        [HttpGet]
+        public HttpResponseMessage GetCustomData(FileHandle handle)
+        {
+            var data = _handleToDocument.FindOneById(handle);
+            if (data == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid handle");
+
+            return Request.CreateResponse(HttpStatusCode.OK,data.CustomData);
         }
 
         [Route("file/{handle}/{format?}")]

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,5 +13,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
     public class HandleToDocument : AbstractReadModel<FileHandle>
     {
         public DocumentId DocumentId { get; set; }
+        public IDictionary<string, object> CustomData { get; set; }
     }
 }

@@ -2,10 +2,8 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 
@@ -16,7 +14,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     {
         LibreOfficeConversion _withLibreOfficeConversion;
         LibreOfficeUnoConversion _unoConversion;
-        private IDictionary<string, string> _mapping = new Dictionary<string, string>();
+        private readonly IDictionary<string, string> _mapping = new Dictionary<string, string>();
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -42,6 +40,8 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             {
                 Logger = new ConsoleLogger()
             };
+
+            _unoConversion.CloseOpenOffice();
         }
 
         [Test]

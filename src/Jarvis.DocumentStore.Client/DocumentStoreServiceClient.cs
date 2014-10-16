@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Client
 {
@@ -67,7 +69,7 @@ namespace Jarvis.DocumentStore.Client
         }
 
 
-        public async Task Upload(string pathToFile, string resourceId)
+        public async Task Upload(string pathToFile, string resourceId, IDictionary<string, object> customData = null)
         {
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
             if (fileExt == ".html" || fileExt == ".htm")
@@ -75,7 +77,7 @@ namespace Jarvis.DocumentStore.Client
                 var zippedFile = ZipHtmlPage(pathToFile);
                 try
                 {
-                    await InnerUpload(zippedFile, resourceId);
+                    await InnerUpload(zippedFile, resourceId, customData);
                     return;
                 }
                 finally
@@ -84,10 +86,14 @@ namespace Jarvis.DocumentStore.Client
                 }
             }
 
-            await InnerUpload(pathToFile, resourceId);
+            await InnerUpload(pathToFile, resourceId, customData);
         }
 
-        private async Task InnerUpload(string pathToFile, string resourceId)
+        private async Task InnerUpload(
+            string pathToFile,
+            string resourceId,
+            IDictionary<string, object> customData
+        )
         {
             string fileName = Path.GetFileNameWithoutExtension(pathToFile);
             string fileNameWithExtension = Path.GetFileName(pathToFile);
@@ -103,18 +109,42 @@ namespace Jarvis.DocumentStore.Client
                             fileName, fileNameWithExtension
                         );
 
-                        //                        content.Add(new StringContent(pipeline), "pipeline");
+                        if (customData != null)
+                        {
+                            var stringContent = new StringContent(await ToJson(customData));
+                            content.Add(stringContent, "custom-data");
+                        }
 
                         var endPoint = new Uri(_apiRoot, "file/upload/" + resourceId);
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {
                             var input = message.Content.ReadAsStringAsync().Result;
-
                             message.EnsureSuccessStatusCode();
                         }
                     }
                 }
+            }
+        }
+
+        private Task<string> ToJson(IDictionary<string, object> data)
+        {
+            return Task.Factory.StartNew(() => JsonConvert.SerializeObject(data));
+        }
+
+        private Task<IDictionary<string, object>> FromJson(string data)
+        {
+            return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<IDictionary<string, object>>(data));
+        }
+
+        public async Task<IDictionary<string, object>> GetCustomData(string resourceId)
+        {
+            using (var client = new HttpClient())
+            {
+                var endPoint = new Uri(_apiRoot, "file/" + resourceId +"/@customdata");
+
+                var json = await client.GetStringAsync(endPoint);
+                return await FromJson(json);
             }
         }
     }

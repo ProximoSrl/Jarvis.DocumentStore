@@ -132,14 +132,19 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         private Action<HandleToDocument> UpdateCurrentMapping(DocumentCreated e)
         {
-            return m => m.DocumentId = (DocumentId)e.AggregateId;
+            return m =>
+            {
+                m.DocumentId = (DocumentId) e.AggregateId;
+                m.CustomData = e.CustomData;
+            };
         }
 
         private Func<HandleToDocument> CreateNewMapping(DocumentCreated e)
         {
             return () => new HandleToDocument()
             {
-                DocumentId = (DocumentId)e.AggregateId
+                DocumentId = (DocumentId)e.AggregateId,
+                CustomData = e.CustomData
             };
         }
 

@@ -79,6 +79,10 @@
     <Reference Include="MongoDB.Driver">
       <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Driver.dll</HintPath>
     </Reference>
+    <Reference Include="NEventStore, Version=5.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NEventStore.5.1.0\lib\net40\NEventStore.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -200,6 +204,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="app\readme.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Docs\A text document.txt" />
     <Content Include="Docs\Architecture.htm" />
     <Content Include="Docs\Architecture_files\80x15.png" />

@@ -114,12 +114,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandHandlers\AddFormatToDocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\CreateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DeduplicateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DeleteDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentCommandHandler.cs" />
     <Compile Include="Domain\Document\Commands\AddFormatToDocument.cs" />
-    <Compile Include="Domain\Document\Commands\CreateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeduplicateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
     <Compile Include="Domain\Document\Commands\DocumentCommand.cs" />

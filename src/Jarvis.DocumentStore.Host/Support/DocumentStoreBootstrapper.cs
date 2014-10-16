@@ -78,6 +78,11 @@ namespace Jarvis.DocumentStore.Host.Support
             //}
         }
 
+        public T Resolve<T>()
+        {
+            return _container.Resolve<T>();
+        }
+
         public void Stop()
         {
             if (_webApplication != null)

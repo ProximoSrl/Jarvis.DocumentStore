@@ -12,12 +12,10 @@ using Castle.Windsor;
 using CQRS.Kernel.Commands;
 using CQRS.Shared.Commands;
 using CQRS.Shared.ReadModel;
-using Jarvis.DocumentStore.Core.CommandHandlers;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Host.Commands;
 using MongoDB.Driver;
-using Quartz;
-using Rebus;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -25,7 +23,6 @@ namespace Jarvis.DocumentStore.Host.Support
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            string connectionString = ConfigurationManager.ConnectionStrings["rebus"].ConnectionString;
             var logUrl = new MongoUrl(ConfigurationManager.ConnectionStrings["log"].ConnectionString);
             var logDb = new MongoClient(logUrl).GetServer().GetDatabase(logUrl.DatabaseName);
             
@@ -35,11 +32,11 @@ namespace Jarvis.DocumentStore.Host.Support
                     .DependsOn(Dependency.OnValue<IWindsorContainer>(container))
                     .DependsOn(Dependency.OnValue<Assembly[]>(new[]
                         {
-                            typeof (CreateDocumentCommandHandler).Assembly,
+                            typeof (Document).Assembly,
                         }))
                     .StartUsingMethod(x => x.Register),
                 Classes
-                    .FromAssemblyContaining<CreateDocumentCommandHandler>()
+                    .FromAssemblyContaining<Document>()
                     .BasedOn(typeof(ICommandHandler<>))
                     .WithServiceFirstInterface()
                     .LifestyleTransient(),

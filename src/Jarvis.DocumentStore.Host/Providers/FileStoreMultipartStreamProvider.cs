@@ -28,7 +28,12 @@ namespace Jarvis.DocumentStore.Host.Providers
 
         public override Stream GetStream(HttpContent parent, HttpContentHeaders headers)
         {
-            Filename  = new FileNameWithExtension(headers.ContentDisposition.FileName);
+            string fname = headers.ContentDisposition.FileName;
+            if (fname == null)
+                return new MemoryStream();
+
+
+            Filename  = new FileNameWithExtension(fname);
 
             if (!_config.IsFileAllowed(Filename))
             {

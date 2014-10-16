@@ -1,0 +1,1 @@
+﻿just a placeholder. app folder is needed by self host.
