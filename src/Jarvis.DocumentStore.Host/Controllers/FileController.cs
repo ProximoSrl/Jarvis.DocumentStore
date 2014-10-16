@@ -107,9 +107,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return null;
         }
 
-        [Route("file/{handle}/{format}")]
+        [Route("file/{handle}/{format?}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetFormat(FileHandle handle, DocumentFormat format)
+        public async Task<HttpResponseMessage> GetFormat(FileHandle handle, DocumentFormat format = null)
         {
             var mapping = _handleToDocument.FindOneById(handle);
             if (mapping == null)
@@ -129,10 +129,19 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
+            if (format == null)
+            {
+                var formats = document.Formats.ToDictionary(x => 
+                    (string) x.Key, 
+                    x => Url.Content("/file/"+handle+"/"+x.Key)
+                );
+                return Request.CreateResponse(HttpStatusCode.OK, formats);
+            }
+
             if (format == DocumentFormats.Original)
             {
                 return StreamFile(
-                    document.GetFormatFileId(format), 
+                    document.GetFormatFileId(format),
                     document.GetFileName(handle)
                 );
             }
@@ -160,7 +169,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
-                    string.Format("File {0} not found",formatFileId)
+                    string.Format("File {0} not found", formatFileId)
                 );
             }
 

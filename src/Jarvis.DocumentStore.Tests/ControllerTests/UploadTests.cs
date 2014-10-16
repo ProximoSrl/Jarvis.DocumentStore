@@ -95,6 +95,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         [Test]
         public async void calling_upload_with_supported_file_type_should_return_Ok()
         {
+            IdentityGenerator.New<DocumentId>().Returns(new DocumentId(1));
+
             long streamLen = 0;
             HttpResponseMessage response = null;
             using (var stream = new MemoryStream())
