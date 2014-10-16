@@ -1036,6 +1036,7 @@
     <Content Include="app\lib\misc\dirPagination.js" />
     <Content Include="app\lib\misc\dirPagination.tpl.html" />
     <Content Include="app\lib\misc\jquery-2.1.1.min.js" />
+    <Content Include="app\lib\misc\ui-bootstrap-tpls-0.11.2.min.js" />
     <Content Include="app\lib\misc\uiBreadcrumbs.js" />
     <Content Include="app\lib\misc\uiBreadcrumbs.tpl.html" />
     <Content Include="app\lib\skin\css\AdminLTE.css" />

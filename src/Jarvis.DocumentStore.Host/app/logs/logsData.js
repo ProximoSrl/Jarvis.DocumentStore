@@ -12,8 +12,29 @@
 
         return service;
 
-        function getLogs() {
-            return $http.post('diagnostic/log').then(function (d) {
+        function getLogs(filters) {
+          
+            var request = {
+                level: undefined,
+
+                appendLevel: function(l) {
+                    if (this.level === undefined) {
+                        this.level = l;
+                        return;
+                    }
+
+                    this.level = this.level+',' + l;
+                }
+            };
+
+            if (filters.debug) request.appendLevel("DEBUG");
+            if (filters.info) request.appendLevel("INFO");
+            if (filters.warn) request.appendLevel("WARN");
+            if (filters.error) request.appendLevel("ERROR");
+
+            console.log('request', request);
+
+            return $http.post('diagnostic/log', request).then(function (d) {
                 return d.data;
             });
         }

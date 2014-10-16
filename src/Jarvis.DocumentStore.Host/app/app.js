@@ -2,6 +2,7 @@
 
     angular.module('admin', [
         'ui.router',
+        'ui.bootstrap',
         'admin.shared',
         'admin.layout',
         'admin.dashboard',
