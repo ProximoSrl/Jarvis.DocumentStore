@@ -28,14 +28,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IFileStore _fileStore;
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
-        readonly IReader<HandleToDocument, FileHandle> _handleToDocument;
+        readonly IReader<HandleToDocument, DocumentHandle> _handleToDocument;
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
         FileNameWithExtension _fileName;
         readonly ICQRSRepository _repository;
         private IDictionary<string, object> _customData;
 
-        public FileController(IFileStore fileStore, ConfigService configService, IIdentityGenerator identityGenerator, IReader<HandleToDocument, FileHandle> handleToDocument, IReader<DocumentReadModel, DocumentId> documentReader, ICQRSRepository repository)
+        public FileController(IFileStore fileStore, ConfigService configService, IIdentityGenerator identityGenerator, IReader<HandleToDocument, DocumentHandle> handleToDocument, IReader<DocumentReadModel, DocumentId> documentReader, ICQRSRepository repository)
         {
             _fileStore = fileStore;
             _configService = configService;
@@ -47,7 +47,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("file/upload/{handle}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Upload(FileHandle handle)
+        public async Task<HttpResponseMessage> Upload(DocumentHandle handle)
         {
             var documentId = _identityGenerator.New<DocumentId>();
 
@@ -104,7 +104,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("file/{handle}/@customdata")]
         [HttpGet]
-        public HttpResponseMessage GetCustomData(FileHandle handle)
+        public HttpResponseMessage GetCustomData(DocumentHandle handle)
         {
             var data = _handleToDocument.FindOneById(handle);
             if (data == null)
@@ -115,7 +115,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("file/{handle}/{format?}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetFormat(FileHandle handle, DocumentFormat format = null)
+        public async Task<HttpResponseMessage> GetFormat(DocumentHandle handle, DocumentFormat format = null)
         {
             var document = GetDocumentByHandle(handle);
 
@@ -156,7 +156,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return StreamFile(formatFileId);
         }
 
-        HttpResponseMessage DocumentNotFound(FileHandle handle)
+        HttpResponseMessage DocumentNotFound(DocumentHandle handle)
         {
             return Request.CreateErrorResponse(
                 HttpStatusCode.NotFound,
@@ -193,7 +193,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [HttpDelete]
         [Route("file/{handle}")]
-        public HttpResponseMessage DeleteFile(FileHandle handle)
+        public HttpResponseMessage DeleteFile(DocumentHandle handle)
         {
             var document = GetDocumentByHandle(handle);
             if (document == null)
@@ -224,7 +224,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private void CreateDocument(
             DocumentId documentId,
             FileId fileId,
-            FileHandle handle,
+            DocumentHandle handle,
             FileNameWithExtension fileName,
             IDictionary<string, object> customData
         )
@@ -238,7 +238,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             this._repository.Save(document, Guid.NewGuid(), d => { });
         }
 
-        DocumentReadModel GetDocumentByHandle(FileHandle handle)
+        DocumentReadModel GetDocumentByHandle(DocumentHandle handle)
         {
             var mapping = _handleToDocument.FindOneById(handle);
             if (mapping == null)

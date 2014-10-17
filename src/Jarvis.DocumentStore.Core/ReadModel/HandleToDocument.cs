@@ -10,7 +10,7 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
-    public class HandleToDocument : AbstractReadModel<FileHandle>
+    public class HandleToDocument : AbstractReadModel<DocumentHandle>
     {
         public DocumentId DocumentId { get; set; }
         public IDictionary<string, object> CustomData { get; set; }

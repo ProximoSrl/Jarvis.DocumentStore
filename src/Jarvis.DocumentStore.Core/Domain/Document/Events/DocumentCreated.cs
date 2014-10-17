@@ -7,14 +7,14 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
     public class DocumentCreated : DomainEvent
     {
         public FileId FileId { get; private set; }
-        public FileHandle Handle { get; private set; }
+        public DocumentHandle Handle { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
         public IDictionary<string, object> CustomData { get; private set; }
 
         public DocumentCreated(
             DocumentId id, 
             FileId fileId, 
-            FileHandle handle, 
+            DocumentHandle handle, 
             FileNameWithExtension fileName, 
             IDictionary<string, object> customData)
         {

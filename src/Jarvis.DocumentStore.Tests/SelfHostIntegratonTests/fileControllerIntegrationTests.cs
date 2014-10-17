@@ -102,25 +102,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.NotNull(customData);
             Assert.IsTrue(customData.ContainsKey("callback"));
             Assert.AreEqual("http://localhost/demo", customData["callback"]);
-
-/*  readmodel check
-            var reader = _documentStoreService.Resolve<IReader<HandleToDocument, FileHandle>>();
-            var handle = reader.FindOneById(new FileHandle("Pdf_1"));
-            Assert.NotNull(handle);
-            Assert.NotNull(handle.CustomData);
-            Assert.IsTrue(handle.CustomData.ContainsKey("callback"));
-            Assert.AreEqual("http://localhost/demo", handle.CustomData["callback"]);
-*/
-/*  evenstore check
-            var es = ContainerAccessor.Instance.Resolve<IStoreEvents>();
-            using (var s = es.OpenStream("Jarvis", "Document_1", 0, 1))
-            {
-                var evt = (DocumentCreated) s.CommittedEvents.First().Body;
-                Assert.IsNotNull(evt.CustomData);
-                Assert.IsTrue(evt.CustomData.ContainsKey("callback"));
-                Assert.AreEqual("http://localhost/demo", evt.CustomData["callback"]);
-            }
- */ 
         }
 
         [Test]

@@ -66,7 +66,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
             {
-                d.AddHandle(e.OtherFileHandle, e.OtherFileName);
+                d.AddHandle(e.OtherDocumentHandle, e.OtherFileName);
             });
         }
     }

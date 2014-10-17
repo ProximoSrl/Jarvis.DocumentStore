@@ -6,13 +6,13 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Jarvis.DocumentStore.Core.Model
 {
     /// <summary>
-    /// Public file handle
+    /// Public document handle
     /// </summary>
     [BsonSerializer(typeof(StringValueBsonSerializer))]
-    [TypeConverter(typeof(StringValueTypeConverter<FileHandle>))]
-    public class FileHandle : LowercaseStringValue
+    [TypeConverter(typeof(StringValueTypeConverter<DocumentHandle>))]
+    public class DocumentHandle : LowercaseStringValue
     {
-        public FileHandle(string value) : base(value)
+        public DocumentHandle(string value) : base(value)
         {
         }
     }

@@ -150,7 +150,7 @@
     <Compile Include="Jobs\JobKeys.cs" />
     <Compile Include="Jobs\JobsListener.cs" />
     <Compile Include="MimeTypes.cs" />
-    <Compile Include="Model\FileHandle.cs" />
+    <Compile Include="Model\DocumentHandle.cs" />
     <Compile Include="Model\FileHash.cs" />
     <Compile Include="Model\FileId.cs" />
     <Compile Include="Model\FileNameWithExtension.cs" />
@@ -184,10 +184,8 @@
     <Compile Include="ReadModel\DocumentStats.cs" />
     <Compile Include="ReadModel\HashToDocuments.cs" />
     <Compile Include="Services\ConfigService.cs" />
-    <Compile Include="Services\FileHandleMapper.cs" />
     <Compile Include="Services\IDocumentMapper.cs" />
     <Compile Include="Services\DocumentMapper.cs" />
-    <Compile Include="Services\IFileHandleMapper.cs" />
     <Compile Include="Storage\Stats\FileStoreStats.cs" />
     <Compile Include="Storage\FsFileDescriptor.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />

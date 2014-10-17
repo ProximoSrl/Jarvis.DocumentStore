@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
     {
         public GridFsFileStoreStats FileStoreStats { get; set; }
         public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
-        public IReader<HandleToDocument, FileHandle> Handles { get; set; }
+        public IReader<HandleToDocument, DocumentHandle> Handles { get; set; }
 
         [HttpGet]
         [Route("dashboard")]

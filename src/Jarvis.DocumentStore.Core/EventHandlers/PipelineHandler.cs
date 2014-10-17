@@ -30,11 +30,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public ILogger Logger { get; set; }
         readonly IFileStore _fileStore;
         readonly IPipelineManager _pipelineManager;
-        readonly ICollectionWrapper<HandleToDocument, FileHandle> _handleToDoc;
+        readonly ICollectionWrapper<HandleToDocument, DocumentHandle> _handleToDoc;
         readonly ICollectionWrapper<HashToDocuments, FileHash> _hashToDocs;
         readonly ICommandBus _commandBus;
         readonly ConfigService _configService;
-        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<HandleToDocument, FileHandle> handleToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus, ConfigService configService)
+        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<HandleToDocument, DocumentHandle> handleToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus, ConfigService configService)
         {
             _fileStore = fileStore;
             _pipelineManager = pipelineManager;
@@ -189,7 +189,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentHasBeenDeduplicated e)
         {
             _handleToDoc.FindAndModify(e,
-                e.OtherFileHandle,
+                e.OtherDocumentHandle,
                 map => map.DocumentId = (DocumentId)e.AggregateId
             );
 

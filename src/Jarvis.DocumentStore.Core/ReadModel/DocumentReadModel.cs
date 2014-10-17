@@ -25,14 +25,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         }
 
         public IDictionary<DocumentFormat, FormatInfo> Formats { get; private set; }
-        public IDictionary<FileHandle, FileNameWithExtension> Handles { get; private set; }
+        public IDictionary<DocumentHandle, FileNameWithExtension> Handles { get; private set; }
         public int FormatsCount { get; set; }
         public int HandlesCount { get; set; }
 
-        public DocumentReadModel(DocumentId id, FileId fileId, FileHandle handle, FileNameWithExtension fileName)
+        public DocumentReadModel(DocumentId id, FileId fileId, DocumentHandle handle, FileNameWithExtension fileName)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
-            this.Handles = new Dictionary<FileHandle, FileNameWithExtension>();
+            this.Handles = new Dictionary<DocumentHandle, FileNameWithExtension>();
             
             this.Id = id;
 
@@ -45,12 +45,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             this.Formats[format] = new FormatInfo(fileId, pipelineId);
         }
 
-        public void AddHandle(FileHandle handle, FileNameWithExtension fileName)
+        public void AddHandle(DocumentHandle handle, FileNameWithExtension fileName)
         {
             this.Handles[handle] = fileName;
         }
 
-        public FileNameWithExtension GetFileName(FileHandle handle)
+        public FileNameWithExtension GetFileName(DocumentHandle handle)
         {
             return this.Handles[handle];
         }

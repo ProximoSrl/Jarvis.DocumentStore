@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         protected static readonly DocumentId _id = new DocumentId(1);
         protected static readonly FileId _fileId = new FileId("newFile");
-        protected static readonly FileHandle Handle = new FileHandle("handle-to-file");
+        protected static readonly DocumentHandle Handle = new DocumentHandle("handle-to-file");
         protected static readonly FileNameWithExtension _fname = new FileNameWithExtension("pathTo.file");
 
         protected static Document Document
@@ -176,7 +176,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     [Subject("with a document")]
     public class when_a_document_is_deduplicated : DocumentSpecifications
     {
-        static readonly FileHandle OtherHandle = new FileHandle("other_handle");
+        static readonly DocumentHandle OtherHandle = new DocumentHandle("other_handle");
         static readonly DocumentId _otherDocumentId = new DocumentId("Document_2");
         static readonly FileNameWithExtension _otherFileName= new FileNameWithExtension("Another.document");
 
@@ -191,7 +191,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         {
             var e = RaisedEvent<DocumentHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
-            Assert.AreSame(OtherHandle, e.OtherFileHandle);
+            Assert.AreSame(OtherHandle, e.OtherDocumentHandle);
             Assert.AreSame(_otherFileName, e.OtherFileName);
         };
     }
