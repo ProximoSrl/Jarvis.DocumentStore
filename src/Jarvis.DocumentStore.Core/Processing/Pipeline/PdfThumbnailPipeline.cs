@@ -17,12 +17,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             return descriptor.FileNameWithExtension.Extension == "pdf";
         }
 
-        public override void Start(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
         {
             this.JobHelper.QueueThumbnail(Id, documentId, descriptor.FileId, ImageFormat);
         }
 
-        public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             if (format == DocumentFormats.RasterImage)
             {

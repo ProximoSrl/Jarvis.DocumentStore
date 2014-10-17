@@ -20,12 +20,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             return _formats.Contains(descriptor.FileNameWithExtension.Extension);
         }
 
-        public override void Start(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
         {
             _jobHelper.QueueLibreOfficeToPdfConversion(Id, documentId, descriptor.FileId);
         }
 
-        public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             if (format == DocumentFormats.Pdf)
             {

@@ -12,4 +12,10 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
         void Attach(IPipelineManager manager);
     }
+
+    public interface IPipelineListener
+    {
+        void OnStart(DocumentId documentId, IFileDescriptor descriptor);
+        void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
+    }
 }

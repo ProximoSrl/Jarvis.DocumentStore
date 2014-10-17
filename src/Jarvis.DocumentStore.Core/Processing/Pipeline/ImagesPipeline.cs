@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             return _formats.Contains(descriptor.FileNameWithExtension.Extension);
         }
 
-        public override void Start(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
         {
             JobHelper.QueueResize(
                 Id, 
@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             );
         }
 
-        public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             Logger.DebugFormat("{0}: new format available {1}", documentId, format);
         }

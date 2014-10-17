@@ -23,13 +23,13 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             return _formats.Contains(descriptor.FileNameWithExtension.Extension);
         }
 
-        public override void Start(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
         {
             Logger.DebugFormat("Processing email {0}", descriptor.FileNameWithExtension);
             JobHelper.QueueEmailToHtml(Id, documentId, descriptor.FileId);
         }
 
-        public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             Logger.DebugFormat("Email {0} has been converted to format {1}: {2}", documentId, format, fileId);
             PipelineManager.Start(documentId, fileId);

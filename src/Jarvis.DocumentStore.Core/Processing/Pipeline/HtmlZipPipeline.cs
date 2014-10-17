@@ -23,12 +23,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             return false;
         }
 
-        public override void Start(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
         {
             _jobHelper.QueueHtmlToPdfConversion(Id, documentId, descriptor.FileId);
         }
 
-        public override void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             PipelineManager.Start(documentId, fileId);
         }
