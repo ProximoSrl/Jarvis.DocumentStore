@@ -4,15 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Client;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
-using NEventStore;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
@@ -50,7 +45,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     { "callback", "http://localhost/demo"}
                 }
             );
-
+            
+            // waits for storage
+            Thread.Sleep(2000);
+            
             using (var reader = _documentStoreClient.OpenRead("Pdf_2"))
             {
                 using (var downloaded = new MemoryStream())

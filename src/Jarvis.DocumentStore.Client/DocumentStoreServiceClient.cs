@@ -12,22 +12,25 @@ namespace Jarvis.DocumentStore.Client
 {
     public class DocumentFormatReader : IDisposable
     {
+        readonly Uri _address;
         readonly WebClient _client;
-        readonly Task<Stream> _stream;
 
         public DocumentFormatReader(Uri address)
         {
+            _address = address;
             _client = new WebClient();
-            _stream = _client.OpenReadTaskAsync(address);
         }
 
-        public Task<Stream> ReadStream {
-            get { return _stream; }
+        public Task<Stream> ReadStream
+        {
+            get
+            {
+                return _client.OpenReadTaskAsync(_address);
+            }
         }
 
         public void Dispose()
         {
-            _stream.Dispose();
             _client.Dispose();
         }
     }
@@ -164,7 +167,7 @@ namespace Jarvis.DocumentStore.Client
         {
             using (var client = new HttpClient())
             {
-                var endPoint = new Uri(_apiRoot, "file/" + resourceId +"/@customdata");
+                var endPoint = new Uri(_apiRoot, "file/" + resourceId + "/@customdata");
 
                 var json = await client.GetStringAsync(endPoint);
                 return await FromJson(json);
