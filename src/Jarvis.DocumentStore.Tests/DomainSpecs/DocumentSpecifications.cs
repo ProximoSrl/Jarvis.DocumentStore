@@ -166,7 +166,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         Because of = () =>
         {
             Document.Create(_id, _fileId, Handle,_fname);
-            Document.Delete();
+            Document.Delete(Handle);
         };
 
         It DocumentDeleted_event_should_have_been_raised = () =>

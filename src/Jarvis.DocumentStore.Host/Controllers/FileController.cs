@@ -199,7 +199,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (document == null)
                 return DocumentNotFound(handle);
 
-            DeleteDocument(document.Id);
+            DeleteDocument(document.Id, handle);
 
             return Request.CreateResponse(
                 HttpStatusCode.Accepted,
@@ -207,7 +207,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
-        void DeleteDocument(DocumentId documentId)
+        void DeleteDocument(DocumentId documentId, DocumentHandle handle)
         {
             Thread.CurrentPrincipal = new GenericPrincipal(
                 new GenericIdentity("api"), new string[] { }
@@ -216,7 +216,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var document = this._repository.GetById<Document>(documentId);
             if (document.HasBeenCreated)
             {
-                document.Delete();
+                document.Delete(handle);
                 this._repository.Save(document, Guid.NewGuid(), d => { });
             }
         }

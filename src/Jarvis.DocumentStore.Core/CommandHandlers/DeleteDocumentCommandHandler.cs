@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers
     {
         protected override void Execute(DeleteDocument cmd)
         {
-            FindAndModify(cmd.AggregateId, doc => doc.Delete());
+            FindAndModify(cmd.AggregateId, doc => doc.Delete(cmd.Handle));
         }
     }
 }

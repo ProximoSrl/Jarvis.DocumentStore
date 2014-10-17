@@ -196,7 +196,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay)
                 return;
 
-            _commandBus.Send(new DeleteDocument(e.OtherDocumentId));
+            _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.OtherDocumentHandle));
         }
 
         public void On(DocumentDeleted e)

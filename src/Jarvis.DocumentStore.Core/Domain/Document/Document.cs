@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             }
         }
 
-        public void Delete()
+        public void Delete(DocumentHandle handle)
         {
             RaiseEvent(new DocumentDeleted(
                 InternalState.FileId,
