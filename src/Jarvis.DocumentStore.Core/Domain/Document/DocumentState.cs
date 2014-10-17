@@ -8,6 +8,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
     public class DocumentState : AggregateState
     {
         public IDictionary<DocumentFormat, FileId> Formats { get; private set; }
+        public HashSet<DocumentHandle>  Handles { get; private set; }
         public FileId FileId { get; private set; }
         
         public DocumentState(params KeyValuePair<DocumentFormat, FileId>[] formats)
@@ -22,17 +23,24 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public DocumentState()
         {
             this.Formats = new Dictionary<DocumentFormat, FileId>();
+            this.Handles = new HashSet<DocumentHandle>();
         }
 
         void When(DocumentCreated e)
         {
             this.AggregateId = e.AggregateId;
             this.FileId = e.FileId;
+            this.Handles.Add(e.Handle);
         }
 
         void When(FormatAddedToDocument e)
         {
             this.Formats.Add(e.DocumentFormat, e.FileId);
+        }
+
+        void When(DocumentHandleDetached e)
+        {
+            this.Handles.Remove(e.Handle);
         }
 
         void When(DocumentFormatHasBeenDeleted e)
@@ -43,6 +51,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public bool HasFormat(DocumentFormat documentFormat)
         {
             return Formats.ContainsKey(documentFormat);
+        }
+
+        public bool IsValidHandle(DocumentHandle handle)
+        {
+            return Handles.Contains(handle);
         }
     }
 }

@@ -7,7 +7,6 @@ using CQRS.Kernel.Engine;
 using CQRS.Shared.ValueObjects;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
-using Microsoft.SqlServer.Server;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
@@ -52,10 +51,24 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Delete(DocumentHandle handle)
         {
+            if (!InternalState.IsValidHandle(handle))
+                throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid",handle));
+
             RaiseEvent(new DocumentDeleted(
                 InternalState.FileId,
                 InternalState.Formats.Select(x => x.Value).ToArray()
             ));
+
+            RaiseEvent(new DocumentHandleDetached(handle));
+
+
+            if (InternalState.Handles.Count == 0)
+            {
+                RaiseEvent(new DocumentDeleted(
+                    InternalState.FileId,
+                    InternalState.Formats.Select(x => x.Value).ToArray()
+                ));
+            }
         }
 
         public void Deduplicate(DocumentId documentId, DocumentHandle handle, FileNameWithExtension fileName)

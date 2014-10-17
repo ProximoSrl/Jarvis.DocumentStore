@@ -56,10 +56,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         Establish context = () =>
         {
             Create();
-            Document.Create(_id, _fileId, Handle,_fname);
+            Document.Create(_id, _fileId, Handle, _fname);
         };
 
-        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, Handle,_fname));
+        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, Handle, _fname));
 
         It a_domain_exception_should_be_thrown = () =>
         {
@@ -77,7 +77,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         Establish context = () => SetUp(new DocumentState() { });
 
-        Because of = () => Document.AddFormat(XmlDocumentFormat, XmlFileId,XmlPiplePipelineId);
+        Because of = () => Document.AddFormat(XmlDocumentFormat, XmlFileId, XmlPiplePipelineId);
 
         It FormatAddedToDocument_event_should_have_been_raised = () =>
             EventHasBeenRaised<FormatAddedToDocument>().ShouldBeTrue();
@@ -165,12 +165,41 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         Because of = () =>
         {
-            Document.Create(_id, _fileId, Handle,_fname);
+            Document.Create(_id, _fileId, Handle, _fname);
             Document.Delete(Handle);
         };
 
         It DocumentDeleted_event_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentDeleted>().ShouldBeTrue();
+
+        It DocumentHandleDetached_event_should_have_been_raised = () => 
+            EventHasBeenRaised<DocumentHandleDetached>().ShouldBeTrue();
+
+        It DocumentHandleDetached_event_should_have_correct_handle = () =>
+            RaisedEvent<DocumentHandleDetached>().Handle.ShouldBeLike(Handle);
+
+        It Internal_state_should_not_track_old_handle = () =>
+            State.IsValidHandle(Handle).ShouldBeFalse();
+    }
+
+    [Subject("DocumentEvents")]
+    public class when_a_document_is_deleted_with_wrong_handle : DocumentSpecifications
+    {
+        private static Exception Exception { get; set; }
+        Establish context = () => Create();
+
+        Because of = () =>
+        {
+            Document.Create(_id, _fileId, Handle, _fname);
+            Exception = Catch.Exception(() => Document.Delete(new DocumentHandle("not_this_one")));
+        };
+
+
+        It a_domainException_should_have_been_raised = () =>
+        {
+            Assert.NotNull(Exception);
+            Assert.IsTrue(Exception is DomainException);
+        };
     }
 
     [Subject("with a document")]
@@ -178,11 +207,11 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         static readonly DocumentHandle OtherHandle = new DocumentHandle("other_handle");
         static readonly DocumentId _otherDocumentId = new DocumentId("Document_2");
-        static readonly FileNameWithExtension _otherFileName= new FileNameWithExtension("Another.document");
+        static readonly FileNameWithExtension _otherFileName = new FileNameWithExtension("Another.document");
 
         Establish context = () => SetUp(new DocumentState());
 
-        Because of = () => Document.Deduplicate(_otherDocumentId, OtherHandle,_otherFileName);
+        Because of = () => Document.Deduplicate(_otherDocumentId, OtherHandle, _otherFileName);
 
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
             EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
