@@ -179,5 +179,14 @@ namespace Jarvis.DocumentStore.Client
             var endPoint = new Uri(_apiRoot, "file/" + resourceId + "/" + format);
             return new DocumentFormatReader(endPoint);
         }
+
+        public async Task Delete(string resourceId)
+        {
+            var resourceUri = new Uri(_apiRoot, "file/" + resourceId);
+            using (var client = new HttpClient())
+            {
+                await client.DeleteAsync(resourceUri);
+            }
+        }
     }
 }

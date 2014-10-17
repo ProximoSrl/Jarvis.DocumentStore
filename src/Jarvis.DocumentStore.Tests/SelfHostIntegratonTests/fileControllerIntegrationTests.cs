@@ -14,7 +14,7 @@ using NUnit.Framework;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture]
-    public class upload_in_self_host_service
+    public class FileControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
@@ -22,10 +22,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
+            var config = new DocumentStoreConfiguration(
+                isApiServer: true, 
+                isWorker: false, 
+                isReadmodelBuilder: true
+            );
             MongoDbTestConnectionProvider.TestDb.Drop();
 
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
-            _documentStoreService.Start();
+            _documentStoreService.Start(config);
             _documentStoreClient = new DocumentStoreServiceClient(TestConfig.ServerAddress);
         }
 
@@ -116,6 +121,30 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 Assert.AreEqual("http://localhost/demo", evt.CustomData["callback"]);
             }
  */ 
+        }
+
+        [Test]
+        public async void should_be_able_to_delete_a_document()
+        {
+            const string resourceId = "Pdf_3";
+            await _documentStoreClient.Upload(
+                TestConfig.PathToDocumentPdf,
+                resourceId,
+                new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            // wait background projection polling
+            Thread.Sleep(500);
+
+            var data = await _documentStoreClient.GetCustomData(resourceId);
+
+            await _documentStoreClient.Delete(resourceId);
+
+            Thread.Sleep(500);
+            
+            data = await _documentStoreClient.GetCustomData(resourceId);
         }
 
         [Test, Explicit]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Castle.Core.Configuration;
 using Castle.Core.Logging;
@@ -17,8 +18,11 @@ namespace Jarvis.DocumentStore.Core.Support
 {
     public class SchedulerInstaller : IWindsorInstaller
     {
-        public SchedulerInstaller(string jobStoreConnectionString)
+        readonly bool _autoStart;
+
+        public SchedulerInstaller(string jobStoreConnectionString, bool autoStart)
         {
+            _autoStart = autoStart;
             JobStore.DefaultConnectionString = jobStoreConnectionString;
         }
 
@@ -56,7 +60,6 @@ namespace Jarvis.DocumentStore.Core.Support
             );
 
             var scheduler = container.Resolve<IScheduler>();
-//            scheduler.PauseAll();
 
             scheduler.ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<IExtendedLogger>(),
@@ -64,6 +67,9 @@ namespace Jarvis.DocumentStore.Core.Support
             ));
 
             SetupCleanupJob(scheduler);
+
+            if (_autoStart)
+                scheduler.Start();
         }
 
         void SetupCleanupJob(IScheduler scheduler)
@@ -88,30 +94,15 @@ namespace Jarvis.DocumentStore.Core.Support
             scheduler.ScheduleJob(job, trigger);
         }
 
-        IConfiguration CreateDefaultConfiguration()
+        IDictionary<string,string> CreateDefaultConfiguration()
         {
-            var config = new MutableConfiguration("scheduler_config");
-            var quartz = new MutableConfiguration("quartz");
-            config.Children.Add(quartz);
-
-            quartz.CreateChild("item", "jarvis.documentstore")
-                    .Attribute("key", "quartz.scheduler.instanceName");
-
-            quartz.CreateChild("item", Environment.MachineName + "-"+DateTime.Now.ToShortTimeString())
-                    .Attribute("key", "quartz.scheduler.instanceId");
-
-            quartz.CreateChild("item", "Quartz.Simpl.SimpleThreadPool, Quartz")
-                    .Attribute("key", "quartz.threadPool.type");
-
-            quartz.CreateChild("item", Environment.ProcessorCount.ToString())
-                    .Attribute("key", "quartz.threadPool.threadCount");
-
-            quartz.CreateChild("item", "Normal")
-                    .Attribute("key", "quartz.threadPool.threadPriority");
-
-            quartz.CreateChild("item", "Quartz.Impl.MongoDB.JobStore, Quartz.Impl.MongoDB")
-                    .Attribute("key", "quartz.jobStore.type");
-
+            var config = new Dictionary<string, string>();
+            config["quartz.scheduler.instanceName"] = "jarvis.documentstore";
+            config["quartz.scheduler.instanceId"] = Environment.MachineName + "-" + DateTime.Now.ToShortTimeString();
+            config["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
+            config["quartz.threadPool.threadCount"] = Environment.ProcessorCount.ToString();
+            config["quartz.threadPool.threadPriority"] = "Normal";
+            config["quartz.jobStore.type"] = "Quartz.Impl.MongoDB.JobStore, Quartz.Impl.MongoDB";
             return config;
         }
     }

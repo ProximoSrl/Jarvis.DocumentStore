@@ -71,23 +71,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, documentId);
         }
 
-        private void CreateDocument(
-            DocumentId documentId, 
-            FileId fileId, 
-            FileHandle handle, 
-            FileNameWithExtension fileName, 
-            IDictionary<string, object> customData
-        )
-        {
-            Thread.CurrentPrincipal = new GenericPrincipal(
-                new GenericIdentity("api"), new string[] { }
-            );
-
-            var document = new Document();
-            document.Create(documentId, fileId, handle, fileName, customData);
-            this._repository.Save(document, Guid.NewGuid(), d => { });
-        }
-
         /// <summary>
         /// Upload a file sent in an http request
         /// </summary>
@@ -209,6 +192,58 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             return response;
+        }
+
+        [HttpDelete]
+        [Route("file/{handle}")]
+        public HttpResponseMessage DeleteFile(FileHandle handle)
+        {
+            var mapping = _handleToDocument.FindOneById(handle);
+            if (mapping == null)
+            {
+                return Request.CreateResponse(
+                    HttpStatusCode.NoContent,
+                    string.Format("Document not found for handle {0}", handle)
+                );
+            }
+
+            DeleteDocument(mapping.DocumentId);
+
+            return Request.CreateResponse(
+                HttpStatusCode.Accepted,
+                string.Format("Document marked for deletion {0}", handle)
+            );
+        }
+
+        void DeleteDocument(DocumentId documentId)
+        {
+            Thread.CurrentPrincipal = new GenericPrincipal(
+                new GenericIdentity("api"), new string[] { }
+            );
+
+            var document = this._repository.GetById<Document>(documentId);
+            if (document.HasBeenCreated)
+            {
+                document.Delete();
+                this._repository.Save(document, Guid.NewGuid(), d => { });
+            }
+        }
+        
+        private void CreateDocument(
+            DocumentId documentId,
+            FileId fileId,
+            FileHandle handle,
+            FileNameWithExtension fileName,
+            IDictionary<string, object> customData
+        )
+        {
+            Thread.CurrentPrincipal = new GenericPrincipal(
+                new GenericIdentity("api"), new string[] { }
+            );
+
+            var document = new Document();
+            document.Create(documentId, fileId, handle, fileName, customData);
+            this._repository.Save(document, Guid.NewGuid(), d => { });
         }
     }
 }

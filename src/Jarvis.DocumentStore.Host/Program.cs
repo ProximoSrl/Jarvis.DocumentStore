@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Linq;
 using CQRS.Kernel.ProjectionEngine.Client;
 using Jarvis.DocumentStore.Host.Support;
 using Topshelf;
@@ -8,8 +9,12 @@ namespace Jarvis.DocumentStore.Host
 {
     class Program
     {
+        static DocumentStoreConfiguration _documentStoreConfiguration;
+
         static int Main(string[] args)
         {
+            LoadConfiguration();
+            
             ConfigureRebuild();
 
             var exitCode = HostFactory.Run(host =>
@@ -20,7 +25,7 @@ namespace Jarvis.DocumentStore.Host
                 {
                     var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
                     service.ConstructUsing(() => new DocumentStoreBootstrapper( uri ));
-                    service.WhenStarted(s => s.Start());
+                    service.WhenStarted(s => s.Start(_documentStoreConfiguration));
                     service.WhenStopped(s => s.Stop());
                 });
 
@@ -34,12 +39,32 @@ namespace Jarvis.DocumentStore.Host
             return (int)exitCode;
         }
 
+        static void LoadConfiguration()
+        {
+            var roles = ConfigurationManager.AppSettings["roles"];
+            bool isApiServer = false;
+            bool isWorker = false;
+            bool isReadmodelBuilder = false;
+
+            if (roles != null)
+            {
+                var roleArray = roles.Split(',').Select(x => x.Trim().ToLowerInvariant()).ToArray();
+
+                isApiServer = roleArray.Contains("api");
+                isWorker = roleArray.Contains("worker");
+                isReadmodelBuilder = roleArray.Contains("projections");
+            }
+
+            _documentStoreConfiguration = new DocumentStoreConfiguration(isApiServer, isWorker, isReadmodelBuilder);
+        }
+
         static void ConfigureRebuild()
         {
             if (!Environment.UserInteractive)
                 return;
 
-            if (!RolesHelper.IsReadmodelBuilder)
+
+            if (!_documentStoreConfiguration.IsReadmodelBuilder)
                 return;
 
             Console.Title = "JARVIS :: Document Store Service";

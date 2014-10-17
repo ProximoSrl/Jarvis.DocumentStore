@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Host.Support
             _serverAddress = serverAddress;
         }
 
-        public void Start()
+        public void Start(DocumentStoreConfiguration roles)
         {
             _container = new WindsorContainer();
             ContainerAccessor.Instance = _container;
@@ -48,24 +48,21 @@ namespace Jarvis.DocumentStore.Host.Support
                 new BusInstaller()
             );
 
-            if (RolesHelper.IsWorker)
-            {
-                _logger.Debug("Configured Scheduler");
-                _container.Install(new SchedulerInstaller(fileStore));
-            }
+            _container.Install(new SchedulerInstaller(fileStore, roles.IsWorker));
+            _logger.Debug("Configured Scheduler");
 
-            if (RolesHelper.IsReadmodelBuilder)
+            if (roles.IsReadmodelBuilder)
             {
-                _logger.Debug("Configured Projections");
                 _container.Install(new ProjectionsInstaller<NotifyReadModelChanges>());
+                _logger.Debug("Configured Projections");
             }
 
 
-            if (RolesHelper.IsApiServer)
+            if (roles.IsApiServer)
             {
-                _logger.Debug("Configured API server");
                 _container.Install(new ApiInstaller());
                 _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
+                _logger.Debug("Configured API server");
             }
 
             //try
