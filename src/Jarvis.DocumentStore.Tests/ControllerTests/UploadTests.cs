@@ -141,7 +141,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var response = Controller.GetFormat(filehandle, format).Result;
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-            Assert.AreEqual("Document not found for handle not_in_store", response.GetError().Message);
+            Assert.AreEqual("Document not_in_store not found", response.GetError().Message);
         }
 
         [Test]
@@ -157,7 +157,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-            Assert.AreEqual("Document Document_1 not found", response.GetError().Message);
+            Assert.AreEqual("Document doc not found", response.GetError().Message);
         }
 
         [Test]

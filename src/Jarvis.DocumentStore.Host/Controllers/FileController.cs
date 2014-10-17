@@ -108,7 +108,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             var data = _handleToDocument.FindOneById(handle);
             if (data == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid handle");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Document not found");
 
             return Request.CreateResponse(HttpStatusCode.OK,data.CustomData);
         }
@@ -117,22 +117,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpGet]
         public async Task<HttpResponseMessage> GetFormat(FileHandle handle, DocumentFormat format = null)
         {
-            var mapping = _handleToDocument.FindOneById(handle);
-            if (mapping == null)
-            {
-                return Request.CreateErrorResponse(
-                    HttpStatusCode.NotFound,
-                    string.Format("Document not found for handle {0}", handle)
-                );
-            }
+            var document = GetDocumentByHandle(handle);
 
-            var document = _documentReader.FindOneById(mapping.DocumentId);
             if (document == null)
             {
-                return Request.CreateErrorResponse(
-                    HttpStatusCode.NotFound,
-                    string.Format("Document {0} not found", mapping.DocumentId)
-                );
+                return DocumentNotFound(handle);
             }
 
             if (format == null)
@@ -167,6 +156,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return StreamFile(formatFileId);
         }
 
+        HttpResponseMessage DocumentNotFound(FileHandle handle)
+        {
+            return Request.CreateErrorResponse(
+                HttpStatusCode.NotFound,
+                string.Format("Document {0} not found", handle)
+                );
+        }
+
         HttpResponseMessage StreamFile(FileId formatFileId, FileNameWithExtension fileName = null)
         {
             var descriptor = _fileStore.GetDescriptor(formatFileId);
@@ -198,16 +195,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("file/{handle}")]
         public HttpResponseMessage DeleteFile(FileHandle handle)
         {
-            var mapping = _handleToDocument.FindOneById(handle);
-            if (mapping == null)
-            {
-                return Request.CreateResponse(
-                    HttpStatusCode.NoContent,
-                    string.Format("Document not found for handle {0}", handle)
-                );
-            }
+            var document = GetDocumentByHandle(handle);
+            if (document == null)
+                return DocumentNotFound(handle);
 
-            DeleteDocument(mapping.DocumentId);
+            DeleteDocument(document.Id);
 
             return Request.CreateResponse(
                 HttpStatusCode.Accepted,
@@ -244,6 +236,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var document = new Document();
             document.Create(documentId, fileId, handle, fileName, customData);
             this._repository.Save(document, Guid.NewGuid(), d => { });
+        }
+
+        DocumentReadModel GetDocumentByHandle(FileHandle handle)
+        {
+            var mapping = _handleToDocument.FindOneById(handle);
+            if (mapping == null)
+                return null;
+
+            return _documentReader.FindOneById(mapping.DocumentId);
         }
     }
 }
