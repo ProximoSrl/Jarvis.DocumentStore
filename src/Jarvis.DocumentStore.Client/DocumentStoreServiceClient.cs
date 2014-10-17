@@ -3,12 +3,35 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Client
 {
+    public class DocumentFormatReader : IDisposable
+    {
+        readonly WebClient _client;
+        readonly Task<Stream> _stream;
+
+        public DocumentFormatReader(Uri address)
+        {
+            _client = new WebClient();
+            _stream = _client.OpenReadTaskAsync(address);
+        }
+
+        public Task<Stream> ReadStream {
+            get { return _stream; }
+        }
+
+        public void Dispose()
+        {
+            _stream.Dispose();
+            _client.Dispose();
+        }
+    }
+
     public class DocumentStoreServiceClient
     {
         readonly Uri _apiRoot;
@@ -146,6 +169,12 @@ namespace Jarvis.DocumentStore.Client
                 var json = await client.GetStringAsync(endPoint);
                 return await FromJson(json);
             }
+        }
+
+        public DocumentFormatReader OpenRead(string resourceId, string format = "original")
+        {
+            var endPoint = new Uri(_apiRoot, "file/" + resourceId + "/" + format);
+            return new DocumentFormatReader(endPoint);
         }
     }
 }

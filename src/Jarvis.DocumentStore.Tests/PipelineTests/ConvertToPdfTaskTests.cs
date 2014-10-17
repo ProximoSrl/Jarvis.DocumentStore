@@ -83,7 +83,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         }
 
         [Test]
-        public void parallel_convesion_should_not_throw_exceptions()
+        public void parallel_conversion_should_not_throw_exceptions()
         {
             Parallel.ForEach(
                 _mapping.Keys,

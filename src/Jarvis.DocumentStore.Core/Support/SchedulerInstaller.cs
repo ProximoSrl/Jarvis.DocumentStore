@@ -45,6 +45,10 @@ namespace Jarvis.DocumentStore.Core.Support
                     .FromAssemblyInThisApplication()
                     .BasedOn<IPipeline>()
                     .WithServiceFirstInterface(),
+                Classes
+                    .FromAssemblyInThisApplication()
+                    .BasedOn<IPipelineListener>()
+                    .WithServiceFirstInterface(),
                 Component
                     .For<IShutdownActivity>()
                     .ImplementedBy<SchedulerShutdown>()

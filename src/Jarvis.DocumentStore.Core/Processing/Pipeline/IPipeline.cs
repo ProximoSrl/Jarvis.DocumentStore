@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 
     public interface IPipelineListener
     {
-        void OnStart(DocumentId documentId, IFileDescriptor descriptor);
-        void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
+        void OnStart(IPipeline pipeline, DocumentId documentId, IFileDescriptor descriptor);
+        void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, FileId fileId);
     }
 }

@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         public IJobHelper JobHelper { get; set; }
         protected IPipelineManager PipelineManager { get; private set; }
 
-        private IPipelineListener[] _listeners = null;
+        public IPipelineListener[] Listeners { get; set; }
 
         protected AbstractPipeline(string id)
         {
@@ -24,11 +24,11 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         public void Start(DocumentId documentId, IFileDescriptor descriptor)
         {
             OnStart(documentId, descriptor);
-            if (_listeners != null)
+            if (Listeners != null)
             {
-                foreach (var pipelineListener in _listeners)
+                foreach (var pipelineListener in Listeners)
                 {
-                    pipelineListener.OnStart(documentId, descriptor);
+                    pipelineListener.OnStart(this, documentId, descriptor);
                 }
             }
         }
@@ -38,11 +38,11 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         public void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {
             OnFormatAvailable(documentId, format, fileId);
-            if (_listeners != null)
+            if (Listeners != null)
             {
-                foreach (var pipelineListener in _listeners)
+                foreach (var pipelineListener in Listeners)
                 {
-                    pipelineListener.OnFormatAvailable(documentId, format, fileId);
+                    pipelineListener.OnFormatAvailable(this, documentId, format, fileId);
                 }
             }
         }

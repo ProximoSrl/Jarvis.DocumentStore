@@ -170,6 +170,7 @@
     <Compile Include="Processing\Pipeline\ImagesPipeline.cs" />
     <Compile Include="Processing\Pipeline\IPipeline.cs" />
     <Compile Include="Processing\Pipeline\IPipelineManager.cs" />
+    <Compile Include="Processing\Pipeline\Listeners\LoggingPipelineListener.cs" />
     <Compile Include="Processing\Pipeline\OfficePipeline.cs" />
     <Compile Include="Processing\Pipeline\PdfThumbnailPipeline.cs" />
     <Compile Include="Processing\Pipeline\PipelineManager.cs" />

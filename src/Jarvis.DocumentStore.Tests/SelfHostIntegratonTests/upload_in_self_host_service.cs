@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,47 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             _documentStoreService.Stop();
         }
+
+        [Test]
+        public async void should_upload_and_download_original_format()
+        {
+            await _documentStoreClient.Upload(
+                TestConfig.PathToDocumentPdf,
+                "Pdf_2",
+                new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            using (var reader = _documentStoreClient.OpenRead("Pdf_2"))
+            {
+                using (var downloaded = new MemoryStream())
+                using(var uploaded = new MemoryStream())
+                {
+                    using (var fileStream = File.OpenRead(TestConfig.PathToDocumentPdf))
+                    {
+                        await fileStream.CopyToAsync(uploaded);
+                    }
+                    await (await reader.ReadStream).CopyToAsync(downloaded);
+
+                    Assert.IsTrue(CompareMemoryStreams(uploaded,downloaded));
+                }
+            }
+        }
+
+        private static bool CompareMemoryStreams(MemoryStream ms1, MemoryStream ms2)
+        {
+            if (ms1.Length != ms2.Length)
+                return false;
+            ms1.Position = 0;
+            ms2.Position = 0;
+
+            var msArray1 = ms1.ToArray();
+            var msArray2 = ms2.ToArray();
+
+            return msArray1.SequenceEqual(msArray2);
+        }
+
 
         [Test]
         public async void should_upload_file_with_custom_data()
