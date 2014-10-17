@@ -87,13 +87,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void should_upload_file_with_custom_data()
         {
-            await _documentStoreClient.UploadAsync(
+            var md5 = await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf, 
                 "Pdf_1", 
                 new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
                 }
             );
+
+            Assert.AreEqual("8fe8386418f85ef4ee8ef1f3f1117928", md5);
 
             // wait background projection polling
             Thread.Sleep(500);

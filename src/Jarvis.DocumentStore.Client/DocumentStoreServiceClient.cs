@@ -3,49 +3,35 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Client
 {
-    public class DocumentFormatReader : IDisposable
-    {
-        readonly Uri _address;
-        readonly WebClient _client;
-
-        public DocumentFormatReader(Uri address)
-        {
-            _address = address;
-            _client = new WebClient();
-        }
-
-        public Task<Stream> ReadStream
-        {
-            get
-            {
-                return _client.OpenReadTaskAsync(_address);
-            }
-        }
-
-        public void Dispose()
-        {
-            _client.Dispose();
-        }
-    }
-
+    /// <summary>
+    /// DocumentStore client
+    /// </summary>
     public class DocumentStoreServiceClient
     {
-        readonly Uri _apiRoot;
+        readonly Uri _documentStoreUri;
         public string TempFolder { get; set; }
 
-        public DocumentStoreServiceClient(Uri apiRoot)
+        /// <summary>
+        /// Create a new DocumentStore Client
+        /// </summary>
+        /// <param name="documentStoreUri">base uri</param>
+        public DocumentStoreServiceClient(Uri documentStoreUri)
         {
-            _apiRoot = apiRoot;
+            _documentStoreUri = documentStoreUri;
             TempFolder = Path.Combine(Path.GetTempPath(), "jarvis.client");
         }
 
+        /// <summary>
+        /// Zip an html page with images / scripts subfolder
+        /// </summary>
+        /// <param name="pathToFile">path to html file</param>
+        /// <returns>path to zipped file</returns>
         public string ZipHtmlPage(string pathToFile)
         {
             if (!Directory.Exists(TempFolder))
@@ -79,6 +65,11 @@ namespace Jarvis.DocumentStore.Client
             return pathToZip;
         }
 
+        /// <summary>
+        /// Stategy for attachment folder identification
+        /// </summary>
+        /// <param name="pathToFile">path to html file</param>
+        /// <returns>path to html attachments</returns>
         static string FindAttachmentFolder(string pathToFile)
         {
             var attachmentFolder = Path.Combine(
@@ -95,7 +86,14 @@ namespace Jarvis.DocumentStore.Client
         }
 
 
-        public async Task UploadAsync(string pathToFile, string resourceId, IDictionary<string, object> customData = null)
+        /// <summary>
+        /// Upload a document
+        /// </summary>
+        /// <param name="pathToFile">Path to local document</param>
+        /// <param name="documentHandle">Document handle</param>
+        /// <param name="customData">Custom data</param>
+        /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
+        public async Task<string> UploadAsync(string pathToFile, string documentHandle, IDictionary<string, object> customData = null)
         {
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
             if (fileExt == ".html" || fileExt == ".htm")
@@ -103,8 +101,8 @@ namespace Jarvis.DocumentStore.Client
                 var zippedFile = ZipHtmlPage(pathToFile);
                 try
                 {
-                    await InnerUploadAsync(zippedFile, resourceId, customData);
-                    return;
+                    return await InnerUploadAsync(zippedFile, documentHandle, customData);
+                    
                 }
                 finally
                 {
@@ -112,12 +110,19 @@ namespace Jarvis.DocumentStore.Client
                 }
             }
 
-            await InnerUploadAsync(pathToFile, resourceId, customData);
+            return await InnerUploadAsync(pathToFile, documentHandle, customData);
         }
 
-        private async Task InnerUploadAsync(
+        /// <summary>
+        /// Utility method for uploads
+        /// </summary>
+        /// <param name="pathToFile">Path to local document</param>
+        /// <param name="documentHandle">Document handle</param>
+        /// <param name="customData">Custom data</param>
+        /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
+        private async Task<string> InnerUploadAsync(
             string pathToFile,
-            string resourceId,
+            string documentHandle,
             IDictionary<string, object> customData
         )
         {
@@ -141,48 +146,75 @@ namespace Jarvis.DocumentStore.Client
                             content.Add(stringContent, "custom-data");
                         }
 
-                        var endPoint = new Uri(_apiRoot, "file/upload/" + resourceId);
+                        var endPoint = new Uri(_documentStoreUri, "file/upload/" + documentHandle);
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {
-                            var input = message.Content.ReadAsStringAsync().Result;
+                            var md5 = await message.Content.ReadAsStringAsync();
                             message.EnsureSuccessStatusCode();
+                            return md5;
                         }
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Serialize custom data to json string
+        /// </summary>
+        /// <param name="data">custom data</param>
+        /// <returns>json representation of custom data</returns>
         private Task<string> ToJsonAsync(IDictionary<string, object> data)
         {
             return Task.Factory.StartNew(() => JsonConvert.SerializeObject(data));
         }
 
+        /// <summary>
+        /// Deserialize custom data from json string
+        /// </summary>
+        /// <param name="data">json representation of custom data</param>
+        /// <returns>custom data as IDictionary</returns>
         private Task<IDictionary<string, object>> FromJsonAsync(string data)
         {
             return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<IDictionary<string, object>>(data));
         }
 
-        public async Task<IDictionary<string, object>> GetCustomDataAsync(string resourceId)
+        /// <summary>
+        /// Retrieve custom data from DocumentStore
+        /// </summary>
+        /// <param name="documentHandle">Document handle</param>
+        /// <returns>Custom data</returns>
+        public async Task<IDictionary<string, object>> GetCustomDataAsync(string documentHandle)
         {
             using (var client = new HttpClient())
             {
-                var endPoint = new Uri(_apiRoot, "file/" + resourceId + "/@customdata");
+                var endPoint = new Uri(_documentStoreUri, "file/" + documentHandle + "/@customdata");
 
                 var json = await client.GetStringAsync(endPoint);
                 return await FromJsonAsync(json);
             }
         }
 
-        public DocumentFormatReader OpenRead(string resourceId, string format = "original")
+        /// <summary>
+        /// Open a file on DocumentStore
+        /// </summary>
+        /// <param name="documentHandle">Document handle</param>
+        /// <param name="format">Document format</param>
+        /// <returns>A document format reader</returns>
+        public DocumentFormatReader OpenRead(string documentHandle, string format = "original")
         {
-            var endPoint = new Uri(_apiRoot, "file/" + resourceId + "/" + format);
+            var endPoint = new Uri(_documentStoreUri, "file/" + documentHandle + "/" + format);
             return new DocumentFormatReader(endPoint);
         }
 
-        public async Task DeleteAsync(string resourceId)
+        /// <summary>
+        /// Delete a document from Document Store
+        /// </summary>
+        /// <param name="DocumentId">Document handle</param>
+        /// <returns>Task</returns>
+        public async Task DeleteAsync(string DocumentId)
         {
-            var resourceUri = new Uri(_apiRoot, "file/" + resourceId);
+            var resourceUri = new Uri(_documentStoreUri, "file/" + DocumentId);
             using (var client = new HttpClient())
             {
                 await client.DeleteAsync(resourceUri);

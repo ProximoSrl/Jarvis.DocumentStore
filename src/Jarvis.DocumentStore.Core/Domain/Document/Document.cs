@@ -61,7 +61,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
             RaiseEvent(new DocumentHandleDetached(handle));
 
-
             if (InternalState.Handles.Count == 0)
             {
                 RaiseEvent(new DocumentDeleted(

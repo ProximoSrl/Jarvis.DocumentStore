@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Principal;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -68,7 +69,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 
-            return Request.CreateResponse(HttpStatusCode.OK, documentId);
+            var storedFile = _fileStore.GetDescriptor(fileId);
+            var hash = storedFile.Hash;
+            return Request.CreateResponse(HttpStatusCode.OK, new { hash });
         }
 
         /// <summary>
