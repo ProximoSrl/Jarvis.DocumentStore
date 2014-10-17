@@ -20,14 +20,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void upload_pdf()
         {
-            _client.Upload(TestConfig.PathToDocumentPdf, "Rev_1").Wait();
+            _client.UploadAsync(TestConfig.PathToDocumentPdf, "Rev_1").Wait();
         }
 
         [Test]
         public void upload_same_pdf_with_two_handles()
         {
-            _client.Upload(TestConfig.PathToDocumentPdf, "Pdf_1").Wait();
-            _client.Upload(TestConfig.PathToDocumentPdf, "Pdf_2").Wait();
+            _client.UploadAsync(TestConfig.PathToDocumentPdf, "Pdf_1").Wait();
+            _client.UploadAsync(TestConfig.PathToDocumentPdf, "Pdf_2").Wait();
         }
 
         [Test]
@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             var uploads = Enumerable
                 .Range(1, 100)
-                .Select(x => _client.Upload(TestConfig.PathToDocumentPdf, "Rev_" + x))
+                .Select(x => _client.UploadAsync(TestConfig.PathToDocumentPdf, "Rev_" + x))
                 .ToArray();
 
             Task.WaitAll(uploads);
@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void upload_doc()
         {
-            _client.Upload(TestConfig.PathToWordDocument, "doc").Wait();
+            _client.UploadAsync(TestConfig.PathToWordDocument, "doc").Wait();
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             var uploads = Enumerable
                 .Range(1, 100)
-                .Select(x => _client.Upload(TestConfig.PathToWordDocument, "doc_" + x))
+                .Select(x => _client.UploadAsync(TestConfig.PathToWordDocument, "doc_" + x))
                 .ToArray();
 
             Task.WaitAll(uploads);
@@ -63,90 +63,90 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload_pdf_with_handleA_and_handleB()
         {
             Task.WaitAll(
-                _client.Upload(TestConfig.PathToDocumentCopyPdf, "a"),
-                _client.Upload(TestConfig.PathToDocumentPdf, "b")
+                _client.UploadAsync(TestConfig.PathToDocumentCopyPdf, "a"),
+                _client.UploadAsync(TestConfig.PathToDocumentPdf, "b")
             );
         }
 
         [Test]
         public void upload_html()
         {
-            _client.Upload(TestConfig.PathToHtml, "html").Wait();
+            _client.UploadAsync(TestConfig.PathToHtml, "html").Wait();
         }
 
         [Test]
         public void upload_excel()
         {
-            _client.Upload(TestConfig.PathToExcelDocument, "xlsx").Wait();
+            _client.UploadAsync(TestConfig.PathToExcelDocument, "xlsx").Wait();
         }
 
         [Test]
         public void upload_ppt()
         {
-            _client.Upload(TestConfig.PathToPowerpointDocument, "pptx").Wait();
+            _client.UploadAsync(TestConfig.PathToPowerpointDocument, "pptx").Wait();
         }
 
         [Test]
         public void upload_pps()
         {
-            _client.Upload(TestConfig.PathToPowerpointShow, "ppsx").Wait();
+            _client.UploadAsync(TestConfig.PathToPowerpointShow, "ppsx").Wait();
         }
 
         [Test]
         public void upload_odt()
         {
-            _client.Upload(TestConfig.PathToOpenDocumentText, "odt").Wait();
+            _client.UploadAsync(TestConfig.PathToOpenDocumentText, "odt").Wait();
         }
 
         [Test]
         public void upload_ods()
         {
-            _client.Upload(TestConfig.PathToOpenDocumentSpreadsheet, "ods").Wait();
+            _client.UploadAsync(TestConfig.PathToOpenDocumentSpreadsheet, "ods").Wait();
         }
 
         [Test]
         public void upload_odp()
         {
-            _client.Upload(TestConfig.PathToOpenDocumentPresentation, "odp").Wait();
+            _client.UploadAsync(TestConfig.PathToOpenDocumentPresentation, "odp").Wait();
         }
 
         [Test]
         public void upload_rtf()
         {
-            _client.Upload(TestConfig.PathToRTFDocument, "rtf").Wait();
+            _client.UploadAsync(TestConfig.PathToRTFDocument, "rtf").Wait();
         }
 
         [Test]
         public void upload_msg()
         {
-            _client.Upload(TestConfig.PathToMsg, "outlook_1").Wait();
+            _client.UploadAsync(TestConfig.PathToMsg, "outlook_1").Wait();
         }
 
         [Test]
         public void upload_eml()
         {
-            _client.Upload(TestConfig.PathToEml, "eml_1").Wait();
+            _client.UploadAsync(TestConfig.PathToEml, "eml_1").Wait();
         }
 
         [Test]
         public void upload_medium_jpg()
         {
-            _client.Upload(TestConfig.PathToMediumJpg, "jpg_1").Wait();
+            _client.UploadAsync(TestConfig.PathToMediumJpg, "jpg_1").Wait();
         }
 
         [Test]
         public void upload_multi()
         {
             Task.WaitAll(
-                _client.Upload(TestConfig.PathToWordDocument, "docx"),
-                _client.Upload(TestConfig.PathToExcelDocument, "xlsx"),
-                _client.Upload(TestConfig.PathToPowerpointDocument, "pptx"),
-                _client.Upload(TestConfig.PathToPowerpointShow, "ppsx"),
-                _client.Upload(TestConfig.PathToOpenDocumentText, "odt"),
-                _client.Upload(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
-                _client.Upload(TestConfig.PathToOpenDocumentPresentation, "odp"),
-                _client.Upload(TestConfig.PathToRTFDocument, "rtf"),
-                _client.Upload(TestConfig.PathToHtml, "html")
+                _client.UploadAsync(TestConfig.PathToWordDocument, "docx"),
+                _client.UploadAsync(TestConfig.PathToExcelDocument, "xlsx"),
+                _client.UploadAsync(TestConfig.PathToPowerpointDocument, "pptx"),
+                _client.UploadAsync(TestConfig.PathToPowerpointShow, "ppsx"),
+                _client.UploadAsync(TestConfig.PathToOpenDocumentText, "odt"),
+                _client.UploadAsync(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
+                _client.UploadAsync(TestConfig.PathToOpenDocumentPresentation, "odp"),
+                _client.UploadAsync(TestConfig.PathToRTFDocument, "rtf"),
+                _client.UploadAsync(TestConfig.PathToHtml, "html")
             );
         }
     }

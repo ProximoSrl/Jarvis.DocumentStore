@@ -43,7 +43,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void should_upload_and_download_original_format()
         {
-            await _documentStoreClient.Upload(
+            await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
                 "Pdf_2",
                 new Dictionary<string, object>{
@@ -87,7 +87,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void should_upload_file_with_custom_data()
         {
-            await _documentStoreClient.Upload(
+            await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf, 
                 "Pdf_1", 
                 new Dictionary<string, object>{
@@ -98,7 +98,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             Thread.Sleep(500);
 
-            var customData = await _documentStoreClient.GetCustomData("Pdf_1");
+            var customData = await _documentStoreClient.GetCustomDataAsync("Pdf_1");
             Assert.NotNull(customData);
             Assert.IsTrue(customData.ContainsKey("callback"));
             Assert.AreEqual("http://localhost/demo", customData["callback"]);
@@ -108,7 +108,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void should_be_able_to_delete_a_document()
         {
             const string resourceId = "Pdf_3";
-            await _documentStoreClient.Upload(
+            await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
                 resourceId,
                 new Dictionary<string, object>{
@@ -119,28 +119,28 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             Thread.Sleep(500);
 
-            var data = await _documentStoreClient.GetCustomData(resourceId);
+            var data = await _documentStoreClient.GetCustomDataAsync(resourceId);
 
-            await _documentStoreClient.Delete(resourceId);
+            await _documentStoreClient.DeleteAsync(resourceId);
 
             Thread.Sleep(500);
             
-            data = await _documentStoreClient.GetCustomData(resourceId);
+            data = await _documentStoreClient.GetCustomDataAsync(resourceId);
         }
 
         [Test, Explicit]
         public void should_upload_all_documents()
         {
             Task.WaitAll(
-                _documentStoreClient.Upload(TestConfig.PathToWordDocument, "docx"),
-                _documentStoreClient.Upload(TestConfig.PathToExcelDocument, "xlsx"),
-                _documentStoreClient.Upload(TestConfig.PathToPowerpointDocument, "pptx"),
-                _documentStoreClient.Upload(TestConfig.PathToPowerpointShow, "ppsx"),
-                _documentStoreClient.Upload(TestConfig.PathToOpenDocumentText, "odt"),
-                _documentStoreClient.Upload(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
-                _documentStoreClient.Upload(TestConfig.PathToOpenDocumentPresentation, "odp"),
-                _documentStoreClient.Upload(TestConfig.PathToRTFDocument, "rtf"),
-                _documentStoreClient.Upload(TestConfig.PathToHtml, "html")
+                _documentStoreClient.UploadAsync(TestConfig.PathToWordDocument, "docx"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToExcelDocument, "xlsx"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointDocument, "pptx"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointShow, "ppsx"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, "odt"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentPresentation, "odp"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToRTFDocument, "rtf"),
+                _documentStoreClient.UploadAsync(TestConfig.PathToHtml, "html")
             );
 
             Debug.WriteLine("Done");

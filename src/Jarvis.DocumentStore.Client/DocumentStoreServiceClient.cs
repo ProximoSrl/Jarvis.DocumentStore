@@ -95,7 +95,7 @@ namespace Jarvis.DocumentStore.Client
         }
 
 
-        public async Task Upload(string pathToFile, string resourceId, IDictionary<string, object> customData = null)
+        public async Task UploadAsync(string pathToFile, string resourceId, IDictionary<string, object> customData = null)
         {
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
             if (fileExt == ".html" || fileExt == ".htm")
@@ -103,7 +103,7 @@ namespace Jarvis.DocumentStore.Client
                 var zippedFile = ZipHtmlPage(pathToFile);
                 try
                 {
-                    await InnerUpload(zippedFile, resourceId, customData);
+                    await InnerUploadAsync(zippedFile, resourceId, customData);
                     return;
                 }
                 finally
@@ -112,10 +112,10 @@ namespace Jarvis.DocumentStore.Client
                 }
             }
 
-            await InnerUpload(pathToFile, resourceId, customData);
+            await InnerUploadAsync(pathToFile, resourceId, customData);
         }
 
-        private async Task InnerUpload(
+        private async Task InnerUploadAsync(
             string pathToFile,
             string resourceId,
             IDictionary<string, object> customData
@@ -137,7 +137,7 @@ namespace Jarvis.DocumentStore.Client
 
                         if (customData != null)
                         {
-                            var stringContent = new StringContent(await ToJson(customData));
+                            var stringContent = new StringContent(await ToJsonAsync(customData));
                             content.Add(stringContent, "custom-data");
                         }
 
@@ -153,24 +153,24 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        private Task<string> ToJson(IDictionary<string, object> data)
+        private Task<string> ToJsonAsync(IDictionary<string, object> data)
         {
             return Task.Factory.StartNew(() => JsonConvert.SerializeObject(data));
         }
 
-        private Task<IDictionary<string, object>> FromJson(string data)
+        private Task<IDictionary<string, object>> FromJsonAsync(string data)
         {
             return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<IDictionary<string, object>>(data));
         }
 
-        public async Task<IDictionary<string, object>> GetCustomData(string resourceId)
+        public async Task<IDictionary<string, object>> GetCustomDataAsync(string resourceId)
         {
             using (var client = new HttpClient())
             {
                 var endPoint = new Uri(_apiRoot, "file/" + resourceId + "/@customdata");
 
                 var json = await client.GetStringAsync(endPoint);
-                return await FromJson(json);
+                return await FromJsonAsync(json);
             }
         }
 
@@ -180,7 +180,7 @@ namespace Jarvis.DocumentStore.Client
             return new DocumentFormatReader(endPoint);
         }
 
-        public async Task Delete(string resourceId)
+        public async Task DeleteAsync(string resourceId)
         {
             var resourceUri = new Uri(_apiRoot, "file/" + resourceId);
             using (var client = new HttpClient())

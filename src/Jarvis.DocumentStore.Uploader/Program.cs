@@ -76,7 +76,7 @@ namespace Jarvis.DocumentStore.Uploader
                 var id = Interlocked.Increment(ref counter);
                 try
                 {
-                    client.Upload(file, "File_" + id).Wait();
+                    client.UploadAsync(file, "File_" + id).Wait();
                 }
                 catch (AggregateException aex)
                 {
