@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client;
@@ -23,8 +24,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void TestFixtureSetUp()
         {
             var config = new DocumentStoreConfiguration(
-                isApiServer: true, 
-                isWorker: false, 
+                isApiServer: true,
+                isWorker: false,
                 isReadmodelBuilder: true
             );
             MongoDbTestConnectionProvider.TestDb.Drop();
@@ -50,14 +51,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     { "callback", "http://localhost/demo"}
                 }
             );
-            
+
             // waits for storage
             Thread.Sleep(2000);
-            
+
             using (var reader = _documentStoreClient.OpenRead("Pdf_2"))
             {
                 using (var downloaded = new MemoryStream())
-                using(var uploaded = new MemoryStream())
+                using (var uploaded = new MemoryStream())
                 {
                     using (var fileStream = File.OpenRead(TestConfig.PathToDocumentPdf))
                     {
@@ -65,7 +66,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     }
                     await (await reader.ReadStream).CopyToAsync(downloaded);
 
-                    Assert.IsTrue(CompareMemoryStreams(uploaded,downloaded));
+                    Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded));
                 }
             }
         }
@@ -88,8 +89,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void should_upload_file_with_custom_data()
         {
             var response = await _documentStoreClient.UploadAsync(
-                TestConfig.PathToDocumentPdf, 
-                "Pdf_1", 
+                TestConfig.PathToDocumentPdf,
+                "Pdf_1",
                 new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
                 }
@@ -127,8 +128,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.DeleteAsync(resourceId);
 
             Thread.Sleep(500);
-            
-            data = await _documentStoreClient.GetCustomDataAsync(resourceId);
+
+            var ex = Assert.Throws<HttpRequestException>(async() =>
+            {
+                await _documentStoreClient.GetCustomDataAsync(resourceId);
+            });
+
+            Assert.IsTrue(ex.Message.Contains("404"));
         }
 
         [Test, Explicit]

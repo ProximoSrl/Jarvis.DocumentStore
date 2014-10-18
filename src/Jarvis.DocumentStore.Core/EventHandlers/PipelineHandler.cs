@@ -25,6 +25,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         , IEventHandler<DocumentCreated>
         , IEventHandler<FormatAddedToDocument>
         , IEventHandler<DocumentHasBeenDeduplicated>
+        , IEventHandler<DocumentHandleDetached>
         , IEventHandler<DocumentDeleted>
     {
         public ILogger Logger { get; set; }
@@ -205,6 +206,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var hash = descriptor.Hash;
 
             _hashToDocs.FindAndModify(e, hash, m => m.UnlinkDocument((DocumentId)e.AggregateId));
+        }
+
+        public void On(DocumentHandleDetached e)
+        {
+            _handleToDoc.Delete(e, e.Handle);
         }
     }
 }

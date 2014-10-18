@@ -38,6 +38,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             this.Formats.Add(e.DocumentFormat, e.FileId);
         }
 
+        private void When(DocumentHasBeenDeduplicated e)
+        {
+            this.Handles.Add(e.OtherDocumentHandle);
+        }
+
         void When(DocumentHandleDetached e)
         {
             this.Handles.Remove(e.Handle);
