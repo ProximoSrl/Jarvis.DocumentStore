@@ -93,7 +93,7 @@ namespace Jarvis.DocumentStore.Client
         /// <param name="documentHandle">Document handle</param>
         /// <param name="customData">Custom data</param>
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
-        public async Task<string> UploadAsync(string pathToFile, string documentHandle, IDictionary<string, object> customData = null)
+        public async Task<UploadedDocumentResponse> UploadAsync(string pathToFile, string documentHandle, IDictionary<string, object> customData = null)
         {
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
             if (fileExt == ".html" || fileExt == ".htm")
@@ -120,7 +120,7 @@ namespace Jarvis.DocumentStore.Client
         /// <param name="documentHandle">Document handle</param>
         /// <param name="customData">Custom data</param>
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
-        private async Task<string> InnerUploadAsync(
+        private async Task<UploadedDocumentResponse> InnerUploadAsync(
             string pathToFile,
             string documentHandle,
             IDictionary<string, object> customData
@@ -150,9 +150,9 @@ namespace Jarvis.DocumentStore.Client
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {
-                            var md5 = await message.Content.ReadAsStringAsync();
+                            var json = await message.Content.ReadAsStringAsync();
                             message.EnsureSuccessStatusCode();
-                            return md5;
+                            return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
                         }
                     }
                 }

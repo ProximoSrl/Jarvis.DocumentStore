@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -6,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Hosting;
+using System.Web.Http.Routing;
 using Castle.Core.Logging;
 using CQRS.Kernel.Store;
 using CQRS.Shared.Commands;
@@ -43,13 +45,22 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             Controller = new FileController(FileStore, new ConfigService(), IdentityGenerator, HandleToDocumentReader, DocumentReader, Repository)
             {
-                Request = new HttpRequestMessage(),
-                Logger = new ConsoleLogger()
+                Request = new HttpRequestMessage
+                {
+                    RequestUri = new Uri("http://localhost/api/products")
+                },
+                Logger = new ConsoleLogger(),
+                Configuration = new HttpConfiguration()
             };
 
+          //  Controller.Configuration.MapHttpAttributeRoutes();
+
+            Controller.RequestContext.RouteData = new HttpRouteData(
+                route: new HttpRoute(),
+                values: new HttpRouteValueDictionary { { "controller", "file" } });
+            
             Controller.Request.Properties.Add(HttpPropertyKeys.HttpConfigurationKey, new HttpConfiguration());
         }
-
 
         protected void SetupDocumentModel(DocumentReadModel doc)
         {
@@ -196,8 +207,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             var fileId = new FileId("file_1");
             var doc = new DocumentReadModel(
-                new DocumentId(1), 
-                fileId, 
+                new DocumentId(1),
+                fileId,
                 documentHandle,
                 new FileNameWithExtension("A document.docx")
             );
@@ -235,7 +246,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentHandle(documentHandle, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(fileId,TestConfig.PathToWordDocument));
+            FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(fileId, TestConfig.PathToWordDocument));
 
             // act
             using (var response = Controller.GetFormat(documentHandle, format).Result)

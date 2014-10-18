@@ -19,6 +19,7 @@ using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Host.Model;
 using Jarvis.DocumentStore.Host.Providers;
 using Newtonsoft.Json;
 
@@ -70,8 +71,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
             Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
 
             var storedFile = _fileStore.GetDescriptor(fileId);
-            var hash = storedFile.Hash;
-            return Request.CreateResponse(HttpStatusCode.OK, new { hash });
+
+            return Request.CreateResponse(
+                HttpStatusCode.OK, 
+                new UploadedDocumentResponse{
+                    Handle = handle,
+                    Hash = storedFile.Hash,
+                    HashType = "md5",
+                    Uri = Url.Content("/file/"+handle)
+                }
+            );
         }
 
         /// <summary>

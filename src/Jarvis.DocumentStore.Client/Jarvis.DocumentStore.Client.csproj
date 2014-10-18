@@ -51,6 +51,7 @@
     <Compile Include="DocumentFormatReader.cs" />
     <Compile Include="DocumentStoreServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UploadedDocumentResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
