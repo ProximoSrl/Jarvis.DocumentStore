@@ -12,6 +12,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\Docs")).FullName;
             ServerAddress = new Uri("http://localhost:5123");
             Tenant = "tests";
+            DocsTenant = "docs";
         }
 
         public static Uri ServerAddress { get; private set; }
@@ -102,5 +103,6 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "document_1.png"); }
         }
 
+        public static string DocsTenant { get; private set; }
     }
 }

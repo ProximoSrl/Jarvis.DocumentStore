@@ -136,12 +136,6 @@ namespace Jarvis.DocumentStore.Core.Support
             SnapshotRegistration.AutomapAggregateState(typeof (DocumentState).Assembly);
 
             im.RegisterIdentitiesFromAssembly(typeof (DocumentId).Assembly);
-
-#if DEBUG
-            {
-                var eng = container.Resolve<ConcurrentProjectionsEngine>();
-            }
-#endif
         }
 
         static void RegisterGlobalComponents(IWindsorContainer container)
