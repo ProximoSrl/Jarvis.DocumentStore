@@ -33,6 +33,11 @@ namespace Jarvis.DocumentStore.Host.Support
                 "grid.fs",
                 GetDatabase("files").GetGridFS(MongoGridFSSettings.Defaults)
             );
+
+            Set(
+                "db.readmodel",
+                GetDatabase("readmodel")
+            );
         }
     }
 }

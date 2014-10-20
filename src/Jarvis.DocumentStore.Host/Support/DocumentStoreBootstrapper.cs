@@ -62,7 +62,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             if (roles.IsReadmodelBuilder)
             {
-                installers.Add(new ProjectionsInstaller<NotifyReadModelChanges>());
+                installers.Add(new ProjectionsInstaller<NotifyReadModelChanges>(manager));
                 _logger.Debug("Configured Projections");
             }
 
