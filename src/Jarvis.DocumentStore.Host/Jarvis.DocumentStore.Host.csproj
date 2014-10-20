@@ -175,6 +175,7 @@
     <Compile Include="Support\DocumentStoreTenantSettings.cs" />
     <Compile Include="Support\EventstoreInstaller.cs" />
     <Compile Include="Support\DocumentStoreConfiguration.cs" />
+    <Compile Include="Support\TenantContextHandler.cs" />
     <Compile Include="Support\WindsorDependencyScope.cs" />
     <Compile Include="Support\WindsorResolver.cs" />
   </ItemGroup>

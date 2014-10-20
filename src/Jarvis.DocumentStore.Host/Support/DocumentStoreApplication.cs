@@ -74,6 +74,8 @@ namespace Jarvis.DocumentStore.Host.Support
                 new Log4NetExceptionLogger(ContainerAccessor.Instance.Resolve<ILoggerFactory>())
             );
 
+            config.MessageHandlers.Add(new TenantContextHandler());
+
             application.UseWebApi(config);
         }
     }

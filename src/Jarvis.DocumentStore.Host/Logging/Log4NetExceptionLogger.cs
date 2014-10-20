@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http.ExceptionHandling;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Host.Support;
 
 namespace Jarvis.DocumentStore.Host.Logging
 {
@@ -20,8 +21,12 @@ namespace Jarvis.DocumentStore.Host.Logging
 
         public override void Log(ExceptionLoggerContext context)
         {
-            var controllerType = context.ExceptionContext.ControllerContext.Controller.GetType();
-            var logger = _loggerFactory.Create(controllerType);
+            var type = typeof(DocumentStoreApplication);
+            if (context.ExceptionContext.ControllerContext != null)
+            {
+                type = context.ExceptionContext.ControllerContext.Controller.GetType();
+            }
+            var logger = _loggerFactory.Create(type);
             logger.ErrorFormat(context.Exception, "* * * * * * * * * * * *");
         }
     }

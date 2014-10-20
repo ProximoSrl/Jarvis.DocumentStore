@@ -43,18 +43,21 @@ namespace Jarvis.DocumentStore.Core.Support
                     EventStoreConnectionString = tenant.GetConnectionString("events"),
                     Slots = ConfigurationManager.AppSettings["engine-slots"].Split(','),
                     PollingMsInterval = int.Parse(ConfigurationManager.AppSettings["polling-interval-ms"]),
-                    ForcedGcSecondsInterval = int.Parse(ConfigurationManager.AppSettings["memory-collect-seconds"])
+                    ForcedGcSecondsInterval = int.Parse(ConfigurationManager.AppSettings["memory-collect-seconds"]),
+                    TenantId = tenant.Id
                 };
 
                 ITenant tenant1 = tenant;
                 var readModelDb = tenant.Get<MongoDatabase>("db.readmodel");
 
+                var tenantProjections = tenant1.Id+".projections";
                 container.Register(
                     Component
                         .For<ConcurrentProjectionsEngine>()
                         .Named(tenant.Id + ".prjengine")
                         .LifestyleTransient()
                         .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
+                        .DependsOn(Dependency.OnComponent("tenantProjections", tenantProjections))
                         .StartUsingMethod(x => x.Start)
                         .StopUsingMethod(x => x.Stop),
                     Classes
@@ -69,7 +72,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     Component
                         .For<TenantProjections>()
                         .DependsOn(Dependency.OnValue<TenantId>(tenant1.Id))
-                        .Named(tenant1.Id+".projections")
+                        .Named(tenantProjections)
                         .LifestyleTransient(),
                     Component
                         .For<IInitializeReadModelDb>()
