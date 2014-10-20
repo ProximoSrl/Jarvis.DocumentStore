@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                 Logger = new ConsoleLogger()
             };
 
-            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress);
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
             var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
             _fileStore.Upload(new FileId("ziphtml"), zipped);
         }

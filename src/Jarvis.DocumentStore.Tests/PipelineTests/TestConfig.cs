@@ -11,9 +11,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\Docs")).FullName;
             ServerAddress = new Uri("http://localhost:5123");
+            Tenant= "docs";
         }
 
         public static Uri ServerAddress { get; private set; }
+        public static String Tenant { get; private set; }
 
         public static string PathToDocumentPdf
         {

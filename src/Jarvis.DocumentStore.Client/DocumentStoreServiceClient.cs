@@ -14,6 +14,7 @@ namespace Jarvis.DocumentStore.Client
     /// </summary>
     public class DocumentStoreServiceClient
     {
+        public string Tenant { get; private set; }
         readonly Uri _documentStoreUri;
         public string TempFolder { get; set; }
 
@@ -21,8 +22,10 @@ namespace Jarvis.DocumentStore.Client
         /// Create a new DocumentStore Client
         /// </summary>
         /// <param name="documentStoreUri">base uri</param>
-        public DocumentStoreServiceClient(Uri documentStoreUri)
+        /// <param name="tenant">tenantId</param>
+        public DocumentStoreServiceClient(Uri documentStoreUri, string tenant)
         {
+            Tenant = tenant;
             _documentStoreUri = documentStoreUri;
             TempFolder = Path.Combine(Path.GetTempPath(), "jarvis.client");
         }
@@ -146,7 +149,7 @@ namespace Jarvis.DocumentStore.Client
                             content.Add(stringContent, "custom-data");
                         }
 
-                        var endPoint = new Uri(_documentStoreUri, "file/upload/" + documentHandle);
+                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {
@@ -188,7 +191,7 @@ namespace Jarvis.DocumentStore.Client
         {
             using (var client = new HttpClient())
             {
-                var endPoint = new Uri(_documentStoreUri, "file/" + documentHandle + "/@customdata");
+                var endPoint = new Uri(_documentStoreUri, Tenant+ "/documents/" + documentHandle + "/@customdata");
 
                 var json = await client.GetStringAsync(endPoint);
                 return await FromJsonAsync(json);
@@ -203,7 +206,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>A document format reader</returns>
         public DocumentFormatReader OpenRead(string documentHandle, string format = "original")
         {
-            var endPoint = new Uri(_documentStoreUri, "file/" + documentHandle + "/" + format);
+            var endPoint = new Uri(_documentStoreUri, Tenant+"/documents/" + documentHandle + "/" + format);
             return new DocumentFormatReader(endPoint);
         }
 
@@ -214,7 +217,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>Task</returns>
         public async Task DeleteAsync(string DocumentId)
         {
-            var resourceUri = new Uri(_documentStoreUri, "file/" + DocumentId);
+            var resourceUri = new Uri(_documentStoreUri,Tenant+ "/documents/" + DocumentId);
             using (var client = new HttpClient())
             {
                 await client.DeleteAsync(resourceUri);

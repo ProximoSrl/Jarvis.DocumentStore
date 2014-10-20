@@ -12,6 +12,7 @@ using Castle.Core.Logging;
 using CQRS.Kernel.Store;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
@@ -33,6 +34,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected IIdentityGenerator IdentityGenerator;
         protected IReader<HandleToDocument, DocumentHandle> HandleToDocumentReader;
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
+        protected TenantId _tenantId = new TenantId("docs");
 
         [SetUp]
         public void SetUp()
@@ -82,7 +84,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         [Test]
         public async void calling_upload_without_file_attachment_should_return_BadRequest()
         {
-            var response = await Controller.Upload(new DocumentHandle("Document_1"));
+            var response = await Controller.Upload(_tenantId, new DocumentHandle("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
@@ -90,7 +92,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public async void calling_upload_with_empty_attachment_should_return_BadRequest()
         {
             Controller.Request.Content = new MultipartFormDataContent("test");
-            var response = await Controller.Upload(new DocumentHandle("Document_1"));
+            var response = await Controller.Upload(_tenantId, new DocumentHandle("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Attachment not found!", response.GetError().Message);
         }
@@ -137,7 +139,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
                 Controller.Request.Content = multipartFormDataContent;
 
-                return await Controller.Upload(new DocumentHandle("Document_1"));
+                return await Controller.Upload(_tenantId, new DocumentHandle("Document_1"));
             }
         }
     }
@@ -151,7 +153,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var documentHandle = new DocumentHandle("not_in_store");
             var format = new DocumentFormat("any_format");
 
-            var response = Controller.GetFormat(documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
             Assert.AreEqual("Document not_in_store not found", response.GetError().Message);
@@ -166,7 +168,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentHandle(documentHandle, new DocumentId(1));
 
             // act
-            var response = Controller.GetFormat(documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -191,7 +193,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentModel(doc);
 
             // act
-            var response = Controller.GetFormat(documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -219,7 +221,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             FileStore.GetDescriptor(fileId).Returns(i => null);
 
             // act
-            var response = Controller.GetFormat(documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -249,7 +251,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(fileId, TestConfig.PathToWordDocument));
 
             // act
-            using (var response = Controller.GetFormat(documentHandle, format).Result)
+            using (var response = Controller.GetFormat(_tenantId, documentHandle, format).Result)
             {
                 // assert
                 response.EnsureSuccessStatusCode();
@@ -280,7 +282,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileDescriptor(pdfFileId, TestConfig.PathToDocumentPdf));
 
             // act
-            using (var response = Controller.GetFormat(documentHandle, format).Result)
+            using (var response = Controller.GetFormat(_tenantId, documentHandle, format).Result)
             {
                 // assert
                 response.EnsureSuccessStatusCode();

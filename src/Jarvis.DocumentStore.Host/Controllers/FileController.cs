@@ -12,6 +12,7 @@ using System.Web.Http;
 using Castle.Core.Logging;
 using CQRS.Kernel.Store;
 using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
@@ -47,9 +48,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _repository = repository;
         }
 
-        [Route("file/upload/{handle}")]
+        [Route("{tenantId}/documents/{handle}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Upload(DocumentHandle handle)
+        public async Task<HttpResponseMessage> Upload(TenantId tenantId, DocumentHandle handle)
         {
             var documentId = _identityGenerator.New<DocumentId>();
 
@@ -78,7 +79,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     Handle = handle,
                     Hash = storedFile.Hash,
                     HashType = "md5",
-                    Uri = Url.Content("/file/"+handle)
+                    Uri = Url.Content("/"+tenantId+"/documents/" + handle)
                 }
             );
         }
@@ -114,9 +115,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return null;
         }
 
-        [Route("file/{handle}/@customdata")]
+        [Route("{tenantId}/documents/{handle}/@customdata")]
         [HttpGet]
-        public HttpResponseMessage GetCustomData(DocumentHandle handle)
+        public HttpResponseMessage GetCustomData(TenantId tenantId, DocumentHandle handle)
         {
             var data = _handleToDocument.FindOneById(handle);
             if (data == null)
@@ -125,10 +126,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return Request.CreateResponse(HttpStatusCode.OK,data.CustomData);
         }
 
-        [Route("file/{handle}/{format?}")]
+        [Route("{tenantId}/documents/{handle}/{format?}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetFormat(DocumentHandle handle, DocumentFormat format = null)
-        {
+        public async Task<HttpResponseMessage> GetFormat(
+            TenantId tenantId,
+            DocumentHandle handle, 
+            DocumentFormat format = null
+        ){
             var document = GetDocumentByHandle(handle);
 
             if (document == null)
@@ -204,8 +208,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         }
 
         [HttpDelete]
-        [Route("file/{handle}")]
-        public HttpResponseMessage DeleteFile(DocumentHandle handle)
+        [Route("{tenantId}/documents/{handle}")]
+        public HttpResponseMessage DeleteFile(TenantId tenantId, DocumentHandle handle)
         {
             var document = GetDocumentByHandle(handle);
             if (document == null)
