@@ -17,6 +17,7 @@ using CQRS.Shared.Domain.Serialization;
 using CQRS.Shared.Events;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.IdentitySupport.Serialization;
+using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.Storage;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
@@ -39,6 +40,66 @@ namespace Jarvis.DocumentStore.Host.Support
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            RegisterGlobalComponents(container);
+            RegisterTenantServices(container);
+            RegisterMappings(container);
+        }
+
+        static void RegisterMappings(IWindsorContainer container)
+        {
+            var converter = container.Resolve<IdentityManager>();
+
+            EnableFlatIdMapping(converter);
+
+            MessagesRegistration.RegisterAssembly(typeof (Document).Assembly);
+            MessagesRegistration.RegisterAssembly(typeof (DocumentCreated).Assembly);
+            SnapshotRegistration.AutomapAggregateState(typeof (DocumentState).Assembly);
+
+            converter.RegisterIdentitiesFromAssembly(typeof (DocumentId).Assembly);
+            IdentitiesRegistration.RegisterFromAssembly(typeof (DocumentId).Assembly);
+
+            BsonClassMap.LookupClassMap(typeof (FileId));
+            BsonClassMap.LookupClassMap(typeof (DocumentHandle));
+
+            BsonClassMap.RegisterClassMap<FileNameWithExtension>(m =>
+            {
+                m.AutoMap();
+                m.MapProperty(x => x.FileName).SetElementName("name");
+                m.MapProperty(x => x.Extension).SetElementName("ext");
+            });
+        }
+
+        private void RegisterTenantServices(IWindsorContainer container)
+        {
+            foreach (var tenant in _manager.Tenants)
+            {
+                ITenant tenant1 = tenant;
+
+                var esComponentName = tenant.Id+ "-es";
+
+                container.Register(
+                    Component
+                        .For<EventStoreFactory>()
+                        .DependsOn()
+                        .LifestyleSingleton(),
+                    Component
+                        .For<IStoreEvents>()
+                        .Named(esComponentName)
+                        .UsingFactory<EventStoreFactory, IStoreEvents>(f => 
+                            f.BuildEventStore(tenant1.GetConnectionString("events"))
+                        )
+                        .LifestyleSingleton(),
+                    Component
+                        .For<ICQRSRepository>()
+                        .ImplementedBy<CQRSRepository>()
+                        .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
+                        .LifestyleTransient()
+                    );
+            }
+        }
+
+        static void RegisterGlobalComponents(IWindsorContainer container)
+        {
             container.Register(
                 Component
                     .For<ICQRSConstructAggregates>()
@@ -59,53 +120,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .BasedOn<AggregateBase>()
                     .WithService.Self()
                     .LifestyleTransient()
-            );
-
-            var sysUrl = new MongoUrl(ConfigurationManager.ConnectionStrings["system"].ConnectionString);
-            var sysdb = new MongoClient(sysUrl).GetServer().GetDatabase(sysUrl.DatabaseName);
-
-            container.Register(
-                Component
-                    .For<EventStoreFactory>()
-                    .DependsOn(Dependency.OnValue("connectionString", ConfigurationManager.ConnectionStrings["events"].ConnectionString))
-                    .LifestyleSingleton(),
-                Component
-                    .For<IStoreEvents>()
-                    .Named("eventStore")
-                    .UsingFactory<EventStoreFactory, IStoreEvents>(f => f.BuildEventStore())
-                    .LifestyleSingleton(),
-                Component
-                    .For<ICounterService>()
-                    .ImplementedBy<CounterService>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb))
-                    .LifestyleTransient(),
-                Component
-                    .For<ICQRSRepository>()
-                    .ImplementedBy<CQRSRepository>()
-                    .DependsOn(Dependency.OnComponent(typeof (IStoreEvents), "eventStore"))
-                    .LifestyleTransient()
                 );
-
-            var converter = container.Resolve<IdentityManager>();
-
-            EnableFlatIdMapping(converter);
-
-            MessagesRegistration.RegisterAssembly(typeof(Document).Assembly);
-            MessagesRegistration.RegisterAssembly(typeof(DocumentCreated).Assembly);
-            SnapshotRegistration.AutomapAggregateState(typeof(DocumentState).Assembly);
-
-            converter.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
-            IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentId).Assembly);
-
-            BsonClassMap.LookupClassMap(typeof (FileId));
-            BsonClassMap.LookupClassMap(typeof (DocumentHandle));
-
-            BsonClassMap.RegisterClassMap<FileNameWithExtension>(m =>
-            {
-                m.AutoMap();
-                m.MapProperty(x => x.FileName).SetElementName("name");
-                m.MapProperty(x => x.Extension).SetElementName("ext");
-            });
         }
 
         static void EnableFlatIdMapping(IdentityManager converter)

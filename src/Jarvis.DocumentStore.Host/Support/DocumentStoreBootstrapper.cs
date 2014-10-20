@@ -14,6 +14,7 @@ using CQRS.Kernel.MultitenantSupport;
 using CQRS.Kernel.ProjectionEngine;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.Messages;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
@@ -42,7 +43,7 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
 
-            var quartz = ConfigurationManager.ConnectionStrings["quartz"].ConnectionString;
+            var quartz = ConfigurationManager.ConnectionStrings["ds.quartz"].ConnectionString;
 
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
             _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
@@ -90,7 +91,7 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             _logger.Debug("Configuring tenants");
             var manager = new TenantManager(container.Kernel);
-            container.Register(Component.For<TenantManager>().Instance(manager));
+            container.Register(Component.For<ITenantAccessor, TenantManager>().Instance(manager));
 
             var tenants = ConfigurationManager.AppSettings["tenants"].Split(',').Select(x=> x.Trim()).ToArray();
 

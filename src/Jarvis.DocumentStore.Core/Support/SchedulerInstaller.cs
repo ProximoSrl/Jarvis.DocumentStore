@@ -63,13 +63,20 @@ namespace Jarvis.DocumentStore.Core.Support
 
             scheduler.ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<IExtendedLogger>(),
-                container.Resolve<MongoDatabase>()
+                GetSchedulerDb()
             ));
 
             SetupCleanupJob(scheduler);
 
             if (_autoStart)
                 scheduler.Start();
+        }
+
+        MongoDatabase GetSchedulerDb()
+        {
+            var url = new MongoUrl(JobStore.DefaultConnectionString);
+            var client = new MongoClient(url);
+            return client.GetServer().GetDatabase(url.DatabaseName);
         }
 
         void SetupCleanupJob(IScheduler scheduler)
