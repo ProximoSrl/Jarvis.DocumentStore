@@ -32,7 +32,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _documentStoreService.Start(config);
-            _documentStoreClient = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+            _documentStoreClient = new DocumentStoreServiceClient(
+                TestConfig.ServerAddress, 
+                TestConfig.Tenant
+            );
         }
 
         [TestFixtureTearDown]
@@ -98,7 +101,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Assert.AreEqual("8fe8386418f85ef4ee8ef1f3f1117928", response.Hash);
             Assert.AreEqual("md5", response.HashType);
-            Assert.AreEqual("http://localhost:5123/docs/documents/pdf_1", response.Uri);
+            Assert.AreEqual("http://localhost:5123/tests/documents/pdf_1", response.Uri);
             // wait background projection polling
             Thread.Sleep(500);
 
