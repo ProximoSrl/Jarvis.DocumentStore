@@ -44,5 +44,26 @@ namespace Jarvis.DocumentStore.Tests.Support
             EventsDb.Drop();
             ReadModelDb.Drop();
         }
+
+        public static void DropTenant(string tenant)
+        {
+            Connect(tenant + ".filestore").Drop();
+            Connect(tenant + ".system").Drop();
+            Connect(tenant + ".events").Drop();
+            Connect(tenant + ".readmodel").Drop();
+        }
+
+
+        public static void DropAll()
+        {
+            DropTenant("docs");
+            DropTenant("tests");
+            DropTenant("demo");
+            Connect("log").Drop();
+            Connect("ds.quartz").Drop();
+            
+            Connect("ds.quartz.host").Drop();
+            Connect("ds.log.host").Drop();
+        }
     }
 }

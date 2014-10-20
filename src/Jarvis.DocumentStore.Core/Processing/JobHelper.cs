@@ -1,47 +1,15 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.Serialization.Formatters;
+using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
-using CQRS.Shared.Domain.Serialization;
-using CQRS.Shared.Messages;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
-using Newtonsoft.Json;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Processing
 {
-    public static class CommandSerializer
-    {
-        private static JsonSerializerSettings _settings;
-
-        static CommandSerializer ()
-        {
-            _settings = new JsonSerializerSettings()
-            {
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
-                Converters = new JsonConverter[]
-                {
-                    new StringValueJsonConverter()
-                },
-                ContractResolver = new MessagesContractResolver(),
-                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
-            };
-        }
-
-        public static string Serialize(ICommand command)
-        {
-            return JsonConvert.SerializeObject(command, _settings);
-        }
-
-        public static T Deserialize<T>(string command) where T : ICommand
-        {
-            return JsonConvert.DeserializeObject<T>(command, _settings);
-        }
-    }
-
     public class JobHelper : IJobHelper
     {
         readonly IScheduler _scheduler;
@@ -109,8 +77,11 @@ namespace Jarvis.DocumentStore.Core.Processing
 
         JobBuilder GetBuilderForJob<T>() where T : IJob
         {
+            var tenantId = TenantContext.CurrentTenantId;
+
             return JobBuilder
                 .Create<T>()
+                .UsingJobData(JobKeys.TenantId, tenantId)
                 .WithIdentity(JobKey.Create(Guid.NewGuid().ToString(), typeof(T).Name))
                 .RequestRecovery(true)
                 .StoreDurably(true);

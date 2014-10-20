@@ -156,6 +156,7 @@
     <Compile Include="Model\FileNameWithExtension.cs" />
     <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="Model\PipelineId.cs" />
+    <Compile Include="Processing\CommandSerializer.cs" />
     <Compile Include="Processing\Conversions\HtmlToPdfConverter.cs" />
     <Compile Include="Processing\Conversions\LibreOfficeUnoConversion.cs" />
     <Compile Include="Processing\Conversions\LibreOfficeConversion.cs" />

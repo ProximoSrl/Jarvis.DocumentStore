@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Tests.PipelineTests;
+using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -15,6 +16,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void TestFixtureSetUp()
         {
             _client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+        }
+
+        [Test]
+        public void drop_all_tenants()
+        {
+            MongoDbTestConnectionProvider.DropAll();
         }
 
         [Test]
