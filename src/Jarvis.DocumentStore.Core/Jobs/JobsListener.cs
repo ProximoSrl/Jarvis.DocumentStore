@@ -1,5 +1,7 @@
 ﻿using System;
 using Castle.Core.Logging;
+using CQRS.Kernel.MultitenantSupport;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -22,6 +24,17 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void JobToBeExecuted(IJobExecutionContext context)
         {
+            if (context.JobDetail.JobDataMap.ContainsKey(JobKeys.TenantId))
+            {
+                TenantContext.Enter(new TenantId(context.JobDetail.JobDataMap.GetString(JobKeys.TenantId)));
+            
+            }
+            else
+            {
+                TenantContext.Exit();
+            }
+
+
             if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
             {
                 var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
