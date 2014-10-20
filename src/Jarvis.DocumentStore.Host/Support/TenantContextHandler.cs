@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Routing;
+using Castle.Core.Logging;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.MultitenantSupport;
 
@@ -13,16 +14,27 @@ namespace Jarvis.DocumentStore.Host.Support
 {
     public class TenantContextHandler : DelegatingHandler
     {
+        private IExtendedLogger _logger;
+
+        public TenantContextHandler(IExtendedLogger logger)
+        {
+            _logger = logger;
+        }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var route= ((IHttpRouteData[])request.GetConfiguration().Routes.GetRouteData(request).Values["MS_SubRoutes"]).First();
 
             if (route.Values.ContainsKey("tenantid"))
             {
-                TenantContext.Enter(new TenantId(route.Values["tenantid"].ToString()));
+                string tenant = route.Values["tenantid"].ToString();
+                _logger.DebugFormat("Request {0} -> Tenant {1}", request.RequestUri, tenant);
+                TenantContext.Enter(new TenantId(tenant));
             }
 
-            return base.SendAsync(request, cancellationToken);
+            var result = base.SendAsync(request, cancellationToken);
+
+            return result;
         }
     }
 }
