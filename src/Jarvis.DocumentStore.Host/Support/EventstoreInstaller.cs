@@ -79,10 +79,6 @@ namespace Jarvis.DocumentStore.Host.Support
 
                 container.Register(
                     Component
-                        .For<EventStoreFactory>()
-                        .DependsOn()
-                        .LifestyleSingleton(),
-                    Component
                         .For<IStoreEvents>()
                         .Named(esComponentName)
                         .UsingFactory<EventStoreFactory, IStoreEvents>(f => 
@@ -92,6 +88,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     Component
                         .For<ICQRSRepository>()
                         .ImplementedBy<CQRSRepository>()
+                        .Named(tenant.Id+".repository")
                         .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
                         .LifestyleTransient()
                     );
@@ -104,6 +101,10 @@ namespace Jarvis.DocumentStore.Host.Support
                 Component
                     .For<ICQRSConstructAggregates>()
                     .ImplementedBy<AggregateFactory>(),
+                Component
+                    .For<EventStoreFactory>()
+                    .DependsOn()
+                    .LifestyleSingleton(),
                 Component
                     .For<IDetectConflicts>()
                     .ImplementedBy<ConflictDetector>()

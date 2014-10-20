@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
@@ -44,6 +45,12 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             _unoConversion.CloseOpenOffice();
         }
 
+        [SetUp]
+        public void SetUp()
+        {
+            _unoConversion.CloseOpenOffice();
+        }
+
         [Test]
         [TestCase("docx")]
         [TestCase("xlsx")]
@@ -58,8 +65,9 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             var s = new Stopwatch();
             s.Start();
-            _withLibreOfficeConversion.Run(_mapping[fileId], "pdf");
+            var fileName = _withLibreOfficeConversion.Run(_mapping[fileId], "pdf");
             s.Stop();
+            File.Delete(fileName);
             Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
         }
 
@@ -77,8 +85,9 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             var s = new Stopwatch();
             s.Start();
-            _unoConversion.Run(_mapping[fileId], "pdf");
+            var fileName = _unoConversion.Run(_mapping[fileId], "pdf");
             s.Stop();
+            File.Delete(fileName);
             Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
         }
 
@@ -88,7 +97,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             Parallel.ForEach(
                 _mapping.Keys,
 //                new ParallelOptions() { MaxDegreeOfParallelism = 2 },
-                k => _unoConversion.Run(_mapping[k], "pdf")
+                k =>
+                {
+                    var fileName = _unoConversion.Run(_mapping[k], "pdf");
+                    File.Delete(fileName);
+                }
             );
         }
     }

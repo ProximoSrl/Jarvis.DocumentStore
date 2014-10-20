@@ -60,17 +60,27 @@ namespace Jarvis.DocumentStore.Core.Support
                     Classes
                         .FromAssemblyContaining<DocumentProjection>()
                         .BasedOn<IProjection>()
-                        .Configure(r => r.Named(tenant1.Id + ".prj." + r.Implementation.FullName))
+                        .Configure(r => r
+                            .Named(tenant1.Id + ".prj." + r.Implementation.FullName)
+                            .DependsOn(Dependency.OnValue<TenantId>(tenant1.Id))
+                        )
                         .WithServiceAllInterfaces()
+                        .LifestyleTransient(),
+                    Component
+                        .For<TenantProjections>()
+                        .DependsOn(Dependency.OnValue<TenantId>(tenant1.Id))
+                        .Named(tenant1.Id+".projections")
                         .LifestyleTransient(),
                     Component
                         .For<IInitializeReadModelDb>()
                         .ImplementedBy<InitializeReadModelDb>()
+                        .Named(tenant.Id+".readmodel.initializer")
                         .LifestyleTransient(),
                     Component
                         .For<IConcurrentCheckpointTracker>()
                         .ImplementedBy<ConcurrentCheckpointTracker>()
                         .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
+                        .Named(tenant.Id + ".checkpoint.tracker")
                         .LifestyleTransient(),
                     Component
                         .For(new[]
@@ -80,30 +90,36 @@ namespace Jarvis.DocumentStore.Core.Support
                         })
                         .LifestyleTransient()
                         .ImplementedBy(typeof(CollectionWrapper<,>))
+                        .Named(tenant.Id + ".collection.wrappers")
                         .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                     Component
                         .For(typeof (IReader<,>), typeof (IMongoDbReader<,>))
                         .ImplementedBy(typeof (MongoReaderForProjections<,>))
+                        .Named(tenant.Id + ".collection.readers")
                         .LifestyleTransient()
                         .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                     Component
                         .For<IPollingClient>()
                         .ImplementedBy<PollingClientWrapper>()
                         .LifestyleTransient()
+                        .Named(tenant.Id + ".pollingclient")
                         .DependsOn(Dependency.OnConfigValue("boost", ConfigurationManager.AppSettings["engine-multithread"])),
                     Component
                         .For<IRebuildContext>()
                         .ImplementedBy<RebuildContext>()
+                        .Named(tenant.Id + ".rebuildcontext")
                         .LifestyleTransient()
                         .DependsOn(Dependency.OnValue<bool>(RebuildSettings.NitroMode)),
                     Component
                         .For<IMongoStorageFactory>()
                         .ImplementedBy<MongoStorageFactory>()
+                        .Named(tenant.Id + ".storage.factory")
                         .LifestyleTransient()
                         .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                     Component
                         .For<IRecycleBin>()
                         .ImplementedBy<RecycleBin>()
+                        .Named(tenant.Id + ".recycleBin")
                         .LifestyleTransient()
                         .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
                     );
