@@ -1,20 +1,48 @@
 ﻿using System.Configuration;
+using Jarvis.DocumentStore.Host.Support;
 using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Tests.Support
 {
+    public class DocumentStoreTest1Settings : DocumentStoreTenantSettings
+    {
+        public DocumentStoreTest1Settings()
+            : base("tests")
+        {
+        }
+    }
+
     public static class MongoDbTestConnectionProvider
     {
         static MongoDbTestConnectionProvider()
         {
+            FileStoreDb = Connect("tests.filestore");
+            SystemDb = Connect("tests.system");
+            EventsDb = Connect("tests.events");
+            ReadModelDb = Connect("tests.readmodel");
+        }
+
+        static MongoDatabase Connect(string connectionStringName)
+        {
             var url = new MongoUrl(
-                ConfigurationManager.ConnectionStrings["tests"].ConnectionString
+                ConfigurationManager.ConnectionStrings[connectionStringName].ConnectionString
             );
 
             var client = new MongoClient(url);
-            TestDb = client.GetServer().GetDatabase(url.DatabaseName);
+            return client.GetServer().GetDatabase(url.DatabaseName);
         }
 
-        public static MongoDatabase TestDb { get; private set; }
+        public static MongoDatabase FileStoreDb { get; private set; }
+        public static MongoDatabase SystemDb { get; private set; }
+        public static MongoDatabase EventsDb { get; private set; }
+        public static MongoDatabase ReadModelDb { get; private set; }
+
+        public static void DropTenant1()
+        {
+            FileStoreDb.Drop();
+            SystemDb.Drop();
+            EventsDb.Drop();
+            ReadModelDb.Drop();
+        }
     }
 }

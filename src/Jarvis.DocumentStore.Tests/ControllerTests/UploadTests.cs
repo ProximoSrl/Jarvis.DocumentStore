@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 {
     public abstract class AbstractFileControllerTests
     {
-        protected FileController Controller;
+        protected DocumentsController Controller;
         protected IFileStore FileStore;
         protected ICQRSRepository Repository;
         protected IIdentityGenerator IdentityGenerator;
@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             HandleToDocumentReader = Substitute.For<IReader<HandleToDocument, DocumentHandle>>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
 
-            Controller = new FileController(FileStore, new ConfigService(), IdentityGenerator, HandleToDocumentReader, DocumentReader, Repository)
+            Controller = new DocumentsController(FileStore, new ConfigService(), IdentityGenerator, HandleToDocumentReader, DocumentReader, Repository)
             {
                 Request = new HttpRequestMessage
                 {

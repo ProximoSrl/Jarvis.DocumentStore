@@ -1,17 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
+using Castle.Facilities.TypedFactory;
+using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Services.Logging.Log4netIntegration;
 using Castle.Windsor;
+using CQRS.Kernel.MultitenantSupport;
 using CQRS.Kernel.ProjectionEngine;
+using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.Messages;
 using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
-using Rebus;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -35,35 +40,41 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
             _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
             _container.AddFacility<StartableFacility>();
+            _container.AddFacility<TypedFactoryFacility>();
 
-            var fileStore = ConfigurationManager.ConnectionStrings["filestore"].ConnectionString;
-            var sysDb = ConfigurationManager.ConnectionStrings["system"].ConnectionString;
+            var quartz = ConfigurationManager.ConnectionStrings["quartz"].ConnectionString;
 
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
             _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
 
-            _container.Install(
-                new CoreInstaller(fileStore, sysDb),
-                new EventStoreInstaller(),
-                new BusInstaller()
-            );
+            var manager = BuildTenants(_container);
 
-            _container.Install(new SchedulerInstaller(fileStore, roles.IsWorker));
+            var installers = new List<IWindsorInstaller>()
+            {
+                new CoreInstaller(manager),
+                new EventStoreInstaller(manager),
+                new BusInstaller(),
+                new SchedulerInstaller(quartz, roles.IsWorker)
+            };
+
             _logger.Debug("Configured Scheduler");
 
             if (roles.IsReadmodelBuilder)
             {
-                _container.Install(new ProjectionsInstaller<NotifyReadModelChanges>());
+                installers.Add(new ProjectionsInstaller<NotifyReadModelChanges>());
                 _logger.Debug("Configured Projections");
             }
 
 
             if (roles.IsApiServer)
             {
-                _container.Install(new ApiInstaller());
+                installers.Add(new ApiInstaller());
                 _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
                 _logger.Debug("Configured API server");
             }
+
+            _container.Install(installers.ToArray());
+
 
             //try
             //{
@@ -73,6 +84,26 @@ namespace Jarvis.DocumentStore.Host.Support
             //{
             //    _logger.ErrorFormat(ex, "something went damn wrong");
             //}
+        }
+
+        TenantManager BuildTenants(IWindsorContainer container)
+        {
+            _logger.Debug("Configuring tenants");
+            var manager = new TenantManager(container.Kernel);
+            container.Register(Component.For<TenantManager>().Instance(manager));
+
+            var tenants = ConfigurationManager.AppSettings["tenants"].Split(',').Select(x=> x.Trim()).ToArray();
+
+            foreach (var tenant in tenants)
+            {
+                _logger.DebugFormat("Adding tenant {0}", tenant);
+
+                var settings = new DocumentStoreTenantSettings(tenant);
+
+                manager.AddTenant(settings);
+            }
+
+            return manager;
         }
 
         public T Resolve<T>()

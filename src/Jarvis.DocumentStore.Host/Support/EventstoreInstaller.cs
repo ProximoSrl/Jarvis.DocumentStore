@@ -11,6 +11,7 @@ using CommonDomain;
 using CommonDomain.Core;
 using CQRS.Kernel.Engine;
 using CQRS.Kernel.Engine.Snapshots;
+using CQRS.Kernel.MultitenantSupport;
 using CQRS.Kernel.Store;
 using CQRS.Shared.Domain.Serialization;
 using CQRS.Shared.Events;
@@ -29,21 +30,16 @@ namespace Jarvis.DocumentStore.Host.Support
 {
     public class EventStoreInstaller : IWindsorInstaller
     {
+        readonly TenantManager _manager;
+
+        public EventStoreInstaller(TenantManager manager)
+        {
+            _manager = manager;
+        }
+
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            var sysUrl = new MongoUrl(ConfigurationManager.ConnectionStrings["system"].ConnectionString);
-            var sysdb = new MongoClient(sysUrl).GetServer().GetDatabase(sysUrl.DatabaseName);
-
             container.Register(
-                Component
-                    .For<EventStoreFactory>()
-                    .DependsOn(Dependency.OnValue("connectionString", ConfigurationManager.ConnectionStrings["events"].ConnectionString))
-                    .LifestyleSingleton(),
-                Component
-                    .For<IStoreEvents>()
-                    .Named("eventStore")
-                    .UsingFactory<EventStoreFactory, IStoreEvents>(f => f.BuildEventStore())
-                    .LifestyleSingleton(),
                 Component
                     .For<ICQRSConstructAggregates>()
                     .ImplementedBy<AggregateFactory>(),
@@ -58,19 +54,35 @@ namespace Jarvis.DocumentStore.Host.Support
                 Component
                     .For<IIdentityManager, IIdentityGenerator, IIdentityConverter, IdentityManager>()
                     .ImplementedBy<IdentityManager>(),
-                Component
-                    .For<ICounterService>()
-                    .ImplementedBy<CounterService>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb)),
-                Component
-                    .For<ICQRSRepository>()
-                    .ImplementedBy<CQRSRepository>()
-                    .DependsOn(Dependency.OnComponent(typeof (IStoreEvents), "eventStore"))
-                    .LifestyleTransient(),
                 Classes
                     .FromAssemblyContaining<Document>()
                     .BasedOn<AggregateBase>()
                     .WithService.Self()
+                    .LifestyleTransient()
+            );
+
+            var sysUrl = new MongoUrl(ConfigurationManager.ConnectionStrings["system"].ConnectionString);
+            var sysdb = new MongoClient(sysUrl).GetServer().GetDatabase(sysUrl.DatabaseName);
+
+            container.Register(
+                Component
+                    .For<EventStoreFactory>()
+                    .DependsOn(Dependency.OnValue("connectionString", ConfigurationManager.ConnectionStrings["events"].ConnectionString))
+                    .LifestyleSingleton(),
+                Component
+                    .For<IStoreEvents>()
+                    .Named("eventStore")
+                    .UsingFactory<EventStoreFactory, IStoreEvents>(f => f.BuildEventStore())
+                    .LifestyleSingleton(),
+                Component
+                    .For<ICounterService>()
+                    .ImplementedBy<CounterService>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(sysdb))
+                    .LifestyleTransient(),
+                Component
+                    .For<ICQRSRepository>()
+                    .ImplementedBy<CQRSRepository>()
+                    .DependsOn(Dependency.OnComponent(typeof (IStoreEvents), "eventStore"))
                     .LifestyleTransient()
                 );
 

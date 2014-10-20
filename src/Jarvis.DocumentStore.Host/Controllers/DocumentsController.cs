@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
-    public class FileController : ApiController
+    public class DocumentsController : ApiController
     {
         readonly IFileStore _fileStore;
         readonly ConfigService _configService;
@@ -38,8 +38,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ICQRSRepository _repository;
         private IDictionary<string, object> _customData;
 
-        public FileController(IFileStore fileStore, ConfigService configService, IIdentityGenerator identityGenerator, IReader<HandleToDocument, DocumentHandle> handleToDocument, IReader<DocumentReadModel, DocumentId> documentReader, ICQRSRepository repository)
-        {
+        public DocumentsController(
+            IFileStore fileStore, 
+            ConfigService configService, 
+            IIdentityGenerator identityGenerator, 
+            IReader<HandleToDocument, DocumentHandle> handleToDocument, 
+            IReader<DocumentReadModel, DocumentId> documentReader, 
+            ICQRSRepository repository
+        ){
             _fileStore = fileStore;
             _configService = configService;
             _identityGenerator = identityGenerator;

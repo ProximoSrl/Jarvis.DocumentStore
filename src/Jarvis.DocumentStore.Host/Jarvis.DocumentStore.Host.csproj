@@ -155,7 +155,7 @@
   <ItemGroup>
     <Compile Include="Commands\JobHandlersRegistration.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
-    <Compile Include="Controllers\FileController.cs" />
+    <Compile Include="Controllers\DocumentsController.cs" />
     <Compile Include="Controllers\LogController.cs" />
     <Compile Include="Controllers\SchedulerController.cs" />
     <Compile Include="Logging\BufferedMongoDBAppender.cs" />
@@ -172,6 +172,7 @@
     <Compile Include="Support\ContainerAccessor.cs" />
     <Compile Include="Support\DocumentStoreBootstrapper.cs" />
     <Compile Include="Support\DocumentStoreApplication.cs" />
+    <Compile Include="Support\DocumentStoreTenantSettings.cs" />
     <Compile Include="Support\EventstoreInstaller.cs" />
     <Compile Include="Support\DocumentStoreConfiguration.cs" />
     <Compile Include="Support\WindsorDependencyScope.cs" />

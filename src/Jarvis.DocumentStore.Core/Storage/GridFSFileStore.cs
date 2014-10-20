@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Castle.Core.Logging;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
@@ -9,17 +10,18 @@ namespace Jarvis.DocumentStore.Core.Storage
 {
     public class GridFSFileStore : IFileStore
     {
-        readonly MongoGridFS _gridFs;
+        readonly ITenantAccessor _tenantAccessor;
         public ILogger Logger { get; set; }
-        public GridFSFileStore(MongoDatabase db)
+
+        public GridFSFileStore(ITenantAccessor tenantAccessor)
         {
-            _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
+            _tenantAccessor = tenantAccessor;
         }
 
         public Stream CreateNew(FileId fileId, FileNameWithExtension fname)
         {
             Delete(fileId);
-            return _gridFs.Create(fname, new MongoGridFSCreateOptions()
+            return GridFs.Create(fname, new MongoGridFSCreateOptions()
             {
                 ContentType = MimeTypes.GetMimeType(fname),
                 UploadDate = DateTime.UtcNow,
@@ -29,7 +31,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public IFileDescriptor GetDescriptor(FileId fileId)
         {
-            var s = _gridFs.FindOneById((string)fileId);
+            var s = GridFs.FindOneById((string)fileId);
             if (s == null)
             {
                 var message = string.Format("Descriptor for file {0} not found!", fileId);
@@ -41,7 +43,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public void Delete(FileId fileId)
         {
-            _gridFs.DeleteById((string)fileId);
+            GridFs.DeleteById((string)fileId);
         }
 
         public string Download(FileId fileId, string folder)
@@ -49,9 +51,9 @@ namespace Jarvis.DocumentStore.Core.Storage
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            var s = _gridFs.FindOneById((string)fileId);
+            var s = GridFs.FindOneById((string)fileId);
             var localFileName = Path.Combine(folder, s.Name);
-            _gridFs.Download(localFileName,s);
+            GridFs.Download(localFileName, s);
             return localFileName;
         }
 
@@ -71,6 +73,10 @@ namespace Jarvis.DocumentStore.Core.Storage
             {
                 sourceStrem.CopyTo(outStream);
             }
+        }
+
+        MongoGridFS GridFs {
+            get { return _tenantAccessor.Current.Get<MongoGridFS>("grid.fs"); }
         }
     }
 }

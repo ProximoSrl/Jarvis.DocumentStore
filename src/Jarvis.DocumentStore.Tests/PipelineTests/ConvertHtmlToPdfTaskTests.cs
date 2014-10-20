@@ -1,24 +1,30 @@
 ﻿using Castle.Core.Logging;
+using CQRS.Kernel.MultitenantSupport;
+using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
     [TestFixture]
-    public class ConvertHtmlToPdfTaskTests
+    public class ConvertHtmlToPdfTaskTests : ITenantAccessor
     {
         GridFSFileStore _fileStore;
 
         [SetUp]
         public void SetUp()
         {
-            MongoDbTestConnectionProvider.TestDb.Drop();
-            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.TestDb)
+            MongoDbTestConnectionProvider.DropTenant1();
+            Current = new Tenant(new DocumentStoreTest1Settings());
+
+            _fileStore = new GridFSFileStore(this)
             {
                 Logger = new ConsoleLogger()
             };
@@ -41,5 +47,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             var fi = _fileStore.GetDescriptor(newFileId);
             Assert.AreEqual("application/pdf", fi.ContentType);
         }
+
+        public ITenant Current { get; private set; }
     }
 }

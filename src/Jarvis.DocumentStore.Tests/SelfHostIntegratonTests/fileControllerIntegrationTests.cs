@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 isWorker: false,
                 isReadmodelBuilder: true
             );
-            MongoDbTestConnectionProvider.TestDb.Drop();
+            MongoDbTestConnectionProvider.DropTenant1();
 
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _documentStoreService.Start(config);
