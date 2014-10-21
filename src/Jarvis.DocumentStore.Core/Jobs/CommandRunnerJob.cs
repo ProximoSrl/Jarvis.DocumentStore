@@ -15,7 +15,7 @@ using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
-    public class CommandRunnerJob<T> : IJob where T:ICommand
+    public class CommandRunnerJob<T> : ITenantJob where T : ICommand
     {
         public ILogger Logger { get; set; }
         public ICommandHandler<T>  CommandHandler { get; set; }

@@ -141,6 +141,7 @@
     <Compile Include="Jobs\CommandRunnerJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
+    <Compile Include="Jobs\ITenantJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />
     <Compile Include="Jobs\CreateThumbnailFromPdfJob.cs" />
@@ -185,8 +186,6 @@
     <Compile Include="ReadModel\DocumentStats.cs" />
     <Compile Include="ReadModel\HashToDocuments.cs" />
     <Compile Include="Services\ConfigService.cs" />
-    <Compile Include="Services\IDocumentMapper.cs" />
-    <Compile Include="Services\DocumentMapper.cs" />
     <Compile Include="Storage\Stats\FileStoreStats.cs" />
     <Compile Include="Storage\FsFileDescriptor.cs" />
     <Compile Include="Storage\GridFSFileStore.cs" />

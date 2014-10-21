@@ -54,6 +54,7 @@ namespace Jarvis.DocumentStore.Core.Support
     public class TenantJobFactory : IJobFactory
     {
         private readonly IKernel _kernel;
+        ITenantAccessor _tenantAccessor;
 
         /// <summary>
         /// Resolve a Job by it's name
@@ -101,12 +102,32 @@ namespace Jarvis.DocumentStore.Core.Support
                 TenantContext.Enter(new TenantId(bundle.JobDetail.JobDataMap.GetString(JobKeys.TenantId)));
             }
 
-            return this.ResolveByJobName ? (IJob)this._kernel.Resolve(bundle.JobDetail.Key.ToString(), typeof(IJob)) : (IJob)this._kernel.Resolve(bundle.JobDetail.JobType);
+            var kernel = SelectKernel();
+            return this.ResolveByJobName ? 
+                (IJob)kernel.Resolve(bundle.JobDetail.Key.ToString(), typeof(IJob)) :
+                (IJob)kernel.Resolve(bundle.JobDetail.JobType);
         }
 
         public void ReturnJob(IJob job)
         {
-            this._kernel.ReleaseComponent((object)job);
+            SelectKernel().ReleaseComponent((object)job);
+        }
+
+        IKernel SelectKernel()
+        {
+            if (_tenantAccessor == null)
+            {
+                // concurrency safe, singleton
+                _tenantAccessor = _kernel.Resolve<ITenantAccessor>();
+            }
+
+            if (_tenantAccessor != null)
+            {
+                if (_tenantAccessor.Current != null)
+                    return _tenantAccessor.Current.Container.Kernel;
+            }
+
+            return _kernel;
         }
     }
 }

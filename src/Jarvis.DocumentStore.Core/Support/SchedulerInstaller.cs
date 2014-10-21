@@ -8,6 +8,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Processing;
+using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Processing.Pdf;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using MongoDB.Driver;
@@ -16,6 +17,27 @@ using Quartz.Impl.MongoDB;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
+    public class TenantJobsInstaller : IWindsorInstaller
+    {
+        public void Install(IWindsorContainer container, IConfigurationStore store)
+        {
+            container.Register(
+                Classes
+                    .FromAssemblyInThisApplication()
+                    .BasedOn<ITenantJob>()
+                    .WithServiceSelf()
+                    .LifestyleTransient(),
+                Component
+                    .For<ILibreOfficeConversion>()
+                    .ImplementedBy<LibreOfficeUnoConversion>()
+                    .LifeStyle.Transient,
+                Component
+                    .For<CreateImageFromPdfTask>()
+                    .LifestyleTransient()
+                );
+        }
+    }
+
     public class SchedulerInstaller : IWindsorInstaller
     {
         readonly bool _autoStart;
@@ -31,17 +53,6 @@ namespace Jarvis.DocumentStore.Core.Support
             container.AddFacility<CustomQuartzFacility>(c => c.Configure(CreateDefaultConfiguration()));
 
             container.Register(
-                Classes
-                    .FromAssemblyInThisApplication()
-                    .BasedOn<IJob>()
-                    .WithServiceSelf()
-                    .LifestyleTransient(),
-                Component
-                    .For<CreateImageFromPdfTask>()
-                    .LifestyleTransient(),
-                Component
-                    .For<IPipelineManager>()
-                    .ImplementedBy<PipelineManager>(),
                 Component
                     .For<IJobHelper>()
                     .ImplementedBy<JobHelper>(),

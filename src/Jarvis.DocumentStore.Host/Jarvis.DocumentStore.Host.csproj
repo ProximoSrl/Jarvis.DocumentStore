@@ -168,7 +168,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Support\ApiInstaller.cs" />
-    <Compile Include="Support\BusInstaller.cs" />
+    <Compile Include="Support\HandlersInstaller.cs" />
     <Compile Include="Support\ContainerAccessor.cs" />
     <Compile Include="Support\DocumentStoreBootstrapper.cs" />
     <Compile Include="Support\DocumentStoreApplication.cs" />

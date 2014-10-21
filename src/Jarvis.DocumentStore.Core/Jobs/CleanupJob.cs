@@ -12,7 +12,7 @@ using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
-    public class CleanupJob : IJob
+    public class CleanupJob : ITenantJob
     {
         IRecycleBin RecycleBin { get; set; }
         public ILogger Logger { get; set; }

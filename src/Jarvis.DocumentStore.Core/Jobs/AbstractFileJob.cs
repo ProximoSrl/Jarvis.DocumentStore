@@ -10,7 +10,7 @@ using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
-    public abstract class AbstractFileJob : IJob
+    public abstract class AbstractFileJob : ITenantJob
     {
         string _workingFolder;
         protected DocumentId DocumentId { get; private set; }

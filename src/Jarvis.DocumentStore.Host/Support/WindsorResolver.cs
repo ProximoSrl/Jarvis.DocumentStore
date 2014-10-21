@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Dependencies;
 using Castle.Windsor;
+using CQRS.Shared.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -10,14 +11,32 @@ namespace Jarvis.DocumentStore.Host.Support
     {
         private readonly IWindsorContainer _container;
 
+        ITenantAccessor _tenantAccessor;
         public WindsorResolver(IWindsorContainer container)
         {
             _container = container;
         }
 
+        IWindsorContainer SelectContainer()
+        {
+            if (_tenantAccessor == null)
+            {
+                // concurrency safe, singleton
+                _tenantAccessor = _container.Resolve<ITenantAccessor>();
+            }
+
+            if (_tenantAccessor != null)
+            {
+                if (_tenantAccessor.Current != null)
+                    return _tenantAccessor.Current.Container;
+            }
+
+            return _container;
+        }
+
         public IDependencyScope BeginScope()
         {
-            return new WindsorDependencyScope(_container);
+            return new WindsorDependencyScope(SelectContainer());
         }
 
         public void Dispose()
@@ -27,18 +46,22 @@ namespace Jarvis.DocumentStore.Host.Support
 
         public object GetService(Type serviceType)
         {
-            if (!_container.Kernel.HasComponent(serviceType))
+            var container = SelectContainer();
+
+            if (!container.Kernel.HasComponent(serviceType))
                 return null;
 
-            return _container.Resolve(serviceType);
+            return container.Resolve(serviceType);
         }
 
         public IEnumerable<object> GetServices(Type serviceType)
         {
-            if (!_container.Kernel.HasComponent(serviceType))
+            var container = SelectContainer();
+
+            if (!container.Kernel.HasComponent(serviceType))
                 return new object[0];
 
-            return _container.ResolveAll(serviceType).Cast<object>();
+            return container.ResolveAll(serviceType).Cast<object>();
         }
     }
 }

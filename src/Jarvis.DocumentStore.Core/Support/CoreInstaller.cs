@@ -1,11 +1,15 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using CQRS.Kernel.MultitenantSupport;
+using CQRS.Shared.Commands;
 using CQRS.Shared.Factories;
+using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
+using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Storage.Stats;
@@ -13,47 +17,60 @@ using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
-    public class CoreInstaller : IWindsorInstaller
+    public class CoreTenantInstaller : IWindsorInstaller
     {
-        readonly TenantManager _manager;
-
-        public CoreInstaller(TenantManager manager)
-        {
-            _manager = manager;
-        }
-
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             container.Register(
                 Component
-                    .For(typeof(IFactory<>))
-                    .AsFactory(),
-                Component
                     .For<IFileStore>()
-                    .ImplementedBy<GridFSFileStore>()
-                    .LifeStyle.Transient,
+                    .ImplementedBy<GridFSFileStore>(),
+                Component
+                    .For<IPipelineManager>()
+                    .ImplementedBy<PipelineManager>(),
                 Component
                     .For<GridFsFileStoreStats>()
-                    .LifeStyle.Transient,
-                Component
-                    .For<ConfigService>(),
-                Component
-                    .For<ILibreOfficeConversion>()
-                    .ImplementedBy<LibreOfficeUnoConversion>()
-                    .LifeStyle.Transient,
-                Component
-                    .For<IDocumentMapper>()
-                    .ImplementedBy<DocumentMapper>()
-                    .LifeStyle.Transient
             );
         }
+    }
 
-        MongoDatabase GetDatabase(string cstring)
+    public class CoreInstaller : IWindsorInstaller
+    {
+        public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            var mongoUrl = new MongoUrl(cstring);
-            var client = new MongoClient(cstring);
-            var db = client.GetServer().GetDatabase(mongoUrl.DatabaseName);
-            return db;
+            container.Register(
+                Component
+                    .For<ICommandBus>()
+                    .ImplementedBy<DocumentStoreCommandBus>(),
+                Component
+                    .For<ConfigService>()
+            );
+        }
+    }
+
+    public class DocumentStoreCommandBus : ICommandBus
+    {
+        private readonly IJobHelper _jobHelper;
+
+        public DocumentStoreCommandBus(IJobHelper jobHelper)
+        {
+            _jobHelper = jobHelper;
+        }
+
+        public ICommand Send(ICommand command, string impersonatingUser = null)
+        {
+            _jobHelper.QueueCommand(command, impersonatingUser);
+            return command;
+        }
+
+        public ICommand Defer(TimeSpan delay, ICommand command, string impersonatingUser = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICommand SendLocal(ICommand command, string impersonatingUser = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

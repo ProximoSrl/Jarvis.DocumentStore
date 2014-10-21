@@ -2,6 +2,8 @@
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using CQRS.Kernel.MultitenantSupport;
+using Jarvis.DocumentStore.Host.Controllers;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -13,6 +15,20 @@ namespace Jarvis.DocumentStore.Host.Support
                 Classes
                     .FromThisAssembly()
                     .BasedOn<ApiController>()
+                    .Unless(type => typeof(ITenantController).IsAssignableFrom(type))
+                    .LifestyleTransient()
+                );
+        }
+    }
+
+    public class TenantApiInstaller : IWindsorInstaller
+    {
+        public void Install(IWindsorContainer container, IConfigurationStore store)
+        {
+            container.Register(
+                Classes
+                    .FromThisAssembly()
+                    .BasedOn<ITenantController>()
                     .LifestyleTransient()
                 );
         }

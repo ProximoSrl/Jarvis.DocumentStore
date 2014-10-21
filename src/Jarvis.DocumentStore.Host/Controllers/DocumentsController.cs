@@ -26,7 +26,12 @@ using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
-    public class DocumentsController : ApiController
+    public interface ITenantController
+    {
+    
+    }
+
+    public class DocumentsController : ApiController, ITenantController
     {
         readonly IFileStore _fileStore;
         readonly ConfigService _configService;

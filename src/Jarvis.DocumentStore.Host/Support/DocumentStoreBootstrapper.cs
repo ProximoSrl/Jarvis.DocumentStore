@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Host.Support
             ContainerAccessor.Instance = _container;
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
-            _container.Kernel.Resolver.AddSubResolver(new MultiTenantSubDependencyResolver(_container.Kernel));
+//            _container.Kernel.Resolver.AddSubResolver(new MultiTenantSubDependencyResolver(_container.Kernel));
             _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
@@ -53,39 +53,46 @@ namespace Jarvis.DocumentStore.Host.Support
 
             var installers = new List<IWindsorInstaller>()
             {
-                new CoreInstaller(manager),
+                new CoreInstaller(),
                 new EventStoreInstaller(manager),
-                new BusInstaller(),
                 new SchedulerInstaller(quartz, roles.IsWorker)
             };
 
             _logger.Debug("Configured Scheduler");
 
-            if (roles.IsReadmodelBuilder)
-            {
-                installers.Add(new ProjectionsInstaller<NotifyReadModelChanges>(manager));
-                _logger.Debug("Configured Projections");
-            }
-
-
             if (roles.IsApiServer)
             {
                 installers.Add(new ApiInstaller());
+                
                 _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
                 _logger.Debug("Configured API server");
             }
 
             _container.Install(installers.ToArray());
 
+            foreach (var tenant in manager.Tenants)
+            {
+                var tenantInstallers = new List<IWindsorInstaller>
+                {
+                    new CoreTenantInstaller(),
+                    new HandlersInstaller(),
+                    new TenantJobsInstaller()
+                };
 
-            //try
-            //{
-            //    throw new Exception("WROOOOOONG!");
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.ErrorFormat(ex, "something went damn wrong");
-            //}
+                if (roles.IsApiServer)
+                {
+                    tenantInstallers.Add(new TenantApiInstaller());
+                }
+
+                if (roles.IsReadmodelBuilder)
+                {
+                    tenantInstallers.Add(new ProjectionsInstaller<NotifyReadModelChanges>(tenant));
+                    _logger.DebugFormat("Configured Projections for tenant {0}", tenant.Id);
+                }
+                
+                tenant.Container.Install(tenantInstallers.ToArray());
+            }
+
         }
 
         TenantManager BuildTenants(IWindsorContainer container)
@@ -96,13 +103,18 @@ namespace Jarvis.DocumentStore.Host.Support
 
             var tenants = ConfigurationManager.AppSettings["tenants"].Split(',').Select(x=> x.Trim()).ToArray();
 
-            foreach (var tenant in tenants)
+            foreach (var tenantId in tenants)
             {
-                _logger.DebugFormat("Adding tenant {0}", tenant);
+                _logger.DebugFormat("Adding tenant {0}", tenantId);
 
-                var settings = new DocumentStoreTenantSettings(tenant);
+                var settings = new DocumentStoreTenantSettings(tenantId);
 
-                manager.AddTenant(settings);
+                var tenant = manager.AddTenant(settings);
+                tenant.Container.Kernel.Resolver.AddSubResolver(new CollectionResolver(tenant.Container.Kernel, true));
+                tenant.Container.Kernel.Resolver.AddSubResolver(new ArrayResolver(tenant.Container.Kernel, true));
+                tenant.Container.AddFacility<StartableFacility>();
+
+                container.AddChildContainer(tenant.Container);
             }
 
             return manager;

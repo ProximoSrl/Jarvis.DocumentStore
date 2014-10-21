@@ -20,10 +20,8 @@ using CQRS.Shared.IdentitySupport.Serialization;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.Storage;
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
 using NEventStore;
 using NEventStore.Dispatcher;
 
@@ -41,21 +39,20 @@ namespace Jarvis.DocumentStore.Host.Support
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             RegisterGlobalComponents(container);
-            RegisterTenantServices(container);
+            RegisterTenantServices();
             RegisterMappings(container);
         }
 
         static void RegisterMappings(IWindsorContainer container)
         {
-            var converter = container.Resolve<IdentityManager>();
+            var identityManager = container.Resolve<IdentityManager>();
 
-            EnableFlatIdMapping(converter);
+            EnableFlatIdMapping(identityManager);
 
             MessagesRegistration.RegisterAssembly(typeof (Document).Assembly);
-            MessagesRegistration.RegisterAssembly(typeof (DocumentCreated).Assembly);
             SnapshotRegistration.AutomapAggregateState(typeof (DocumentState).Assembly);
 
-            converter.RegisterIdentitiesFromAssembly(typeof (DocumentId).Assembly);
+            identityManager.RegisterIdentitiesFromAssembly(typeof (DocumentId).Assembly);
             IdentitiesRegistration.RegisterFromAssembly(typeof (DocumentId).Assembly);
 
             BsonClassMap.LookupClassMap(typeof (FileId));
@@ -69,7 +66,7 @@ namespace Jarvis.DocumentStore.Host.Support
             });
         }
 
-        private void RegisterTenantServices(IWindsorContainer container)
+        private void RegisterTenantServices()
         {
             foreach (var tenant in _manager.Tenants)
             {
@@ -77,7 +74,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
                 var esComponentName = tenant.Id+ "-es";
 
-                container.Register(
+                tenant1.Container.Register(
                     Component
                         .For<IStoreEvents>()
                         .Named(esComponentName)
