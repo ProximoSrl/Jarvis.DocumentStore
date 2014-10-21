@@ -55,6 +55,11 @@ namespace Jarvis.DocumentStore.Core.Processing
                 .UsingJobData(JobKeys.Command, CommandSerializer.Serialize(command))
                 .Build();
 
+            if (!job.JobDataMap.ContainsKey(JobKeys.TenantId))
+            {
+                throw new Exception("Command needs a tenant context");
+            }
+
             var trigger = CreateTrigger(TimeSpan.FromDays(-1));
             trigger.Priority = 100;
             _scheduler.ScheduleJob(job, trigger);
@@ -89,8 +94,11 @@ namespace Jarvis.DocumentStore.Core.Processing
 
         JobBuilder GetBuilderForJob(Type jobType) 
         {
+            var tenantId = TenantContext.CurrentTenantId;
+
             return JobBuilder
                 .Create(jobType)
+                .UsingJobData(JobKeys.TenantId, tenantId)
                 .RequestRecovery(true)
                 .StoreDurably(true);
         }

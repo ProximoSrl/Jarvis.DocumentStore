@@ -13,6 +13,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             ServerAddress = new Uri("http://localhost:5123");
             Tenant = "tests";
             DocsTenant = "docs";
+            DemoTenant = "demo";
         }
 
         public static Uri ServerAddress { get; private set; }
@@ -104,5 +105,6 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         }
 
         public static string DocsTenant { get; private set; }
+        public static string DemoTenant { get; private set; }
     }
 }

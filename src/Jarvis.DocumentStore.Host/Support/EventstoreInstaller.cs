@@ -86,7 +86,7 @@ namespace Jarvis.DocumentStore.Host.Support
                         )
                         .LifestyleSingleton(),
                     Component
-                        .For<ICQRSRepository>()
+                        .For<ICQRSRepository, CQRSRepository>()
                         .ImplementedBy<CQRSRepository>()
                         .Named(tenant.Id+".repository")
                         .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))

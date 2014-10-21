@@ -39,6 +39,7 @@ namespace Jarvis.DocumentStore.Host.Support
             ContainerAccessor.Instance = _container;
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
+            _container.Kernel.Resolver.AddSubResolver(new MultiTenantSubDependencyResolver(_container.Kernel));
             _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
