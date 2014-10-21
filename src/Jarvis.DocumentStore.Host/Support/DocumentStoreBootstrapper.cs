@@ -11,11 +11,9 @@ using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Services.Logging.Log4netIntegration;
 using Castle.Windsor;
 using CQRS.Kernel.MultitenantSupport;
-using CQRS.Kernel.ProjectionEngine;
-using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.Messages;
 using CQRS.Shared.MultitenantSupport;
-using Jarvis.DocumentStore.Core.EventHandlers;
+using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
 
@@ -39,12 +37,15 @@ namespace Jarvis.DocumentStore.Host.Support
             ContainerAccessor.Instance = _container;
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
-//            _container.Kernel.Resolver.AddSubResolver(new MultiTenantSubDependencyResolver(_container.Kernel));
             _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
 
-            var quartz = ConfigurationManager.ConnectionStrings["ds.quartz"].ConnectionString;
+            BootstrapConfigurationServiceClient();
+
+            var quartz = ConfigurationServiceClient.Instance.GetSetting(
+                "connectionStrings.ds-quartz"
+            );
 
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
             _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
@@ -82,7 +83,6 @@ namespace Jarvis.DocumentStore.Host.Support
                 if (roles.IsApiServer)
                 {
                     tenantInstallers.Add(new TenantApiInstaller())                    ;
-
                 }
 
                 if (roles.IsReadmodelBuilder)
@@ -96,15 +96,26 @@ namespace Jarvis.DocumentStore.Host.Support
 
         }
 
+        private void BootstrapConfigurationServiceClient()
+        {
+            ConfigurationServiceClient.AppDomainInitializer(
+                (message, isError, exception) =>
+                {
+                    if (isError) _logger.Error(message, exception);
+                    else _logger.Info(message);
+                },
+                "JARVIS_CONFIG_SERVICE");
+        }
+
         TenantManager BuildTenants(IWindsorContainer container)
         {
             _logger.Debug("Configuring tenants");
             var manager = new TenantManager(container.Kernel);
             container.Register(Component.For<ITenantAccessor, TenantManager>().Instance(manager));
 
-            var tenants = ConfigurationManager.AppSettings["tenants"].Split(',').Select(x=> x.Trim()).ToArray();
-
-            foreach (var tenantId in tenants)
+            var tenants = ConfigurationServiceClient.Instance.GetStructuredSetting("tenants");
+                
+            foreach (string tenantId in tenants)
             {
                 _logger.DebugFormat("Adding tenant {0}", tenantId);
 
