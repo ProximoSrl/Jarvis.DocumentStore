@@ -33,6 +33,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             job.ConfigService = new ConfigService();
 
             job.Execute(BuildContext(job, new Dictionary<string, object>{
+                {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.FileId, "doc.png"},
                 {JobKeys.FileExtension, "png"},

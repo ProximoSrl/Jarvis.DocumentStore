@@ -32,6 +32,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             
             // act
             job.Execute(BuildContext(job, new Dictionary<string, object>{
+                {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.FileId, "File_1"}
             }));

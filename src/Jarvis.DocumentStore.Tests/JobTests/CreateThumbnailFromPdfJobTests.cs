@@ -25,6 +25,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             var job = BuildJob<CreateThumbnailFromPdfJob>();
             
             job.Execute(BuildContext(job, new Dictionary<string, object>{
+                {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.FileId, "doc"},
                 {JobKeys.FileExtension, "png"}

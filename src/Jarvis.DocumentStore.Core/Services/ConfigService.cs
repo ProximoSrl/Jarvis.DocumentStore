@@ -72,6 +72,8 @@ namespace Jarvis.DocumentStore.Core.Services
         
         public string GetWorkingFolder(string tenantId, string fileId)
         {
+            if (tenantId == null) throw new ArgumentNullException("tenantId");
+            if (fileId == null) throw new ArgumentNullException("fileId");
             return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), tenantId, fileId));
         }
 

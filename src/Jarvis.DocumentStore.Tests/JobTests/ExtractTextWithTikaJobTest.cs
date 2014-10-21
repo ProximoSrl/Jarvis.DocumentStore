@@ -26,6 +26,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             var job = BuildJob<ExtractTextWithTikaJob>();
 
             job.Execute(BuildContext(job, new Dictionary<string, object>{
+                {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.FileId, "pdf"}
             }));
