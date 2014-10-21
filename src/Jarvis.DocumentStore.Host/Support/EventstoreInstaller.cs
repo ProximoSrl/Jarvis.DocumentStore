@@ -111,6 +111,9 @@ namespace Jarvis.DocumentStore.Host.Support
                     .ImplementedBy<NullDispatcher>()
                     .LifestyleSingleton(),
                 Component
+                    .For<ICounterService>()
+                    .ImplementedBy<MultitenantCounterService>(),
+                Component
                     .For<IIdentityManager, IIdentityGenerator, IIdentityConverter, IdentityManager>()
                     .ImplementedBy<IdentityManager>(),
                 Classes
