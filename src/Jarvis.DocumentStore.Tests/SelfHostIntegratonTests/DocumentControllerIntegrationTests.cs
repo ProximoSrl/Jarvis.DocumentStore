@@ -15,7 +15,7 @@ using NUnit.Framework;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture]
-    public class FileControllerIntegrationTests
+    public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
@@ -109,6 +109,25 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.NotNull(customData);
             Assert.IsTrue(customData.ContainsKey("callback"));
             Assert.AreEqual("http://localhost/demo", customData["callback"]);
+        }
+
+        [Test]
+        public async void should_upload_with_a_stream()
+        {
+            const string resourceId = "Pdf_4";
+
+            using (var stream = File.OpenRead(TestConfig.PathToDocumentPdf))
+            {
+                var response = await _documentStoreClient.UploadAsync(
+                    "demo.pdf",
+                    resourceId,
+                    stream
+                );
+
+                Assert.AreEqual("8fe8386418f85ef4ee8ef1f3f1117928", response.Hash);
+                Assert.AreEqual("md5", response.HashType);
+                Assert.AreEqual("http://localhost:5123/tests/documents/pdf_4", response.Uri);
+            }
         }
 
         [Test]

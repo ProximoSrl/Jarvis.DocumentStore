@@ -88,6 +88,22 @@ namespace Jarvis.DocumentStore.Client
             return null;
         }
 
+        /// <summary>
+        /// upload a document
+        /// </summary>
+        /// <param name="fileNameWithExtension">File name with extension</param>
+        /// <param name="documentHandle">Document handle</param>
+        /// <param name="inputStream">Input stream</param>
+        /// <param name="customData">Custom Data</param>
+        /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
+        public async Task<UploadedDocumentResponse> UploadAsync(
+            string fileNameWithExtension,
+            string documentHandle,
+            Stream inputStream,
+            IDictionary<string, object> customData = null)
+        {
+            return await DoUpload(documentHandle, fileNameWithExtension, inputStream, customData);
+        }
 
         /// <summary>
         /// Upload a document
@@ -105,7 +121,7 @@ namespace Jarvis.DocumentStore.Client
                 try
                 {
                     return await InnerUploadAsync(zippedFile, documentHandle, customData);
-                    
+
                 }
                 finally
                 {
@@ -129,34 +145,42 @@ namespace Jarvis.DocumentStore.Client
             IDictionary<string, object> customData
         )
         {
-            string fileName = Path.GetFileNameWithoutExtension(pathToFile);
             string fileNameWithExtension = Path.GetFileName(pathToFile);
+
+            using (var sourceStream = File.OpenRead(pathToFile))
+            {
+                return await DoUpload(documentHandle, fileNameWithExtension, sourceStream, customData);
+            }
+        }
+
+        async Task<UploadedDocumentResponse> DoUpload(string documentHandle, string fileNameWithExtension, Stream inputStream, IDictionary<string, object> customData)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(fileNameWithExtension);
 
             using (var client = new HttpClient())
             {
-                using (var content = new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
+                using (
+                    var content =
+                        new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
                 {
-                    using (var sourceStream = File.OpenRead(pathToFile))
+                    content.Add(
+                        new StreamContent(inputStream),
+                        fileName, fileNameWithExtension
+                    );
+
+                    if (customData != null)
                     {
-                        content.Add(
-                            new StreamContent(sourceStream),
-                            fileName, fileNameWithExtension
-                        );
+                        var stringContent = new StringContent(await ToJsonAsync(customData));
+                        content.Add(stringContent, "custom-data");
+                    }
 
-                        if (customData != null)
-                        {
-                            var stringContent = new StringContent(await ToJsonAsync(customData));
-                            content.Add(stringContent, "custom-data");
-                        }
+                    var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
 
-                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
-
-                        using (var message = await client.PostAsync(endPoint, content))
-                        {
-                            var json = await message.Content.ReadAsStringAsync();
-                            message.EnsureSuccessStatusCode();
-                            return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
-                        }
+                    using (var message = await client.PostAsync(endPoint, content))
+                    {
+                        var json = await message.Content.ReadAsStringAsync();
+                        message.EnsureSuccessStatusCode();
+                        return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
                     }
                 }
             }
@@ -191,7 +215,7 @@ namespace Jarvis.DocumentStore.Client
         {
             using (var client = new HttpClient())
             {
-                var endPoint = new Uri(_documentStoreUri, Tenant+ "/documents/" + documentHandle + "/@customdata");
+                var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@customdata");
 
                 var json = await client.GetStringAsync(endPoint);
                 return await FromJsonAsync(json);
@@ -206,7 +230,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>A document format reader</returns>
         public DocumentFormatReader OpenRead(string documentHandle, string format = "original")
         {
-            var endPoint = new Uri(_documentStoreUri, Tenant+"/documents/" + documentHandle + "/" + format);
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/" + format);
             return new DocumentFormatReader(endPoint);
         }
 
@@ -217,7 +241,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>Task</returns>
         public async Task DeleteAsync(string DocumentId)
         {
-            var resourceUri = new Uri(_documentStoreUri,Tenant+ "/documents/" + DocumentId);
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + DocumentId);
             using (var client = new HttpClient())
             {
                 await client.DeleteAsync(resourceUri);
