@@ -3,6 +3,7 @@ using System.Drawing.Printing;
 using System.IO;
 using System.IO.Compression;
 using Castle.Core.Logging;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
@@ -23,10 +24,10 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             _config = config;
         }
 
-        public FileId Run(FileId fileId)
+        public FileId Run(TenantId tenantId, FileId fileId)
         {
             Logger.DebugFormat("Converting {0} to pdf", fileId);
-            var localFileName = DownloadLocalCopy(fileId);
+            var localFileName = DownloadLocalCopy(tenantId, fileId);
             var uri = new Uri(localFileName);
             
             var document = new HtmlToPdfDocument
@@ -75,9 +76,9 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             return pdfFileId;
         }
 
-        string DownloadLocalCopy(FileId fileId)
+        string DownloadLocalCopy(TenantId tenantId, FileId fileId)
         {
-            var folder = _config.GetWorkingFolder(fileId);
+            var folder = _config.GetWorkingFolder(tenantId, fileId);
             if(Directory.Exists(folder))
                 Directory.Delete(folder,true);
 

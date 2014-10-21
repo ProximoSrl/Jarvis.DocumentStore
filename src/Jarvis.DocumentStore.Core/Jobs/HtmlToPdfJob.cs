@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 Logger = Logger
             };
 
-            var pdfId = converter.Run(this.FileId);
+            var pdfId = converter.Run(TenantId, FileId);
             CommandBus.Send(new AddFormatToDocument(
                 this.DocumentId,
                 new DocumentFormat(DocumentFormats.Pdf),

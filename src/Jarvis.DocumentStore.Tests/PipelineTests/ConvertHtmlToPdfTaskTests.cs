@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                 Logger = new ConsoleLogger()
             };
 
-            var newFileId = conversion.Run(new FileId("ziphtml"));
+            var newFileId = conversion.Run(new TenantId("test"), new FileId("ziphtml"));
 
             var fi = _fileStore.GetDescriptor(newFileId);
             Assert.AreEqual("application/pdf", fi.ContentType);

@@ -2,6 +2,7 @@
 using System.IO;
 using Castle.Core.Logging;
 using CQRS.Shared.Commands;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
@@ -16,6 +17,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         protected DocumentId DocumentId { get; private set; }
         protected FileId FileId { get; private set; }
         protected PipelineId PipelineId { get; private set; }
+        protected TenantId TenantId { get; private set; }
 
         public ICommandBus CommandBus { get; set; }
         public ILogger Logger { get; set; }
@@ -28,8 +30,12 @@ namespace Jarvis.DocumentStore.Core.Jobs
             DocumentId = new DocumentId(jobDataMap.GetString(JobKeys.DocumentId));
             FileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
             PipelineId = new PipelineId(jobDataMap.GetString(JobKeys.PipelineId));
+            TenantId = new TenantId(jobDataMap.GetString(JobKeys.TenantId));
             
-            _workingFolder = Path.Combine(ConfigService.GetWorkingFolder(FileId), GetType().Name);
+            _workingFolder = Path.Combine(
+                ConfigService.GetWorkingFolder(TenantId, FileId), 
+                GetType().Name
+            );
             
             OnExecute(context);
 

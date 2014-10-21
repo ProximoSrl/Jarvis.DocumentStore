@@ -81,7 +81,8 @@ namespace Jarvis.DocumentStore.Host.Support
 
                 if (roles.IsApiServer)
                 {
-                    tenantInstallers.Add(new TenantApiInstaller());
+                    tenantInstallers.Add(new TenantApiInstaller())                    ;
+
                 }
 
                 if (roles.IsReadmodelBuilder)

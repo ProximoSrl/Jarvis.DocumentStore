@@ -72,46 +72,38 @@ namespace Jarvis.DocumentStore.Core.Support
                     .LifestyleSingleton(),
                 Component
                     .For<IInitializeReadModelDb>()
-                    .ImplementedBy<InitializeReadModelDb>()
-                    .LifestyleTransient(),
+                    .ImplementedBy<InitializeReadModelDb>(),
                 Component
                     .For<IConcurrentCheckpointTracker>()
                     .ImplementedBy<ConcurrentCheckpointTracker>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
-                    .LifestyleTransient(),
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 Component
                     .For(new[]
                     {
                         typeof (ICollectionWrapper<,>),
                         typeof (IReadOnlyCollectionWrapper<,>)
                     })
-                    .LifestyleTransient()
                     .ImplementedBy(typeof(CollectionWrapper<,>))
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 Component
                     .For(typeof(IReader<,>), typeof(IMongoDbReader<,>))
                     .ImplementedBy(typeof(MongoReaderForProjections<,>))
-                    .LifestyleTransient()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 Component
                     .For<IPollingClient>()
                     .ImplementedBy<PollingClientWrapper>()
-                    .LifestyleTransient()
                     .DependsOn(Dependency.OnConfigValue("boost", ConfigurationManager.AppSettings["engine-multithread"])),
                 Component
                     .For<IRebuildContext>()
                     .ImplementedBy<RebuildContext>()
-                    .LifestyleTransient()
                     .DependsOn(Dependency.OnValue<bool>(RebuildSettings.NitroMode)),
                 Component
                     .For<IMongoStorageFactory>()
                     .ImplementedBy<MongoStorageFactory>()
-                    .LifestyleTransient()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 Component
                     .For<IRecycleBin>()
                     .ImplementedBy<RecycleBin>()
-                    .LifestyleTransient()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
                 );
 

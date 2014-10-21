@@ -70,9 +70,9 @@ namespace Jarvis.DocumentStore.Core.Services
             return pathToTika;
         }
         
-        public string GetWorkingFolder(string fileId)
+        public string GetWorkingFolder(string tenantId, string fileId)
         {
-            return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), fileId));
+            return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), tenantId, fileId));
         }
 
         string GetConfigValue(string key, string defaultValue = null)
