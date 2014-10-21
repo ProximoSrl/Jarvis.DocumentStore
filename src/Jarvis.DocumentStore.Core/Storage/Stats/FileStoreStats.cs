@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using CQRS.Shared.MultitenantSupport;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
@@ -15,9 +16,9 @@ namespace Jarvis.DocumentStore.Core.Storage.Stats
 
         readonly MongoGridFS _gridFs;
 
-        public GridFsFileStoreStats(MongoDatabase db)
+        public GridFsFileStoreStats(ITenant tenant)
         {
-            _gridFs = db.GetGridFS(MongoGridFSSettings.Defaults);
+            _gridFs = tenant.Get<MongoGridFS>("grid.fs");
         }
 
         public Totals GetStats()

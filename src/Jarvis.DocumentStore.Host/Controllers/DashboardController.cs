@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -17,15 +18,15 @@ using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
-    public class DashboardController : ApiController
+    public class DashboardController : ApiController, ITenantController
     {
         public GridFsFileStoreStats FileStoreStats { get; set; }
         public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
         public IReader<HandleToDocument, DocumentHandle> Handles { get; set; }
 
         [HttpGet]
-        [Route("dashboard")]
-        public IHttpActionResult GetStats()
+        [Route("{tenantId}/dashboard")]
+        public IHttpActionResult GetStats(TenantId tenantId)
         {
             var totals = FileStoreStats.GetStats();
 

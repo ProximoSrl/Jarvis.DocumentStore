@@ -13,7 +13,7 @@
         return service;
 
         function getMeters() {
-            return $http.get('/dashboard').then(function(d) {
+            return $http.get('/docs/dashboard').then(function(d) {
                 return d.data;
             });
         }

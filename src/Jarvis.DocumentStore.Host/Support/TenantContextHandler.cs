@@ -23,13 +23,18 @@ namespace Jarvis.DocumentStore.Host.Support
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var route= ((IHttpRouteData[])request.GetConfiguration().Routes.GetRouteData(request).Values["MS_SubRoutes"]).First();
+            var routeData = request.GetConfiguration().Routes.GetRouteData(request);
 
-            if (route.Values.ContainsKey("tenantid"))
+            if (routeData != null)
             {
-                string tenant = route.Values["tenantid"].ToString();
-                _logger.DebugFormat("Request {0} -> Tenant {1}", request.RequestUri, tenant);
-                TenantContext.Enter(new TenantId(tenant));
+                var route = ((IHttpRouteData[])routeData.Values["MS_SubRoutes"]).First();
+
+                if (route.Values.ContainsKey("tenantid"))
+                {
+                    string tenant = route.Values["tenantid"].ToString();
+                    _logger.DebugFormat("Request {0} -> Tenant {1}", request.RequestUri, tenant);
+                    TenantContext.Enter(new TenantId(tenant));
+                }
             }
 
             var result = base.SendAsync(request, cancellationToken);
