@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using Castle.Core.Logging;
@@ -66,8 +70,11 @@ namespace Jarvis.DocumentStore.Host.Support
             };
 
             config.MapHttpAttributeRoutes();
-            config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());
-            config.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+
+            var jsonFormatter = new JsonMediaTypeFormatter();
+            jsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());
+            jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            config.Services.Replace(typeof (IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
 
             config.Services.Add(
                 typeof(IExceptionLogger), 
@@ -79,6 +86,22 @@ namespace Jarvis.DocumentStore.Host.Support
             config.MessageHandlers.Add(new TenantContextHandler(factory.Create(typeof(TenantContextHandler))));
 
             application.UseWebApi(config);
+        }
+    }
+
+    public class JsonContentNegotiator : IContentNegotiator
+    {
+        private readonly JsonMediaTypeFormatter _jsonFormatter;
+
+        public JsonContentNegotiator(JsonMediaTypeFormatter formatter)
+        {
+            _jsonFormatter = formatter;
+        }
+
+        public ContentNegotiationResult Negotiate(Type type, HttpRequestMessage request, IEnumerable<MediaTypeFormatter> formatters)
+        {
+            var result = new ContentNegotiationResult(_jsonFormatter, new MediaTypeHeaderValue("application/json"));
+            return result;
         }
     }
 }

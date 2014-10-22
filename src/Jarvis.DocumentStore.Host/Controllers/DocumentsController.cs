@@ -139,6 +139,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/{handle}/{format?}")]
         [HttpGet]
+        [HttpHead]
         public async Task<HttpResponseMessage> GetFormat(
             TenantId tenantId,
             DocumentHandle handle, 
@@ -155,7 +156,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 var formats = document.Formats.ToDictionary(x => 
                     (string) x.Key, 
-                    x => Url.Content("/file/"+handle+"/"+x.Key)
+                    x => Url.Content("/"+tenantId+"/documents/"+handle+"/"+x.Key)
                 );
                 return Request.CreateResponse(HttpStatusCode.OK, formats);
             }
