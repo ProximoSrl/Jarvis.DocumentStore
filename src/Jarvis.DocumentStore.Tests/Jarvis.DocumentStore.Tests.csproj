@@ -142,6 +142,7 @@
     <Compile Include="Misc\ClassWithFileId.cs" />
     <Compile Include="Misc\FileIdJsonConverterTests.cs" />
     <Compile Include="Misc\FileNameWithExtensionTests.cs" />
+    <Compile Include="Misc\RemoteConfigurationServiceTests.cs" />
     <Compile Include="Misc\StringValueMongoTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />

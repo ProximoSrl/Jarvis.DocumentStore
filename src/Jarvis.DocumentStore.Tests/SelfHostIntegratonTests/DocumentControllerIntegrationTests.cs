@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,20 @@ using NUnit.Framework;
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
+    public class DocumentStoreTestConfiguration : DocumentStoreConfiguration
+    {
+        public DocumentStoreTestConfiguration()
+        {
+            IsApiServer = true;
+            IsWorker = false;
+            IsReadmodelBuilder = true;
+
+            QuartzConnectionString = ConfigurationManager.ConnectionStrings["ds.quartz"].ConnectionString;
+
+            TenantSettings.Add(new TestTenantSettings());
+        }
+    }
+
     [TestFixture]
     public class DocumentControllerIntegrationTests
     {
@@ -23,11 +38,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            var config = new DocumentStoreConfiguration(
-                isApiServer: true,
-                isWorker: false,
-                isReadmodelBuilder: true
-            );
+            var config = new DocumentStoreTestConfiguration();
             MongoDbTestConnectionProvider.DropTenant1();
 
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);

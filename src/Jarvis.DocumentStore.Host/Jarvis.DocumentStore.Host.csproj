@@ -79,7 +79,8 @@
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.ConfigurationService.Client">
-      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.0.52\lib\NET40\Jarvis.ConfigurationService.Client.dll</HintPath>
+      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.0.54\lib\NET40\Jarvis.ConfigurationService.Client.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>

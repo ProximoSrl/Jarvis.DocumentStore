@@ -13,6 +13,8 @@ namespace Jarvis.DocumentStore.Host
 
         static int Main(string[] args)
         {
+            SetupColors();
+
             LoadConfiguration();
             
             ConfigureRebuild();
@@ -39,6 +41,15 @@ namespace Jarvis.DocumentStore.Host
             return (int)exitCode;
         }
 
+        static void SetupColors()
+        {
+            if (!Environment.UserInteractive)
+                return;
+            Console.Title = "JARVIS :: Document Store Service";
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.Clear();
+        }
+
         static void LoadConfiguration()
         {
             var roles = ConfigurationManager.AppSettings["roles"];
@@ -55,7 +66,7 @@ namespace Jarvis.DocumentStore.Host
                 isReadmodelBuilder = roleArray.Contains("projections");
             }
 
-            _documentStoreConfiguration = new DocumentStoreConfiguration(isApiServer, isWorker, isReadmodelBuilder);
+            _documentStoreConfiguration = new RemoteDocumentStoreConfiguration();
         }
 
         static void ConfigureRebuild()
@@ -63,13 +74,9 @@ namespace Jarvis.DocumentStore.Host
             if (!Environment.UserInteractive)
                 return;
 
-
             if (!_documentStoreConfiguration.IsReadmodelBuilder)
                 return;
 
-            Console.Title = "JARVIS :: Document Store Service";
-            Console.BackgroundColor = ConsoleColor.DarkBlue;
-            Console.Clear();
             Banner();
 
             RebuildSettings.Init(

@@ -31,37 +31,29 @@ namespace Jarvis.DocumentStore.Host.Support
             _serverAddress = serverAddress;
         }
 
-        public void Start(DocumentStoreConfiguration roles)
+        public void Start(DocumentStoreConfiguration config)
         {
-            _container = new WindsorContainer();
-            ContainerAccessor.Instance = _container;
-            _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
-            _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
-            _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
-            _container.AddFacility<StartableFacility>();
-            _container.AddFacility<TypedFactoryFacility>();
+            BuildContainer();
 
-            BootstrapConfigurationServiceClient();
-
-            var quartz = ConfigurationServiceClient.Instance.GetSetting(
-                "connectionStrings.ds-quartz"
+            _logger.DebugFormat(
+                "Roles:\n  api: {0}\n  worker : {1}\n  projections: {2}",
+                config.IsApiServer,
+                config.IsWorker,
+                config.IsReadmodelBuilder
             );
 
-            _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
-            _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
-
-            var manager = BuildTenants(_container);
+            var manager = BuildTenants(_container, config);
 
             var installers = new List<IWindsorInstaller>()
             {
                 new CoreInstaller(),
                 new EventStoreInstaller(manager),
-                new SchedulerInstaller(quartz, roles.IsWorker)
+                new SchedulerInstaller(config.QuartzConnectionString, config.IsWorker)
             };
 
             _logger.Debug("Configured Scheduler");
 
-            if (roles.IsApiServer)
+            if (config.IsApiServer)
             {
                 installers.Add(new ApiInstaller());
                 
@@ -80,12 +72,12 @@ namespace Jarvis.DocumentStore.Host.Support
                     new TenantJobsInstaller()
                 };
 
-                if (roles.IsApiServer)
+                if (config.IsApiServer)
                 {
                     tenantInstallers.Add(new TenantApiInstaller())                    ;
                 }
 
-                if (roles.IsReadmodelBuilder)
+                if (config.IsReadmodelBuilder)
                 {
                     tenantInstallers.Add(new ProjectionsInstaller<NotifyReadModelChanges>(tenant));
                     _logger.DebugFormat("Configured Projections for tenant {0}", tenant.Id);
@@ -93,33 +85,31 @@ namespace Jarvis.DocumentStore.Host.Support
                 
                 tenant.Container.Install(tenantInstallers.ToArray());
             }
-
         }
 
-        private void BootstrapConfigurationServiceClient()
+        void BuildContainer()
         {
-            ConfigurationServiceClient.AppDomainInitializer(
-                (message, isError, exception) =>
-                {
-                    if (isError) _logger.Error(message, exception);
-                    else _logger.Info(message);
-                },
-                "JARVIS_CONFIG_SERVICE");
+            _container = new WindsorContainer();
+            ContainerAccessor.Instance = _container;
+            _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
+            _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
+            _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
+            _container.AddFacility<StartableFacility>();
+            _container.AddFacility<TypedFactoryFacility>();
+
+            _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
+            _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
         }
 
-        TenantManager BuildTenants(IWindsorContainer container)
+        TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)
         {
             _logger.Debug("Configuring tenants");
             var manager = new TenantManager(container.Kernel);
             container.Register(Component.For<ITenantAccessor, TenantManager>().Instance(manager));
 
-            var tenants = ConfigurationServiceClient.Instance.GetStructuredSetting("tenants");
-                
-            foreach (string tenantId in tenants)
+            foreach (var settings in config.TenantSettings)
             {
-                _logger.DebugFormat("Adding tenant {0}", tenantId);
-
-                var settings = new DocumentStoreTenantSettings(tenantId);
+                _logger.DebugFormat("Adding tenant {0}", settings.TenantId);
 
                 var tenant = manager.AddTenant(settings);
                 tenant.Container.Kernel.Resolver.AddSubResolver(new CollectionResolver(tenant.Container.Kernel, true));
@@ -130,11 +120,6 @@ namespace Jarvis.DocumentStore.Host.Support
             }
 
             return manager;
-        }
-
-        public T Resolve<T>()
-        {
-            return _container.Resolve<T>();
         }
 
         public void Stop()
