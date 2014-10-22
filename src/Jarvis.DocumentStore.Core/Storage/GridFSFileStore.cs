@@ -10,13 +10,12 @@ namespace Jarvis.DocumentStore.Core.Storage
 {
     public class GridFSFileStore : IFileStore
     {
-        private readonly ITenantAccessor _tenantAccessor;
-        private MongoGridFS _fs;
+        private readonly MongoGridFS _fs;
         public ILogger Logger { get; set; }
 
-        public GridFSFileStore(ITenantAccessor tenantAccessor)
+        public GridFSFileStore(MongoGridFS gridFs)
         {
-            _tenantAccessor = tenantAccessor;
+            _fs = gridFs;
         }
 
         public Stream CreateNew(FileId fileId, FileNameWithExtension fname)
@@ -79,7 +78,7 @@ namespace Jarvis.DocumentStore.Core.Storage
         MongoGridFS GridFs
         {
             get{
-                return this._fs ?? (this._fs = _tenantAccessor.Current.Get<MongoGridFS>("grid.fs"));
+                return _fs;
             }
         }
     }

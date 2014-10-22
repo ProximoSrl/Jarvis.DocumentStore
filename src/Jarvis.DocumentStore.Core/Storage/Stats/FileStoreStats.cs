@@ -16,9 +16,9 @@ namespace Jarvis.DocumentStore.Core.Storage.Stats
 
         readonly MongoGridFS _gridFs;
 
-        public GridFsFileStoreStats(ITenant tenant)
+        public GridFsFileStoreStats(MongoGridFS gridfs)
         {
-            _gridFs = tenant.Get<MongoGridFS>("grid.fs");
+            _gridFs = gridfs;
         }
 
         public Totals GetStats()

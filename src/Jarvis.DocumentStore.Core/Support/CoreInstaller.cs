@@ -7,6 +7,7 @@ using Castle.Windsor;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
 using CQRS.Shared.Factories;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
@@ -14,6 +15,7 @@ using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Storage.Stats;
 using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -29,7 +31,10 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<IPipelineManager>()
                     .ImplementedBy<PipelineManager>(),
                 Component
-                    .For<GridFsFileStoreStats>()
+                    .For<GridFsFileStoreStats>(),
+                Component
+                    .For<MongoGridFS>()
+                    .UsingFactoryMethod(k=> k.Resolve<ITenant>().Get<MongoGridFS>("grid.fs"))
             );
         }
     }
