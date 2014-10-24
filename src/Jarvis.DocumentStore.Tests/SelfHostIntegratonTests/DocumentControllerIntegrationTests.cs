@@ -12,6 +12,7 @@ using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
+using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -61,7 +62,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
-                "Pdf_2",
+                DocumentHandle.FromString("Pdf_2"),
                 new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
                 }
@@ -70,7 +71,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // waits for storage
             Thread.Sleep(2000);
 
-            using (var reader = _documentStoreClient.OpenRead("Pdf_2"))
+            using (var reader = _documentStoreClient.OpenRead(DocumentHandle.FromString("Pdf_2")))
             {
                 using (var downloaded = new MemoryStream())
                 using (var uploaded = new MemoryStream())
@@ -105,7 +106,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             var response = await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
-                "Pdf_1",
+                DocumentHandle.FromString("Pdf_1"),
                 new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
                 }
@@ -117,7 +118,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             Thread.Sleep(500);
 
-            var customData = await _documentStoreClient.GetCustomDataAsync("Pdf_1");
+            var customData = await _documentStoreClient.GetCustomDataAsync(DocumentHandle.FromString("Pdf_1"));
             Assert.NotNull(customData);
             Assert.IsTrue(customData.ContainsKey("callback"));
             Assert.AreEqual("http://localhost/demo", customData["callback"]);
@@ -126,13 +127,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void should_upload_with_a_stream()
         {
-            const string resourceId = "Pdf_4";
+            var handle = DocumentHandle.FromString("Pdf_4");
 
             using (var stream = File.OpenRead(TestConfig.PathToDocumentPdf))
             {
                 var response = await _documentStoreClient.UploadAsync(
                     "demo.pdf",
-                    resourceId,
+                    handle,
                     stream
                 );
 
@@ -158,10 +159,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void should_upload_get_metadata_and_delete_a_document()
         {
-            const string resourceId = "Pdf_3";
+            var handle = DocumentHandle.FromString("Pdf_3");
+
             await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
-                resourceId,
+                handle,
                 new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
                 }
@@ -170,15 +172,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             Thread.Sleep(500);
 
-            var data = await _documentStoreClient.GetCustomDataAsync(resourceId);
+            var data = await _documentStoreClient.GetCustomDataAsync(handle);
 
-            await _documentStoreClient.DeleteAsync(resourceId);
+            await _documentStoreClient.DeleteAsync(handle);
 
             Thread.Sleep(500);
 
             var ex = Assert.Throws<HttpRequestException>(async() =>
             {
-                await _documentStoreClient.GetCustomDataAsync(resourceId);
+                await _documentStoreClient.GetCustomDataAsync(handle);
             });
 
             Assert.IsTrue(ex.Message.Contains("404"));
@@ -188,15 +190,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void should_upload_all_documents()
         {
             Task.WaitAll(
-                _documentStoreClient.UploadAsync(TestConfig.PathToWordDocument, "docx"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToExcelDocument, "xlsx"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointDocument, "pptx"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointShow, "ppsx"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, "odt"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentSpreadsheet, "ods"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentPresentation, "odp"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToRTFDocument, "rtf"),
-                _documentStoreClient.UploadAsync(TestConfig.PathToHtml, "html")
+                _documentStoreClient.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("docx")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToExcelDocument, DocumentHandle.FromString("xlsx")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointDocument, DocumentHandle.FromString("pptx")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointShow, DocumentHandle.FromString("ppsx")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, DocumentHandle.FromString("odt")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentSpreadsheet, DocumentHandle.FromString("ods")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentPresentation, DocumentHandle.FromString("odp")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToRTFDocument, DocumentHandle.FromString("rtf")),
+                _documentStoreClient.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html"))
             );
 
             Debug.WriteLine("Done");

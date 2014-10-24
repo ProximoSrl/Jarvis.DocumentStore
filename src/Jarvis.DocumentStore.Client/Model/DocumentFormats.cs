@@ -22,6 +22,11 @@ namespace Jarvis.DocumentStore.Client.Model
         public DocumentHandle(string value) : base(value)
         {
         }
+
+        public static DocumentHandle FromString(string handle)
+        {
+            return new DocumentHandle(handle);
+        }
     }
 
     public class DocumentFormats

@@ -99,7 +99,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
         public async Task<UploadedDocumentResponse> UploadAsync(
             string fileNameWithExtension,
-            string documentHandle,
+            DocumentHandle documentHandle,
             Stream inputStream,
             IDictionary<string, object> customData = null)
         {
@@ -113,7 +113,7 @@ namespace Jarvis.DocumentStore.Client
         /// <param name="documentHandle">Document handle</param>
         /// <param name="customData">Custom data</param>
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
-        public async Task<UploadedDocumentResponse> UploadAsync(string pathToFile, string documentHandle, IDictionary<string, object> customData = null)
+        public async Task<UploadedDocumentResponse> UploadAsync(string pathToFile, DocumentHandle documentHandle, IDictionary<string, object> customData = null)
         {
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
             if (fileExt == ".html" || fileExt == ".htm")
@@ -142,7 +142,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
         private async Task<UploadedDocumentResponse> InnerUploadAsync(
             string pathToFile,
-            string documentHandle,
+            DocumentHandle documentHandle,
             IDictionary<string, object> customData
         )
         {
@@ -154,7 +154,7 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        async Task<UploadedDocumentResponse> DoUpload(string documentHandle, string fileNameWithExtension, Stream inputStream, IDictionary<string, object> customData)
+        async Task<UploadedDocumentResponse> DoUpload(DocumentHandle documentHandle, string fileNameWithExtension, Stream inputStream, IDictionary<string, object> customData)
         {
             string fileName = Path.GetFileNameWithoutExtension(fileNameWithExtension);
 
@@ -212,7 +212,7 @@ namespace Jarvis.DocumentStore.Client
         /// </summary>
         /// <param name="documentHandle">Document handle</param>
         /// <returns>Custom data</returns>
-        public async Task<IDictionary<string, object>> GetCustomDataAsync(string documentHandle)
+        public async Task<IDictionary<string, object>> GetCustomDataAsync(DocumentHandle documentHandle)
         {
             using (var client = new HttpClient())
             {
@@ -229,7 +229,7 @@ namespace Jarvis.DocumentStore.Client
         /// <param name="documentHandle">Document handle</param>
         /// <param name="format">Document format</param>
         /// <returns>A document format reader</returns>
-        public DocumentFormatReader OpenRead(string documentHandle, string format = "original")
+        public DocumentFormatReader OpenRead(DocumentHandle documentHandle, string format = "original")
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/" + format);
             return new DocumentFormatReader(endPoint);
@@ -238,11 +238,11 @@ namespace Jarvis.DocumentStore.Client
         /// <summary>
         /// Delete a document from Document Store
         /// </summary>
-        /// <param name="DocumentId">Document handle</param>
+        /// <param name="handle">Document handle</param>
         /// <returns>Task</returns>
-        public async Task DeleteAsync(string DocumentId)
+        public async Task DeleteAsync(DocumentHandle handle)
         {
-            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + DocumentId);
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle);
             using (var client = new HttpClient())
             {
                 await client.DeleteAsync(resourceUri);
