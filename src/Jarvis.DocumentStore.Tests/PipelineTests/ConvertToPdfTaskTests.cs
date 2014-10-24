@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -48,7 +49,13 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [SetUp]
         public void SetUp()
         {
-            _unoConversion.CloseOpenOffice();
+            try
+            {
+                _unoConversion.CloseOpenOffice();
+            }
+            catch 
+            {
+            }
         }
 
         [Test]
