@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Jarvis.DocumentStore.Client.Model;
 using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Client
@@ -200,10 +201,10 @@ namespace Jarvis.DocumentStore.Client
         /// Deserialize custom data from json string
         /// </summary>
         /// <param name="data">json representation of custom data</param>
-        /// <returns>custom data as IDictionary</returns>
-        private Task<IDictionary<string, object>> FromJsonAsync(string data)
+        /// <returns>custom data</returns>
+        private Task<T> FromJsonAsync<T>(string data)
         {
-            return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<IDictionary<string, object>>(data));
+            return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(data));
         }
 
         /// <summary>
@@ -218,7 +219,7 @@ namespace Jarvis.DocumentStore.Client
                 var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@customdata");
 
                 var json = await client.GetStringAsync(endPoint);
-                return await FromJsonAsync(json);
+                return await FromJsonAsync < IDictionary<string, object>>(json);
             }
         }
 
@@ -245,6 +246,22 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new HttpClient())
             {
                 await client.DeleteAsync(resourceUri);
+            }
+        }
+
+        /// <summary>
+        /// Get the formats available for a document handle
+        /// </summary>
+        /// <param name="handle">document handles</param>
+        /// <returns>Document formats</returns>
+        public async Task<DocumentFormats> GetFormatsAsync(DocumentHandle handle)
+        {
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle);
+            using (var client = new HttpClient())
+            {
+                var json = await client.GetStringAsync(resourceUri);
+                var d = await FromJsonAsync<IDictionary<DocumentFormat, Uri>>(json);
+                return new DocumentFormats(d);
             }
         }
     }

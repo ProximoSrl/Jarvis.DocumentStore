@@ -137,13 +137,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return Request.CreateResponse(HttpStatusCode.OK,data.CustomData);
         }
 
-        [Route("{tenantId}/documents/{handle}/{format?}")]
+        [Route("{tenantId}/documents/{handle}")]
         [HttpGet]
-        [HttpHead]
-        public async Task<HttpResponseMessage> GetFormat(
+        public async Task<HttpResponseMessage> GetFormatList(
             TenantId tenantId,
-            DocumentHandle handle, 
-            DocumentFormat format = null
+            DocumentHandle handle
         ){
             var document = GetDocumentByHandle(handle);
 
@@ -152,13 +150,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return DocumentNotFound(handle);
             }
 
-            if (format == null)
+            var formats = document.Formats.ToDictionary(x =>
+                (string) x.Key,
+                x => Url.Content("/" + tenantId + "/documents/" + handle + "/" + x.Key)
+            );
+            return Request.CreateResponse(HttpStatusCode.OK, formats);
+        }
+
+        [Route("{tenantId}/documents/{handle}/{format}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetFormat(
+            TenantId tenantId,
+            DocumentHandle handle,
+            DocumentFormat format
+        ){
+            var document = GetDocumentByHandle(handle);
+
+            if (document == null)
             {
-                var formats = document.Formats.ToDictionary(x => 
-                    (string) x.Key, 
-                    x => Url.Content("/"+tenantId+"/documents/"+handle+"/"+x.Key)
-                );
-                return Request.CreateResponse(HttpStatusCode.OK, formats);
+                return DocumentNotFound(handle);
             }
 
             if (format == DocumentFormats.Original)

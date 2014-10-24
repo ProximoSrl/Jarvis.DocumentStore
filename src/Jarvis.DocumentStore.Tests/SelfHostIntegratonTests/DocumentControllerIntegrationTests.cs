@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
@@ -139,6 +140,19 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 Assert.AreEqual("md5", response.HashType);
                 Assert.AreEqual("http://localhost:5123/tests/documents/pdf_4", response.Uri);
             }
+        }
+
+        [Test]
+        public async void should_get_document_formats()
+        {
+            var handle = new DocumentHandle("Formats");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf,handle);
+
+            // wait background projection polling
+            Thread.Sleep(500);
+            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            Assert.NotNull(formats);
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
         }
 
         [Test]
