@@ -1,5 +1,5 @@
 param(
-    [string]$DestinationFolder = '..\..\DocumentStoreService'
+    [string]$DestinationFolder = '..\..\ServicesDev\Jarvis.DocumentStore.Host'
 )
 
 Import-Module -Name ".\Invoke-MsBuild.psm1"
@@ -14,7 +14,7 @@ if ($compileResult -eq $false)
 
 Write-Host 'Stopping Service DocumentStore'
 
-$service = Get-Service -Name "Jarvis - Document Store"
+$service = Get-Service -Name "Jarvis - Document Store" 
 if ($service -ne $null) 
 {
     Stop-Service "Jarvis - Document Store"
@@ -27,12 +27,12 @@ Remove-Item -Recurse $DestinationFolder
 Write-Host 'Copy new deploy to destination folder'
 
 
-robocopy '..\src\Jarvis.DocumentStore.Host\bin\Release' $DestinationFolder /e 
-robocopy '..\src\Jarvis.DocumentStore.Host\app' "$DestinationFolder\app" /e 
-
+$rco = robocopy '..\src\Jarvis.DocumentStore.Host\bin\Release' $DestinationFolder /e 
+$rco = robocopy '..\src\Jarvis.DocumentStore.Host\app' "$DestinationFolder\app" /e 
+echo $null > "$DestinationFolder\DocumentStore.application"
 if ($service -eq $null) 
 {
-    Write-Host 'Starting the service'
+    Write-Host 'Installing the service in $DestinationFolder\Jarvis.DocumentStore.Host.exe'
     $ps = Start-Process "$DestinationFolder\Jarvis.DocumentStore.Host.exe" -ArgumentList 'install' -Wait -NoNewWindow
     Write-Host 'installing service exited with:' $ps.ExitCode
 } 
