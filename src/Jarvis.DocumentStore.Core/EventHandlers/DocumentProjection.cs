@@ -8,6 +8,7 @@ using CQRS.Kernel.ProjectionEngine;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
+using MongoDB.Driver.Builders;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -15,7 +16,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
         IEventHandler<DocumentDeleted>,
-        IEventHandler<DocumentHasBeenDeduplicated>
+        IEventHandler<DocumentHasBeenDeduplicated>,
+        IEventHandler<DocumentHandleDetached>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
 
@@ -38,6 +40,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override void SetUp()
         {
+            _documents.CreateIndex(IndexKeys<DocumentReadModel>.Ascending(x=>x.MappedHandles));
         }
 
         public void On(DocumentCreated e)
@@ -67,6 +70,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
             {
                 d.AddHandle(e.OtherDocumentHandle, e.OtherFileName);
+            });
+        }
+
+        public void On(DocumentHandleDetached e)
+        {
+            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
+            {
+                d.RemoveHandle(e.Handle);
             });
         }
     }

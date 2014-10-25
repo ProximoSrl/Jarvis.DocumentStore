@@ -57,6 +57,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_same_pdf_with_two_handles_then_reuse_second_handle()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_1")).Wait();
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_2")).Wait();
+            // overwrite handle
+            _docs.UploadAsync(TestConfig.PathToDocumentPng, DocumentHandle.FromString("handle_2")).Wait();
+        }
+
+        [Test]
         public void upload_same_pdf_100_times_with_unique_handle()
         {
             var uploads = Enumerable

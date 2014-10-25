@@ -210,7 +210,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentHandleDetached e)
         {
-            _handleToDoc.Delete(e, e.Handle);
+            var handle = _handleToDoc.FindOneById(e.Handle);
+            if (handle != null && handle.DocumentId == e.AggregateId)
+            {
+                _handleToDoc.Delete(e, e.Handle);
+            }
         }
     }
 }
