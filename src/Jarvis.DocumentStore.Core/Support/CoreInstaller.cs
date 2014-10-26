@@ -35,22 +35,43 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<GridFsFileStoreStats>(),
                 Component
                     .For<MongoGridFS>()
-                    .UsingFactoryMethod(k=> k.Resolve<ITenant>().Get<MongoGridFS>("grid.fs"))
+                    .UsingFactoryMethod(k => k.Resolve<ITenant>().Get<MongoGridFS>("grid.fs"))
             );
         }
     }
 
     public class CoreInstaller : IWindsorInstaller
     {
+        private DocumentStoreConfiguration _config;
+
+        public CoreInstaller(DocumentStoreConfiguration config)
+        {
+            _config = config;
+        }
+
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            if (_config.UseOnlyInMemoryBus)
+            {
+                container.Register(
+                    Component
+                        .For<ICommandBus, IInProcessCommandBus>()
+                        .ImplementedBy<MultiTenantInProcessCommandBus>()
+                    );
+            }
+            else
+            {
+                container.Register(
+                    Component
+                        .For<ICommandBus>()
+                        .ImplementedBy<DocumentStoreCommandBus>(),
+                    Component
+                        .For<IInProcessCommandBus>()
+                        .ImplementedBy<MultiTenantInProcessCommandBus>()
+                );
+            }
+
             container.Register(
-                Component
-                    .For<ICommandBus>()
-                    .ImplementedBy<DocumentStoreCommandBus>(),
-                Component
-                    .For<IInProcessCommandBus>()
-                    .ImplementedBy<MultiTenantInProcessCommandBus>(),
                 Component
                     .For<ConfigService>()
             );

@@ -16,6 +16,7 @@ using CQRS.Shared.MultitenantSupport;
 using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
+using Rebus.Logging;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -33,7 +34,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
         public void Start(DocumentStoreConfiguration config)
         {
-            BuildContainer();
+            BuildContainer(config);
 
             _logger.DebugFormat(
                 "Roles:\n  api: {0}\n  worker : {1}\n  projections: {2}",
@@ -46,7 +47,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             var installers = new List<IWindsorInstaller>()
             {
-                new CoreInstaller(),
+                new CoreInstaller(config),
                 new EventStoreInstaller(manager),
                 new SchedulerInstaller(config.QuartzConnectionString, config.IsWorker)
             };
@@ -58,7 +59,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 installers.Add(new ApiInstaller());
                 
                 _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
-                _logger.Debug("Configured API server");
+                _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
             }
 
             _container.Install(installers.ToArray());
@@ -87,18 +88,20 @@ namespace Jarvis.DocumentStore.Host.Support
             }
         }
 
-        void BuildContainer()
+        void BuildContainer(DocumentStoreConfiguration config)
         {
             _container = new WindsorContainer();
             ContainerAccessor.Instance = _container;
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
-            _container.AddFacility<LoggingFacility>(f => f.LogUsing(new ExtendedLog4netFactory("log4net")));
+
+
+            _container.AddFacility<LoggingFacility>(config.CreateLoggingFacility);
+
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
 
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
-            _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
         }
 
         TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)

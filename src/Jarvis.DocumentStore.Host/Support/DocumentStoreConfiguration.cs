@@ -1,29 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CQRS.Kernel.MultitenantSupport;
 using Jarvis.ConfigurationService.Client;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
-    public abstract class DocumentStoreConfiguration
-    {
-        protected DocumentStoreConfiguration()
-        {
-            TenantSettings = new List<TenantSettings>();
-        }
-
-        public bool IsApiServer { get; protected set; }
-        public bool IsWorker { get; protected set; }
-        public bool IsReadmodelBuilder { get; protected set; }
-        public string QuartzConnectionString { get; protected set; }
-
-        public IList<TenantSettings> TenantSettings { get; private set; }
-    }
-
     public class RemoteDocumentStoreConfiguration : DocumentStoreConfiguration
     {
         public RemoteDocumentStoreConfiguration()

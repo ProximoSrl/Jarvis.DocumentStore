@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Host.Support;
 using MongoDB.Driver;
 

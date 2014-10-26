@@ -35,8 +35,15 @@
     <Reference Include="Castle.Core">
       <HintPath>..\packages\Castle.Core.3.3.1\lib\net45\Castle.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Castle.Facilities.Logging, Version=3.3.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Castle.LoggingFacility.3.3.0\lib\net45\Castle.Facilities.Logging.dll</HintPath>
+    </Reference>
     <Reference Include="Castle.Facilities.QuartzIntegration">
       <HintPath>..\packages\Quartz.Windsor.0.3.2\lib\net40\Castle.Facilities.QuartzIntegration.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Services.Logging.Log4netIntegration">
+      <HintPath>..\packages\Castle.Core-log4net.3.3.1\lib\net45\Castle.Services.Logging.Log4netIntegration.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Windsor">
       <HintPath>..\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
@@ -66,6 +73,9 @@
     </Reference>
     <Reference Include="GraphicsMagick.NET-x86">
       <HintPath>..\packages\GraphicsMagick.NET-Q8-x86.1.3.20.2\lib\net40-client\GraphicsMagick.NET-x86.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson">
       <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Bson.dll</HintPath>
@@ -194,6 +204,7 @@
     <Compile Include="Storage\IFileDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
+    <Compile Include="Support\DocumentStoreConfiguration.cs" />
     <Compile Include="Support\IShutdownActivity.cs" />
     <Compile Include="Support\NullNotifyCommitHandled.cs" />
     <Compile Include="Support\ProjectionsInstaller.cs" />
