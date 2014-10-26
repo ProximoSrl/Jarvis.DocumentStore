@@ -4,6 +4,7 @@ using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using CQRS.Kernel.Commands;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
 using CQRS.Shared.Factories;
@@ -47,6 +48,9 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<ICommandBus>()
                     .ImplementedBy<DocumentStoreCommandBus>(),
+                Component
+                    .For<IInProcessCommandBus>()
+                    .ImplementedBy<MultiTenantInProcessCommandBus>(),
                 Component
                     .For<ConfigService>()
             );

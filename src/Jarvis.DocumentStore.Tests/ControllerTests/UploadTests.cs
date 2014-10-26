@@ -9,6 +9,7 @@ using System.Web.Http;
 using System.Web.Http.Hosting;
 using System.Web.Http.Routing;
 using Castle.Core.Logging;
+using CQRS.Kernel.Commands;
 using CQRS.Kernel.Store;
 using CQRS.Shared.Commands;
 using CQRS.Shared.IdentitySupport;
@@ -30,7 +31,6 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
     {
         protected DocumentsController Controller;
         protected IFileStore FileStore;
-        protected ICQRSRepository Repository;
         protected IIdentityGenerator IdentityGenerator;
         protected IReader<HandleToDocument, DocumentHandle> HandleToDocumentReader;
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
@@ -41,11 +41,11 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         {
             FileStore = Substitute.For<IFileStore>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
-            Repository = Substitute.For<ICQRSRepository>();
             HandleToDocumentReader = Substitute.For<IReader<HandleToDocument, DocumentHandle>>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
+            var bus = Substitute.For<IInProcessCommandBus>();
 
-            Controller = new DocumentsController(FileStore, new ConfigService(), IdentityGenerator, HandleToDocumentReader, DocumentReader, Repository)
+            Controller = new DocumentsController(FileStore, new ConfigService(), IdentityGenerator, HandleToDocumentReader, DocumentReader, bus)
             {
                 Request = new HttpRequestMessage
                 {

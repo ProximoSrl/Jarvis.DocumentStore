@@ -160,6 +160,7 @@
     <Compile Include="Commands\JobHandlersRegistration.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\DocumentsController.cs" />
+    <Compile Include="Controllers\ITenantController.cs" />
     <Compile Include="Controllers\LogController.cs" />
     <Compile Include="Controllers\SchedulerController.cs" />
     <Compile Include="Logging\BufferedMongoDBAppender.cs" />

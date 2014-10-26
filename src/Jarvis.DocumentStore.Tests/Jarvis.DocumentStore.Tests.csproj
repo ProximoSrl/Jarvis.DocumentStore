@@ -149,10 +149,13 @@
     <Compile Include="PipelineTests\ConvertHtmlToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\TestConfig.cs" />
+    <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Support\DocumentStoreTestConfiguration.cs" />
     <Compile Include="SelfHostIntegratonTests\upload_to_external_service.cs" />
     <Compile Include="Support\MongoDbTestConnectionProvider.cs" />
+    <Compile Include="Support\TestTenantSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -190,6 +193,10 @@
     <ProjectReference Include="..\cqrs\CQRS.TestHelpers\CQRS.TestHelpers.csproj">
       <Project>{DF7EF8CC-CDA7-4299-8769-62FDD1654FB9}</Project>
       <Name>CQRS.TestHelpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\cqrs\CQRS.Tests\CQRS.Tests.csproj">
+      <Project>{D5D90909-CFEF-443E-BDDE-318FE638E5C0}</Project>
+      <Name>CQRS.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">
       <Project>{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}</Project>

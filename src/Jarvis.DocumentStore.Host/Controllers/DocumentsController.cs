@@ -10,11 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
+using CQRS.Kernel.Commands;
 using CQRS.Kernel.Store;
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -26,11 +28,6 @@ using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
-    public interface ITenantController
-    {
-    
-    }
-
     public class DocumentsController : ApiController, ITenantController
     {
         readonly IFileStore _fileStore;
@@ -39,9 +36,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IReader<HandleToDocument, DocumentHandle> _handleToDocument;
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
+        public IInProcessCommandBus CommandBus { get; private set; }
+        
+        
+        IDictionary<string, object> _customData;
         FileNameWithExtension _fileName;
-        readonly ICQRSRepository _repository;
-        private IDictionary<string, object> _customData;
 
         public DocumentsController(
             IFileStore fileStore, 
@@ -49,14 +48,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IIdentityGenerator identityGenerator, 
             IReader<HandleToDocument, DocumentHandle> handleToDocument, 
             IReader<DocumentReadModel, DocumentId> documentReader, 
-            ICQRSRepository repository
+            IInProcessCommandBus commandBus
         ){
             _fileStore = fileStore;
             _configService = configService;
             _identityGenerator = identityGenerator;
             _handleToDocument = handleToDocument;
             _documentReader = documentReader;
-            _repository = repository;
+            CommandBus = commandBus;
         }
 
         [Route("{tenantId}/documents/{handle}")]
@@ -247,16 +246,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         void DeleteDocument(DocumentId documentId, DocumentHandle handle)
         {
-            Thread.CurrentPrincipal = new GenericPrincipal(
-                new GenericIdentity("api"), new string[] { }
-            );
-
-            var document = this._repository.GetById<Document>(documentId);
-            if (document.HasBeenCreated)
-            {
-                document.Delete(handle);
-                this._repository.Save(document, Guid.NewGuid(), d => { });
-            }
+            CommandBus.Send(new DeleteDocument(documentId, handle), "api");
         }
         
         private void CreateDocument(
@@ -267,13 +257,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IDictionary<string, object> customData
         )
         {
-            Thread.CurrentPrincipal = new GenericPrincipal(
-                new GenericIdentity("api"), new string[] { }
-            );
+            var createDocument = new CreateDocument(documentId, fileId, handle, fileName, customData);
 
-            var document = new Document();
-            document.Create(documentId, fileId, handle, fileName, customData);
-            this._repository.Save(document, Guid.NewGuid(), d => { });
+            CommandBus.Send(createDocument, "api");
         }
 
         DocumentReadModel GetDocumentByHandle(DocumentHandle handle)

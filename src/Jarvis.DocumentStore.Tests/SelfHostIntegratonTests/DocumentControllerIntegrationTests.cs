@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using CQRS.Tests.DomainTests;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Host.Support;
@@ -17,20 +17,6 @@ using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
-    public class DocumentStoreTestConfiguration : DocumentStoreConfiguration
-    {
-        public DocumentStoreTestConfiguration()
-        {
-            IsApiServer = true;
-            IsWorker = false;
-            IsReadmodelBuilder = true;
-
-            QuartzConnectionString = ConfigurationManager.ConnectionStrings["ds.quartz"].ConnectionString;
-
-            TenantSettings.Add(new TestTenantSettings());
-        }
-    }
-
     [TestFixture]
     public class DocumentControllerIntegrationTests
     {
@@ -55,6 +41,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void TestFixtureTearDown()
         {
             _documentStoreService.Stop();
+            BsonClassMapHelper.Clear();
+
         }
 
         [Test]

@@ -14,4 +14,16 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers
             FindAndModify(cmd.AggregateId, doc => doc.Delete(cmd.Handle));
         }
     }
+
+    public class CreateDocumentCommandHandler : DocumentCommandHandler<CreateDocument>
+    {
+        protected override void Execute(CreateDocument cmd)
+        {
+            FindAndModify(
+                cmd.AggregateId, 
+                doc => doc.Create(cmd.AggregateId,cmd.FileId,cmd.Handle,cmd.FileName,cmd.CustomData),
+                true
+            );
+        }
+    }
 }
