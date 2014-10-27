@@ -75,12 +75,21 @@ namespace Jarvis.DocumentStore.Host.Support
                 var esComponentName = tenant.Id+ "-es";
 
                 tenant1.Container.Register(
+                    Classes
+                        .FromAssemblyContaining<Document>()
+                        .BasedOn<IPipelineHook>()
+                        .WithServiceAllInterfaces(),
                     Component
                         .For<IStoreEvents>()
                         .Named(esComponentName)
-                        .UsingFactory<EventStoreFactory, IStoreEvents>(f => 
-                            f.BuildEventStore(tenant1.GetConnectionString("events"))
-                        )
+                        .UsingFactory<EventStoreFactory, IStoreEvents>(f =>
+                        {
+                            var hooks = tenant1.Container.ResolveAll<IPipelineHook>();
+                            return f.BuildEventStore(
+                                tenant1.GetConnectionString("events"), 
+                                hooks
+                            );
+                        })
                         .LifestyleSingleton(),
                     Component
                         .For<ICQRSRepository, CQRSRepository>()
@@ -95,10 +104,6 @@ namespace Jarvis.DocumentStore.Host.Support
         static void RegisterGlobalComponents(IWindsorContainer container)
         {
             container.Register(
-                Classes
-                    .FromAssemblyContaining<Document>()
-                    .BasedOn<IPipelineHook>()
-                    .WithServiceAllInterfaces(),
                 Component
                     .For<ICQRSConstructAggregates>()
                     .ImplementedBy<AggregateFactory>(),

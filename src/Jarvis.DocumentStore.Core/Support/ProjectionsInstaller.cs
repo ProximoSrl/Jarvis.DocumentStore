@@ -57,10 +57,11 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<INotifyCommitHandled>()
                     .ImplementedBy<NullNotifyCommitHandled>(),
                 Component
-                    .For<ConcurrentProjectionsEngine>()
+                    .For<ConcurrentProjectionsEngine,ITriggerProjectionsUpdate>()
+                    .ImplementedBy<ConcurrentProjectionsEngine>()
                     .LifestyleSingleton()
                     .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
-                    .StartUsingMethod(x => x.Start)
+                    .StartUsingMethod(x => x.StartWithManualPoll)
                     .StopUsingMethod(x => x.Stop),
                 Classes
                     .FromAssemblyContaining<DocumentProjection>()

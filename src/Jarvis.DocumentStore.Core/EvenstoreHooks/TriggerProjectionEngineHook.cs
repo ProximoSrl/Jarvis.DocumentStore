@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using CQRS.Kernel.MultitenantSupport;
+using CQRS.Kernel.ProjectionEngine;
 using CQRS.Shared.MultitenantSupport;
 using NEventStore;
 
@@ -14,6 +15,11 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
     {
         public ILogger Logger { get; set; }
         public ITenantAccessor TenantAccessor { get; set; }
+        public ITriggerProjectionsUpdate Updater { get; set; }
+
+        public TriggerProjectionEngineHook()
+        {
+        }
 
         public override void PostCommit(ICommit committed)
         {
@@ -22,6 +28,8 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
                 committed.CheckpointToken,
                 TenantAccessor.Current.Id
             );
+
+            Updater.Update();
         }
     }
 }
