@@ -14,6 +14,7 @@ using CQRS.Tests.DomainTests;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
@@ -26,6 +27,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
     {
         private DocumentStoreBootstrapper _documentStoreService;
         private ICommandBus _bus;
+        IFileStore _filestore;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -38,6 +40,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _bus = tenant.Container.Resolve<ICommandBus>();
+            _filestore = tenant.Container.Resolve<IFileStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
         }
 
@@ -48,24 +51,38 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             BsonClassMapHelper.Clear();
         }
 
+        FileId Upload(string id, string pathToFile)
+        {
+            var fileId = new FileId(id);
+            _filestore.Upload(fileId, pathToFile );
+            return fileId;
+        }
+
         [Test]
         public void run()
         {
             _bus.Send(new CreateDocument(
                 new DocumentId(1),
-                new FileId("file_1"),
+                Upload("file_1", TestConfig.PathToDocumentPdf),
                 new DocumentHandle("handle_1"),
-                new FileNameWithExtension("a.file"), null)
+                new FileNameWithExtension("file_1.pdf"), null)
             );
 
             _bus.Send(new CreateDocument(
                 new DocumentId(2),
-                new FileId("file_2"),
+                Upload("file_2", TestConfig.PathToDocumentPng),
                 new DocumentHandle("handle_2"),
-                new FileNameWithExtension("a.file"), null)
+                new FileNameWithExtension("file_2.png"), null)
             );
 
-            Thread.Sleep(1000);
+            _bus.Send(new CreateDocument(
+                new DocumentId(3),
+                Upload("file_3", TestConfig.PathToOpenDocumentSpreadsheet),
+                new DocumentHandle("handle_1"),
+                new FileNameWithExtension("file_3.xlsx"), null)
+            );
+
+            Thread.Sleep(5000);
         }
     }
 }
