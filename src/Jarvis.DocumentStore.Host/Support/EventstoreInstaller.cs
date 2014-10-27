@@ -95,6 +95,10 @@ namespace Jarvis.DocumentStore.Host.Support
         static void RegisterGlobalComponents(IWindsorContainer container)
         {
             container.Register(
+                Classes
+                    .FromAssemblyContaining<Document>()
+                    .BasedOn<IPipelineHook>()
+                    .WithServiceAllInterfaces(),
                 Component
                     .For<ICQRSConstructAggregates>()
                     .ImplementedBy<AggregateFactory>(),
@@ -106,10 +110,6 @@ namespace Jarvis.DocumentStore.Host.Support
                     .For<IDetectConflicts>()
                     .ImplementedBy<ConflictDetector>()
                     .LifestyleTransient(),
-                Component
-                    .For<IDispatchCommits>()
-                    .ImplementedBy<NullDispatcher>()
-                    .LifestyleSingleton(),
                 Component
                     .For<ICounterService>()
                     .ImplementedBy<MultitenantCounterService>(),

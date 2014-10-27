@@ -141,9 +141,9 @@
     <Compile Include="Domain\Document\Events\DocumentFormatHasBeenUpdated.cs" />
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\DocumentFormat.cs" />
+    <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
-    <Compile Include="EventHandlers\NullHouseKeeper.cs" />
     <Compile Include="EventHandlers\PipelineHandler.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
@@ -206,7 +206,6 @@
     <Compile Include="Support\CustomQuartzFacility.cs" />
     <Compile Include="Support\DocumentStoreConfiguration.cs" />
     <Compile Include="Support\IShutdownActivity.cs" />
-    <Compile Include="Support\NullNotifyCommitHandled.cs" />
     <Compile Include="Support\ProjectionsInstaller.cs" />
     <Compile Include="Support\SchedulerInstaller.cs" />
     <Compile Include="Support\SchedulerShutdown.cs" />
