@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -10,10 +11,13 @@ using CQRS.Kernel.Commands;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
 using CQRS.Shared.MultitenantSupport;
+using CQRS.Shared.ReadModel;
 using CQRS.Tests.DomainTests;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
@@ -28,9 +32,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private DocumentStoreBootstrapper _documentStoreService;
         private ICommandBus _bus;
         IFileStore _filestore;
+        IReader<HashToDocuments, FileHash> _hashReader;
+        IReader<HandleToDocument, DocumentHandle> _handleReader;
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+
+        [SetUp]
+        public void SetUp()
         {
             var config = new DocumentStoreTestConfiguration { UseOnlyInMemoryBus = true };
             MongoDbTestConnectionProvider.DropTenant1();
@@ -42,10 +49,13 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _bus = tenant.Container.Resolve<ICommandBus>();
             _filestore = tenant.Container.Resolve<IFileStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
+
+            _hashReader = tenant.Container.Resolve<IReader<HashToDocuments, FileHash>>();
+            _handleReader = tenant.Container.Resolve<IReader<HandleToDocument, DocumentHandle>>();
         }
 
-        [TestFixtureTearDown]
-        public void TestFixtureTearDown()
+        [TearDown]
+        public void TearDown()
         {
             _documentStoreService.Stop();
             BsonClassMapHelper.Clear();
@@ -58,31 +68,38 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             return fileId;
         }
 
-        [Test]
-        public void run()
+        void CreateDocument(int id,string handle, string pathToFile)
         {
+            var fname = Path.GetFileName(pathToFile);
             _bus.Send(new CreateDocument(
-                new DocumentId(1),
-                Upload("file_1", TestConfig.PathToDocumentPdf),
-                new DocumentHandle("handle_1"),
-                new FileNameWithExtension("file_1.pdf"), null)
-            );
+                new DocumentId(id),
+                Upload(handle, pathToFile),
+                new DocumentHandle(handle),
+                new FileNameWithExtension(fname), 
+                null
+            ));
+        }
 
-            _bus.Send(new CreateDocument(
-                new DocumentId(2),
-                Upload("file_2", TestConfig.PathToDocumentPng),
-                new DocumentHandle("handle_2"),
-                new FileNameWithExtension("file_2.png"), null)
-            );
+        [Test]
+        public void should_deduplicate()
+        {
+            CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
+            CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPng);
 
-            _bus.Send(new CreateDocument(
-                new DocumentId(3),
-                Upload("file_3", TestConfig.PathToOpenDocumentSpreadsheet),
-                new DocumentHandle("handle_1"),
-                new FileNameWithExtension("file_3.xlsx"), null)
-            );
+            //CreateDocument(1, "handle_1", TestConfig.PathToDocumentPdf);
+            //CreateDocument(3, "handle_3", TestConfig.PathToOpenDocumentSpreadsheet);
 
-            Thread.Sleep(5000);
+            Thread.Sleep(1000);
+
+            Assert.AreEqual(1, _hashReader.AllSortedById.Count());
+
+            var list = _handleReader.AllSortedById.ToArray();
+            Assert.AreEqual(2, list.Length);
+            Assert.AreEqual(new DocumentHandle("handle"), list[0].Id);
+            Assert.AreEqual(new DocumentHandle("handle_bis"), list[1].Id);
+
+            Assert.AreEqual(new DocumentId(1), list[0].DocumentId);
+            Assert.AreEqual(new DocumentId(1), list[1].DocumentId);
         }
     }
 }
