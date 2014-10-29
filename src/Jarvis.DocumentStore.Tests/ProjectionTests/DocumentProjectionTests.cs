@@ -34,12 +34,13 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         IFileStore _filestore;
         IReader<HashToDocuments, FileHash> _hashReader;
         IReader<HandleToDocument, DocumentHandle> _handleReader;
+        IReader<DocumentReadModel, DocumentId> _documentReader;
 
 
         [SetUp]
         public void SetUp()
         {
-            var config = new DocumentStoreTestConfiguration { UseOnlyInMemoryBus = true };
+            var config = new DocumentStoreTestConfiguration();
             MongoDbTestConnectionProvider.DropTenant1();
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _documentStoreService.Start(config);
@@ -52,6 +53,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             _hashReader = tenant.Container.Resolve<IReader<HashToDocuments, FileHash>>();
             _handleReader = tenant.Container.Resolve<IReader<HandleToDocument, DocumentHandle>>();
+            _documentReader = tenant.Container.Resolve<IReader<DocumentReadModel, DocumentId>>();
         }
 
         [TearDown]
@@ -100,6 +102,37 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             Assert.AreEqual(new DocumentId(1), list[0].DocumentId);
             Assert.AreEqual(new DocumentId(1), list[1].DocumentId);
+        }
+
+        [Test]
+        public void should_remove_old_document()
+        {
+            CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
+            CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
+            Thread.Sleep(1000);
+
+            var old_handle_bis_document = _documentReader.FindOneById(new DocumentId(1));
+            Assert.IsNull(old_handle_bis_document);
+
+            var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
+            Assert.NotNull(new_handle_bis_document);
+            Assert.AreEqual(1, new_handle_bis_document.HandlesCount);
+        }
+
+        [Test]
+        public void should_remove_old()
+        {
+            CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
+            CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
+            CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
+            Thread.Sleep(5000);
+
+            var old_handle_bis_document = _documentReader.FindOneById(new DocumentId(1));
+            Assert.IsNull(old_handle_bis_document);
+
+            var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
+            Assert.NotNull(new_handle_bis_document);
+            Assert.AreEqual(1, new_handle_bis_document.HandlesCount);
         }
     }
 }

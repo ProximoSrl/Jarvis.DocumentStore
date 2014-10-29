@@ -13,7 +13,6 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
@@ -21,7 +20,7 @@ using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
-    public class PipelineHandler : AbstractProjection
+    public class ProcessingWorkflow : AbstractProjection
         , IEventHandler<DocumentCreated>
         , IEventHandler<FormatAddedToDocument>
         , IEventHandler<DocumentHandleAttached>
@@ -29,14 +28,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         , IEventHandler<DocumentHandleDetached>
         , IEventHandler<DocumentDeleted>
     {
-        public ILogger Logger { get; set; }
         readonly IFileStore _fileStore;
         readonly IPipelineManager _pipelineManager;
         readonly ICollectionWrapper<HandleToDocument, DocumentHandle> _handleToDoc;
         readonly ICollectionWrapper<HashToDocuments, FileHash> _hashToDocs;
         readonly ICommandBus _commandBus;
         readonly ConfigService _configService;
-        public PipelineHandler(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<HandleToDocument, DocumentHandle> handleToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus, ConfigService configService)
+        public ProcessingWorkflow(IFileStore fileStore, IPipelineManager pipelineManager, ICollectionWrapper<HandleToDocument, DocumentHandle> handleToDoc, ICollectionWrapper<HashToDocuments, FileHash> hashToDocs, ICommandBus commandBus, ConfigService configService)
         {
             _fileStore = fileStore;
             _pipelineManager = pipelineManager;
@@ -61,11 +59,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentCreated e)
         {
+            Logger.DebugFormat("DocumentCreated {0}", e.Describe());
             var documentId = (DocumentId)e.AggregateId;
 
-            var descriptor = _fileStore.GetDescriptor(e.FileId);
             _handleToDoc.Upsert(e, e.Handle, CreateNewMapping(e), UpdateCurrentMapping(e));
 
+            var descriptor = _fileStore.GetDescriptor(e.FileId);
             var hash = descriptor.Hash;
             var hashToDoc = _hashToDocs.Upsert(e, hash,
                 () => new HashToDocuments(hash, documentId, e.FileId),
@@ -93,7 +92,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             using (var otherStream = otherFileDescriptor.OpenRead())
                             using (var thisStream = descriptor.OpenRead())
                             {
-                                if (StreamsContentsAreEqual(otherStream, thisStream))
+                                if (StreamHelper.StreamsContentsAreEqual(otherStream, thisStream))
                                 {
                                     Logger.DebugFormat(
                                         "Deduplicating file {0} -> {1}",
@@ -136,7 +135,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             return m =>
             {
-                m.DocumentId = (DocumentId) e.AggregateId;
+                var aggregateId = (DocumentId) e.AggregateId;
+                if (m.DocumentId != aggregateId && !IsReplay)
+                {
+                    _commandBus.Send(new DeleteDocument(m.DocumentId, e.Handle));
+                }
+
+                m.DocumentId = aggregateId;
                 m.CustomData = e.CustomData;
             };
         }
@@ -148,44 +153,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 DocumentId = (DocumentId)e.AggregateId,
                 CustomData = e.CustomData
             };
-        }
-
-        /// <summary>
-        /// http://stackoverflow.com/questions/1358510/how-to-compare-2-files-fast-using-net
-        /// </summary>
-        /// <param name="stream1"></param>
-        /// <param name="stream2"></param>
-        /// <returns></returns>
-        private static bool StreamsContentsAreEqual(Stream stream1, Stream stream2)
-        {
-            const int bufferSize = 2048 * 2;
-            var buffer1 = new byte[bufferSize];
-            var buffer2 = new byte[bufferSize];
-
-            while (true)
-            {
-                int count1 = stream1.Read(buffer1, 0, bufferSize);
-                int count2 = stream2.Read(buffer2, 0, bufferSize);
-
-                if (count1 != count2)
-                {
-                    return false;
-                }
-
-                if (count1 == 0)
-                {
-                    return true;
-                }
-
-                int iterations = (int)Math.Ceiling((double)count1 / sizeof(Int64));
-                for (int i = 0; i < iterations; i++)
-                {
-                    if (BitConverter.ToInt64(buffer1, i * sizeof(Int64)) != BitConverter.ToInt64(buffer2, i * sizeof(Int64)))
-                    {
-                        return false;
-                    }
-                }
-            }
         }
 
         public void On(DocumentHasBeenDeduplicated e)

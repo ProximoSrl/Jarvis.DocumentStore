@@ -26,6 +26,13 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             this.Handles = new HashSet<DocumentHandle>();
         }
 
+        void When(DocumentDeleted e)
+        {
+            this.HasBeenDeleted = true;
+        }
+
+        public bool HasBeenDeleted { get; private set; }
+
         void When(DocumentCreated e)
         {
             this.AggregateId = e.AggregateId;

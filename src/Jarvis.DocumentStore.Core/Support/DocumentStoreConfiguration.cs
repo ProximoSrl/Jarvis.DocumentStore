@@ -16,7 +16,6 @@ namespace Jarvis.DocumentStore.Core.Support
         public bool IsWorker { get; protected set; }
         public bool IsReadmodelBuilder { get; protected set; }
         public string QuartzConnectionString { get; protected set; }
-        public bool UseOnlyInMemoryBus { get; set; }
         public IList<TenantSettings> TenantSettings { get; private set; }
 
         public virtual void CreateLoggingFacility(LoggingFacility f)

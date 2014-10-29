@@ -1,5 +1,4 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
@@ -9,7 +8,6 @@ using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
 using CQRS.Shared.Factories;
 using CQRS.Shared.MultitenantSupport;
-using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Services;
@@ -51,56 +49,16 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            if (_config.UseOnlyInMemoryBus)
-            {
-                container.Register(
-                    Component
-                        .For<ICommandBus, IInProcessCommandBus>()
-                        .ImplementedBy<MultiTenantInProcessCommandBus>()
-                    );
-            }
-            else
-            {
-                container.Register(
-                    Component
-                        .For<ICommandBus>()
-                        .ImplementedBy<DocumentStoreCommandBus>(),
-                    Component
-                        .For<IInProcessCommandBus>()
-                        .ImplementedBy<MultiTenantInProcessCommandBus>()
+            container.Register(
+                Component
+                    .For<ICommandBus, IInProcessCommandBus>()
+                    .ImplementedBy<MultiTenantInProcessCommandBus>()
                 );
-            }
 
             container.Register(
                 Component
                     .For<ConfigService>()
             );
-        }
-    }
-
-    public class DocumentStoreCommandBus : ICommandBus
-    {
-        private readonly IJobHelper _jobHelper;
-
-        public DocumentStoreCommandBus(IJobHelper jobHelper)
-        {
-            _jobHelper = jobHelper;
-        }
-
-        public ICommand Send(ICommand command, string impersonatingUser = null)
-        {
-            _jobHelper.QueueCommand(command, impersonatingUser);
-            return command;
-        }
-
-        public ICommand Defer(TimeSpan delay, ICommand command, string impersonatingUser = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ICommand SendLocal(ICommand command, string impersonatingUser = null)
-        {
-            throw new NotImplementedException();
         }
     }
 }

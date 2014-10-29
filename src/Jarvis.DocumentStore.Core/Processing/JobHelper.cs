@@ -48,23 +48,6 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);        
         }
 
-        public void QueueCommand(ICommand command, string asUser)
-        {
-            var jobType = typeof (CommandRunnerJob<>).MakeGenericType(new[] {command.GetType()});
-            var job = GetBuilderForJob(jobType)
-                .UsingJobData(JobKeys.Command, CommandSerializer.Serialize(command))
-                .Build();
-
-            if (!job.JobDataMap.ContainsKey(JobKeys.TenantId))
-            {
-                throw new Exception("Command needs a tenant context");
-            }
-
-            var trigger = CreateTrigger(TimeSpan.FromDays(-1));
-            trigger.Priority = 100;
-            _scheduler.ScheduleJob(job, trigger);
-        }
-
         public void QueueResize(PipelineId pipelineId, DocumentId documentId, FileId fileId,string imageFormat)
         {
             var job = GetBuilderForJob<ImageResizeJob>()

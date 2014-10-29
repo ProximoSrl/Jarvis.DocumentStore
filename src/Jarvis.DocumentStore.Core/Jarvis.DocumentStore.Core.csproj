@@ -144,8 +144,9 @@
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
-    <Compile Include="EventHandlers\PipelineHandler.cs" />
+    <Compile Include="EventHandlers\ProcessingWorkflow.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
+    <Compile Include="EventHandlers\StreamHelper.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
     <Compile Include="Jobs\CleanupJob.cs" />
     <Compile Include="Jobs\CommandRunnerJob.cs" />

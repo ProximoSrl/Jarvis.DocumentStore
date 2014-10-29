@@ -23,6 +23,8 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Create(DocumentId id, FileId fileId, DocumentHandle handle, FileNameWithExtension fileName, IDictionary<string, object> customData = null)
         {
+            ThrowIfDeleted();
+
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "Already created");
 
@@ -31,6 +33,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void AddFormat(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)
         {
+            ThrowIfDeleted();
             if (InternalState.HasFormat(documentFormat))
             {
                 RaiseEvent(new DocumentFormatHasBeenUpdated(documentFormat, fileId, createdBy));
@@ -43,6 +46,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void DeleteFormat(DocumentFormat documentFormat)
         {
+            ThrowIfDeleted();
             if (InternalState.HasFormat(documentFormat))
             {
                 RaiseEvent(new DocumentFormatHasBeenDeleted(documentFormat));
@@ -67,8 +71,15 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Deduplicate(DocumentId documentId, DocumentHandle handle, FileNameWithExtension fileName)
         {
+            ThrowIfDeleted();
             RaiseEvent(new DocumentHandleAttached(handle, fileName));
             RaiseEvent(new DocumentHasBeenDeduplicated(documentId,handle));
+        }
+
+        void ThrowIfDeleted()
+        {
+            if(InternalState.HasBeenDeleted)
+                throw new DomainException(this.Id, "Document has been deleted");
         }
     }
 }
