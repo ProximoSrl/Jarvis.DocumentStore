@@ -6,18 +6,28 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
     public class DocumentHasBeenDeduplicated : DomainEvent
     {
         public DocumentId OtherDocumentId { get; private set; }
-        public DocumentHandle OtherDocumentHandle { get; private set; }
-        public FileNameWithExtension OtherFileName { get; private set; }
+        public DocumentHandle Handle { get; private set; }
 
         public DocumentHasBeenDeduplicated(
-            DocumentId otherDocumentId, 
-            DocumentHandle otherDocumentHandle, 
-            FileNameWithExtension otherFileName
+            DocumentId otherDocumentId, DocumentHandle handle)
+        {
+            Handle = handle;
+            OtherDocumentId = otherDocumentId;
+        }
+    }
+
+    public class DocumentHandleAttached : DomainEvent
+    {
+        public DocumentHandle Handle { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
+
+        public DocumentHandleAttached(
+            DocumentHandle handle, 
+            FileNameWithExtension fileName
         )
         {
-            OtherDocumentId = otherDocumentId;
-            OtherDocumentHandle = otherDocumentHandle;
-            OtherFileName = otherFileName;
+            Handle = handle;
+            FileName = fileName;
         }
     }
 }

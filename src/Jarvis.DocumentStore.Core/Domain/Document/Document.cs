@@ -67,7 +67,8 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Deduplicate(DocumentId documentId, DocumentHandle handle, FileNameWithExtension fileName)
         {
-            RaiseEvent(new DocumentHasBeenDeduplicated(documentId, handle, fileName));
+            RaiseEvent(new DocumentHandleAttached(handle, fileName));
+            RaiseEvent(new DocumentHasBeenDeduplicated(documentId,handle));
         }
     }
 }

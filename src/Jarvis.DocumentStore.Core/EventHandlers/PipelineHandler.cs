@@ -24,6 +24,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     public class PipelineHandler : AbstractProjection
         , IEventHandler<DocumentCreated>
         , IEventHandler<FormatAddedToDocument>
+        , IEventHandler<DocumentHandleAttached>
         , IEventHandler<DocumentHasBeenDeduplicated>
         , IEventHandler<DocumentHandleDetached>
         , IEventHandler<DocumentDeleted>
@@ -189,15 +190,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentHasBeenDeduplicated e)
         {
-            _handleToDoc.FindAndModify(e,
-                e.OtherDocumentHandle,
-                map => map.DocumentId = (DocumentId)e.AggregateId
-            );
-
             if (IsReplay)
                 return;
 
-            _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.OtherDocumentHandle));
+            _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle));
         }
 
         public void On(DocumentDeleted e)
@@ -215,6 +211,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             {
                 _handleToDoc.Delete(e, e.Handle);
             }
+        }
+
+        public void On(DocumentHandleAttached e)
+        {
+            _handleToDoc.FindAndModify(e,
+                e.Handle,
+                map => map.DocumentId = (DocumentId)e.AggregateId
+            );
         }
     }
 }

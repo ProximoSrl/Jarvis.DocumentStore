@@ -38,9 +38,9 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             this.Formats.Add(e.DocumentFormat, e.FileId);
         }
 
-        private void When(DocumentHasBeenDeduplicated e)
+        private void When(DocumentHandleAttached e)
         {
-            this.Handles.Add(e.OtherDocumentHandle);
+            this.Handles.Add(e.Handle);
         }
 
         void When(DocumentHandleDetached e)

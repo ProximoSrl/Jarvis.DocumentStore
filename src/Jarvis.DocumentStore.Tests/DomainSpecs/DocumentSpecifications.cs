@@ -251,12 +251,21 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
             EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
 
+        It DocumentHandleAttached_event_should_be_raised = () =>
+            EventHasBeenRaised<DocumentHandleAttached>().ShouldBeTrue();
+
         It DocumentHasBeenDeduplicated_event_should_have_documentId_and_handle = () =>
         {
             var e = RaisedEvent<DocumentHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
-            Assert.AreSame(OtherHandle, e.OtherDocumentHandle);
-            Assert.AreSame(_otherFileName, e.OtherFileName);
+            Assert.AreSame(OtherHandle, e.Handle);
+        };
+
+        It DocumentHandleAttached_event_should_have_handle_and_fileName = () =>
+        {
+            var e = RaisedEvent<DocumentHandleAttached>();
+            Assert.AreSame(OtherHandle, e.Handle);
+            Assert.AreSame(_otherFileName, e.FileName);
         };
     }
 }

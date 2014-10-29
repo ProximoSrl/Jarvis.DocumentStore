@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
         IEventHandler<DocumentDeleted>,
-        IEventHandler<DocumentHasBeenDeduplicated>,
+        IEventHandler<DocumentHandleAttached>,
         IEventHandler<DocumentHandleDetached>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
@@ -65,19 +65,19 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.Delete(e, (DocumentId) e.AggregateId);
         }
 
-        public void On(DocumentHasBeenDeduplicated e)
-        {
-            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
-            {
-                d.AddHandle(e.OtherDocumentHandle, e.OtherFileName);
-            });
-        }
-
         public void On(DocumentHandleDetached e)
         {
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
             {
                 d.RemoveHandle(e.Handle);
+            });
+        }
+
+        public void On(DocumentHandleAttached e)
+        {
+            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
+            {
+                d.AddHandle(e.Handle, e.FileName);
             });
         }
     }
