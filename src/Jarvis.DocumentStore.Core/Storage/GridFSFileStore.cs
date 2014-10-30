@@ -10,15 +10,22 @@ using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
-    public class GridFsFileStoreWriter : IFileStoreWriter
+    public class FileStoreWriter : IFileStoreWriter
     {
         public FileId FileId { get; private set; }
         public Stream WriteStream { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
 
-        public GridFsFileStoreWriter(FileId fileId, Stream writeStream)
+        public FileStoreWriter(FileId fileId, Stream writeStream, FileNameWithExtension fileName)
         {
+            FileName = fileName;
             FileId = fileId;
             WriteStream = writeStream;
+        }
+
+        public void Dispose()
+        {
+            WriteStream.Dispose();
         }
     }
 
@@ -44,7 +51,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Id = (string)fileId
             });
 
-            return new GridFsFileStoreWriter(fileId, stream);
+            return new FileStoreWriter(fileId, stream,fname);
         }
 
         public Stream CreateNew(FileId fileId, FileNameWithExtension fname)
@@ -86,21 +93,21 @@ namespace Jarvis.DocumentStore.Core.Storage
             return localFileName;
         }
 
-        public void Upload(FileId fileId, string pathToFile)
+        public FileId Upload(string pathToFile)
         {
-            Logger.DebugFormat("Uploading Id: {0} from file: {1}", fileId, pathToFile);
             using (var inStream = File.OpenRead(pathToFile))
             {
-                Upload(fileId, new FileNameWithExtension(Path.GetFileName(pathToFile)), inStream);
+                return Upload(new FileNameWithExtension(Path.GetFileName(pathToFile)), inStream);
             }
         }
 
-        public void Upload(FileId fileId, FileNameWithExtension fileName, Stream sourceStrem)
+        public FileId Upload(FileNameWithExtension fileName, Stream sourceStrem)
         {
-            Logger.DebugFormat("Uploading Id: {0} Name: {1}", fileId, fileName);
-            using (var outStream = CreateNew(fileId, fileName))
+            using (var writer = CreateNew(fileName))
             {
-                sourceStrem.CopyTo(outStream);
+                Logger.DebugFormat("Uploading Id: {0} Name: {1}", writer.FileId, fileName);
+                sourceStrem.CopyTo(writer.WriteStream);
+                return writer.FileId;
             }
         }
 

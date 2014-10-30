@@ -38,9 +38,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
         
-        
         IDictionary<string, object> _customData;
         FileNameWithExtension _fileName;
+        FileId _fileId;
 
         public DocumentsController(
             IFileStore fileStore, 
@@ -65,9 +65,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var documentId = _identityGenerator.New<DocumentId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
-            var fileId = new FileId(documentId);
-            var errorMessage = await UploadFromHttpContent(Request.Content, fileId);
-            Logger.DebugFormat("File {0} processed with message {1}", fileId, errorMessage);
+            var errorMessage = await UploadFromHttpContent(Request.Content);
+            Logger.DebugFormat("File {0} processed with message {1}", _fileId, errorMessage);
 
             if (errorMessage != null)
             {
@@ -77,11 +76,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            CreateDocument(documentId, fileId, handle, _fileName, _customData);
+            CreateDocument(documentId, _fileId, handle, _fileName, _customData);
 
-            Logger.DebugFormat("File {0} uploaded as {1}", fileId, documentId);
+            Logger.DebugFormat("File {0} uploaded as {1}", _fileId, documentId);
 
-            var storedFile = _fileStore.GetDescriptor(fileId);
+            var storedFile = _fileStore.GetDescriptor(_fileId);
 
             return Request.CreateResponse(
                 HttpStatusCode.OK, 
@@ -98,15 +97,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// Upload a file sent in an http request
         /// </summary>
         /// <param name="httpContent">request's content</param>
-        /// <param name="fileId">Id of the new file</param>
         /// <returns>Error message or null</returns>
-        private async Task<string> UploadFromHttpContent(HttpContent httpContent, FileId fileId)
+        private async Task<string> UploadFromHttpContent(HttpContent httpContent)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
                 return "Attachment not found!";
 
             var provider = await httpContent.ReadAsMultipartAsync(
-                new FileStoreMultipartStreamProvider(_fileStore, fileId, _configService)
+                new FileStoreMultipartStreamProvider(_fileStore, _configService)
             );
 
             if (provider.Filename == null)
@@ -121,7 +119,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             _fileName = provider.Filename;
-
+            _fileId = provider.FileId;
             return null;
         }
 

@@ -26,10 +26,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             analyzer.Run(pathToFile, content =>
             {
-                var tikaFileId = new FileId(this.FileId + ".tika.html");
+                var tikaFileName = new FileNameWithExtension(this.FileId + ".tika.html");
+                FileId tikaFileId;
                 using (var htmlReader = new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 {
-                    FileStore.Upload(tikaFileId, new FileNameWithExtension(tikaFileId), htmlReader);
+                    tikaFileId = FileStore.Upload(tikaFileName, htmlReader);
                 }
 
                 CommandBus.Send(new AddFormatToDocument(

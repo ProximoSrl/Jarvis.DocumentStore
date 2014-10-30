@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     public class ConvertHtmlToPdfTaskTests 
     {
         GridFSFileStore _fileStore;
-
+        FileId _fileId;
         [SetUp]
         public void SetUp()
         {
@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
 
             var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
             var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
-            _fileStore.Upload(new FileId("ziphtml"), zipped);
+            _fileId = _fileStore.Upload(zipped);
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                 Logger = new ConsoleLogger()
             };
 
-            var newFileId = conversion.Run(new TenantId("test"), new FileId("ziphtml"));
+            var newFileId = conversion.Run(new TenantId("test"), _fileId);
 
             var fi = _fileStore.GetDescriptor(newFileId);
             Assert.AreEqual("application/pdf", fi.ContentType);

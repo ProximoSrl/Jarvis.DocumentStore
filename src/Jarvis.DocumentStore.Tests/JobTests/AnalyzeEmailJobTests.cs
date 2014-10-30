@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             ICommand command = null;
 
             ConfigureFileDownload("file_1", TestConfig.PathToEml);
-            ExpectFileUpload("file_1.ezip", f => storedFileName = f);
+            ExpectFileUpload(f => storedFileName = f);
             CaptureCommand(c => command = c);
 
             var job = BuildJob<AnalyzeEmailJob>();
@@ -38,7 +38,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             }));
 
             // assert
-            FileStore.Received(1).Upload(new FileId("file_1.ezip"), Arg.Any<string>());
+            FileStore.Received(1).Upload(Arg.Any<string>());
             Assert.NotNull(storedFileName);
             Assert.IsTrue(storedFileName.EndsWith("message.ezip"));
 

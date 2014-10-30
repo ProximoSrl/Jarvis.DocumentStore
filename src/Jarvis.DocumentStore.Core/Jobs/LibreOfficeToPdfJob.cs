@@ -31,8 +31,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var sourceFile = DownloadFileToWorkingFolder(this.FileId);
             var outputFile = _libreOfficeConversion.Run(sourceFile, "pdf");
 
-            var newFileId = new FileId(FileId+ ".pdf");
-            FileStore.Upload(newFileId, outputFile);
+            var newFileId = FileStore.Upload(outputFile);
             
             CommandBus.Send(new AddFormatToDocument(
                 this.DocumentId, 

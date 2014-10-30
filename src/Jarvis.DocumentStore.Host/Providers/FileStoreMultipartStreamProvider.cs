@@ -10,19 +10,21 @@ namespace Jarvis.DocumentStore.Host.Providers
     public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider
     {
         readonly IFileStore _store;
-        readonly FileId _fileId;
         readonly ConfigService _config;
-        public FileNameWithExtension Filename { get; private set; }
         public bool IsInvalidFile { get; private set; }
+        public FileNameWithExtension Filename { get; private set; }
 
+        public FileId FileId{
+            get { return _writer != null ? _writer.FileId : null; }
+        }
+
+        IFileStoreWriter _writer;
         public FileStoreMultipartStreamProvider(
             IFileStore store, 
-            FileId fileId,
             ConfigService config
         ) : base(Path.GetTempPath())
         {
             _store = store;
-            _fileId = fileId;
             _config = config;
         }
 
@@ -32,8 +34,7 @@ namespace Jarvis.DocumentStore.Host.Providers
             if (fname == null)
                 return new MemoryStream();
 
-
-            Filename  = new FileNameWithExtension(fname);
+            Filename = new FileNameWithExtension(fname);
 
             if (!_config.IsFileAllowed(Filename))
             {
@@ -41,7 +42,9 @@ namespace Jarvis.DocumentStore.Host.Providers
                 return new MemoryStream();
             }
 
-            return _store.CreateNew(_fileId, Filename);
+            _writer = _store.CreateNew(Filename);
+
+            return _writer.WriteStream;
         }
     }
 }

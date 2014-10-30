@@ -40,9 +40,9 @@ namespace Jarvis.DocumentStore.Core.Jobs
                         Logger.DebugFormat("Resizing {0} - {1}", this.FileId, resizeId);
                         var resizedImageFileName = new FileNameWithExtension(this.FileId + "." + size.Name + "." + fileExtension);
 
-                        using (var destStream = FileStore.CreateNew(resizeId, resizedImageFileName))
+                        using (var writer = FileStore.CreateNew(resizedImageFileName))
                         {
-                            ImageResizer.Shrink(pageStream, destStream, size.Width, size.Height);
+                            ImageResizer.Shrink(pageStream, writer.WriteStream, size.Width, size.Height);
                         }
 
                         CommandBus.Send(new AddFormatToDocument(

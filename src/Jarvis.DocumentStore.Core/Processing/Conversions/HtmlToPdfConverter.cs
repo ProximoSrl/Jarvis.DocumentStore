@@ -58,12 +58,11 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
 
             var converter = Factory.Create();
             var pdf = converter.Convert(document);
-            var pdfFileId = new FileId(fileId + ".pdf");
+            FileId pdfFileId;
 
             using (var source = new MemoryStream(pdf))
             {
-                _fileStore.Upload(
-                    pdfFileId, 
+                pdfFileId = _fileStore.Upload(
                     new FileNameWithExtension(Path.ChangeExtension(Path.GetFileName(uri.LocalPath), "pdf")),
                     source
                 );

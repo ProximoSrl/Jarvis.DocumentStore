@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using NSubstitute;
 using NUnit.Framework;
@@ -21,10 +22,11 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         public void should_resize_image()
         {
             IList<FileNameWithExtension> files = new List<FileNameWithExtension>();
-            FileStore.CreateNew(Arg.Any<FileId>(), Arg.Any<FileNameWithExtension>()).Returns(info =>
+            FileStore.CreateNew(Arg.Any<FileNameWithExtension>()).Returns(info =>
             {
                 files.Add(info.Arg<FileNameWithExtension>());
-                return new MemoryStream();
+                var fileWriter = new FileStoreWriter(new FileId("sample_1"), new MemoryStream(), new FileNameWithExtension("a.file"));
+                return fileWriter;
             });
 
             ConfigureGetFile("doc.png", TestConfig.PathToDocumentPng);

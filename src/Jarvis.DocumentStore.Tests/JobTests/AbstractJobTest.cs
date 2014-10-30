@@ -98,15 +98,12 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                 });
         }
 
-        protected void ExpectFileUpload(string fileId, Action<string> action = null)
+        protected void ExpectFileUpload(Action<string> action = null)
         {
             if(action == null)
                 action = s => { };
 
-            var id = new FileId(fileId);
-            FileStore
-                .Upload(id, Arg.Do( action ));
-
+            var id = FileStore.Upload(Arg.Do(action));
         }
 
         protected void CaptureCommand(Action<ICommand> action)

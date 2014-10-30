@@ -63,19 +63,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             BsonClassMapHelper.Clear();
         }
 
-        FileId Upload(string id, string pathToFile)
-        {
-            var fileId = new FileId(id);
-            _filestore.Upload(fileId, pathToFile );
-            return fileId;
-        }
-
         void CreateDocument(int id,string handle, string pathToFile)
         {
             var fname = Path.GetFileName(pathToFile);
             _bus.Send(new CreateDocument(
                 new DocumentId(id),
-                Upload(handle, pathToFile),
+                _filestore.Upload(pathToFile),
                 new DocumentHandle(handle),
                 new FileNameWithExtension(fname), 
                 null

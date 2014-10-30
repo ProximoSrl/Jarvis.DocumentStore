@@ -116,7 +116,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             HttpResponseMessage response = null;
             using (var stream = new MemoryStream())
             {
-                FileStore.CreateNew(Arg.Any<FileId>(), Arg.Any<FileNameWithExtension>()).Returns(stream);
+                var fileWriter = new FileStoreWriter(new FileId("sample_1"), stream, new FileNameWithExtension("a.file"));
+                FileStore.CreateNew(Arg.Any<FileNameWithExtension>()).Returns(fileWriter);
                 response = await upload_file(TestConfig.PathToDocumentPdf);
                 streamLen = stream.Length;
             }
