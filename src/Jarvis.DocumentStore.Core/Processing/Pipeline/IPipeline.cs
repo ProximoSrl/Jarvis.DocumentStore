@@ -7,15 +7,15 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
     public interface IPipeline
     {
         PipelineId Id { get; }
-        bool ShouldHandleFile(DocumentId documentId, IFileDescriptor descriptor);
-        void Start(DocumentId documentId, IFileDescriptor descriptor);
+        bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor);
+        void Start(DocumentId documentId, IFileStoreDescriptor storeDescriptor);
         void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
         void Attach(IPipelineManager manager);
     }
 
     public interface IPipelineListener
     {
-        void OnStart(IPipeline pipeline, DocumentId documentId, IFileDescriptor descriptor);
+        void OnStart(IPipeline pipeline, DocumentId documentId, IFileStoreDescriptor storeDescriptor);
         void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, FileId fileId);
     }
 }

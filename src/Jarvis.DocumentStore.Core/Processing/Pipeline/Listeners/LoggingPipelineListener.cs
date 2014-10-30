@@ -13,13 +13,13 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline.Listeners
     public class LoggingPipelineListener : IPipelineListener
     {
         public ILogger Logger { get; set; }
-        public void OnStart(IPipeline pipeline, DocumentId documentId, IFileDescriptor descriptor)
+        public void OnStart(IPipeline pipeline, DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
             Logger.DebugFormat(
                 "OnStart pipeline {0} with {1} (File {2})",
                 pipeline.Id,
                 documentId,
-                descriptor.FileId
+                storeDescriptor.FileId
             );
         }
 

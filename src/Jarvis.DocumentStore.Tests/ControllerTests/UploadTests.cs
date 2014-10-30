@@ -109,7 +109,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public async void calling_upload_with_supported_file_type_should_return_Ok()
         {
             IdentityGenerator.New<DocumentId>().Returns(new DocumentId(1));
-            var descriptor = Substitute.For<IFileDescriptor>();
+            var descriptor = Substitute.For<IFileStoreDescriptor>();
             descriptor.Hash.Returns(new FileHash("abc"));
             FileStore.GetDescriptor(Arg.Any<FileId>()).Returns(descriptor);
             long streamLen = 0;
@@ -248,7 +248,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentHandle(documentHandle, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(fileId).Returns(i => new FsFileDescriptor(fileId, TestConfig.PathToWordDocument));
+            FileStore.GetDescriptor(fileId).Returns(i => new FsFileStoreDescriptor(fileId, TestConfig.PathToWordDocument));
 
             // act
             using (var response = Controller.GetFormat(_tenantId, documentHandle, format).Result)
@@ -279,7 +279,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentHandle(documentHandle, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileDescriptor(pdfFileId, TestConfig.PathToDocumentPdf));
+            FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileStoreDescriptor(pdfFileId, TestConfig.PathToDocumentPdf));
 
             // act
             using (var response = Controller.GetFormat(_tenantId, documentHandle, format).Result)

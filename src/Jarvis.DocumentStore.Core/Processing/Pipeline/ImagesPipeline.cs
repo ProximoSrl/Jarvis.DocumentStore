@@ -17,18 +17,18 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _formats = "png|jpg|jpeg".Split('|');
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IFileDescriptor descriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            return _formats.Contains(descriptor.FileNameWithExtension.Extension);
+            return _formats.Contains(storeDescriptor.FileNameWithExtension.Extension);
         }
 
-        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
             JobHelper.QueueResize(
                 Id, 
                 documentId, 
-                descriptor.FileId,
-                descriptor.FileNameWithExtension.Extension
+                storeDescriptor.FileId,
+                storeDescriptor.FileNameWithExtension.Extension
             );
         }
 

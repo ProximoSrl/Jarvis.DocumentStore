@@ -1,4 +1,5 @@
 ﻿using Castle.Core.Logging;
+using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Core.Model;
@@ -20,7 +21,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             MongoDbTestConnectionProvider.DropTenant1();
 
-            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.FileStoreDb.GridFS)
+            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.FileStoreDb.GridFS, new InMemoryCounterService())
             {
                 Logger = new ConsoleLogger()
             };

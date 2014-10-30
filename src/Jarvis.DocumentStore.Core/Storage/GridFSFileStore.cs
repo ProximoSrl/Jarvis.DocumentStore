@@ -1,21 +1,50 @@
 ﻿using System;
 using System.IO;
 using Castle.Core.Logging;
+using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Model;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
+    public class GridFsFileStoreWriter : IFileStoreWriter
+    {
+        public FileId FileId { get; private set; }
+        public Stream WriteStream { get; private set; }
+
+        public GridFsFileStoreWriter(FileId fileId, Stream writeStream)
+        {
+            FileId = fileId;
+            WriteStream = writeStream;
+        }
+    }
+
     public class GridFSFileStore : IFileStore
     {
         private readonly MongoGridFS _fs;
         public ILogger Logger { get; set; }
+        private ICounterService _counterService;
 
-        public GridFSFileStore(MongoGridFS gridFs)
+        public GridFSFileStore(MongoGridFS gridFs, ICounterService counterService)
         {
             _fs = gridFs;
+            _counterService = counterService;
+        }
+
+        public IFileStoreWriter CreateNew(FileNameWithExtension fname)
+        {
+            var fileId = new FileId(_counterService.GetNext("file"));
+            var stream = GridFs.Create(fname, new MongoGridFSCreateOptions()
+            {
+                ContentType = MimeTypes.GetMimeType(fname),
+                UploadDate = DateTime.UtcNow,
+                Id = (string)fileId
+            });
+
+            return new GridFsFileStoreWriter(fileId, stream);
         }
 
         public Stream CreateNew(FileId fileId, FileNameWithExtension fname)
@@ -29,7 +58,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             });
         }
 
-        public IFileDescriptor GetDescriptor(FileId fileId)
+        public IFileStoreDescriptor GetDescriptor(FileId fileId)
         {
             var s = GridFs.FindOneById((string)fileId);
             if (s == null)
@@ -38,7 +67,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Logger.DebugFormat(message);
                 throw new Exception(message);
             }
-            return new GridFsFileDescriptor(fileId, s);
+            return new GridFsFileStoreDescriptor(fileId, s);
         }
 
         public void Delete(FileId fileId)

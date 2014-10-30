@@ -100,9 +100,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                                         link.FileId
                                     );
 
-                                    // send commands to
-                                    // 1 - link handle to already present document
-                                    // 2 - delete "new" document
+                                    Logger.DebugFormat("Deduplicating {0} with {1}",documentId, link.DocumentId);
                                     _commandBus.Send(new DeduplicateDocument(link.DocumentId, documentId, e.Handle,e.FileName));
                                     return;
                                 }

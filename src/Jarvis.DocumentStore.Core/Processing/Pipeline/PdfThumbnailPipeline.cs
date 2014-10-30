@@ -12,14 +12,14 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         {
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IFileDescriptor descriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            return descriptor.FileNameWithExtension.Extension == "pdf";
+            return storeDescriptor.FileNameWithExtension.Extension == "pdf";
         }
 
-        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            this.JobHelper.QueueThumbnail(Id, documentId, descriptor.FileId, ImageFormat);
+            this.JobHelper.QueueThumbnail(Id, documentId, storeDescriptor.FileId, ImageFormat);
         }
 
         protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)

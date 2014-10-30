@@ -12,20 +12,20 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _jobHelper = jobHelper;
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IFileDescriptor descriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            if (descriptor.FileNameWithExtension.Extension == "htmlzip")
+            if (storeDescriptor.FileNameWithExtension.Extension == "htmlzip")
                 return true;
 
-            if (descriptor.FileNameWithExtension.Extension == "ezip")
+            if (storeDescriptor.FileNameWithExtension.Extension == "ezip")
                 return true;
 
             return false;
         }
 
-        protected override void OnStart(DocumentId documentId, IFileDescriptor descriptor)
+        protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            _jobHelper.QueueHtmlToPdfConversion(Id, documentId, descriptor.FileId);
+            _jobHelper.QueueHtmlToPdfConversion(Id, documentId, storeDescriptor.FileId);
         }
 
         protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)

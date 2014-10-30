@@ -19,21 +19,21 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         }
 
         public PipelineId Id { get; private set; }
-        public abstract bool ShouldHandleFile(DocumentId documentId, IFileDescriptor descriptor);
+        public abstract bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor);
 
-        public void Start(DocumentId documentId, IFileDescriptor descriptor)
+        public void Start(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            OnStart(documentId, descriptor);
+            OnStart(documentId, storeDescriptor);
             if (Listeners != null)
             {
                 foreach (var pipelineListener in Listeners)
                 {
-                    pipelineListener.OnStart(this, documentId, descriptor);
+                    pipelineListener.OnStart(this, documentId, storeDescriptor);
                 }
             }
         }
 
-        protected abstract void OnStart(DocumentId documentId, IFileDescriptor descriptor);
+        protected abstract void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor);
 
         public void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
         {

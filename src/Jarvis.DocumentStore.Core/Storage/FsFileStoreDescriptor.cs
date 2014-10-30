@@ -8,11 +8,11 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
-    public class FsFileDescriptor : IFileDescriptor
+    public class FsFileStoreDescriptor : IFileStoreDescriptor
     {
         readonly string _pathToFile;
 
-        public FsFileDescriptor(FileId id, string pathToFile)
+        public FsFileStoreDescriptor(FileId id, string pathToFile)
         {
             _pathToFile = pathToFile;
             FileNameWithExtension = new FileNameWithExtension(Path.GetFileName(pathToFile));
