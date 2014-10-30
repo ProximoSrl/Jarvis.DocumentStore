@@ -98,7 +98,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void should_remove_old_document()
+        public void should_remove_handle_previous_document()
         {
             CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
@@ -113,7 +113,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void should_remove_old()
+        public void should_remove_orphaned_document()
         {
             CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
@@ -125,7 +125,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
             Assert.NotNull(new_handle_bis_document);
-            Assert.AreEqual(1, new_handle_bis_document.HandlesCount);
+            Assert.AreEqual(2, new_handle_bis_document.HandlesCount);
         }
     }
 }
