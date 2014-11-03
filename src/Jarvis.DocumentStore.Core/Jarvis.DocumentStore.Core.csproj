@@ -216,6 +216,7 @@
     <Compile Include="Services\ContentFormatBuilder.cs" />
     <Compile Include="Storage\BlobStoreByFormat.cs" />
     <Compile Include="Storage\BlobWriter.cs" />
+    <Compile Include="Storage\BlobStoreExtensions.cs" />
     <Compile Include="Storage\IBlobWriter.cs" />
     <Compile Include="Storage\Stats\GridFsFileStoreStats.cs" />
     <Compile Include="Storage\FsBlobDescriptor.cs" />

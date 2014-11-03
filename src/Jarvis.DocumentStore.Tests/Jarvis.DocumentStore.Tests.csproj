@@ -169,7 +169,7 @@
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServicesTests\EnhancedFileStoreTests.cs" />
-    <Compile Include="ServicesTests\GridFsFileStoreTests.cs" />
+    <Compile Include="ServicesTests\GridFsBlobStoreTests.cs" />
     <Compile Include="Support\DocumentStoreTestConfiguration.cs" />
     <Compile Include="SelfHostIntegratonTests\upload_to_external_service.cs" />
     <Compile Include="Support\ExtendedConsoleLogger.cs" />

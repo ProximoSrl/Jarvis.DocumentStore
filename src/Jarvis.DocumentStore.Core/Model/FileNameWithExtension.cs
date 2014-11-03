@@ -4,8 +4,41 @@ using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Core.Model
 {
-    public class FileNameWithExtension
+    public class FileNameWithExtension : IEquatable<FileNameWithExtension>
     {
+        public bool Equals(FileNameWithExtension other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return string.Equals(FileName, other.FileName) && string.Equals(Extension, other.Extension);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((FileNameWithExtension) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((FileName != null ? FileName.GetHashCode() : 0)*397) ^ (Extension != null ? Extension.GetHashCode() : 0);
+            }
+        }
+
+        public static bool operator ==(FileNameWithExtension left, FileNameWithExtension right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(FileNameWithExtension left, FileNameWithExtension right)
+        {
+            return !Equals(left, right);
+        }
+
         public string FileName { get; private set; }
         public string Extension { get; private set; }
 
