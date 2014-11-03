@@ -78,9 +78,9 @@
     <Reference Include="Common.Logging">
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.ConfigurationService.Client">
-      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.0.54\lib\NET40\Jarvis.ConfigurationService.Client.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Jarvis.ConfigurationService.Client, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.1.72\lib\NET40\Jarvis.ConfigurationService.Client.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
@@ -246,10 +246,9 @@
     <None Include="app\lib\skin\js\plugins\input-mask\phone-codes\phone-be.json" />
     <None Include="app\lib\skin\js\plugins\input-mask\phone-codes\phone-codes.json" />
     <None Include="app\lib\skin\js\plugins\slimScroll\slimScroll.jquery.json" />
-    <None Include="log4net.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cqrs\CQRS.Kernel\CQRS.Kernel.csproj">

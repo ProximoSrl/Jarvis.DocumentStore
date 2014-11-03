@@ -5,6 +5,7 @@ using CQRS.Kernel.ProjectionEngine.Client;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
 using Topshelf;
+using Jarvis.ConfigurationService.Client;
 
 namespace Jarvis.DocumentStore.Host
 {
@@ -22,6 +23,11 @@ namespace Jarvis.DocumentStore.Host
 
             var exitCode = HostFactory.Run(host =>
             {
+                var resourceDownload = ConfigurationServiceClient.Instance.DownloadResource("log4net.config", monitorForChange: true);
+                if (!resourceDownload)
+                {
+                    Console.Error.WriteLine("Unable to download log4net.config from configuration store");
+                }
                 host.UseOldLog4Net("log4net.config");
 
                 host.Service<DocumentStoreBootstrapper>(service =>
