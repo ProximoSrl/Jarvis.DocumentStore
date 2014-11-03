@@ -125,7 +125,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             BlobStore
                 .GetDescriptor(blobId)
-                .Returns(i => new FsFileStoreDescriptor(blobId, TestConfig.PathToWordDocument));
+                .Returns(i => new FsBlobDescriptor(blobId, TestConfig.PathToWordDocument));
 
             // act
             using (var response = Controller.GetFormat(_tenantId, info.Handle, format).Result)
@@ -157,7 +157,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
 
-            BlobStore.GetDescriptor(pdfBlobId).Returns(i => new FsFileStoreDescriptor(pdfBlobId, TestConfig.PathToDocumentPdf));
+            BlobStore.GetDescriptor(pdfBlobId).Returns(i => new FsBlobDescriptor(pdfBlobId, TestConfig.PathToDocumentPdf));
 
             // act
             using (var response = Controller.GetFormat(_tenantId, info.Handle, format).Result)

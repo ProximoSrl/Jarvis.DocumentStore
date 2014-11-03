@@ -33,7 +33,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             return ForFormat(blobId.Format);
         }
 
-        public IFileStoreDescriptor GetDescriptor(BlobId blobId)
+        public IBlobDescriptor GetDescriptor(BlobId blobId)
         {
             return ForBlobId(blobId).GetDescriptor(blobId);
         }

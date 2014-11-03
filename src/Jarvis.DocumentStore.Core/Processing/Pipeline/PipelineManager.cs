@@ -26,13 +26,13 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _logger.Debug("Pipelines config done");
         }
 
-        public void FormatAvailable(PipelineId pipelineId, DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
+        public void FormatAvailable(PipelineId pipelineId, DocumentId documentId, DocumentFormat format, IBlobDescriptor descriptor)
         {
             var pipeline = _pipelines[pipelineId];
             pipeline.FormatAvailable(documentId, format, descriptor);
         }
 
-        public void Start(DocumentId documentId, IFileStoreDescriptor descriptor)
+        public void Start(DocumentId documentId, IBlobDescriptor descriptor)
         {
             foreach (var pipeline in _pipelines.Values)
             {

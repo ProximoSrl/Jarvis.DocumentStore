@@ -18,18 +18,18 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _formats = "eml|msg".Split('|');
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor)
         {
             return _formats.Contains(storeDescriptor.FileNameWithExtension.Extension);
         }
 
-        protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
+        protected override void OnStart(DocumentId documentId, IBlobDescriptor storeDescriptor)
         {
             Logger.DebugFormat("Processing email {0}", storeDescriptor.FileNameWithExtension);
             JobHelper.QueueEmailToHtml(Id, documentId, storeDescriptor.BlobId);
         }
 
-        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IBlobDescriptor descriptor)
         {
             Logger.DebugFormat("Email {0} has been converted to format {1}: {2}", documentId, format, descriptor.BlobId);
             PipelineManager.Start(documentId, descriptor);

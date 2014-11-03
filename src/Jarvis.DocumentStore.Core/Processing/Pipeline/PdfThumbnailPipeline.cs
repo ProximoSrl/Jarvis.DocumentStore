@@ -12,12 +12,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         {
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor)
         {
             return storeDescriptor.FileNameWithExtension.Extension == "pdf";
         }
 
-        protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
+        protected override void OnStart(DocumentId documentId, IBlobDescriptor storeDescriptor)
         {
             this.JobHelper.QueueThumbnail(Id, documentId, storeDescriptor.BlobId, ImageFormat);
         }
@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         protected override void OnFormatAvailable(
             DocumentId documentId, 
             DocumentFormat format, 
-            IFileStoreDescriptor descriptor
+            IBlobDescriptor descriptor
             )
         {
             if (format == DocumentFormats.RasterImage)

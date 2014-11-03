@@ -6,7 +6,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 {
     public interface IBlobStore
     {
-        IFileStoreDescriptor GetDescriptor(BlobId blobId);
+        IBlobDescriptor GetDescriptor(BlobId blobId);
         void Delete(BlobId blobId);
         string Download(BlobId blobId, string folder);
 

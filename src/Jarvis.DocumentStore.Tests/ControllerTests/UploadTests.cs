@@ -46,7 +46,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public async void calling_upload_with_supported_file_type_should_return_Ok()
         {
             IdentityGenerator.New<DocumentId>().Returns(new DocumentId(1));
-            var descriptor = Substitute.For<IFileStoreDescriptor>();
+            var descriptor = Substitute.For<IBlobDescriptor>();
             descriptor.Hash.Returns(new FileHash("abc"));
             BlobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(descriptor);
             long streamLen = 0;

@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline.Listeners
     public class LoggingPipelineListener : IPipelineListener
     {
         public ILogger Logger { get; set; }
-        public void OnStart(IPipeline pipeline, DocumentId documentId, IFileStoreDescriptor storeDescriptor)
+        public void OnStart(IPipeline pipeline, DocumentId documentId, IBlobDescriptor storeDescriptor)
         {
             Logger.DebugFormat(
                 "OnStart pipeline {0} with {1} (File {2})",
@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline.Listeners
             );
         }
 
-        public void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
+        public void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, IBlobDescriptor descriptor)
         {
             Logger.DebugFormat(
                 "OnFormatAvailable pipeline {0}. {1} format {2} (File {3})",

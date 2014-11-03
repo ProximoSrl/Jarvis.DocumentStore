@@ -3,7 +3,7 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
-    public interface IFileStoreDescriptor
+    public interface IBlobDescriptor
     {
         BlobId BlobId { get; }
         Stream OpenRead();

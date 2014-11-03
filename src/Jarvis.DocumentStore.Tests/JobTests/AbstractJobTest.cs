@@ -81,7 +81,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             var id = new BlobId(blobId);
             BlobStore
                 .GetDescriptor(id)
-                .Returns(new FsFileStoreDescriptor(id,pathToFile));
+                .Returns(new FsBlobDescriptor(id,pathToFile));
         }
 
         protected void ConfigureFileDownload(string blobId, string pathToFile, Action<string> action = null)

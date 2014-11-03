@@ -218,11 +218,11 @@
     <Compile Include="Storage\BlobWriter.cs" />
     <Compile Include="Storage\IBlobWriter.cs" />
     <Compile Include="Storage\Stats\GridFsFileStoreStats.cs" />
-    <Compile Include="Storage\FsFileStoreDescriptor.cs" />
+    <Compile Include="Storage\FsBlobDescriptor.cs" />
     <Compile Include="Storage\GridFsBlobStore.cs" />
-    <Compile Include="Storage\GridFsFileStoreDescriptor.cs" />
+    <Compile Include="Storage\GridFsBlobDescriptor.cs" />
     <Compile Include="Storage\IBlobStore.cs" />
-    <Compile Include="Storage\IFileStoreDescriptor.cs" />
+    <Compile Include="Storage\IBlobDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\CoreTenantInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />

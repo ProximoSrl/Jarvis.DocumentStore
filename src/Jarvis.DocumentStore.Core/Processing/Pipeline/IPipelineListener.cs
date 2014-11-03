@@ -5,7 +5,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 {
     public interface IPipelineListener
     {
-        void OnStart(IPipeline pipeline, DocumentId documentId, IFileStoreDescriptor storeDescriptor);
-        void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, IFileStoreDescriptor storeDescriptor);
+        void OnStart(IPipeline pipeline, DocumentId documentId, IBlobDescriptor storeDescriptor);
+        void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, IBlobDescriptor storeDescriptor);
     }
 }

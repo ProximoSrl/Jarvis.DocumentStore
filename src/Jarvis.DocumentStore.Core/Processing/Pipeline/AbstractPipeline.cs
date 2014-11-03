@@ -21,10 +21,10 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         public PipelineId Id { get; private set; }
         public abstract bool ShouldHandleFile(
             DocumentId documentId, 
-            IFileStoreDescriptor storeDescriptor
+            IBlobDescriptor storeDescriptor
         );
 
-        public void Start(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
+        public void Start(DocumentId documentId, IBlobDescriptor storeDescriptor)
         {
             OnStart(documentId, storeDescriptor);
             if (Listeners != null)
@@ -38,10 +38,10 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 
         protected abstract void OnStart(
             DocumentId documentId, 
-            IFileStoreDescriptor storeDescriptor
+            IBlobDescriptor storeDescriptor
         );
 
-        public void FormatAvailable(DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
+        public void FormatAvailable(DocumentId documentId, DocumentFormat format, IBlobDescriptor descriptor)
         {
             OnFormatAvailable(documentId, format, descriptor);
             if (Listeners != null)
@@ -56,7 +56,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         protected abstract void OnFormatAvailable(
             DocumentId documentId, 
             DocumentFormat format, 
-            IFileStoreDescriptor descriptor
+            IBlobDescriptor descriptor
         );
         
         public void Attach(IPipelineManager manager)

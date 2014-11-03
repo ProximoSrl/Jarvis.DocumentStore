@@ -49,7 +49,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             });
         }
 
-        public IFileStoreDescriptor GetDescriptor(BlobId blobId)
+        public IBlobDescriptor GetDescriptor(BlobId blobId)
         {
             Logger.DebugFormat("GetDescriptor for file {0} on {1}", blobId, GridFs.DatabaseName);
             var s = GridFs.FindOneById((string)blobId);
@@ -59,7 +59,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Logger.DebugFormat(message);
                 throw new Exception(message);
             }
-            return new GridFsFileStoreDescriptor(blobId, s);
+            return new GridFsBlobDescriptor(blobId, s);
         }
 
         public void Delete(BlobId blobId)

@@ -10,8 +10,8 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             PipelineId pipelineId, 
             DocumentId documentId, 
             DocumentFormat format,
-            IFileStoreDescriptor descriptor
+            IBlobDescriptor descriptor
         );
-        void Start(DocumentId documentId, IFileStoreDescriptor descriptor);
+        void Start(DocumentId documentId, IBlobDescriptor descriptor);
     }
 }
