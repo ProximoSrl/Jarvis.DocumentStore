@@ -25,9 +25,8 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _jobHelper.QueueTikaAnalyzer(Id, documentId, storeDescriptor.FileId);
         }
 
-        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
         {
-        
         }
     }
 }

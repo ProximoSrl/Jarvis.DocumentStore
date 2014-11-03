@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.Core.Logging;
+using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
@@ -66,7 +68,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                 CommandBus = CommandBus,
                 FileStore = FileStore,
                 Logger = new ConsoleLogger(),
-                ConfigService = new ConfigService()
+                ConfigService = new ConfigService(),
+                TenantId = new TenantId(TestConfig.Tenant)
             };
 
             return job;

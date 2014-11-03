@@ -28,24 +28,19 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
         public IDictionary<DocumentFormat, FormatInfo> Formats { get; private set; }
-        [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
-        public IDictionary<DocumentHandle, FileNameWithExtension> Handles { get; private set; }
-        
+        public List<DocumentHandleInfo> Handles { get; private set; }
+        public FileHash Hash { get; set; }        
         public int FormatsCount { get; set; }
         public int HandlesCount { get; set; }
 
-        public HashSet<DocumentHandle>  MappedHandles { get; private set; }
-
-        public DocumentReadModel(DocumentId id, FileId fileId, DocumentHandle handle, FileNameWithExtension fileName)
+        public DocumentReadModel(DocumentId id, FileId fileId)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
-            this.Handles = new Dictionary<DocumentHandle, FileNameWithExtension>();
-            this.MappedHandles = new HashSet<DocumentHandle>();
+            this.Handles = new List<DocumentHandleInfo>();
 
             this.Id = id;
 
             AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), fileId);
-            AddHandle(handle, fileName);
         }
 
         public void AddFormat(PipelineId pipelineId, DocumentFormat format, FileId fileId)
@@ -53,21 +48,20 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             this.Formats[format] = new FormatInfo(fileId, pipelineId);
         }
 
-        public void AddHandle(DocumentHandle handle, FileNameWithExtension fileName)
+        public void AddHandle(DocumentHandleInfo handleInfo)
         {
-            this.Handles[handle] = fileName;
-            this.MappedHandles.Add(handle);
+            this.Handles.Add(handleInfo);
         }
 
         public void RemoveHandle(DocumentHandle handle)
         {
-            this.Handles.Remove(handle);
-            this.MappedHandles.Remove(handle);
+            this.Handles.RemoveAll(x=>x.Handle == handle);
         }
 
         public FileNameWithExtension GetFileName(DocumentHandle handle)
         {
-            return this.Handles[handle];
+            var info = this.Handles.Single(x => x.Handle == handle);
+            return info.FileName;
         }
 
         public FileId GetFormatFileId(DocumentFormat format)
@@ -77,6 +71,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 return formatInfo.FileId;
 
             return FileId.Null;
+        }
+
+        public FileId GetOriginalFileId()
+        {
+            return GetFormatFileId(DocumentFormats.Original);
         }
     }
 }

@@ -69,12 +69,11 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             this.DocumentReader.FindOneById(doc.Id).Returns(info => doc);
         }
 
-        protected void SetupDocumentHandle(DocumentHandle documentHandle, DocumentId documentId)
+        protected void SetupDocumentHandle(DocumentHandleInfo handleInfo, DocumentId documentId)
         {
-            HandleToDocumentReader.FindOneById(documentHandle).Returns(info => new HandleToDocument()
-            {
-                DocumentId = documentId
-            });
+            HandleToDocumentReader
+                .FindOneById(handleInfo.Handle)
+                .Returns(info => new HandleToDocument(handleInfo, documentId));
         }
     }
 
@@ -165,8 +164,12 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         {
             // arrange
             var documentHandle = new DocumentHandle("doc");
+            var info = new DocumentHandleInfo(
+                new DocumentHandle("doc"),
+                new FileNameWithExtension("a.file")
+            );
             var format = new DocumentFormat("any_format");
-            SetupDocumentHandle(documentHandle, new DocumentId(1));
+            SetupDocumentHandle(info, new DocumentId(1));
 
             // act
             var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
@@ -180,21 +183,23 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void request_for_missing_format_should_404()
         {
             // arrange
-            var documentHandle = new DocumentHandle("doc");
+            var info = new DocumentHandleInfo(
+                new DocumentHandle("doc"),
+                new FileNameWithExtension("a.file")
+            );
+            
             var format = new DocumentFormat("missing");
 
             var doc = new DocumentReadModel(
                 new DocumentId(1),
-                new FileId("file_1"),
-                documentHandle,
-                new FileNameWithExtension("document.docx")
+                new FileId("file_1")
             );
 
-            SetupDocumentHandle(documentHandle, doc.Id);
+            SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
 
             // act
-            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, info.Handle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -205,24 +210,26 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void when_file_is_not_found_should_return_404()
         {
             // arrange
-            var documentHandle = new DocumentHandle("doc");
+            var info = new DocumentHandleInfo(
+                new DocumentHandle("doc"),
+                new FileNameWithExtension("a.file")
+            );
             var format = new DocumentFormat("original");
 
             var fileId = new FileId("file_1");
             var doc = new DocumentReadModel(
                 new DocumentId(1),
-                fileId,
-                documentHandle,
-                new FileNameWithExtension("A document.docx")
+                fileId
             );
+            doc.AddHandle(info);
 
-            SetupDocumentHandle(documentHandle, doc.Id);
+            SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
 
             FileStore.GetDescriptor(fileId).Returns(i => null);
 
             // act
-            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, info.Handle, format).Result;
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -234,25 +241,29 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void should_download_original_file()
         {
             // arrange
-            var documentHandle = new DocumentHandle("doc");
+            var info = new DocumentHandleInfo(
+                new DocumentHandle("doc"),
+                new FileNameWithExtension("\"A document.docx\"")
+            );
+
             var format = new DocumentFormat("original");
 
             var fileId = new FileId("file_1");
             var doc = new DocumentReadModel(
                 new DocumentId(1),
-                fileId,
-                documentHandle,
-                new FileNameWithExtension("A document.docx")
+                fileId
             );
+            doc.AddHandle(info);
 
-
-            SetupDocumentHandle(documentHandle, doc.Id);
+            SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
 
-            FileStore.GetDescriptor(fileId).Returns(i => new FsFileStoreDescriptor(fileId, TestConfig.PathToWordDocument));
+            FileStore
+                .GetDescriptor(fileId)
+                .Returns(i => new FsFileStoreDescriptor(fileId, TestConfig.PathToWordDocument));
 
             // act
-            using (var response = Controller.GetFormat(_tenantId, documentHandle, format).Result)
+            using (var response = Controller.GetFormat(_tenantId, info.Handle, format).Result)
             {
                 // assert
                 response.EnsureSuccessStatusCode();
@@ -264,26 +275,27 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         public void should_download_pdf_format()
         {
             // arrange
-            var documentHandle = new DocumentHandle("doc");
+            var info = new DocumentHandleInfo(
+                new DocumentHandle("doc"),
+                new FileNameWithExtension("a.file")
+            );
             var format = new DocumentFormat("pdf");
             var pdfFileId = new FileId("pdf");
 
             var doc = new DocumentReadModel(
                 new DocumentId(1),
-                new FileId("file_1"),
-                documentHandle,
-                new FileNameWithExtension("A document.docx")
+                new FileId("file_1")
             );
 
             doc.AddFormat(new PipelineId("abc"), format, pdfFileId);
 
-            SetupDocumentHandle(documentHandle, doc.Id);
+            SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
 
             FileStore.GetDescriptor(pdfFileId).Returns(i => new FsFileStoreDescriptor(pdfFileId, TestConfig.PathToDocumentPdf));
 
             // act
-            using (var response = Controller.GetFormat(_tenantId, documentHandle, format).Result)
+            using (var response = Controller.GetFormat(_tenantId, info.Handle, format).Result)
             {
                 // assert
                 response.EnsureSuccessStatusCode();

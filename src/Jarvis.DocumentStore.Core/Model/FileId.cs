@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Core.Model
     [TypeConverter(typeof(StringValueTypeConverter<FileId>))]
     public class FileId : LowercaseStringValue
     {
-        public FileId(long value) : base(value.ToString())
+        public FileId(long value) : base("File_"+value.ToString())
         {
         }
 

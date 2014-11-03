@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using CQRS.Kernel.Engine;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
@@ -8,7 +10,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
     public class DocumentState : AggregateState
     {
         public IDictionary<DocumentFormat, FileId> Formats { get; private set; }
-        public HashSet<DocumentHandle>  Handles { get; private set; }
+        public Dictionary<DocumentHandle, int> Handles { get; private set; }
         public FileId FileId { get; private set; }
         
         public DocumentState(params KeyValuePair<DocumentFormat, FileId>[] formats)
@@ -23,7 +25,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public DocumentState()
         {
             this.Formats = new Dictionary<DocumentFormat, FileId>();
-            this.Handles = new HashSet<DocumentHandle>();
+            this.Handles = new Dictionary<DocumentHandle, int>();
         }
 
         void When(DocumentDeleted e)
@@ -37,7 +39,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
             this.AggregateId = e.AggregateId;
             this.FileId = e.FileId;
-            this.Handles.Add(e.Handle);
         }
 
         void When(FormatAddedToDocument e)
@@ -47,12 +48,19 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         private void When(DocumentHandleAttached e)
         {
-            this.Handles.Add(e.Handle);
+            if (Handles.ContainsKey(e.HandleInfo.Handle))
+            {
+                Handles[e.HandleInfo.Handle]++;
+            }
+            else
+            {
+                Handles[e.HandleInfo.Handle] = 1;
+            }
         }
 
         void When(DocumentHandleDetached e)
         {
-            this.Handles.Remove(e.Handle);
+            Handles[e.Handle]--;
         }
 
         void When(DocumentFormatHasBeenDeleted e)
@@ -67,7 +75,27 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public bool IsValidHandle(DocumentHandle handle)
         {
-            return Handles.Contains(handle);
+            return Handles.ContainsKey(handle);
+        }
+
+        public int HandleCount(DocumentHandle handle)
+        {
+            return Handles[handle];
+        }
+
+        public override void EnsureInvariantsAreSatisfied()
+        {
+            foreach (var handle in Handles.Where(handle => handle.Value <0))
+            {
+                throw new Exception(string.Format("Handle {0} has count:{1}", handle.Key, handle.Value));
+            }
+            
+            base.EnsureInvariantsAreSatisfied();
+        }
+
+        public bool HasActiveHandles()
+        {
+            return Handles.Any(x => x.Value > 0);
         }
     }
 }

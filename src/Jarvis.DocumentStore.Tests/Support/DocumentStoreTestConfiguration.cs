@@ -51,22 +51,22 @@ namespace Jarvis.DocumentStore.Tests.Support
             
         }
 
-        public IExtendedLogger Create(Type type)
+        public new IExtendedLogger Create(Type type)
         {
             return new ExtendedConsoleLogger(type.Name);
         }
 
-        public IExtendedLogger Create(string name)
+        public new IExtendedLogger Create(string name)
         {
             return new ExtendedConsoleLogger(name);
         }
 
-        public IExtendedLogger Create(Type type, LoggerLevel level)
+        public new IExtendedLogger Create(Type type, LoggerLevel level)
         {
             return new ExtendedConsoleLogger(type.Name, level);
         }
 
-        public IExtendedLogger Create(string name, LoggerLevel level)
+        public new IExtendedLogger Create(string name, LoggerLevel level)
         {
             return new ExtendedConsoleLogger(name, level);
         }

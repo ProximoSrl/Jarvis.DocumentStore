@@ -38,5 +38,15 @@ namespace Jarvis.DocumentStore.Tests.Misc
             Assert.AreEqual("file", ob.File.Extension);
             Assert.AreEqual("Path to", ob.File.FileName);
         }
+
+        [Test]
+        public void should_handle_extension_with_dots_in_file_name()
+        {
+            var fname = new FileNameWithExtension("a.b.c");
+            Assert.AreEqual("a.b", fname.FileName);
+            Assert.AreEqual("c", fname.Extension);
+            Assert.AreEqual("a.b.c", (string)fname);
+
+        }
     }
 }

@@ -18,16 +18,16 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 
     public class DocumentHandleAttached : DomainEvent
     {
-        public DocumentHandle Handle { get; private set; }
-        public FileNameWithExtension FileName { get; private set; }
+        public DocumentHandleInfo HandleInfo { get; private set; }
 
-        public DocumentHandleAttached(
-            DocumentHandle handle, 
-            FileNameWithExtension fileName
-        )
+        public DocumentHandleAttached(DocumentHandleInfo handleInfo)
         {
-            Handle = handle;
-            FileName = fileName;
+            HandleInfo = handleInfo;
         }
+    }
+
+    public class DocumentQueuedForProcessing : DomainEvent
+    {
+    
     }
 }

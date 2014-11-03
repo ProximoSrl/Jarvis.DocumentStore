@@ -255,7 +255,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IDictionary<string, object> customData
         )
         {
-            var createDocument = new CreateDocument(documentId, fileId, handle, fileName, customData);
+            var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
+            var createDocument = new CreateDocument(documentId, fileId, handleInfo);
 
             CommandBus.Send(createDocument, "api");
         }

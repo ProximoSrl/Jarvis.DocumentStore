@@ -22,10 +22,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             Logger.DebugFormat("Starting resize job for {0} - {1}", this.FileId, sizesAsString);
 
             var imageSizes = ConfigService.GetDefaultSizes().Where(x => sizes.Contains(x.Name)).ToArray();
-
             var descriptor = FileStore.GetDescriptor(this.FileId);
-
-            var fileIdName = new FileNameWithExtension(this.FileId);
 
             using (var sourceStream = descriptor.OpenRead())
             {
@@ -36,21 +33,20 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     foreach (var size in imageSizes)
                     {
                         pageStream.Seek(0, SeekOrigin.Begin);
-                        var resizeId = new FileId(fileIdName.FileName + "." + size.Name+"."+fileIdName.Extension);
-                        Logger.DebugFormat("Resizing {0} - {1}", this.FileId, resizeId);
                         var resizedImageFileName = new FileNameWithExtension(this.FileId + "." + size.Name + "." + fileExtension);
 
                         using (var writer = FileStore.CreateNew(resizedImageFileName))
                         {
+                            Logger.DebugFormat("Resizing {0} - {1}", this.FileId, writer.FileId);
                             ImageResizer.Shrink(pageStream, writer.WriteStream, size.Width, size.Height);
+                            
+                            CommandBus.Send(new AddFormatToDocument(
+                                DocumentId,
+                                new DocumentFormat("thumb." + size.Name),
+                                writer.FileId,
+                                this.PipelineId
+                            ));
                         }
-
-                        CommandBus.Send(new AddFormatToDocument(
-                            DocumentId,
-                            new DocumentFormat("thumb." + size.Name),
-                            resizeId,
-                            this.PipelineId
-                        ));
                     }
                 }
             }

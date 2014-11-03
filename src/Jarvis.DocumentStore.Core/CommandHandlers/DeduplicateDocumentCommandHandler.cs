@@ -13,9 +13,16 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers
         {
            FindAndModify(cmd.AggregateId, doc => doc.Deduplicate(
                cmd.OtherDocumentId, 
-               cmd.OtherHandle,
-               cmd.OtherFileName
+               cmd.OtherHandleInfo
             )); 
+        }
+    }
+
+    public class ProcessDocumentCommandHandler : DocumentCommandHandler<ProcessDocument>
+    {
+        protected override void Execute(ProcessDocument cmd)
+        {
+            FindAndModify(cmd.AggregateId, doc => doc.Process()); 
         }
     }
 }

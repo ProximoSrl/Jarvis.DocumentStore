@@ -10,6 +10,24 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
+    public class DocumentHandleInfo
+    {
+        public FileNameWithExtension FileName { get; private set; }
+        public IDictionary<string, object> CustomData { get; private set; }
+        public DocumentHandle Handle { get; private set; }
+
+        public DocumentHandleInfo(
+            DocumentHandle handle,
+            FileNameWithExtension fileName,
+            IDictionary<string, object> customData = null
+            )
+        {
+            Handle = handle;
+            FileName = fileName;
+            CustomData = customData;
+        }
+    }
+
     public class Document : AggregateRoot<DocumentState>
     {
         public Document(DocumentState initialState)
@@ -21,14 +39,15 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Create(DocumentId id, FileId fileId, DocumentHandle handle, FileNameWithExtension fileName, IDictionary<string, object> customData = null)
+        public void Create(DocumentId id, FileId fileId, DocumentHandleInfo handleInfo)
         {
             ThrowIfDeleted();
 
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "Already created");
 
-            RaiseEvent(new DocumentCreated(id, fileId, handle, fileName, customData));
+            RaiseEvent(new DocumentCreated(id, fileId, handleInfo));
+            RaiseEvent(new DocumentHandleAttached(handleInfo));
         }
 
         public void AddFormat(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)
@@ -56,11 +75,19 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public void Delete(DocumentHandle handle)
         {
             if (!InternalState.IsValidHandle(handle))
-                throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid",handle));
+            {
+                throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
+            }
+
+            if (InternalState.HandleCount(handle) == 0)
+            {
+                Logger.DebugFormat("Handle {0} not found on {1}, skipping", handle, this.Id);
+                return;
+            }
 
             RaiseEvent(new DocumentHandleDetached(handle));
 
-            if (InternalState.Handles.Count == 0)
+            if (!InternalState.HasActiveHandles())
             {
                 RaiseEvent(new DocumentDeleted(
                     InternalState.FileId,
@@ -69,17 +96,22 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             }
         }
 
-        public void Deduplicate(DocumentId documentId, DocumentHandle handle, FileNameWithExtension fileName)
+        public void Deduplicate(DocumentId documentId, DocumentHandleInfo handleInfo)
         {
             ThrowIfDeleted();
-            RaiseEvent(new DocumentHandleAttached(handle, fileName));
-            RaiseEvent(new DocumentHasBeenDeduplicated(documentId,handle));
+            RaiseEvent(new DocumentHandleAttached(handleInfo));
+            RaiseEvent(new DocumentHasBeenDeduplicated(documentId, handleInfo.Handle));
         }
 
         void ThrowIfDeleted()
         {
-            if(InternalState.HasBeenDeleted)
+            if (InternalState.HasBeenDeleted)
                 throw new DomainException(this.Id, "Document has been deleted");
+        }
+
+        public void Process()
+        {
+            RaiseEvent(new DocumentQueuedForProcessing());
         }
     }
 }

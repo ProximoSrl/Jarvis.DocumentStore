@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             );
         }
 
-        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
         {
             Logger.DebugFormat("{0}: new format available {1}", documentId, format);
         }

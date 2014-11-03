@@ -20,16 +20,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
     public class CreateDocument : DocumentCommand
     {
         public FileId FileId { get; private set; }
-        public DocumentHandle Handle { get; private set; }
-        public FileNameWithExtension FileName { get; private set; }
-        public IDictionary<string, object> CustomData { get; private set; }
+        public DocumentHandleInfo HandleInfo { get; private set; }
 
-        public CreateDocument(DocumentId aggregateId, FileId fileId, DocumentHandle handle, FileNameWithExtension fileName, IDictionary<string, object> customData) : base(aggregateId)
+        public CreateDocument(DocumentId aggregateId, FileId fileId, DocumentHandleInfo handleInfo) : base(aggregateId)
         {
             FileId = fileId;
-            Handle = handle;
-            FileName = fileName;
-            CustomData = customData;
+            HandleInfo = handleInfo;
         }
     }
 }

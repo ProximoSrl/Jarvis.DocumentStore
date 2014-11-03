@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -144,7 +145,6 @@
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
-    <Compile Include="EventHandlers\ProcessingWorkflow.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="EventHandlers\StreamHelper.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
@@ -195,7 +195,6 @@
     <Compile Include="ReadModel\HandleToDocument.cs" />
     <Compile Include="ReadModel\DocumentReadModel.cs" />
     <Compile Include="ReadModel\DocumentStats.cs" />
-    <Compile Include="ReadModel\HashToDocuments.cs" />
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Storage\Stats\FileStoreStats.cs" />
     <Compile Include="Storage\FsFileStoreDescriptor.cs" />

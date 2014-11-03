@@ -10,15 +10,20 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
     public class DeduplicateDocument : DocumentCommand
     {
         public DocumentId OtherDocumentId { get; private set; }
-        public DocumentHandle OtherHandle { get; private set; }
-        public FileNameWithExtension OtherFileName { get; private set; }
+        public DocumentHandleInfo OtherHandleInfo { get; private set; }
 
-        public DeduplicateDocument(DocumentId documentId, DocumentId otherDocumentId, DocumentHandle otherHandle, FileNameWithExtension otherFileName)
+        public DeduplicateDocument(DocumentId documentId, DocumentId otherDocumentId, DocumentHandleInfo otherHandleInfo)
             : base(documentId)
         {
-            OtherFileName = otherFileName;
             OtherDocumentId = otherDocumentId;
-            OtherHandle = otherHandle;
+            OtherHandleInfo = otherHandleInfo;
+        }
+    }
+
+    public class ProcessDocument : DocumentCommand
+    {
+        public ProcessDocument(DocumentId aggregateId) : base(aggregateId)
+        {
         }
     }
 }

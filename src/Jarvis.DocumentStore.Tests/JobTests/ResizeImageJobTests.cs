@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
                 return fileWriter;
             });
 
-            ConfigureGetFile("doc.png", TestConfig.PathToDocumentPng);
+            ConfigureGetFile("1", TestConfig.PathToDocumentPng);
 
             var job = BuildJob<ImageResizeJob>();
             job.ConfigService = new ConfigService();
@@ -37,14 +37,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             job.Execute(BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.FileId, "doc.png"},
+                {JobKeys.FileId, "1"},
                 {JobKeys.FileExtension, "png"},
                 {JobKeys.Sizes, "small|large"}
             }));
 
             Assert.AreEqual(2, files.Count);
-            Assert.AreEqual("doc.png.small", files[0].FileName);
-            Assert.AreEqual("doc.png.large", files[1].FileName);
+            Assert.AreEqual("1.small", files[0].FileName);
+            Assert.AreEqual("1.large", files[1].FileName);
         }
     }
 }

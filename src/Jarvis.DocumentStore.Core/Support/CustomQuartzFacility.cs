@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Castle.Core.Logging;
 using Castle.Facilities.QuartzIntegration;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Facilities;
@@ -16,9 +17,11 @@ namespace Jarvis.DocumentStore.Core.Support
     public class CustomQuartzFacility : AbstractFacility
     {
         IDictionary<string,string> _configuration;
-
+        private ILogger _logger;
         protected override void Init()
         {
+            _logger = Kernel.Resolve<ILoggerFactory>().Create(GetType());
+
             AddComponent<FileScanJob>();
             AddComponent<IJobScheduler, QuartzNetSimpleScheduler>();
             AddComponent<IJobFactory, TenantJobFactory>();
@@ -55,7 +58,7 @@ namespace Jarvis.DocumentStore.Core.Support
     {
         private readonly IKernel _kernel;
         ITenantAccessor _tenantAccessor;
-
+        public ILogger Logger { get; set; }
         /// <summary>
         /// Resolve a Job by it's name
         /// 
@@ -97,37 +100,64 @@ namespace Jarvis.DocumentStore.Core.Support
         /// </returns>
         public IJob NewJob(TriggerFiredBundle bundle, IScheduler scheduler)
         {
+            var jobType = bundle.JobDetail.JobType.FullName;
+            TenantId tenantId = null;
             if (bundle.JobDetail.JobDataMap.ContainsKey(JobKeys.TenantId))
             {
-                TenantContext.Enter(new TenantId(bundle.JobDetail.JobDataMap.GetString(JobKeys.TenantId)));
+                tenantId = new TenantId(
+                    bundle.JobDetail.JobDataMap.GetString(JobKeys.TenantId)
+                );
+                Logger.DebugFormat("new job {0} on tenant {1}", jobType, tenantId );
+            }
+            else
+            {
+                if (typeof (ITenantJob).IsAssignableFrom(bundle.JobDetail.JobType))
+                {
+                    string message = String.Format("Job {0}: missing tenantId", jobType);
+                    Logger.Error(message);
+                    throw new Exception(message);
+                }
+
+                Logger.DebugFormat("new job {0} without tenant", jobType);
             }
 
-            var kernel = SelectKernel();
-            return this.ResolveByJobName ? 
+            var kernel = SelectKernel(tenantId);
+            var job = this.ResolveByJobName ? 
                 (IJob)kernel.Resolve(bundle.JobDetail.Key.ToString(), typeof(IJob)) :
                 (IJob)kernel.Resolve(bundle.JobDetail.JobType);
+
+            if (job is ITenantJob)
+            {
+                (job as ITenantJob).TenantId = new TenantId(tenantId);
+            }
+
+            return job;
         }
 
         public void ReturnJob(IJob job)
         {
-            SelectKernel().ReleaseComponent((object)job);
+            TenantId tenantId = null;
+            if (job is ITenantJob)
+            {
+                tenantId = (job as ITenantJob).TenantId;
+            }
+
+            SelectKernel(tenantId).ReleaseComponent((object)job);
         }
 
-        IKernel SelectKernel()
+        IKernel SelectKernel(TenantId tenantId)
         {
+            if (tenantId == null)
+                return _kernel;
+
             if (_tenantAccessor == null)
             {
                 // concurrency safe, singleton
                 _tenantAccessor = _kernel.Resolve<ITenantAccessor>();
             }
 
-            if (_tenantAccessor != null)
-            {
-                if (_tenantAccessor.Current != null)
-                    return _tenantAccessor.Current.Container.Kernel;
-            }
-
-            return _kernel;
+            var tenant = _tenantAccessor.GetTenant(new TenantId(tenantId));
+            return tenant.Container.Kernel;
         }
     }
 }

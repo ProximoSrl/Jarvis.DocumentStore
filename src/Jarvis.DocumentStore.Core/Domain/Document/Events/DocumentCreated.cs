@@ -7,21 +7,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
     public class DocumentCreated : DomainEvent
     {
         public FileId FileId { get; private set; }
-        public DocumentHandle Handle { get; private set; }
-        public FileNameWithExtension FileName { get; private set; }
-        public IDictionary<string, object> CustomData { get; private set; }
-
-        public DocumentCreated(
-            DocumentId id, 
-            FileId fileId, 
-            DocumentHandle handle, 
-            FileNameWithExtension fileName, 
-            IDictionary<string, object> customData)
+        public DocumentHandleInfo HandleInfo { get; private set; }
+        public DocumentCreated(DocumentId id, FileId fileId, DocumentHandleInfo handleInfo)
         {
-            FileName = fileName;
-            CustomData = customData;
+            HandleInfo = handleInfo;
             FileId = fileId;
-            Handle = handle;
             this.AggregateId = id;
         }
     }

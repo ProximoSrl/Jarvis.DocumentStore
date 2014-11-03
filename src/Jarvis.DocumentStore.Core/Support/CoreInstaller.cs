@@ -20,6 +20,13 @@ namespace Jarvis.DocumentStore.Core.Support
 {
     public class CoreTenantInstaller : IWindsorInstaller
     {
+        readonly ITenant _tenant;
+
+        public CoreTenantInstaller(ITenant tenant)
+        {
+            _tenant = tenant;
+        }
+
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             container.Register(
@@ -33,7 +40,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<GridFsFileStoreStats>(),
                 Component
                     .For<MongoGridFS>()
-                    .UsingFactoryMethod(k => k.Resolve<ITenant>().Get<MongoGridFS>("grid.fs"))
+                    .UsingFactoryMethod(k => _tenant.Get<MongoGridFS>("grid.fs"))
             );
         }
     }

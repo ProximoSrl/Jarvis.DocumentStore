@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         protected DocumentId DocumentId { get; private set; }
         protected FileId FileId { get; private set; }
         protected PipelineId PipelineId { get; private set; }
-        protected TenantId TenantId { get; private set; }
+        public TenantId TenantId { get; set; }
 
         public ICommandBus CommandBus { get; set; }
         public ILogger Logger { get; set; }
@@ -30,8 +30,10 @@ namespace Jarvis.DocumentStore.Core.Jobs
             DocumentId = new DocumentId(jobDataMap.GetString(JobKeys.DocumentId));
             FileId = new FileId(jobDataMap.GetString(JobKeys.FileId));
             PipelineId = new PipelineId(jobDataMap.GetString(JobKeys.PipelineId));
-            TenantId = new TenantId(jobDataMap.GetString(JobKeys.TenantId));
-            
+
+            if (TenantId == null)
+                throw new Exception("tenant not set!");
+
             _workingFolder = Path.Combine(
                 ConfigService.GetWorkingFolder(TenantId, FileId), 
                 GetType().Name

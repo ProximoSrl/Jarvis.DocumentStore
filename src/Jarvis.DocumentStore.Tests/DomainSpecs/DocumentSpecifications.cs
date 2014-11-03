@@ -21,6 +21,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         protected static readonly FileId _fileId = new FileId("newFile");
         protected static readonly DocumentHandle Handle = new DocumentHandle("handle-to-file");
         protected static readonly FileNameWithExtension _fname = new FileNameWithExtension("pathTo.file");
+        protected static readonly DocumentHandleInfo _handleInfo = new DocumentHandleInfo(Handle, _fname);
 
         protected static Document Document
         {
@@ -32,7 +33,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         Establish context = () => Create();
 
-        Because of = () => Document.Create(_id, _fileId, Handle, _fname);
+        Because of = () => Document.Create(_id, _fileId, _handleInfo);
 
         It DocumentCreatedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<DocumentCreated>().ShouldBeTrue();
@@ -43,9 +44,16 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         It created_event_should_store_relevant_info = () =>
         {
             var e = RaisedEvent<DocumentCreated>();
-            e.Handle.ShouldEqual(Handle);
             e.FileId.ShouldEqual(_fileId);
-            e.FileName.ShouldEqual(_fname);
+        };
+
+        It DocumentHandleAttachedEvent_should_have_been_raised = ()=>
+            EventHasBeenRaised<DocumentHandleAttached>().ShouldBeTrue();
+        
+        It DocumentHandleAttachedEvent_should_store_relevant_info = () =>
+        {
+            var e = RaisedEvent<DocumentHandleAttached>();
+            e.HandleInfo.ShouldEqual(_handleInfo);
         };
     }
 
@@ -56,10 +64,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         Establish context = () =>
         {
             Create();
-            Document.Create(_id, _fileId, Handle, _fname);
+            Document.Create(_id, _fileId, _handleInfo);
         };
 
-        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, Handle, _fname));
+        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _fileId, _handleInfo));
 
         It a_domain_exception_should_be_thrown = () =>
         {
@@ -158,14 +166,17 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             () => EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeFalse();
     }
 
-    [Subject("DocumentEvents")]
+    [Subject("Document created")]
     public class when_a_document_is_deleted : DocumentSpecifications
     {
-        Establish context = () => Create();
+        Establish context = () =>
+        {
+            Create();
+            Document.Create(_id, _fileId, _handleInfo);
+        };
 
         Because of = () =>
         {
-            Document.Create(_id, _fileId, Handle, _fname);
             Document.Delete(Handle);
         };
 
@@ -178,24 +189,47 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         It DocumentHandleDetached_event_should_have_correct_handle = () =>
             RaisedEvent<DocumentHandleDetached>().Handle.ShouldBeLike(Handle);
 
-        It Internal_state_should_not_track_old_handle = () =>
-            State.IsValidHandle(Handle).ShouldBeFalse();
+        It Internal_state_should_not_track_old_handle = () => {
+            State.IsValidHandle(Handle).ShouldBeTrue();
+            State.HandleCount(Handle).ShouldBeLike(0);
+        };
+    }
+    [Subject("With a New Created Document")]
+    public class when_trying_to_delete_with_a_wrong_handle: DocumentSpecifications
+    {
+        Establish context = () =>
+        {
+            Create();
+            Document.Create(_id, _fileId, _handleInfo);
+        };
+
+        Because of = () =>
+        {
+            exception = Catch.Exception(() => Document.Delete(new DocumentHandle("not_in_this_doc")));
+        };
+
+        It Exception_should_have_been_raised = () =>
+            exception.ShouldNotBeNull();
+            
+        static Exception exception;
     }
 
     [Subject("DocumentEvents")]
     public class when_a_deduplicated_document_is_deleted : DocumentSpecifications
     {
         private static readonly DocumentHandle _otherHandle = new DocumentHandle("other");
-        
+        private static readonly DocumentHandleInfo _otherInfo = new DocumentHandleInfo(
+            new DocumentHandle("other"),
+            new FileNameWithExtension("a.file")
+        );
         Establish context = () => Create();
 
         Because of = () =>
         {
-            Document.Create(_id, _fileId, Handle, _fname);
+            Document.Create(_id, _fileId, _handleInfo);
             Document.Deduplicate(
                 new DocumentId(2), 
-                _otherHandle,
-                new FileNameWithExtension("a.file")
+                _otherInfo
             );
             Document.Delete(Handle);
         };
@@ -210,14 +244,16 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             RaisedEvent<DocumentHandleDetached>().Handle.ShouldBeLike(Handle);
 
         It Internal_state_should_not_track_old_handle = () =>
-            State.IsValidHandle(Handle).ShouldBeFalse();
+        {
+            State.IsValidHandle(Handle).ShouldBeTrue();
+            State.HandleCount(Handle).ShouldBeLike(0);
+        };
 
         It Internal_state_should_track_other_handle = () =>
             State.IsValidHandle(_otherHandle).ShouldBeTrue();
-
     }
 
-    [Subject("DocumentEvents")]
+    [Subject("Document")]
     public class when_a_document_is_deleted_with_wrong_handle : DocumentSpecifications
     {
         private static Exception Exception { get; set; }
@@ -225,7 +261,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         Because of = () =>
         {
-            Document.Create(_id, _fileId, Handle, _fname);
+            Document.Create(_id, _fileId, _handleInfo);
             Exception = Catch.Exception(() => Document.Delete(new DocumentHandle("not_this_one")));
         };
 
@@ -236,17 +272,40 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             Assert.IsTrue(Exception is DomainException);
         };
     }
+    [Subject("Document with an handle assigned twice")]
+    public class when_deleting_an_handle : DocumentSpecifications
+    {
+        private static Exception Exception { get; set; }
+        private Establish context = () =>
+        {
+            var state = new DocumentState();
+            state.Handles.Add(new DocumentHandle("h"),2);
+            SetUp(state);
+        };
+
+        Because of = () =>
+        {
+            Document.Delete(new DocumentHandle("h"));
+        };
+
+        It state_should_track_handle = () =>
+        {
+            State.Handles.Count.ShouldBeLike(1);
+        };
+    }
 
     [Subject("with a document")]
     public class when_a_document_is_deduplicated : DocumentSpecifications
     {
-        static readonly DocumentHandle OtherHandle = new DocumentHandle("other_handle");
         static readonly DocumentId _otherDocumentId = new DocumentId("Document_2");
-        static readonly FileNameWithExtension _otherFileName = new FileNameWithExtension("Another.document");
+        static readonly DocumentHandleInfo _otherHandleInfo = new DocumentHandleInfo(
+            new DocumentHandle("other_handle"),
+            new FileNameWithExtension("Another.document")
+        );
 
         Establish context = () => SetUp(new DocumentState());
 
-        Because of = () => Document.Deduplicate(_otherDocumentId, OtherHandle, _otherFileName);
+        Because of = () => Document.Deduplicate(_otherDocumentId, _otherHandleInfo);
 
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
             EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
@@ -258,14 +317,13 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         {
             var e = RaisedEvent<DocumentHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
-            Assert.AreSame(OtherHandle, e.Handle);
+            Assert.AreSame(_otherHandleInfo.Handle, e.Handle);
         };
 
         It DocumentHandleAttached_event_should_have_handle_and_fileName = () =>
         {
             var e = RaisedEvent<DocumentHandleAttached>();
-            Assert.AreSame(OtherHandle, e.Handle);
-            Assert.AreSame(_otherFileName, e.FileName);
+            Assert.AreSame(_otherHandleInfo, e.HandleInfo);
         };
     }
 }

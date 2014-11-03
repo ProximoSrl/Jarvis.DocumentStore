@@ -29,6 +29,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 Classes
                     .FromThisAssembly()
                     .BasedOn<ITenantController>()
+                    .WithServiceSelf()
                     .LifestyleTransient()
                 );
         }

@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers
         {
             FindAndModify(
                 cmd.AggregateId, 
-                doc => doc.Create(cmd.AggregateId,cmd.FileId,cmd.Handle,cmd.FileName,cmd.CustomData),
+                doc => doc.Create(cmd.AggregateId,cmd.FileId,cmd.HandleInfo),
                 true
             );
         }

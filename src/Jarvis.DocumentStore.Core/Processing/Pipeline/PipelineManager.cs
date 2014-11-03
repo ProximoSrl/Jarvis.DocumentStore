@@ -10,13 +10,10 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
     public class PipelineManager : IPipelineManager
     {
         ILogger _logger;
-        readonly IFileStore _fileStore;
-
         readonly IDictionary<PipelineId, IPipeline> _pipelines;
 
-        public PipelineManager(IFileStore fileStore, IPipeline[] pipelines, ILogger logger)
+        public PipelineManager(IPipeline[] pipelines, ILogger logger)
         {
-            _fileStore = fileStore;
             _logger = logger;
             _pipelines = pipelines.ToDictionary(x=>x.Id, x=>x);
 
@@ -29,16 +26,14 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _logger.Debug("Pipelines config done");
         }
 
-        public void FormatAvailable(PipelineId pipelineId, DocumentId documentId, DocumentFormat format, FileId fileId)
+        public void FormatAvailable(PipelineId pipelineId, DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
         {
             var pipeline = _pipelines[pipelineId];
-            pipeline.FormatAvailable(documentId, format, fileId);
+            pipeline.FormatAvailable(documentId, format, descriptor);
         }
 
-        public void Start(DocumentId documentId, FileId fileId)
+        public void Start(DocumentId documentId, IFileStoreDescriptor descriptor)
         {
-            var descriptor = _fileStore.GetDescriptor(fileId);
-
             foreach (var pipeline in _pipelines.Values)
             {
                 if (pipeline.ShouldHandleFile(documentId, descriptor))

@@ -32,6 +32,9 @@ namespace Jarvis.DocumentStore.Core.Model
 
         public static implicit operator string(FileNameWithExtension fname)
         {
+            if (Path.HasExtension(fname.FileName))
+                return Path.ChangeExtension(fname.FileName+".", fname.Extension);
+            
             return Path.ChangeExtension(fname.FileName, fname.Extension);
         }
 

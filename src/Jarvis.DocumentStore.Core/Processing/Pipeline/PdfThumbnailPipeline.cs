@@ -22,11 +22,15 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             this.JobHelper.QueueThumbnail(Id, documentId, storeDescriptor.FileId, ImageFormat);
         }
 
-        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        protected override void OnFormatAvailable(
+            DocumentId documentId, 
+            DocumentFormat format, 
+            IFileStoreDescriptor descriptor
+            )
         {
             if (format == DocumentFormats.RasterImage)
             {
-                this.JobHelper.QueueResize(Id, documentId, fileId, ImageFormat);
+                this.JobHelper.QueueResize(Id, documentId, descriptor.FileId, ImageFormat);
             }
         }
     }

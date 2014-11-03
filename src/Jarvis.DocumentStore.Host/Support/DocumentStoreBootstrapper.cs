@@ -68,9 +68,9 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 var tenantInstallers = new List<IWindsorInstaller>
                 {
-                    new CoreTenantInstaller(),
+                    new CoreTenantInstaller(tenant),
                     new HandlersInstaller(),
-                    new TenantJobsInstaller()
+                    new TenantJobsInstaller(tenant)
                 };
 
                 if (config.IsApiServer)

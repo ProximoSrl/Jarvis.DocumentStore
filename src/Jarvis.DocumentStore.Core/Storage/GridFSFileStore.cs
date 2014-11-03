@@ -33,7 +33,7 @@ namespace Jarvis.DocumentStore.Core.Storage
     {
         private readonly MongoGridFS _fs;
         public ILogger Logger { get; set; }
-        private ICounterService _counterService;
+        private readonly ICounterService _counterService;
 
         public GridFSFileStore(MongoGridFS gridFs, ICounterService counterService)
         {
@@ -44,6 +44,7 @@ namespace Jarvis.DocumentStore.Core.Storage
         public IFileStoreWriter CreateNew(FileNameWithExtension fname)
         {
             var fileId = new FileId(_counterService.GetNext("file"));
+            Logger.DebugFormat("Creating file {0} on {1}", fileId, GridFs.DatabaseName);
             var stream = GridFs.Create(fname, new MongoGridFSCreateOptions()
             {
                 ContentType = MimeTypes.GetMimeType(fname),
@@ -56,6 +57,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public Stream CreateNew(FileId fileId, FileNameWithExtension fname)
         {
+            Logger.DebugFormat("Creating file {0} on {1}", fileId, GridFs.DatabaseName);
             Delete(fileId);
             return GridFs.Create(fname, new MongoGridFSCreateOptions()
             {
@@ -67,6 +69,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public IFileStoreDescriptor GetDescriptor(FileId fileId)
         {
+            Logger.DebugFormat("GetDescriptor for file {0} on {1}", fileId, GridFs.DatabaseName);
             var s = GridFs.FindOneById((string)fileId);
             if (s == null)
             {
@@ -79,11 +82,15 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public void Delete(FileId fileId)
         {
+            Logger.DebugFormat("Deleting file {0} on {1}", fileId, GridFs.DatabaseName);
+
             GridFs.DeleteById((string)fileId);
         }
 
         public string Download(FileId fileId, string folder)
         {
+            Logger.DebugFormat("Downloading file {0} on {1} to folder {2}", fileId, GridFs.DatabaseName, folder);
+
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
@@ -105,7 +112,7 @@ namespace Jarvis.DocumentStore.Core.Storage
         {
             using (var writer = CreateNew(fileName))
             {
-                Logger.DebugFormat("Uploading Id: {0} Name: {1}", writer.FileId, fileName);
+                Logger.DebugFormat("Uploading file {0} named {1} on {2}", writer.FileId, fileName, GridFs.DatabaseName);
                 sourceStrem.CopyTo(writer.WriteStream);
                 return writer.FileId;
             }

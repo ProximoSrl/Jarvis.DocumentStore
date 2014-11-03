@@ -25,11 +25,14 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _jobHelper.QueueLibreOfficeToPdfConversion(Id, documentId, storeDescriptor.FileId);
         }
 
-        protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
-        {
+        protected override void OnFormatAvailable(
+            DocumentId documentId, 
+            DocumentFormat format, 
+            IFileStoreDescriptor descriptor
+        ){
             if (format == DocumentFormats.Pdf)
             {
-                PipelineManager.Start(documentId, fileId);
+                PipelineManager.Start(documentId, descriptor);
             }
         }
     }

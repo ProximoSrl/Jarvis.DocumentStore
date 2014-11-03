@@ -9,6 +9,7 @@ using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using CQRS.Kernel.Commands;
 using CQRS.Kernel.MultitenantSupport;
+using CQRS.Kernel.ProjectionEngine;
 using CQRS.Shared.Commands;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
@@ -32,10 +33,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private DocumentStoreBootstrapper _documentStoreService;
         private ICommandBus _bus;
         IFileStore _filestore;
-        IReader<HashToDocuments, FileHash> _hashReader;
         IReader<HandleToDocument, DocumentHandle> _handleReader;
         IReader<DocumentReadModel, DocumentId> _documentReader;
-
 
         [SetUp]
         public void SetUp()
@@ -51,7 +50,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _filestore = tenant.Container.Resolve<IFileStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
 
-            _hashReader = tenant.Container.Resolve<IReader<HashToDocuments, FileHash>>();
             _handleReader = tenant.Container.Resolve<IReader<HandleToDocument, DocumentHandle>>();
             _documentReader = tenant.Container.Resolve<IReader<DocumentReadModel, DocumentId>>();
         }
@@ -66,12 +64,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         void CreateDocument(int id,string handle, string pathToFile)
         {
             var fname = Path.GetFileName(pathToFile);
+            var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
             _bus.Send(new CreateDocument(
                 new DocumentId(id),
                 _filestore.Upload(pathToFile),
-                new DocumentHandle(handle),
-                new FileNameWithExtension(fname), 
-                null
+                info
             ));
         }
 
@@ -85,8 +82,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             //CreateDocument(3, "handle_3", TestConfig.PathToOpenDocumentSpreadsheet);
 
             Thread.Sleep(1000);
-
-            Assert.AreEqual(1, _hashReader.AllSortedById.Count());
 
             var list = _handleReader.AllSortedById.ToArray();
             Assert.AreEqual(2, list.Length);
@@ -126,6 +121,23 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
             Assert.NotNull(new_handle_bis_document);
             Assert.AreEqual(2, new_handle_bis_document.HandlesCount);
+        }
+
+        [Test]
+        public void should_deduplicate_twice()
+        {
+            CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
+            CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
+            CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
+            Thread.Sleep(1000);
+
+            var original = _documentReader.FindOneById(new DocumentId(1));
+            Assert.IsNotNull(original);
+
+            var copy = _documentReader.FindOneById(new DocumentId(2));
+            Assert.IsNull(copy);
+            copy = _documentReader.FindOneById(new DocumentId(3));
+            Assert.IsNull(copy);
         }
     }
 }

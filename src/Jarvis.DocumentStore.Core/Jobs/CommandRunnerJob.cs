@@ -10,6 +10,7 @@ using CQRS.Kernel.Commands;
 using CQRS.Kernel.Engine;
 using CQRS.Kernel.Store;
 using CQRS.Shared.Commands;
+using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Processing;
 using Quartz;
 
@@ -59,5 +60,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 }
             }
         }
+
+        public TenantId TenantId { get; set; }
     }
 }

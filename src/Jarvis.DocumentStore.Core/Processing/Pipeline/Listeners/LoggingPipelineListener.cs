@@ -23,14 +23,14 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline.Listeners
             );
         }
 
-        public void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, FileId fileId)
+        public void OnFormatAvailable(IPipeline pipeline, DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
         {
             Logger.DebugFormat(
                 "OnFormatAvailable pipeline {0}. {1} format {2} (File {3})",
                 pipeline.Id,
                 documentId,
                 format,
-                fileId
+                descriptor.FileId
             );
         }
     }

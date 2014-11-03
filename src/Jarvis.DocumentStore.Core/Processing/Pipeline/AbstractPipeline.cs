@@ -19,7 +19,10 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         }
 
         public PipelineId Id { get; private set; }
-        public abstract bool ShouldHandleFile(DocumentId documentId, IFileStoreDescriptor storeDescriptor);
+        public abstract bool ShouldHandleFile(
+            DocumentId documentId, 
+            IFileStoreDescriptor storeDescriptor
+        );
 
         public void Start(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
@@ -33,21 +36,28 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             }
         }
 
-        protected abstract void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor);
+        protected abstract void OnStart(
+            DocumentId documentId, 
+            IFileStoreDescriptor storeDescriptor
+        );
 
-        public void FormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId)
+        public void FormatAvailable(DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
         {
-            OnFormatAvailable(documentId, format, fileId);
+            OnFormatAvailable(documentId, format, descriptor);
             if (Listeners != null)
             {
                 foreach (var pipelineListener in Listeners)
                 {
-                    pipelineListener.OnFormatAvailable(this, documentId, format, fileId);
+                    pipelineListener.OnFormatAvailable(this, documentId, format, descriptor);
                 }
             }
         }
 
-        protected abstract void OnFormatAvailable(DocumentId documentId, DocumentFormat format, FileId fileId);
+        protected abstract void OnFormatAvailable(
+            DocumentId documentId, 
+            DocumentFormat format, 
+            IFileStoreDescriptor descriptor
+        );
         
         public void Attach(IPipelineManager manager)
         {
