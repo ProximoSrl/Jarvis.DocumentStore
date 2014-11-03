@@ -47,7 +47,14 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 if (isError)
                 {
-                    Console.WriteLine("ERROR: {0}\n{1}", message, exception.Message);
+                    if (exception != null) { 
+                        Console.WriteLine("ERROR: {0}\n{1}", message, exception.Message);
+                    }
+                    else
+                    {
+                        Console.WriteLine("ERROR: {0}", message);
+                    }
+                    
                     Console.WriteLine("Press enter to continue");
                     Console.ReadLine();
                 }

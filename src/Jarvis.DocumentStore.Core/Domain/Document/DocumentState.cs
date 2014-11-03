@@ -9,11 +9,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 {
     public class DocumentState : AggregateState
     {
-        public IDictionary<DocumentFormat, FileId> Formats { get; private set; }
+        public IDictionary<DocumentFormat, BlobId> Formats { get; private set; }
         public Dictionary<DocumentHandle, int> Handles { get; private set; }
-        public FileId FileId { get; private set; }
+        public BlobId BlobId { get; private set; }
         
-        public DocumentState(params KeyValuePair<DocumentFormat, FileId>[] formats)
+        public DocumentState(params KeyValuePair<DocumentFormat, BlobId>[] formats)
             : this()
         {
             foreach (var keyValuePair in formats)
@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public DocumentState()
         {
-            this.Formats = new Dictionary<DocumentFormat, FileId>();
+            this.Formats = new Dictionary<DocumentFormat, BlobId>();
             this.Handles = new Dictionary<DocumentHandle, int>();
         }
 
@@ -38,12 +38,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         void When(DocumentCreated e)
         {
             this.AggregateId = e.AggregateId;
-            this.FileId = e.FileId;
+            this.BlobId = e.BlobId;
         }
 
         void When(FormatAddedToDocument e)
         {
-            this.Formats.Add(e.DocumentFormat, e.FileId);
+            this.Formats.Add(e.DocumentFormat, e.BlobId);
         }
 
         private void When(DocumentHandleAttached e)

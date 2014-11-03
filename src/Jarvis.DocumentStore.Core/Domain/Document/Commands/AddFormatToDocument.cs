@@ -9,18 +9,18 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
     public class AddFormatToDocument : DocumentCommand
     {
-        public FileId FileId { get; private set; }
+        public BlobId BlobId { get; private set; }
         public DocumentFormat DocumentFormat { get; private set; }
         public PipelineId CreatedBy { get; private set; }
         
         public AddFormatToDocument(
             DocumentId aggregateId, 
             DocumentFormat documentFormat, 
-            FileId fileId,
+            BlobId blobId,
             PipelineId createdById) : base(aggregateId)
         {
             DocumentFormat = documentFormat;
-            FileId = fileId;
+            BlobId = blobId;
             CreatedBy = createdById;
         }
     }

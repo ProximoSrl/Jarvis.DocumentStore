@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using CQRS.Shared.Commands;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
@@ -27,11 +28,11 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             job.Execute(BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.FileId, "doc"},
+                {JobKeys.BlobId, "doc"},
                 {JobKeys.FileExtension, "png"}
             }));
 
-            FileStore.Received().Upload(Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
+            BlobStore.Received().Upload(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
         }
     }
 }

@@ -15,19 +15,4 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
             OtherDocumentId = otherDocumentId;
         }
     }
-
-    public class DocumentHandleAttached : DomainEvent
-    {
-        public DocumentHandleInfo HandleInfo { get; private set; }
-
-        public DocumentHandleAttached(DocumentHandleInfo handleInfo)
-        {
-            HandleInfo = handleInfo;
-        }
-    }
-
-    public class DocumentQueuedForProcessing : DomainEvent
-    {
-    
-    }
 }

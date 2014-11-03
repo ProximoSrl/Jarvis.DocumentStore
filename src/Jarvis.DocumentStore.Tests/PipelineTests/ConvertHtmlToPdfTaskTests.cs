@@ -2,6 +2,7 @@
 using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Client;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
@@ -14,34 +15,34 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     [TestFixture]
     public class ConvertHtmlToPdfTaskTests 
     {
-        GridFSFileStore _fileStore;
-        FileId _fileId;
+        GridFsBlobStore _blobStore;
+        BlobId _blobId;
         [SetUp]
         public void SetUp()
         {
             MongoDbTestConnectionProvider.DropTenant1();
 
-            _fileStore = new GridFSFileStore(MongoDbTestConnectionProvider.FileStoreDb.GridFS, new InMemoryCounterService())
+            _blobStore = new GridFsBlobStore(MongoDbTestConnectionProvider.OriginalsDb.GridFS, new InMemoryCounterService())
             {
                 Logger = new ConsoleLogger()
             };
 
             var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
             var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
-            _fileId = _fileStore.Upload(zipped);
+            _blobId = _blobStore.Upload(Jarvis.DocumentStore.Core.Processing.DocumentFormats.ZHtml, zipped);
         }
 
         [Test]
         public void should_convert_htmlfolder_to_pdf()
         {
-            var conversion = new HtmlToPdfConverter(_fileStore, new ConfigService())
+            var conversion = new HtmlToPdfConverter(_blobStore, new ConfigService())
             {
                 Logger = new ConsoleLogger()
             };
 
-            var newFileId = conversion.Run(new TenantId("test"), _fileId);
+            var newBlobId = conversion.Run(new TenantId("test"), _blobId);
 
-            var fi = _fileStore.GetDescriptor(newFileId);
+            var fi = _blobStore.GetDescriptor(newBlobId);
             Assert.AreEqual("application/pdf", fi.ContentType);
         }
     }

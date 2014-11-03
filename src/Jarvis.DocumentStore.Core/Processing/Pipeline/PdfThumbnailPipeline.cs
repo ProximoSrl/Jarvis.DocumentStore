@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 
         protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            this.JobHelper.QueueThumbnail(Id, documentId, storeDescriptor.FileId, ImageFormat);
+            this.JobHelper.QueueThumbnail(Id, documentId, storeDescriptor.BlobId, ImageFormat);
         }
 
         protected override void OnFormatAvailable(
@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         {
             if (format == DocumentFormats.RasterImage)
             {
-                this.JobHelper.QueueResize(Id, documentId, descriptor.FileId, ImageFormat);
+                this.JobHelper.QueueResize(Id, documentId, descriptor.BlobId, ImageFormat);
             }
         }
     }

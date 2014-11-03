@@ -20,12 +20,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             set { _logger = value; }
         }
 
-        public string Convert(FileId fileId, string pathToEml, string workingFolder)
+        public string Convert(BlobId blobId, string pathToEml, string workingFolder)
         {
             Logger.DebugFormat("Coverting {0} in working folder {1}", pathToEml, workingFolder);
 
             var reader = new Reader();
-            var outFolder = Path.Combine(workingFolder, fileId);
+            var outFolder = Path.Combine(workingFolder, blobId);
 
             Logger.DebugFormat("Creating message working folder is {0}", outFolder);
 

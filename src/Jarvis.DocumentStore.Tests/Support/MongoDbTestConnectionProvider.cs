@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Host.Support;
 using MongoDB.Driver;
@@ -9,7 +10,8 @@ namespace Jarvis.DocumentStore.Tests.Support
     {
         static MongoDbTestConnectionProvider()
         {
-            FileStoreDb = Connect("tests.filestore");
+            OriginalsDb = Connect("tests.originals");
+            ArtifactsDb = Connect("tests.artifacts");
             SystemDb = Connect("tests.system");
             EventsDb = Connect("tests.events");
             ReadModelDb = Connect("tests.readmodel");
@@ -17,22 +19,28 @@ namespace Jarvis.DocumentStore.Tests.Support
 
         static MongoDatabase Connect(string connectionStringName)
         {
-            var url = new MongoUrl(
-                ConfigurationManager.ConnectionStrings[connectionStringName].ConnectionString
-            );
+            var cstring = ConfigurationManager.ConnectionStrings[connectionStringName];
+            if (cstring == null)
+            {
+                throw new Exception(string.Format("Connection string {0} not found", connectionStringName));
+            }
+            
+            var url = new MongoUrl(cstring.ConnectionString);
 
             var client = new MongoClient(url);
             return client.GetServer().GetDatabase(url.DatabaseName);
         }
 
-        public static MongoDatabase FileStoreDb { get; private set; }
+        public static MongoDatabase OriginalsDb { get; private set; }
+        public static MongoDatabase ArtifactsDb { get; private set; }
         public static MongoDatabase SystemDb { get; private set; }
         public static MongoDatabase EventsDb { get; private set; }
         public static MongoDatabase ReadModelDb { get; private set; }
 
         public static void DropTenant1()
         {
-            FileStoreDb.Drop();
+            OriginalsDb.Drop();
+            ArtifactsDb.Drop();
             SystemDb.Drop();
             EventsDb.Drop();
             ReadModelDb.Drop();
@@ -40,7 +48,8 @@ namespace Jarvis.DocumentStore.Tests.Support
 
         public static void DropTenant(string tenant)
         {
-            Connect(tenant + ".filestore").Drop();
+            Connect(tenant + ".originals").Drop();
+            Connect(tenant + ".artifacts").Drop();
             Connect(tenant + ".system").Drop();
             Connect(tenant + ".events").Drop();
             Connect(tenant + ".readmodel").Drop();

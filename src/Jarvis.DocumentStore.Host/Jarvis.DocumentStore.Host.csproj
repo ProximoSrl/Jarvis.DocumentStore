@@ -263,6 +263,10 @@
       <Project>{A03810AE-2905-4CEE-A5D9-5E25C9A6309A}</Project>
       <Name>Jarvis.DocumentStore.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj">
+      <Project>{377e1786-2c26-4c3b-acba-a9cd73fb53e6}</Project>
+      <Name>Jarvis.DocumentStore.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\app.js" />

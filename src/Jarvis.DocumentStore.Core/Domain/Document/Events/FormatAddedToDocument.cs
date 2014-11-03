@@ -6,13 +6,13 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
     public class FormatAddedToDocument : DomainEvent
     {
         public DocumentFormat DocumentFormat { get; private set; }
-        public FileId FileId { get; private set; }
+        public BlobId BlobId { get; private set; }
         public PipelineId CreatedBy { get; private set; }
 
-        public FormatAddedToDocument(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)
+        public FormatAddedToDocument(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
         {
             DocumentFormat = documentFormat;
-            FileId = fileId;
+            BlobId = blobId;
             CreatedBy = createdBy;
         }
     }

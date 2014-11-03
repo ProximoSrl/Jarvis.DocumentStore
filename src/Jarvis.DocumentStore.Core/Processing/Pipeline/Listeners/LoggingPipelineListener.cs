@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline.Listeners
                 "OnStart pipeline {0} with {1} (File {2})",
                 pipeline.Id,
                 documentId,
-                storeDescriptor.FileId
+                storeDescriptor.BlobId
             );
         }
 
@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline.Listeners
                 pipeline.Id,
                 documentId,
                 format,
-                descriptor.FileId
+                descriptor.BlobId
             );
         }
     }

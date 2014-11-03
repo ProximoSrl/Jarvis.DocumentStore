@@ -19,10 +19,10 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var jobDataMap = context.JobDetail.JobDataMap;
             _format = jobDataMap.GetString(JobKeys.FileExtension);
 
-            Logger.DebugFormat("Conversion of {0} ({1}) in format {2} starting", DocumentId, FileId, _format);
+            Logger.DebugFormat("Conversion of {0} ({1}) in format {2} starting", InputDocumentId, InputBlobId, _format);
 
             var task = new CreateImageFromPdfTask { Logger = Logger };
-            var descriptor = FileStore.GetDescriptor(FileId);
+            var descriptor = BlobStore.GetDescriptor(InputBlobId);
 
             using (var sourceStream = descriptor.OpenRead())
             {
@@ -41,17 +41,16 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 );
             }
 
-            Logger.DebugFormat("Conversion of {0} in format {1} done", FileId, _format);
+            Logger.DebugFormat("Conversion of {0} in format {1} done", InputBlobId, _format);
         }
 
         void Write(int pageIndex, Stream stream)
         {
-            var fileName = new FileNameWithExtension(FileId + ".page_" + pageIndex + "." + _format);
-            var pageFileId = FileStore.Upload(fileName, stream);
+            var fileName = new FileNameWithExtension(InputBlobId + ".page_" + pageIndex + "." + _format);
+            var pageBlobId = BlobStore.Upload(DocumentFormats.RasterImage,fileName, stream);
             
-            var fileFormat = new DocumentFormat(DocumentFormats.RasterImage);
             CommandBus.Send(
-                new AddFormatToDocument(DocumentId, fileFormat, pageFileId, this.PipelineId)
+                new AddFormatToDocument(InputDocumentId, DocumentFormats.RasterImage, pageBlobId, PipelineId)
             );
         }
     }

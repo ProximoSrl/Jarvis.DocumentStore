@@ -37,16 +37,16 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
             {
-                var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+                var blobId = new BlobId(context.JobDetail.JobDataMap.GetString(JobKeys.BlobId));
                 _logger.DebugFormat(
-                    "Starting job {0} on FileId {1}", 
+                    "Starting job {0} on BlobId {1}", 
                     context.JobDetail.JobType,
-                    fileId
+                    blobId
                 );
 
                 _trackerCollection.Save(new JobTracker(
                     context.JobDetail.Key,
-                    fileId, 
+                    blobId, 
                     context.JobDetail.JobType.Name
                 ));
             }
@@ -56,11 +56,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
             {
-                var fileId = new FileId(context.JobDetail.JobDataMap.GetString(JobKeys.FileId));
+                var blobId = new BlobId(context.JobDetail.JobDataMap.GetString(JobKeys.BlobId));
                 _logger.DebugFormat(
-                    "Veto on job {0} on FileId {1}",
+                    "Veto on job {0} on BlobId {1}",
                     context.JobDetail.JobType,
-                    fileId
+                    blobId
                 );
             }
         }

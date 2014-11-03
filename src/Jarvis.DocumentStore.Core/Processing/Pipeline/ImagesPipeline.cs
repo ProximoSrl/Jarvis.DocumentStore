@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             JobHelper.QueueResize(
                 Id, 
                 documentId, 
-                storeDescriptor.FileId,
+                storeDescriptor.BlobId,
                 storeDescriptor.FileNameWithExtension.Extension
             );
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CQRS.Shared.Commands;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
@@ -34,11 +35,11 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             job.Execute(BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.FileId, "File_1"}
+                {JobKeys.BlobId, "File_1"}
             }));
 
             // assert
-            FileStore.Received(1).Upload(Arg.Any<string>());
+            BlobStore.Received(1).Upload(Arg.Any<DocumentFormat>(), Arg.Any<string>());
             Assert.NotNull(storedFileName);
             Assert.IsTrue(storedFileName.EndsWith("message.ezip"));
 

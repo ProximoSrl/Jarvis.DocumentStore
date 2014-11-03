@@ -21,11 +21,11 @@ namespace Jarvis.DocumentStore.Core.Processing
             _config = config;
         }
 
-        public void QueueThumbnail(PipelineId pipelineId, DocumentId documentId, FileId fileId, string imageFormat)
+        public void QueueThumbnail(PipelineId pipelineId, DocumentId documentId, BlobId blobId, string imageFormat)
         {
             var job = GetBuilderForJob<CreateThumbnailFromPdfJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
-                .UsingJobData(JobKeys.FileId, fileId)
+                .UsingJobData(JobKeys.BlobId, blobId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
                 .UsingJobData(JobKeys.FileExtension, imageFormat)
                 .Build();
@@ -35,11 +35,11 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, FileId fileId)
+        public void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
             var job = GetBuilderForJob<AnalyzeEmailJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
-                .UsingJobData(JobKeys.FileId, fileId)
+                .UsingJobData(JobKeys.BlobId, blobId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
                 .Build();
 
@@ -48,12 +48,12 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);        
         }
 
-        public void QueueResize(PipelineId pipelineId, DocumentId documentId, FileId fileId,string imageFormat)
+        public void QueueResize(PipelineId pipelineId, DocumentId documentId, BlobId blobId,string imageFormat)
         {
             var job = GetBuilderForJob<ImageResizeJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .UsingJobData(JobKeys.FileId, fileId)
+                .UsingJobData(JobKeys.BlobId, blobId)
                 .UsingJobData(JobKeys.FileExtension, imageFormat)
                 .UsingJobData(JobKeys.Sizes, String.Join("|", _config.GetDefaultSizes().Select(x => x.Name)))
                 .Build();
@@ -86,12 +86,12 @@ namespace Jarvis.DocumentStore.Core.Processing
                 .StoreDurably(true);
         }
 
-        public void QueueLibreOfficeToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId)
+        public void QueueLibreOfficeToPdfConversion(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
             var job = GetBuilderForJob<LibreOfficeToPdfJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .UsingJobData(JobKeys.FileId, fileId)
+                .UsingJobData(JobKeys.BlobId, blobId)
                 .Build();
 
             var trigger = CreateTrigger();
@@ -99,11 +99,11 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, FileId fileId)
+        public void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
             var job = GetBuilderForJob<HtmlToPdfJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
-                .UsingJobData(JobKeys.FileId, fileId)
+                .UsingJobData(JobKeys.BlobId, blobId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
                 .Build();
 
@@ -112,12 +112,12 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, FileId fileId)
+        public void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
             var job = GetBuilderForJob<ExtractTextWithTikaJob>()
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .UsingJobData(JobKeys.FileId, fileId)
+                .UsingJobData(JobKeys.BlobId, blobId)
                 .Build();
 
             var trigger = CreateTrigger();

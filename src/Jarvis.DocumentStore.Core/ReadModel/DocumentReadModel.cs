@@ -16,12 +16,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
     {
         public class FormatInfo
         {
-            public FileId FileId { get; private set; }
+            public BlobId BlobId { get; private set; }
             public PipelineId PipelineId { get; private set; }
 
-            public FormatInfo(FileId fileId, PipelineId pipelineId)
+            public FormatInfo(BlobId blobId, PipelineId pipelineId)
             {
-                FileId = fileId;
+                BlobId = blobId;
                 PipelineId = pipelineId;
             }
         }
@@ -33,19 +33,19 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public int FormatsCount { get; set; }
         public int HandlesCount { get; set; }
 
-        public DocumentReadModel(DocumentId id, FileId fileId)
+        public DocumentReadModel(DocumentId id, BlobId blobId)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
             this.Handles = new List<DocumentHandleInfo>();
 
             this.Id = id;
 
-            AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), fileId);
+            AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), blobId);
         }
 
-        public void AddFormat(PipelineId pipelineId, DocumentFormat format, FileId fileId)
+        public void AddFormat(PipelineId pipelineId, DocumentFormat format, BlobId blobId)
         {
-            this.Formats[format] = new FormatInfo(fileId, pipelineId);
+            this.Formats[format] = new FormatInfo(blobId, pipelineId);
         }
 
         public void AddHandle(DocumentHandleInfo handleInfo)
@@ -64,18 +64,18 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             return info.FileName;
         }
 
-        public FileId GetFormatFileId(DocumentFormat format)
+        public BlobId GetFormatBlobId(DocumentFormat format)
         {
             FormatInfo formatInfo = null;
             if (Formats.TryGetValue(format, out formatInfo))
-                return formatInfo.FileId;
+                return formatInfo.BlobId;
 
-            return FileId.Null;
+            return BlobId.Null;
         }
 
-        public FileId GetOriginalFileId()
+        public BlobId GetOriginalBlobId()
         {
-            return GetFormatFileId(DocumentFormats.Original);
+            return GetFormatBlobId(DocumentFormats.Original);
         }
     }
 }

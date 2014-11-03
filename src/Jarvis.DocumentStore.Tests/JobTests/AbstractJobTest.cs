@@ -6,6 +6,7 @@ using Castle.Core.Logging;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
 using CQRS.Shared.MultitenantSupport;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
@@ -23,7 +24,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
 {
     public abstract class AbstractJobTest
     {
-        protected IFileStore FileStore;
+        protected IBlobStore BlobStore;
         protected ICommandBus CommandBus;
 
         protected IJobExecutionContext BuildContext(IJob job, IEnumerable<KeyValuePair<string, object>> map = null)
@@ -57,7 +58,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         [SetUp]
         public void SetUp()
         {
-            FileStore = Substitute.For<IFileStore>();
+            BlobStore = Substitute.For<IBlobStore>();
             CommandBus = Substitute.For<ICommandBus>();
         }
 
@@ -66,7 +67,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             var job = new T()
             {
                 CommandBus = CommandBus,
-                FileStore = FileStore,
+                BlobStore = BlobStore,
                 Logger = new ConsoleLogger(),
                 ConfigService = new ConfigService(),
                 TenantId = new TenantId(TestConfig.Tenant)
@@ -75,21 +76,21 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             return job;
         }
 
-        protected void ConfigureGetFile(string fileId, string pathToFile)
+        protected void ConfigureGetFile(string blobId, string pathToFile)
         {
-            var id = new FileId(fileId);
-            FileStore
+            var id = new BlobId(blobId);
+            BlobStore
                 .GetDescriptor(id)
                 .Returns(new FsFileStoreDescriptor(id,pathToFile));
         }
 
-        protected void ConfigureFileDownload(string fileId, string pathToFile, Action<string> action = null)
+        protected void ConfigureFileDownload(string blobId, string pathToFile, Action<string> action = null)
         {
             if(action == null)
                 action = s => { };
 
-            FileStore
-                .Download(new FileId(fileId), Arg.Do( action ))
+            BlobStore
+                .Download(new BlobId(blobId), Arg.Do( action ))
                 .Returns(info =>
                 {
                     string tmpFileName = Path.Combine(Path.GetTempPath(), Path.GetFileName(pathToFile));
@@ -106,7 +107,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             if(action == null)
                 action = s => { };
 
-            var id = FileStore.Upload(Arg.Do(action));
+            var id = BlobStore.Upload(Arg.Any<DocumentFormat>(), Arg.Do(action));
         }
 
         protected void CaptureCommand(Action<ICommand> action)

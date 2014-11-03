@@ -26,12 +26,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
             Logger.DebugFormat("Processing email {0}", storeDescriptor.FileNameWithExtension);
-            JobHelper.QueueEmailToHtml(Id, documentId, storeDescriptor.FileId);
+            JobHelper.QueueEmailToHtml(Id, documentId, storeDescriptor.BlobId);
         }
 
         protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)
         {
-            Logger.DebugFormat("Email {0} has been converted to format {1}: {2}", documentId, format, descriptor.FileId);
+            Logger.DebugFormat("Email {0} has been converted to format {1}: {2}", documentId, format, descriptor.BlobId);
             PipelineManager.Start(documentId, descriptor);
         }
     }

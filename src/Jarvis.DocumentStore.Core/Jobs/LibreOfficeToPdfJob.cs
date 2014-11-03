@@ -25,18 +25,18 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             Logger.DebugFormat(
                 "Delegating conversion of file {0} to libreoffice",
-                this.FileId
+                this.InputBlobId
             );
 
-            var sourceFile = DownloadFileToWorkingFolder(this.FileId);
+            var sourceFile = DownloadFileToWorkingFolder(this.InputBlobId);
             var outputFile = _libreOfficeConversion.Run(sourceFile, "pdf");
 
-            var newFileId = FileStore.Upload(outputFile);
+            var newBlobId = BlobStore.Upload(DocumentFormats.Pdf,outputFile);
             
             CommandBus.Send(new AddFormatToDocument(
-                this.DocumentId, 
-                new DocumentFormat(DocumentFormats.Pdf), 
-                newFileId,
+                this.InputDocumentId, 
+                DocumentFormats.Pdf, 
+                newBlobId,
                 this.PipelineId
             ));
         }

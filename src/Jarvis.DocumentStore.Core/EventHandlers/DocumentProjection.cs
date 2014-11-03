@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Castle.Core.Logging;
 using CQRS.Kernel.Events;
 using CQRS.Kernel.ProjectionEngine;
 using CQRS.Shared.Commands;
-using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
@@ -15,7 +11,6 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.ReadModel;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using MongoDB.Driver.Builders;
 
@@ -32,7 +27,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
         private readonly ICollectionWrapper<HandleToDocument, DocumentHandle> _handles;
-        private readonly IFileStore _fileStore;
+        private readonly IBlobStore _blobStore;
         private readonly DeduplicationHelper _deduplicationHelper;
         private readonly ICommandBus _commandBus;
         readonly IPipelineManager _pipelineManager;
@@ -40,14 +35,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public DocumentProjection(
             ICollectionWrapper<DocumentReadModel, DocumentId> documents, 
             ICollectionWrapper<HandleToDocument, DocumentHandle> handles,
-            IFileStore fileStore, 
+            IBlobStore blobStore, 
             DeduplicationHelper deduplicationHelper, 
             ICommandBus commandBus, 
             IPipelineManager pipelineManager
             )
         {
             _documents = documents;
-            _fileStore = fileStore;
+            _blobStore = blobStore;
             _deduplicationHelper = deduplicationHelper;
             _commandBus = commandBus;
             _pipelineManager = pipelineManager;
@@ -75,8 +70,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentCreated e)
         {
-            var descriptor = _fileStore.GetDescriptor(e.FileId);
-            var document = new DocumentReadModel((DocumentId)e.AggregateId, e.FileId)
+            var descriptor = _blobStore.GetDescriptor(e.BlobId);
+            var document = new DocumentReadModel((DocumentId)e.AggregateId, e.BlobId)
             {
                 Hash = descriptor.Hash
             };
@@ -103,14 +98,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
             {
-                d.AddFormat(e.CreatedBy, e.DocumentFormat, e.FileId);
+                d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
             });
 
             if (IsReplay)
                 return;
 
-            var descriptor = _fileStore.GetDescriptor(e.FileId);
-            Logger.DebugFormat("Next conversion step for document {0} {1}", e.FileId, descriptor.FileNameWithExtension);
+            var descriptor = _blobStore.GetDescriptor(e.BlobId);
+            Logger.DebugFormat("Next conversion step for document {0} {1}", e.BlobId, descriptor.FileNameWithExtension);
             _pipelineManager.FormatAvailable(
                 e.CreatedBy,
                 (DocumentId)e.AggregateId, 
@@ -163,8 +158,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay) return;
 
             var document = _documents.FindOneById((DocumentId) e.AggregateId);
-            FileId originalFileId = document.GetOriginalFileId();
-            var descriptor = _fileStore.GetDescriptor(originalFileId);
+            BlobId originalBlobId = document.GetOriginalBlobId();
+            var descriptor = _blobStore.GetDescriptor(originalBlobId);
             _pipelineManager.Start(document.Id, descriptor);
         }
 
@@ -174,107 +169,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 return;
 
             _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle));
-        }
-    }
-
-    public class DocumentByHashReader
-    {
-        public class Match
-        {
-            public DocumentId DocumentId { get; private set; }
-            public FileId FileId { get; private set; }
-
-            public Match(DocumentId documentId, FileId fileId)
-            {
-                DocumentId = documentId;
-                FileId = fileId;
-            }
-        }
-
-        private IMongoDbReader<DocumentReadModel, DocumentId> _reader;
-
-        public DocumentByHashReader(IMongoDbReader<DocumentReadModel, DocumentId> reader)
-        {
-            _reader = reader;
-        }
-
-        public IEnumerable<Match> FindDocumentByHash(FileHash hash)
-        {
-            return _reader.Collection
-                .Find(Query<DocumentReadModel>.EQ(x => x.Hash, hash))
-                .SetSnapshot()
-                .Select(x => new Match(x.Id, x.GetOriginalFileId()));
-        }
-    }
-
-    public class DeduplicationHelper
-    {
-        public ILogger Logger { get; set; }
-        private readonly ConfigService _configService;
-        private readonly DocumentByHashReader _hashReader;
-        private readonly IFileStore _fileStore;
-        public DeduplicationHelper(ConfigService configService, DocumentByHashReader hashReader, IFileStore fileStore)
-        {
-            _configService = configService;
-            _hashReader = hashReader;
-            _fileStore = fileStore;
-        }
-
-        public DocumentId FindDuplicateDocumentId(DocumentReadModel document)
-        {
-            if (!_configService.IsDeduplicationActive)
-                return null;
-
-            var original = _fileStore.GetDescriptor(document.GetOriginalFileId());
-
-            var matches = _hashReader.FindDocumentByHash(document.Hash);
-            Logger.DebugFormat("Deduplicating document {0}", document.Id);
-            foreach (var match in matches)
-            {
-                if (match.DocumentId == document.Id)
-                    continue;
-
-                Logger.DebugFormat("Checking document {0}", match.DocumentId);
-
-                var candidate = this._fileStore.GetDescriptor(match.FileId);
-                // only within same content type!
-                if (candidate.ContentType != original.ContentType)
-                {
-                    Logger.DebugFormat("document {0} has different ContentType ({1}), skipping",
-                        match.DocumentId, candidate.ContentType
-                    );
-                    continue;
-                }
-
-                // and same length
-                if (candidate.Length != original.Length)
-                {
-                    Logger.DebugFormat("document {0} has different length ({1}), skipping",
-                        match.DocumentId, candidate.Length
-                    );
-                    continue;
-                }
-             
-                // binary check
-                using (var candidateStream = candidate.OpenRead())
-                using (var originalStream = original.OpenRead())
-                {
-                    if (StreamHelper.StreamsContentsAreEqual(candidateStream, originalStream))
-                    {
-                        Logger.DebugFormat("{0} has same content of {1}: match found!",
-                            match.DocumentId, document.Id
-                        );
-                        return match.DocumentId;
-                    }
-                    else
-                    {
-                        Logger.DebugFormat("{0} has different content of {1}, skipping",
-                            match.DocumentId, document.Id
-                        );                        
-                    }
-                }
-            }
-            return null;
         }
     }
 }

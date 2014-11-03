@@ -17,13 +17,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
     {
         IRecycleBin RecycleBin { get; set; }
         public ILogger Logger { get; set; }
-        IFileStore FileStore { get; set; }
+        IBlobStore BlobStore { get; set; }
         public IStoreEvents Store { get; set; }
 
-        public CleanupJob(IRecycleBin recycleBin, IFileStore fileStore)
+        public CleanupJob(IRecycleBin recycleBin, IBlobStore blobStore)
         {
             RecycleBin = recycleBin;
-            FileStore = fileStore;
+            BlobStore = blobStore;
         }
 
         public void Execute(IJobExecutionContext context)
@@ -36,11 +36,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
             foreach (var slot in list)
             {
                 Logger.DebugFormat("Deleting slot {0}", slot.Id.StreamId);
-                var fileIds = (FileId[])slot.Data["files"];
-                foreach (var fileId in fileIds)
+                var blobIds = (BlobId[])slot.Data["files"];
+                foreach (var blobId in blobIds)
                 {
-                    Logger.DebugFormat("....deleting file {0}", fileId);
-                    FileStore.Delete(fileId);
+                    Logger.DebugFormat("....deleting file {0}", blobId);
+                    BlobStore.Delete(blobId);
                 }
 
                 RecycleBin.Purge(slot.Id);

@@ -5,23 +5,13 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 {
     public class DocumentDeleted : DomainEvent
     {
-        public FileId FileId { get; private set; }
-        public FileId[] FileFormatsId { get; private set; }
+        public BlobId BlobId { get; private set; }
+        public BlobId[] BlobFormatsId { get; private set; }
 
-        public DocumentDeleted(FileId fileId, FileId[] formats)
+        public DocumentDeleted(BlobId blobId, BlobId[] formats)
         {
-            FileId = fileId;
-            FileFormatsId = formats;
-        }
-    }
-
-    public class DocumentHandleDetached : DomainEvent
-    {
-        public DocumentHandle Handle { get; private set; }
-
-        public DocumentHandleDetached(DocumentHandle handle)
-        {
-            Handle = handle;
+            BlobId = blobId;
+            BlobFormatsId = formats;
         }
     }
 }

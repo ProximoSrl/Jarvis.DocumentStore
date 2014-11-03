@@ -9,16 +9,16 @@ namespace Jarvis.DocumentStore.Core.Storage
     {
         readonly MongoGridFSFileInfo _mongoGridFsFileInfo;
 
-        public GridFsFileStoreDescriptor(FileId fileId, MongoGridFSFileInfo mongoGridFsFileInfo)
+        public GridFsFileStoreDescriptor(BlobId blobId, MongoGridFSFileInfo mongoGridFsFileInfo)
         {
             if (mongoGridFsFileInfo == null) throw new ArgumentNullException("mongoGridFsFileInfo");
             _mongoGridFsFileInfo = mongoGridFsFileInfo;
-            FileId = fileId;
+            BlobId = blobId;
 
             FileNameWithExtension = new FileNameWithExtension(_mongoGridFsFileInfo.Name);
         }
 
-        public FileId FileId { get; private set; }
+        public BlobId BlobId { get; private set; }
 
         public Stream OpenRead()
         {

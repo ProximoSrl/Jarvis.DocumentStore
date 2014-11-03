@@ -20,15 +20,15 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 Logger = Logger
             };
 
-            var localFile = DownloadFileToWorkingFolder(this.FileId);
-            var zipFile = task.Convert(this.FileId, localFile, WorkingFolder);
+            var localFile = DownloadFileToWorkingFolder(this.InputBlobId);
+            var zipFile = task.Convert(this.InputBlobId, localFile, WorkingFolder);
 
-            var emailFileId = FileStore.Upload(zipFile);
+            var blobId = BlobStore.Upload(DocumentFormats.Email, zipFile);
 
             CommandBus.Send(new AddFormatToDocument(
-                this.DocumentId, 
+                this.InputDocumentId, 
                 DocumentFormats.Email,
-                emailFileId,
+                blobId,
                 PipelineId
             ));
         }

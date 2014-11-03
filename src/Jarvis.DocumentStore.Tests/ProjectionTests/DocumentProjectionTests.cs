@@ -14,6 +14,7 @@ using CQRS.Shared.Commands;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using CQRS.Tests.DomainTests;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
@@ -24,6 +25,7 @@ using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
+using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
@@ -32,7 +34,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
     {
         private DocumentStoreBootstrapper _documentStoreService;
         private ICommandBus _bus;
-        IFileStore _filestore;
+        IBlobStore _filestore;
         IReader<HandleToDocument, DocumentHandle> _handleReader;
         IReader<DocumentReadModel, DocumentId> _documentReader;
 
@@ -47,7 +49,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _bus = tenant.Container.Resolve<ICommandBus>();
-            _filestore = tenant.Container.Resolve<IFileStore>();
+            _filestore = tenant.Container.Resolve<IBlobStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
 
             _handleReader = tenant.Container.Resolve<IReader<HandleToDocument, DocumentHandle>>();
@@ -67,7 +69,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
             _bus.Send(new CreateDocument(
                 new DocumentId(id),
-                _filestore.Upload(pathToFile),
+                _filestore.Upload(Core.Processing.DocumentFormats.Original, pathToFile),
                 info
             ));
         }

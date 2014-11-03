@@ -14,20 +14,20 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
     public class HtmlToPdfConverter
     {
         const bool ProduceOutline = false;
-        readonly IFileStore _fileStore;
+        readonly IBlobStore _blobStore;
         public ILogger Logger { get; set; }
         readonly ConfigService _config;
 
-        public HtmlToPdfConverter(IFileStore fileStore, ConfigService config)
+        public HtmlToPdfConverter(IBlobStore blobStore, ConfigService config)
         {
-            _fileStore = fileStore;
+            _blobStore = blobStore;
             _config = config;
         }
 
-        public FileId Run(TenantId tenantId, FileId fileId)
+        public BlobId Run(TenantId tenantId, BlobId blobId)
         {
-            Logger.DebugFormat("Converting {0} to pdf", fileId);
-            var localFileName = DownloadLocalCopy(tenantId, fileId);
+            Logger.DebugFormat("Converting {0} to pdf", blobId);
+            var localFileName = DownloadLocalCopy(tenantId, blobId);
             var uri = new Uri(localFileName);
             
             var document = new HtmlToPdfDocument
@@ -58,11 +58,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
 
             var converter = Factory.Create();
             var pdf = converter.Convert(document);
-            FileId pdfFileId;
+            BlobId pdfBlobId;
 
             using (var source = new MemoryStream(pdf))
             {
-                pdfFileId = _fileStore.Upload(
+                pdfBlobId = _blobStore.Upload(
+                    DocumentFormats.Pdf,
                     new FileNameWithExtension(Path.ChangeExtension(Path.GetFileName(uri.LocalPath), "pdf")),
                     source
                 );
@@ -70,18 +71,18 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
 
             Logger.DebugFormat("Deleting {0}", localFileName);
             File.Delete(localFileName);
-            Logger.DebugFormat("Conversion of {0} to pdf done!", fileId);
+            Logger.DebugFormat("Conversion of {0} to pdf done!", blobId);
 
-            return pdfFileId;
+            return pdfBlobId;
         }
 
-        string DownloadLocalCopy(TenantId tenantId, FileId fileId)
+        string DownloadLocalCopy(TenantId tenantId, BlobId blobId)
         {
-            var folder = _config.GetWorkingFolder(tenantId, fileId);
+            var folder = _config.GetWorkingFolder(tenantId, blobId);
             if(Directory.Exists(folder))
                 Directory.Delete(folder,true);
 
-            var localFileName = _fileStore.Download(fileId, folder);
+            var localFileName = _blobStore.Download(blobId, folder);
             Logger.DebugFormat("Downloaded {0}", localFileName);
 
             var workingFolder = Path.GetDirectoryName(localFileName);
@@ -102,7 +103,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
                 return htmlFile;
             }
 
-            var msg = string.Format("Html file not found for {0}!", fileId);
+            var msg = string.Format("Html file not found for {0}!", blobId);
             Logger.Error(msg);
             throw new Exception(msg);
         }

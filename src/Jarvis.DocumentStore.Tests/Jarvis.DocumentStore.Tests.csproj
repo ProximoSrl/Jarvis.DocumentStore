@@ -130,20 +130,36 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ControllerTests\AbstractFileControllerTests.cs" />
+    <Compile Include="ControllerTests\DownloadTests.cs" />
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\UploadTests.cs" />
     <Compile Include="DomainSpecs\DocumentSpecifications.cs" />
-    <Compile Include="DomainSpecs\FileNameWithExtensionSpecs.cs" />
+    <Compile Include="DomainSpecs\document_with_xml_format.cs" />
+    <Compile Include="DomainSpecs\BlobIdTests.cs" />
+    <Compile Include="DomainSpecs\when_a_filename_is_created.cs" />
+    <Compile Include="DomainSpecs\when_a_deduplicated_document_is_deleted.cs" />
+    <Compile Include="DomainSpecs\when_a_document_is_created.cs" />
+    <Compile Include="DomainSpecs\when_a_document_is_created_twice.cs" />
+    <Compile Include="DomainSpecs\when_a_document_is_deduplicated.cs" />
+    <Compile Include="DomainSpecs\when_a_document_is_deleted.cs" />
+    <Compile Include="DomainSpecs\when_a_document_is_deleted_with_wrong_handle.cs" />
+    <Compile Include="DomainSpecs\when_a_filename_with_surrounding_quotes_is_created.cs" />
+    <Compile Include="DomainSpecs\when_a_format_is_added_to_a_document.cs" />
+    <Compile Include="DomainSpecs\when_deleting_an_handle.cs" />
+    <Compile Include="DomainSpecs\when_document_format_deleted_will_be_deleted.cs" />
+    <Compile Include="DomainSpecs\when_document_format_has_been_deleted.cs" />
+    <Compile Include="DomainSpecs\when_trying_to_delete_with_a_wrong_handle.cs" />
     <Compile Include="JobTests\AbstractJobTest.cs" />
     <Compile Include="JobTests\AnalyzeEmailJobTests.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
     <Compile Include="JobTests\ExtractTextWithTikaJobTest.cs" />
     <Compile Include="JobTests\ResizeImageJobTests.cs" />
-    <Compile Include="Misc\ClassWithFileId.cs" />
-    <Compile Include="Misc\FileIdJsonConverterTests.cs" />
+    <Compile Include="DomainSpecs\ClassWithBlobId.cs" />
+    <Compile Include="DomainSpecs\BlobIdJsonConverterTests.cs" />
     <Compile Include="Misc\FileNameWithExtensionTests.cs" />
     <Compile Include="Misc\RemoteConfigurationServiceTests.cs" />
-    <Compile Include="Misc\StringValueMongoTests.cs" />
+    <Compile Include="DomainSpecs\StringValueMongoTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />
     <Compile Include="PipelineTests\ConvertHtmlToPdfTaskTests.cs" />
@@ -152,8 +168,12 @@
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServicesTests\EnhancedFileStoreTests.cs" />
+    <Compile Include="ServicesTests\GridFsFileStoreTests.cs" />
     <Compile Include="Support\DocumentStoreTestConfiguration.cs" />
     <Compile Include="SelfHostIntegratonTests\upload_to_external_service.cs" />
+    <Compile Include="Support\ExtendedConsoleLogger.cs" />
+    <Compile Include="Support\ExtendedConsoleLoggerFactory.cs" />
     <Compile Include="Support\MongoDbTestConnectionProvider.cs" />
     <Compile Include="Support\TestTenantSettings.cs" />
   </ItemGroup>

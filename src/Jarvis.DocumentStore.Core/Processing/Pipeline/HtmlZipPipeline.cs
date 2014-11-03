@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 
         protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            _jobHelper.QueueHtmlToPdfConversion(Id, documentId, storeDescriptor.FileId);
+            _jobHelper.QueueHtmlToPdfConversion(Id, documentId, storeDescriptor.BlobId);
         }
 
         protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IFileStoreDescriptor descriptor)

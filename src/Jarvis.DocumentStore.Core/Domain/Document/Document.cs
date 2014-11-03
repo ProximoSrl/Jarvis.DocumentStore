@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,24 +9,6 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
-    public class DocumentHandleInfo
-    {
-        public FileNameWithExtension FileName { get; private set; }
-        public IDictionary<string, object> CustomData { get; private set; }
-        public DocumentHandle Handle { get; private set; }
-
-        public DocumentHandleInfo(
-            DocumentHandle handle,
-            FileNameWithExtension fileName,
-            IDictionary<string, object> customData = null
-            )
-        {
-            Handle = handle;
-            FileName = fileName;
-            CustomData = customData;
-        }
-    }
-
     public class Document : AggregateRoot<DocumentState>
     {
         public Document(DocumentState initialState)
@@ -39,27 +20,27 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Create(DocumentId id, FileId fileId, DocumentHandleInfo handleInfo)
+        public void Create(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo)
         {
             ThrowIfDeleted();
 
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "Already created");
 
-            RaiseEvent(new DocumentCreated(id, fileId, handleInfo));
+            RaiseEvent(new DocumentCreated(id, blobId, handleInfo));
             RaiseEvent(new DocumentHandleAttached(handleInfo));
         }
 
-        public void AddFormat(DocumentFormat documentFormat, FileId fileId, PipelineId createdBy)
+        public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
         {
             ThrowIfDeleted();
             if (InternalState.HasFormat(documentFormat))
             {
-                RaiseEvent(new DocumentFormatHasBeenUpdated(documentFormat, fileId, createdBy));
+                RaiseEvent(new DocumentFormatHasBeenUpdated(documentFormat, blobId, createdBy));
             }
             else
             {
-                RaiseEvent(new FormatAddedToDocument(documentFormat, fileId, createdBy));
+                RaiseEvent(new FormatAddedToDocument(documentFormat, blobId, createdBy));
             }
         }
 
@@ -90,7 +71,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             if (!InternalState.HasActiveHandles())
             {
                 RaiseEvent(new DocumentDeleted(
-                    InternalState.FileId,
+                    InternalState.BlobId,
                     InternalState.Formats.Select(x => x.Value).ToArray()
                 ));
             }

@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 
         protected override void OnStart(DocumentId documentId, IFileStoreDescriptor storeDescriptor)
         {
-            _jobHelper.QueueLibreOfficeToPdfConversion(Id, documentId, storeDescriptor.FileId);
+            _jobHelper.QueueLibreOfficeToPdfConversion(Id, documentId, storeDescriptor.BlobId);
         }
 
         protected override void OnFormatAvailable(

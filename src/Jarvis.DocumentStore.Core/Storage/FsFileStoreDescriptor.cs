@@ -12,14 +12,14 @@ namespace Jarvis.DocumentStore.Core.Storage
     {
         readonly string _pathToFile;
 
-        public FsFileStoreDescriptor(FileId id, string pathToFile)
+        public FsFileStoreDescriptor(BlobId id, string pathToFile)
         {
             _pathToFile = pathToFile;
             FileNameWithExtension = new FileNameWithExtension(Path.GetFileName(pathToFile));
-            FileId = id;
+            BlobId = id;
         }
 
-        public FileId FileId { get; private set; }
+        public BlobId BlobId { get; private set; }
 
         public Stream OpenRead()
         {

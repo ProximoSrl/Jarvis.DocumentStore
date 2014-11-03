@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
     //    public void On(DocumentCreated e)
     //    {
-    //        var descriptor = _fileStore.GetDescriptor(e.FileId);
+    //        var descriptor = _fileStore.GetDescriptor(e.BlobId);
     //        if (descriptor != null)
     //        {
     //            _collection.Upsert(e, e. FileName.Extension, 
@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
     //    public void On(DocumentDeleted e)
     //    {
-    //        var descriptor = _fileStore.GetDescriptor(e.FileId);
+    //        var descriptor = _fileStore.GetDescriptor(e.BlobId);
     //        if (descriptor != null)
     //        {
     //            _collection.FindAndModify(e, descriptor.FileNameWithExtension.Extension,

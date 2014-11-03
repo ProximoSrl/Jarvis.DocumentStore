@@ -9,11 +9,14 @@ namespace Jarvis.DocumentStore.Tests.Support
         public TestTenantSettings(): base(new TenantId("tests"))
         {
             SetConnectionString("events");
-            SetConnectionString("filestore");
+            SetConnectionString("originals");
+            SetConnectionString("artifacts");
             SetConnectionString("system");
             SetConnectionString("readmodel");
 
-            Set("grid.fs",GetDatabase("filestore").GetGridFS(MongoGridFSSettings.Defaults));
+            Set("originals.fs", GetDatabase("originals").GetGridFS(MongoGridFSSettings.Defaults));
+            Set("artifacts.fs", GetDatabase("artifacts").GetGridFS(MongoGridFSSettings.Defaults));
+
             Set("db.readmodel",GetDatabase("readmodel"));
         }
 

@@ -19,10 +19,10 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var sizesAsString = jobDataMap.GetString(JobKeys.Sizes);
             var sizes = sizesAsString.Split('|');
 
-            Logger.DebugFormat("Starting resize job for {0} - {1}", this.FileId, sizesAsString);
+            Logger.DebugFormat("Starting resize job for {0} - {1}", this.InputBlobId, sizesAsString);
 
             var imageSizes = ConfigService.GetDefaultSizes().Where(x => sizes.Contains(x.Name)).ToArray();
-            var descriptor = FileStore.GetDescriptor(this.FileId);
+            var descriptor = BlobStore.GetDescriptor(this.InputBlobId);
 
             using (var sourceStream = descriptor.OpenRead())
             {
@@ -33,17 +33,19 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     foreach (var size in imageSizes)
                     {
                         pageStream.Seek(0, SeekOrigin.Begin);
-                        var resizedImageFileName = new FileNameWithExtension(this.FileId + "." + size.Name + "." + fileExtension);
+                        var fileFormat = new DocumentFormat("thumb." + size.Name);
 
-                        using (var writer = FileStore.CreateNew(resizedImageFileName))
+                        var resizedImageFileName = new FileNameWithExtension(this.InputBlobId + "." + size.Name + "." + fileExtension);
+
+                        using (var writer = BlobStore.CreateNew(fileFormat,resizedImageFileName))
                         {
-                            Logger.DebugFormat("Resizing {0} - {1}", this.FileId, writer.FileId);
+                            Logger.DebugFormat("Resizing {0} - {1}", this.InputBlobId, writer.BlobId);
                             ImageResizer.Shrink(pageStream, writer.WriteStream, size.Width, size.Height);
-                            
+
                             CommandBus.Send(new AddFormatToDocument(
-                                DocumentId,
-                                new DocumentFormat("thumb." + size.Name),
-                                writer.FileId,
+                                InputDocumentId,
+                                fileFormat,
+                                writer.BlobId,
                                 this.PipelineId
                             ));
                         }
@@ -51,7 +53,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 }
             }
 
-            Logger.DebugFormat("Ended resize job for {0} - {1}", this.FileId, sizesAsString);
+            Logger.DebugFormat("Ended resize job for {0} - {1}", this.InputBlobId, sizesAsString);
         }
     }
 }

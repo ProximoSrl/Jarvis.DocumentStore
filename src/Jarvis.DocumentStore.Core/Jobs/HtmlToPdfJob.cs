@@ -14,14 +14,14 @@ namespace Jarvis.DocumentStore.Core.Jobs
     {
         protected override void OnExecute(IJobExecutionContext context)
         {
-            var converter = new HtmlToPdfConverter(FileStore, ConfigService)
+            var converter = new HtmlToPdfConverter(BlobStore, ConfigService)
             {
                 Logger = Logger
             };
 
-            var pdfId = converter.Run(TenantId, FileId);
+            var pdfId = converter.Run(TenantId, InputBlobId);
             CommandBus.Send(new AddFormatToDocument(
-                this.DocumentId,
+                this.InputDocumentId,
                 new DocumentFormat(DocumentFormats.Pdf),
                 pdfId,
                 this.PipelineId

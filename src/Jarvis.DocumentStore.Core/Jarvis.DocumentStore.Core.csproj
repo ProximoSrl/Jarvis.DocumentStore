@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AngleSharp">
+      <HintPath>..\packages\AngleSharp.0.6.1\lib\portable-win+net45+wp80\AngleSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Castle.Core">
       <HintPath>..\packages\Castle.Core.3.3.1\lib\net45\Castle.Core.dll</HintPath>
     </Reference>
@@ -125,14 +129,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandHandlers\AddFormatToDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\CreateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DeduplicateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DeleteDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\ProcessDocumentCommandHandler.cs" />
     <Compile Include="Domain\Document\Commands\AddFormatToDocument.cs" />
+    <Compile Include="Domain\Document\Commands\CreateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeduplicateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
     <Compile Include="Domain\Document\Commands\DocumentCommand.cs" />
+    <Compile Include="Domain\Document\Commands\ProcessDocument.cs" />
     <Compile Include="Domain\Document\Document.cs" />
+    <Compile Include="Domain\Document\DocumentHandleInfo.cs" />
+    <Compile Include="Domain\Document\Events\DocumentHandleAttached.cs" />
+    <Compile Include="Domain\Document\Events\DocumentHandleDetached.cs" />
     <Compile Include="Domain\Document\Events\DocumentHasBeenDeduplicated.cs" />
     <Compile Include="Domain\Document\DocumentId.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
@@ -140,9 +151,12 @@
     <Compile Include="Domain\Document\Events\DocumentDeleted.cs" />
     <Compile Include="Domain\Document\Events\DocumentFormatHasBeenDeleted.cs" />
     <Compile Include="Domain\Document\Events\DocumentFormatHasBeenUpdated.cs" />
+    <Compile Include="Domain\Document\Events\DocumentQueuedForProcessing.cs" />
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\DocumentFormat.cs" />
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
+    <Compile Include="EventHandlers\DeduplicationHelper.cs" />
+    <Compile Include="EventHandlers\DocumentByHashReader.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
@@ -152,6 +166,7 @@
     <Compile Include="Jobs\CommandRunnerJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
+    <Compile Include="Jobs\ISystemJob.cs" />
     <Compile Include="Jobs\ITenantJob.cs" />
     <Compile Include="Jobs\JobTracker.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfJob.cs" />
@@ -164,12 +179,13 @@
     <Compile Include="MimeTypes.cs" />
     <Compile Include="Model\DocumentHandle.cs" />
     <Compile Include="Model\FileHash.cs" />
-    <Compile Include="Model\FileId.cs" />
+    <Compile Include="Model\BlobId.cs" />
     <Compile Include="Model\FileNameWithExtension.cs" />
     <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="Model\PipelineId.cs" />
     <Compile Include="Processing\CommandSerializer.cs" />
     <Compile Include="Processing\Conversions\HtmlToPdfConverter.cs" />
+    <Compile Include="Processing\Conversions\ILibreOfficeConversion.cs" />
     <Compile Include="Processing\Conversions\LibreOfficeUnoConversion.cs" />
     <Compile Include="Processing\Conversions\LibreOfficeConversion.cs" />
     <Compile Include="Processing\Conversions\MailMessageToHtmlConverterTask.cs" />
@@ -182,6 +198,7 @@
     <Compile Include="Processing\Pipeline\HtmlZipPipeline.cs" />
     <Compile Include="Processing\Pipeline\ImagesPipeline.cs" />
     <Compile Include="Processing\Pipeline\IPipeline.cs" />
+    <Compile Include="Processing\Pipeline\IPipelineListener.cs" />
     <Compile Include="Processing\Pipeline\IPipelineManager.cs" />
     <Compile Include="Processing\Pipeline\Listeners\LoggingPipelineListener.cs" />
     <Compile Include="Processing\Pipeline\OfficePipeline.cs" />
@@ -196,13 +213,18 @@
     <Compile Include="ReadModel\DocumentReadModel.cs" />
     <Compile Include="ReadModel\DocumentStats.cs" />
     <Compile Include="Services\ConfigService.cs" />
-    <Compile Include="Storage\Stats\FileStoreStats.cs" />
+    <Compile Include="Services\ContentFormatBuilder.cs" />
+    <Compile Include="Storage\BlobStoreByFormat.cs" />
+    <Compile Include="Storage\BlobWriter.cs" />
+    <Compile Include="Storage\IBlobWriter.cs" />
+    <Compile Include="Storage\Stats\GridFsFileStoreStats.cs" />
     <Compile Include="Storage\FsFileStoreDescriptor.cs" />
-    <Compile Include="Storage\GridFSFileStore.cs" />
+    <Compile Include="Storage\GridFsBlobStore.cs" />
     <Compile Include="Storage\GridFsFileStoreDescriptor.cs" />
-    <Compile Include="Storage\IFileStore.cs" />
+    <Compile Include="Storage\IBlobStore.cs" />
     <Compile Include="Storage\IFileStoreDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
+    <Compile Include="Support\CoreTenantInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
     <Compile Include="Support\DocumentStoreConfiguration.cs" />
     <Compile Include="Support\IShutdownActivity.cs" />
@@ -211,6 +233,8 @@
     <Compile Include="Support\SchedulerShutdown.cs" />
     <Compile Include="Support\SizeInfoHelper.cs" />
     <Compile Include="Support\StartupCoordinator.cs" />
+    <Compile Include="Support\TenantJobFactory.cs" />
+    <Compile Include="Support\TenantJobsInstaller.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -224,6 +248,10 @@
     <ProjectReference Include="..\cqrs\CQRS.Shared\CQRS.Shared.csproj">
       <Project>{70b179ed-c419-4782-b080-0d1678c90279}</Project>
       <Name>CQRS.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj">
+      <Project>{377E1786-2C26-4C3B-ACBA-A9CD73FB53E6}</Project>
+      <Name>Jarvis.DocumentStore.Shared</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDeleted e)
         {
-            var files = e.FileFormatsId.Concat(new []{ e.FileId}).ToArray();
+            var files = e.BlobFormatsId.Concat(new []{ e.BlobId}).ToArray();
             _recycleBin.Delete(e.AggregateId, "Jarvis", e.CommitStamp, new { files });
         }
     }

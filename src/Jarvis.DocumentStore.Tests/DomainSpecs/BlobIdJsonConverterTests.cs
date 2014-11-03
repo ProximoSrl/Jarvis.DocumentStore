@@ -1,13 +1,13 @@
-using CQRS.Shared.Domain;
 using CQRS.Shared.Domain.Serialization;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Tests.Misc;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Jarvis.DocumentStore.Tests.Misc
+namespace Jarvis.DocumentStore.Tests.DomainSpecs
 {
     [TestFixture]
-    public class FileIdJsonConverterTests
+    public class BlobIdJsonConverterTests
     {
         JsonSerializerSettings _settings;
 
@@ -26,32 +26,32 @@ namespace Jarvis.DocumentStore.Tests.Misc
         [Test]
         public void should_serialize()
         {
-            var instance = new ClassWithFileId { FileId = new FileId("abc_123") };
+            var instance = new ClassWithBlobId { BlobId = new BlobId("abc_123") };
             var json = JsonConvert.SerializeObject(instance, _settings);
 
-            Assert.AreEqual("{\"FileId\":\"abc_123\"}", json);
+            Assert.AreEqual("{\"BlobId\":\"abc_123\"}", json);
         }
 
         [Test]
         public void should_deserialize()
         {
-            var instance = JsonConvert.DeserializeObject<ClassWithFileId>("{ FileId:\"abc_123\"}",_settings);
-            Assert.AreEqual("abc_123", (string)instance.FileId);
+            var instance = JsonConvert.DeserializeObject<ClassWithBlobId>("{ BlobId:\"abc_123\"}",_settings);
+            Assert.AreEqual("abc_123", (string)instance.BlobId);
         }
 
         [Test]
         public void should_serialize_null()
         {
-            var instance = new ClassWithFileId();
+            var instance = new ClassWithBlobId();
             var json = JsonConvert.SerializeObject(instance, _settings);
-            Assert.AreEqual("{\"FileId\":null}", json);
+            Assert.AreEqual("{\"BlobId\":null}", json);
         }
 
         [Test]
         public void should_deserialize_null()
         {
-            var instance = JsonConvert.DeserializeObject<ClassWithFileId>("{ FileId:null}", _settings);
-            Assert.IsNull(instance.FileId);
+            var instance = JsonConvert.DeserializeObject<ClassWithBlobId>("{ BlobId:null}", _settings);
+            Assert.IsNull(instance.BlobId);
         }
     
     }

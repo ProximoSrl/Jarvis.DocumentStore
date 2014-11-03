@@ -10,20 +10,23 @@ namespace Jarvis.DocumentStore.Host.Support
         private void SetConnectionString(string name)
         {
             Set(
-                "connectionstring."+name,
-                ConfigurationServiceClient.Instance.GetSetting("connectionStrings."+TenantId+"."+name)
+                "connectionstring." + name,
+                ConfigurationServiceClient.Instance.GetSetting("connectionStrings." + TenantId + "." + name)
             );
         }
 
-        public DocumentStoreTenantSettings(string tenantId) : base(new TenantId(tenantId))
+        public DocumentStoreTenantSettings(string tenantId)
+            : base(new TenantId(tenantId))
         {
             SetConnectionString("events");
-            SetConnectionString("filestore");
+            SetConnectionString("originals");
+            SetConnectionString("artifacts");
             SetConnectionString("system");
             SetConnectionString("readmodel");
 
-            Set("grid.fs",GetDatabase("filestore").GetGridFS(MongoGridFSSettings.Defaults));
-            Set("db.readmodel",GetDatabase("readmodel"));
+            Set("originals.fs", GetDatabase("originals").GetGridFS(MongoGridFSSettings.Defaults));
+            Set("artifacts.fs", GetDatabase("artifacts").GetGridFS(MongoGridFSSettings.Defaults));
+            Set("db.readmodel", GetDatabase("readmodel"));
         }
     }
 }

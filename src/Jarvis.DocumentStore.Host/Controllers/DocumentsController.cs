@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 {
     public class DocumentsController : ApiController, ITenantController
     {
-        readonly IFileStore _fileStore;
+        readonly IBlobStore _blobStore;
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
         readonly IReader<HandleToDocument, DocumentHandle> _handleToDocument;
@@ -40,17 +40,17 @@ namespace Jarvis.DocumentStore.Host.Controllers
         
         IDictionary<string, object> _customData;
         FileNameWithExtension _fileName;
-        FileId _fileId;
+        BlobId _blobId;
 
         public DocumentsController(
-            IFileStore fileStore, 
+            IBlobStore blobStore, 
             ConfigService configService, 
             IIdentityGenerator identityGenerator, 
             IReader<HandleToDocument, DocumentHandle> handleToDocument, 
             IReader<DocumentReadModel, DocumentId> documentReader, 
             IInProcessCommandBus commandBus
         ){
-            _fileStore = fileStore;
+            _blobStore = blobStore;
             _configService = configService;
             _identityGenerator = identityGenerator;
             _handleToDocument = handleToDocument;
@@ -66,7 +66,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
             var errorMessage = await UploadFromHttpContent(Request.Content);
-            Logger.DebugFormat("File {0} processed with message {1}", _fileId, errorMessage);
+            Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage);
 
             if (errorMessage != null)
             {
@@ -76,11 +76,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            CreateDocument(documentId, _fileId, handle, _fileName, _customData);
+            CreateDocument(documentId, _blobId, handle, _fileName, _customData);
 
-            Logger.DebugFormat("File {0} uploaded as {1}", _fileId, documentId);
+            Logger.DebugFormat("File {0} uploaded as {1}", _blobId, documentId);
 
-            var storedFile = _fileStore.GetDescriptor(_fileId);
+            var storedFile = _blobStore.GetDescriptor(_blobId);
 
             return Request.CreateResponse(
                 HttpStatusCode.OK, 
@@ -104,7 +104,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return "Attachment not found!";
 
             var provider = await httpContent.ReadAsMultipartAsync(
-                new FileStoreMultipartStreamProvider(_fileStore, _configService)
+                new FileStoreMultipartStreamProvider(_blobStore, _configService)
             );
 
             if (provider.Filename == null)
@@ -119,7 +119,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             _fileName = provider.Filename;
-            _fileId = provider.FileId;
+            _blobId = provider.BlobId;
             return null;
         }
 
@@ -171,13 +171,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (format == DocumentFormats.Original)
             {
                 return StreamFile(
-                    document.GetFormatFileId(format),
+                    document.GetFormatBlobId(format),
                     document.GetFileName(handle)
                 );
             }
 
-            FileId formatFileId = document.GetFormatFileId(format);
-            if (formatFileId == FileId.Null)
+            BlobId formatBlobId = document.GetFormatBlobId(format);
+            if (formatBlobId == BlobId.Null)
             {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
@@ -188,7 +188,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            return StreamFile(formatFileId);
+            return StreamFile(formatBlobId);
         }
 
         HttpResponseMessage DocumentNotFound(DocumentHandle handle)
@@ -199,15 +199,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
         }
 
-        HttpResponseMessage StreamFile(FileId formatFileId, FileNameWithExtension fileName = null)
+        HttpResponseMessage StreamFile(BlobId formatBlobId, FileNameWithExtension fileName = null)
         {
-            var descriptor = _fileStore.GetDescriptor(formatFileId);
+            var descriptor = _blobStore.GetDescriptor(formatBlobId);
 
             if (descriptor == null)
             {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
-                    string.Format("File {0} not found", formatFileId)
+                    string.Format("File {0} not found", formatBlobId)
                 );
             }
 
@@ -249,14 +249,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
         
         private void CreateDocument(
             DocumentId documentId,
-            FileId fileId,
+            BlobId blobId,
             DocumentHandle handle,
             FileNameWithExtension fileName,
             IDictionary<string, object> customData
         )
         {
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
-            var createDocument = new CreateDocument(documentId, fileId, handleInfo);
+            var createDocument = new CreateDocument(documentId, blobId, handleInfo);
 
             CommandBus.Send(createDocument, "api");
         }

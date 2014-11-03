@@ -68,14 +68,14 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestCase("ods")]
         [TestCase("odp")]
         [TestCase("rtf")]
-        public void processing_file_should_succeed(string fileId)
+        public void processing_file_should_succeed(string blobId)
         {
             var s = new Stopwatch();
             s.Start();
-            var fileName = _withLibreOfficeConversion.Run(_mapping[fileId], "pdf");
+            var fileName = _withLibreOfficeConversion.Run(_mapping[blobId], "pdf");
             s.Stop();
             File.Delete(fileName);
-            Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
+            Debug.WriteLine("{0} conversion took {1} ms", blobId, s.ElapsedMilliseconds);
         }
 
         [Test]
@@ -88,14 +88,14 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestCase("ods")]
         [TestCase("odp")]
         [TestCase("rtf")]
-        public void processing_file_with_sdk_should_succeed(string fileId)
+        public void processing_file_with_sdk_should_succeed(string blobId)
         {
             var s = new Stopwatch();
             s.Start();
-            var fileName = _unoConversion.Run(_mapping[fileId], "pdf");
+            var fileName = _unoConversion.Run(_mapping[blobId], "pdf");
             s.Stop();
             File.Delete(fileName);
-            Debug.WriteLine("{0} conversion took {1} ms", fileId, s.ElapsedMilliseconds);
+            Debug.WriteLine("{0} conversion took {1} ms", blobId, s.ElapsedMilliseconds);
         }
 
         [Test]

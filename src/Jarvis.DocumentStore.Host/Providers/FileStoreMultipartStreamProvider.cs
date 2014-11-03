@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 
@@ -9,18 +10,18 @@ namespace Jarvis.DocumentStore.Host.Providers
 {
     public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider
     {
-        readonly IFileStore _store;
+        readonly IBlobStore _store;
         readonly ConfigService _config;
         public bool IsInvalidFile { get; private set; }
         public FileNameWithExtension Filename { get; private set; }
 
-        public FileId FileId{
-            get { return _writer != null ? _writer.FileId : null; }
+        public BlobId BlobId{
+            get { return _writer != null ? _writer.BlobId : null; }
         }
 
-        IFileStoreWriter _writer;
+        IBlobWriter _writer;
         public FileStoreMultipartStreamProvider(
-            IFileStore store, 
+            IBlobStore store, 
             ConfigService config
         ) : base(Path.GetTempPath())
         {
@@ -42,7 +43,7 @@ namespace Jarvis.DocumentStore.Host.Providers
                 return new MemoryStream();
             }
 
-            _writer = _store.CreateNew(Filename);
+            _writer = _store.CreateNew(DocumentFormats.Original, Filename);
 
             return _writer.WriteStream;
         }

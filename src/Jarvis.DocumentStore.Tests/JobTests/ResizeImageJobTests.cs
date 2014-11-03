@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
@@ -22,10 +23,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         public void should_resize_image()
         {
             IList<FileNameWithExtension> files = new List<FileNameWithExtension>();
-            FileStore.CreateNew(Arg.Any<FileNameWithExtension>()).Returns(info =>
+            BlobStore.CreateNew(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>()).Returns(info =>
             {
                 files.Add(info.Arg<FileNameWithExtension>());
-                var fileWriter = new FileStoreWriter(new FileId("sample_1"), new MemoryStream(), new FileNameWithExtension("a.file"));
+                var fileWriter = new BlobWriter(new BlobId("sample_1"), new MemoryStream(), new FileNameWithExtension("a.file"));
                 return fileWriter;
             });
 
@@ -37,7 +38,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             job.Execute(BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.FileId, "1"},
+                {JobKeys.BlobId, "1"},
                 {JobKeys.FileExtension, "png"},
                 {JobKeys.Sizes, "small|large"}
             }));

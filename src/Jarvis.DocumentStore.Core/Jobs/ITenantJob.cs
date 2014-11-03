@@ -7,8 +7,4 @@ namespace Jarvis.DocumentStore.Core.Jobs
     {
         TenantId TenantId { get; set; }
     }
-
-    public interface ISystemJob : IJob
-    {
-    }
 }

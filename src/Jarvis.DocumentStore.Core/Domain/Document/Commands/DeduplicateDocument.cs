@@ -19,11 +19,4 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
             OtherHandleInfo = otherHandleInfo;
         }
     }
-
-    public class ProcessDocument : DocumentCommand
-    {
-        public ProcessDocument(DocumentId aggregateId) : base(aggregateId)
-        {
-        }
-    }
 }

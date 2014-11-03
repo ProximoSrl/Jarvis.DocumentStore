@@ -6,11 +6,6 @@ using Jarvis.DocumentStore.Core.Services;
 
 namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
-    public interface ILibreOfficeConversion
-    {
-        string Run(string sourceFile, string outType);
-    }
-
     /// <summary>
     /// Office / OpenOffice => pdf with Headless Libreoffice
     /// TODO: switch to https://wiki.openoffice.org/wiki/AODL when complete pdf support is available
@@ -28,7 +23,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
 
         public string Run(string sourceFile, string outType)
         {
-            Logger.DebugFormat("Starting conversion of fileId {0} to {1}", sourceFile, outType);
+            Logger.DebugFormat("Starting conversion of blobId {0} to {1}", sourceFile, outType);
             string pathToLibreOffice = _config.GetPathToLibreOffice();
             var outputFile = Path.ChangeExtension(sourceFile, outType);
 
