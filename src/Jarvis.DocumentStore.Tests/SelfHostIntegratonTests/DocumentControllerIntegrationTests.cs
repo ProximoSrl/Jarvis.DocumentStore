@@ -29,8 +29,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [SetUp]
+        public void SetUp()
         {
             var config = new DocumentStoreTestConfiguration();
             MongoDbTestConnectionProvider.DropTenant1();
@@ -43,8 +43,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
         }
 
-        [TestFixtureTearDown]
-        public void TestFixtureTearDown()
+        [TearDown]
+        public void TearDown()
         {
             _documentStoreService.Stop();
             BsonClassMapHelper.Clear();
