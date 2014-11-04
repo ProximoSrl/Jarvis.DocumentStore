@@ -158,6 +158,7 @@
     <Compile Include="JobTests\ResizeImageJobTests.cs" />
     <Compile Include="DomainSpecs\ClassWithBlobId.cs" />
     <Compile Include="DomainSpecs\BlobIdJsonConverterTests.cs" />
+    <Compile Include="JobTests\TikaAnalyzerTests.cs" />
     <Compile Include="Misc\FileNameWithExtensionTests.cs" />
     <Compile Include="Misc\RemoteConfigurationServiceTests.cs" />
     <Compile Include="DomainSpecs\StringValueMongoTests.cs" />
@@ -182,6 +183,7 @@
     <None Include="app.config" />
     <None Include="Docs\Architecture_files\css" />
     <None Include="Docs\Document_copy.pdf" />
+    <None Include="Docs\Multipage Word.docx" />
     <None Include="Docs\Powerpoint show.ppsx" />
     <None Include="Docs\RTF Document.rtf" />
     <None Include="Docs\file.invalid" />
