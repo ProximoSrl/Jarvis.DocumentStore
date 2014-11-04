@@ -9,6 +9,7 @@ namespace Jarvis.DocumentStore.Core.Processing
         public static readonly DocumentFormat Original = new DocumentFormat("original");
         public static readonly DocumentFormat Email = new DocumentFormat("email");
         public static readonly DocumentFormat Tika = new DocumentFormat("tika");
+        public static readonly DocumentFormat Content = new DocumentFormat("content");
         public static readonly DocumentFormat ZHtml = new DocumentFormat("zhtml");
     }
 }

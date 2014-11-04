@@ -8,7 +8,7 @@ using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Core.Services
 {
-    public class ContentFormatBuilder
+    public static class ContentFormatBuilder
     {
         public static DocumentRevisionContent CreateFromTikaPlain(String tikaFullContent)
         {

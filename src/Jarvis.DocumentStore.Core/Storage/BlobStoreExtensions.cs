@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             using (var writer = store.CreateNew(format,new FileNameWithExtension(typeof(T).Name, "json")))
             {
                 var stringValue = JsonConvert.SerializeObject(data, PocoSerializationSettings.Default);
-                using (var sw = new StreamWriter(writer.WriteStream))
+                using (var sw = new StreamWriter(writer.WriteStream,Encoding.UTF8))
                 {
                     sw.Write(stringValue);
                 }
