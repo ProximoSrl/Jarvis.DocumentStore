@@ -41,6 +41,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_lorem_ipsum()
+        {
+            _docs.UploadAsync(TestConfig.PathToLoremIpsumPdf, DocumentHandle.FromString("lorem")).Wait();
+        }
+
+        [Test]
         public void upload_pdf_to_demo_and_docs_tenants()
         {
             Task.WaitAll(

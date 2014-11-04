@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 {
                     tikaBlobId = BlobStore.Upload(DocumentFormats.Tika, tikaFileName, htmlReader);
                     htmlReader.Seek(0, SeekOrigin.Begin);
-                    using (var sr = new StreamReader(htmlReader))
+                    using (var sr = new StreamReader(htmlReader,Encoding.UTF8))
                     {
                         htmlSource = sr.ReadToEnd();
                     }

@@ -27,6 +27,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         protected IBlobStore BlobStore;
         protected ICommandBus CommandBus;
 
+        private IList<IDisposable> _disposables = new List<IDisposable>();
+
         protected IJobExecutionContext BuildContext(IJob job, IEnumerable<KeyValuePair<string, object>> map = null)
         {
             var scheduler = NSubstitute.Substitute.For<IScheduler>();
@@ -60,6 +62,15 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         {
             BlobStore = Substitute.For<IBlobStore>();
             CommandBus = Substitute.For<ICommandBus>();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var disposable in _disposables)
+            {
+                disposable.Dispose();
+            }
         }
 
         protected T BuildJob<T>() where T : AbstractFileJob, new()
@@ -107,7 +118,18 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             if(action == null)
                 action = s => { };
 
+
             var id = BlobStore.Upload(Arg.Any<DocumentFormat>(), Arg.Do(action));
+        }
+
+        protected void SetupCreateNew(BlobId id)
+        {
+            var stream = new MemoryStream();
+            _disposables.Add(stream);
+
+            BlobStore.CreateNew(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>()).Returns(c => 
+                new BlobWriter(id,stream, (FileNameWithExtension)c.Args()[1])
+            );
         }
 
         protected void CaptureCommand(Action<ICommand> action)

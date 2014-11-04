@@ -39,6 +39,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "outlook message.msg"); }
         }
 
+        public static string PathToLoremIpsumPdf
+        {
+            get { return Path.Combine(DocumentsFolder, "Lorem ipsum.pdf"); }
+        }
+
         public static string PathToRTFDocument
         {
             get { return Path.Combine(DocumentsFolder, "RTF Document.rtf"); }

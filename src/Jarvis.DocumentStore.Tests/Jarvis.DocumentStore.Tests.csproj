@@ -108,6 +108,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.2\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.2\lib\net45\System.Web.Http.dll</HintPath>
@@ -183,6 +184,7 @@
     <None Include="app.config" />
     <None Include="Docs\Architecture_files\css" />
     <None Include="Docs\Document_copy.pdf" />
+    <None Include="Docs\Lorem ipsum.pdf" />
     <None Include="Docs\Multipage Word.docx" />
     <None Include="Docs\Powerpoint show.ppsx" />
     <None Include="Docs\RTF Document.rtf" />
@@ -233,6 +235,10 @@
       <Project>{26EE5189-77AD-4D18-BD4E-313E024E8941}</Project>
       <Name>Jarvis.DocumentStore.Host</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj">
+      <Project>{377E1786-2C26-4C3B-ACBA-A9CD73FB53E6}</Project>
+      <Name>Jarvis.DocumentStore.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\readme.txt">
@@ -265,6 +271,7 @@
     <Content Include="Docs\Architecture_files\scripts.min.js" />
     <Content Include="Docs\document_1.png" />
     <Content Include="Docs\medium_image.jpg" />
+    <Content Include="Docs\pdf.tika.html" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
