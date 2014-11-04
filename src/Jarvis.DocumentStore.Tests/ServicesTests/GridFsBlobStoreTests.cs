@@ -86,7 +86,7 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         }
 
         [Test]
-        public void should_write_a_csharp_object()
+        public void should_write_a_poco()
         {
             var o = new Parent();
             o.AddChild("one");
