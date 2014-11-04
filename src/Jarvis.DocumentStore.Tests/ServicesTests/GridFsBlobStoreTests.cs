@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
 
             _fs = new GridFsBlobStore
             (
-                MongoDbTestConnectionProvider.OriginalsDb.GridFS,
+                MongoDbTestConnectionProvider.OriginalsDb,
                 new CounterService(MongoDbTestConnectionProvider.SystemDb)
             )
             {

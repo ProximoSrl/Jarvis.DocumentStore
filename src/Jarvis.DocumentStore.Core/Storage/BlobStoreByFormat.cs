@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
+using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
@@ -11,7 +13,6 @@ namespace Jarvis.DocumentStore.Core.Storage
     {
         readonly IBlobStore _originals;
         readonly IBlobStore _artifacts;
-
         public BlobStoreByFormat(IBlobStore originals, IBlobStore artifacts)
         {
             _originals = originals;

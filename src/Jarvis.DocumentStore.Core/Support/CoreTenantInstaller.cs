@@ -5,6 +5,7 @@ using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Storage.Stats;
+using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Core.Support
@@ -32,25 +33,25 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<IBlobStore>()
                     .ImplementedBy<GridFsBlobStore>()
                     .Named("originals.filestore")
-                    .DependsOn(Dependency.OnComponent(typeof(MongoGridFS), "originals.gridfs")),
+                    .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "originals.db")),
                 Component
                     .For<IBlobStore>()
                     .ImplementedBy<GridFsBlobStore>()
                     .Named("artifacts.filestore")
-                    .DependsOn(Dependency.OnComponent(typeof(MongoGridFS), "artifacts.gridfs")),
+                    .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "artifacts.db")),
                 Component
                     .For<IPipelineManager>()
                     .ImplementedBy<PipelineManager>(),
                 Component
                     .For<GridFsFileStoreStats>(),
                 Component
-                    .For<MongoGridFS>()
-                    .Named("originals.gridfs")
-                    .UsingFactoryMethod(k => _tenant.Get<MongoGridFS>("originals.fs")),
+                    .For<MongoDatabase>()
+                    .Named("originals.db")
+                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("originals.db")),
                 Component
-                    .For<MongoGridFS>()
-                    .Named("artifacts.gridfs")
-                    .UsingFactoryMethod(k => _tenant.Get<MongoGridFS>("artifacts.fs"))
+                    .For<MongoDatabase>()
+                    .Named("artifacts.db")
+                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("artifacts.db"))
                 );
         }
     }

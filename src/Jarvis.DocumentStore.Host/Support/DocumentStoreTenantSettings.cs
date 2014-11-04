@@ -24,8 +24,8 @@ namespace Jarvis.DocumentStore.Host.Support
             SetConnectionString("system");
             SetConnectionString("readmodel");
 
-            Set("originals.fs", GetDatabase("originals").GetGridFS(MongoGridFSSettings.Defaults));
-            Set("artifacts.fs", GetDatabase("artifacts").GetGridFS(MongoGridFSSettings.Defaults));
+            Set("originals.db", GetDatabase("originals"));
+            Set("artifacts.db", GetDatabase("artifacts"));
             Set("db.readmodel", GetDatabase("readmodel"));
         }
     }
