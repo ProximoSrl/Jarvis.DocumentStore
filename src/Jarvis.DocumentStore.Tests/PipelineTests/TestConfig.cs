@@ -54,6 +54,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "A Word Document.docx"); }
         }
 
+        public static string PathToMultipageWordDocument
+        {
+            get { return Path.Combine(DocumentsFolder, "Multipage Word.docx"); }
+        }
+
         public static string PathToTextDocument
         {
             get { return Path.Combine(DocumentsFolder, "A text document.txt"); }
