@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             var job = BuildJob<ImageResizeJob>();
             job.ConfigService = new ConfigService();
 
-            job.Execute(BuildContext(job, new Dictionary<string, object>{
+            job.Execute(AbstractJobTest.BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.BlobId, "1"},

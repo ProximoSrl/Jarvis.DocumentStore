@@ -29,32 +29,15 @@ namespace Jarvis.DocumentStore.Tests.JobTests
 
         private IList<IDisposable> _disposables = new List<IDisposable>();
 
-        protected IJobExecutionContext BuildContext(IJob job, IEnumerable<KeyValuePair<string, object>> map = null)
+        protected static IJobExecutionContext BuildContext(IJob job, IEnumerable<KeyValuePair<string, object>> map = null)
         {
-            var scheduler = NSubstitute.Substitute.For<IScheduler>();
-            var firedBundle = new TriggerFiredBundle(
-                new JobDetailImpl("job", job.GetType()),
-                new SimpleTriggerImpl("trigger"),
-                new AnnualCalendar(),
-                false,
-                null, null, null, null
-                );
-
-            if (map != null)
-            {
-                foreach (var kvp in map)
-                {
-                    firedBundle.JobDetail.JobDataMap.Add(kvp);
-                }
-            }
-
-            return new JobExecutionContextImpl(scheduler, firedBundle, job);
+            return TestJobHelper.BuildContext(job, map);
         }
 
         protected IJobExecutionContext BuildContext(IJob job, object keyValMap)
         {
             var dictionary = keyValMap.GetType().GetProperties().ToDictionary(p => p.Name, p => p.GetValue(keyValMap));
-            return BuildContext(job, dictionary);
+            return TestJobHelper.BuildContext(job, dictionary);
         }
 
         [SetUp]

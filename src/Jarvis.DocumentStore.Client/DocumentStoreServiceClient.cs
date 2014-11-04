@@ -6,6 +6,8 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Client
@@ -201,10 +203,11 @@ namespace Jarvis.DocumentStore.Client
         /// Deserialize custom data from json string
         /// </summary>
         /// <param name="data">json representation of custom data</param>
+        /// <param name="settings">serializer settings</param>
         /// <returns>custom data</returns>
-        private Task<T> FromJsonAsync<T>(string data)
+        private Task<T> FromJsonAsync<T>(string data, JsonSerializerSettings settings = null)
         {
-            return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(data));
+            return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(data, settings));
         }
 
         /// <summary>
@@ -229,8 +232,9 @@ namespace Jarvis.DocumentStore.Client
         /// <param name="documentHandle">Document handle</param>
         /// <param name="format">Document format</param>
         /// <returns>A document format reader</returns>
-        public DocumentFormatReader OpenRead(DocumentHandle documentHandle, string format = "original")
+        public DocumentFormatReader OpenRead(DocumentHandle documentHandle, DocumentFormat format = null)
         {
+            format = format ?? new DocumentFormat("original");
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/" + format);
             return new DocumentFormatReader(endPoint);
         }
@@ -262,6 +266,21 @@ namespace Jarvis.DocumentStore.Client
                 var json = await client.GetStringAsync(resourceUri);
                 var d = await FromJsonAsync<IDictionary<DocumentFormat, Uri>>(json);
                 return new DocumentFormats(d);
+            }
+        }
+
+        /// <summary>
+        /// Get document content (typed)
+        /// </summary>
+        /// <param name="handle">document handle</param>
+        /// <returns><see cref="DocumentFormat"/>document content</returns>
+        public async Task<DocumentRevisionContent> GetContentAsync(DocumentHandle handle)
+        {
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/content");
+            using (var client = new HttpClient())
+            {
+                var json = await client.GetStringAsync(endPoint);
+                return await FromJsonAsync<DocumentRevisionContent>(json, PocoSerializationSettings.Default);
             }
         }
     }

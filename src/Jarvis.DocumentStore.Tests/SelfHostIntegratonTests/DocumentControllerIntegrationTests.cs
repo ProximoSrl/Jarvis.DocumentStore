@@ -5,13 +5,19 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using CQRS.Shared.MultitenantSupport;
 using CQRS.Tests.DomainTests;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.DocumentStore.Tests.JobTests;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 
 // ReSharper disable InconsistentNaming
@@ -42,7 +48,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             _documentStoreService.Stop();
             BsonClassMapHelper.Clear();
-
         }
 
         [Test]
@@ -190,6 +195,38 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             Debug.WriteLine("Done");
+        }
+
+        [Test]
+        public async void should_create_and_download_content_format()
+        {
+            var handle = DocumentHandle.FromString("Pdf_3");
+
+            await _documentStoreClient.UploadAsync(
+                TestConfig.PathToDocumentPdf,
+                handle
+            );
+        
+            Thread.Sleep(500);
+
+            var accessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
+            var tenantId = new TenantId(TestConfig.Tenant);
+            var tenant = accessor.GetTenant(tenantId);
+            var job = tenant.Container.Resolve<ExtractTextWithTikaJob>();
+            job.TenantId = tenantId;
+
+            job.Execute(TestJobHelper.BuildContext(job, new Dictionary<string, object>{
+                {JobKeys.TenantId, TestConfig.Tenant},
+                {JobKeys.DocumentId, "Document_1"},
+                {JobKeys.BlobId, "original.1"},
+                {JobKeys.Format, "pdf"},
+                {JobKeys.PipelineId, "tika"},
+            }));
+            Thread.Sleep(500);
+
+            var content = await _documentStoreClient.GetContentAsync(handle);
+            Assert.NotNull(content);
+            Assert.AreEqual(1, content.Pages.Length);
         }
     }
 }

@@ -159,6 +159,7 @@
     <Compile Include="JobTests\ResizeImageJobTests.cs" />
     <Compile Include="DomainSpecs\ClassWithBlobId.cs" />
     <Compile Include="DomainSpecs\BlobIdJsonConverterTests.cs" />
+    <Compile Include="JobTests\TestJobHelper.cs" />
     <Compile Include="JobTests\TikaAnalyzerTests.cs" />
     <Compile Include="Misc\FileNameWithExtensionTests.cs" />
     <Compile Include="Misc\RemoteConfigurationServiceTests.cs" />
