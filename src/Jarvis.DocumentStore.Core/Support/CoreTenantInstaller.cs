@@ -4,9 +4,7 @@ using Castle.Windsor;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Storage;
-using Jarvis.DocumentStore.Core.Storage.Stats;
 using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -42,8 +40,6 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<IPipelineManager>()
                     .ImplementedBy<PipelineManager>(),
-                Component
-                    .For<GridFsFileStoreStats>(),
                 Component
                     .For<MongoDatabase>()
                     .Named("originals.db")

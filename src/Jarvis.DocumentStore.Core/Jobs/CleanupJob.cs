@@ -13,6 +13,7 @@ using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
+    [DisallowConcurrentExecution]
     public class CleanupJob : ITenantJob
     {
         IRecycleBin RecycleBin { get; set; }
@@ -28,6 +29,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
+            Logger.DebugFormat("Running cleanup on {0}", context.JobDetail.JobDataMap.GetString(JobKeys.TenantId));
+
             var list = RecycleBin.Slots
                 .Where(x => x.Id.StreamId.StartsWith("Document_"))
                 .Take(200)

@@ -219,7 +219,6 @@
     <Compile Include="Storage\BlobWriter.cs" />
     <Compile Include="Storage\BlobStoreExtensions.cs" />
     <Compile Include="Storage\IBlobWriter.cs" />
-    <Compile Include="Storage\Stats\GridFsFileStoreStats.cs" />
     <Compile Include="Storage\FsBlobDescriptor.cs" />
     <Compile Include="Storage\GridFsBlobStore.cs" />
     <Compile Include="Storage\GridFsBlobDescriptor.cs" />
@@ -256,7 +255,9 @@
       <Name>Jarvis.DocumentStore.Shared</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Storage\Stats\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

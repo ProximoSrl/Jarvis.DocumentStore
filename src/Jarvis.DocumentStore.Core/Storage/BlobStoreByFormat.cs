@@ -63,5 +63,12 @@ namespace Jarvis.DocumentStore.Core.Storage
         {
             return ForFormat(format).Upload(format, fileName, sourceStrem);
         }
+
+        public BlobStoreInfo GetInfo()
+        {
+            var ori = _originals.GetInfo();
+            var art = _artifacts.GetInfo();
+            return new BlobStoreInfo(ori,art);
+        }
     }
 }

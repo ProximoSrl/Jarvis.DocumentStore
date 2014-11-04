@@ -41,22 +41,24 @@ namespace Jarvis.DocumentStore.Core.Support
 
         void SetupCleanupJob(IScheduler scheduler)
         {
-            scheduler.DeleteJob(JobKey.Create("sys.cleanup"));
+            JobKey jobKey = JobKey.Create(_tenant.Id, "sys.cleanup");
+            scheduler.DeleteJob(jobKey);
 
             var job = JobBuilder
                 .Create<CleanupJob>()
                 .UsingJobData(JobKeys.TenantId, _tenant.Id)
-                .WithIdentity("sys.cleanup")
+                .WithIdentity(jobKey)
                 .Build();
 
             var trigger = TriggerBuilder.Create()
-                .StartAt(DateTimeOffset.Now)
 #if DEBUG
+                .StartAt(DateTimeOffset.Now.AddSeconds(30))
                 .WithSimpleSchedule(b => b.RepeatForever().WithIntervalInSeconds(15))
 #else
+                .StartAt(DateTimeOffset.Now.AddMinutes(5))
                 .WithSimpleSchedule(b=>b.RepeatForever().WithIntervalInMinutes(5))
 #endif
-                .WithPriority(1)
+.WithPriority(1)
                 .Build();
 
             scheduler.ScheduleJob(job, trigger);
