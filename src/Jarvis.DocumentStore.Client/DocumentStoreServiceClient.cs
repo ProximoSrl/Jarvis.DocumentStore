@@ -274,13 +274,13 @@ namespace Jarvis.DocumentStore.Client
         /// </summary>
         /// <param name="handle">document handle</param>
         /// <returns><see cref="DocumentFormat"/>document content</returns>
-        public async Task<DocumentRevisionContent> GetContentAsync(DocumentHandle handle)
+        public async Task<DocumentContent> GetContentAsync(DocumentHandle handle)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/content");
             using (var client = new HttpClient())
             {
                 var json = await client.GetStringAsync(endPoint);
-                return await FromJsonAsync<DocumentRevisionContent>(json, PocoSerializationSettings.Default);
+                return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default);
             }
         }
     }

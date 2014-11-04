@@ -101,11 +101,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             if(action == null)
                 action = s => { };
 
-
             var id = BlobStore.Upload(Arg.Any<DocumentFormat>(), Arg.Do(action));
         }
 
-        protected void SetupCreateNew(BlobId id)
+        protected MemoryStream SetupCreateNew(BlobId id)
         {
             var stream = new MemoryStream();
             _disposables.Add(stream);
@@ -113,6 +112,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             BlobStore.CreateNew(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>()).Returns(c => 
                 new BlobWriter(id,stream, (FileNameWithExtension)c.Args()[1])
             );
+
+            return stream;
         }
 
         protected void CaptureCommand(Action<ICommand> action)

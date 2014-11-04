@@ -163,13 +163,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // wait background projection polling
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
 
             var data = await _documentStoreClient.GetCustomDataAsync(handle);
 
             await _documentStoreClient.DeleteAsync(handle);
 
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
 
             var ex = Assert.Throws<HttpRequestException>(async() =>
             {

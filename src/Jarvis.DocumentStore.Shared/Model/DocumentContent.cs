@@ -3,15 +3,15 @@ using System.Linq;
 
 namespace Jarvis.DocumentStore.Shared.Model
 {
-    public class DocumentRevisionContent : IEquatable<DocumentRevisionContent>
+    public class DocumentContent : IEquatable<DocumentContent>
     {
         public const string MedatataTitle = "suggested-subject";
         public const string MetadataProtocolNumber = "suggested-protocolNo";
+        public const string MetadataWithoutPageInfo = "jarvis-without-page-info";
 
-        public static readonly DocumentRevisionContent NullContent = new DocumentRevisionContent(new DocumentPage[0], new MetadataHeader[0]);
+        public static readonly DocumentContent NullContent = new DocumentContent(new DocumentPage[0], new MetadataHeader[0]);
 
-
-        public DocumentRevisionContent(DocumentPage[] pages, MetadataHeader[] metadata)
+        public DocumentContent(DocumentPage[] pages, MetadataHeader[] metadata)
         {
             Pages = pages;
             Metadata = metadata;
@@ -38,7 +38,7 @@ namespace Jarvis.DocumentStore.Shared.Model
             return found != null ? found.Value : null;
         }
 
-        public bool Equals(DocumentRevisionContent other)
+        public bool Equals(DocumentContent other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -51,7 +51,7 @@ namespace Jarvis.DocumentStore.Shared.Model
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((DocumentRevisionContent)obj);
+            return Equals((DocumentContent)obj);
         }
 
         public override int GetHashCode()
@@ -62,12 +62,12 @@ namespace Jarvis.DocumentStore.Shared.Model
             }
         }
 
-        public static bool operator ==(DocumentRevisionContent left, DocumentRevisionContent right)
+        public static bool operator ==(DocumentContent left, DocumentContent right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(DocumentRevisionContent left, DocumentRevisionContent right)
+        public static bool operator !=(DocumentContent left, DocumentContent right)
         {
             return !Equals(left, right);
         }
