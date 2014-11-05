@@ -135,10 +135,34 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var original = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNotNull(original);
+            Assert.AreEqual(1, original.HandlesCount);
+            
+            var handle = _handleReader.FindOneById(new DocumentHandle("handle"));
+            Assert.IsNotNull(handle);
+            Assert.AreEqual(handle.DocumentId, new DocumentId(1));
 
             var copy = _documentReader.FindOneById(new DocumentId(2));
             Assert.IsNull(copy);
             copy = _documentReader.FindOneById(new DocumentId(3));
+            Assert.IsNull(copy);
+        }       
+        
+        [Test]
+        public void should_deduplicate_a_document_with_same_content_and_handle()
+        {
+            CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
+            CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
+            Thread.Sleep(1000);
+
+            var original = _documentReader.FindOneById(new DocumentId(1));
+            Assert.IsNotNull(original);
+            Assert.AreEqual(1, original.HandlesCount);
+
+            var handle = _handleReader.FindOneById(new DocumentHandle("handle"));
+            Assert.IsNotNull(handle);
+            Assert.AreEqual(handle.DocumentId, new DocumentId(1));
+
+            var copy = _documentReader.FindOneById(new DocumentId(2));
             Assert.IsNull(copy);
         }
     }
