@@ -25,14 +25,33 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         {
             if(HasBeenCreated)
                 throw new DomainException((IIdentity)id, "handle already initialized");
+            ThrowIfDeleted();
             
             RaiseEvent(new HandleInitialized(id, handle));
         }
 
         public void Link(DocumentId documentId)
         {
-            RaiseEvent(new HandleLinked(documentId));
+            ThrowIfDeleted();
+            if(InternalState.LinkedDocument != documentId)
+                RaiseEvent(new HandleLinked(documentId));
         }
+
+        public void Delete()
+        {
+            if(!InternalState.HasBeenDeleted)
+                RaiseEvent(new HandleDeleted());
+        }
+
+        void ThrowIfDeleted()
+        {
+            if(InternalState.HasBeenDeleted)
+                throw new DomainException((IIdentity)Id, "Handle has been deleted");
+        }
+    }
+
+    public class HandleDeleted : DomainEvent
+    {
     }
 
     public class HandleLinked : DomainEvent
@@ -72,5 +91,24 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         {
             this.AggregateId = e.Id;
         }
+
+        void When(HandleDeleted e)
+        {
+            MarkAsDeleted();
+        }
+
+        public void Link(DocumentId documentId)
+        {
+            this.LinkedDocument = documentId;
+        }
+
+        public DocumentId LinkedDocument { get; private set; }
+
+        public void MarkAsDeleted()
+        {
+            this.HasBeenDeleted = true;
+        }
+
+        public bool HasBeenDeleted { get; private set; }
     }
 }
