@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         {
             ThrowIfDeleted();
             if (InternalState.LinkedDocument != documentId)
-                RaiseEvent(new HandleLinked(documentId));
+                RaiseEvent(new HandleLinked(InternalState.Handle, documentId));
         }
 
         public void SetCustomData(HandleCustomData customData)
@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             if (HandleCustomData.IsEquals(InternalState.CustomData, customData))
                 return;
 
-            RaiseEvent(new HandleCustomDataSet(customData));
+            RaiseEvent(new HandleCustomDataSet(InternalState.Handle, customData));
         }
 
         public void Delete()

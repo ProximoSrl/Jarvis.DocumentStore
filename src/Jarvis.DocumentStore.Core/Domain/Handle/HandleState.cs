@@ -1,6 +1,7 @@
 using CQRS.Kernel.Engine;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle.Events;
+using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Handle
 {
@@ -18,6 +19,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         void When(HandleInitialized e)
         {
             this.AggregateId = e.Id;
+            this.Handle = e.Handle;
         }
 
         void When(HandleDeleted e)
@@ -44,6 +46,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
 
         public bool HasBeenDeleted { get; private set; }
         public HandleCustomData CustomData { get; private set; }
+        public DocumentHandle Handle { get; private set; }
 
         public void SetCustomData(HandleCustomData data)
         {

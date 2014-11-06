@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IBlobStore _blobStore;
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
-        readonly IReader<HandleToDocument, DocumentHandle> _handleToDocument;
+        readonly IReader<ExHandleToDocument, DocumentHandle> _handleToDocument;
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
@@ -47,7 +47,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IBlobStore blobStore, 
             ConfigService configService, 
             IIdentityGenerator identityGenerator, 
-            IReader<HandleToDocument, DocumentHandle> handleToDocument, 
+            IReader<ExHandleToDocument, DocumentHandle> handleToDocument, 
             IReader<DocumentReadModel, DocumentId> documentReader, 
             IInProcessCommandBus commandBus
         ){

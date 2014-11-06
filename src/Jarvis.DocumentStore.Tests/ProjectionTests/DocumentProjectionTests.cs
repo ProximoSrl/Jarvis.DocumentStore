@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private DocumentStoreBootstrapper _documentStoreService;
         private ICommandBus _bus;
         IBlobStore _filestore;
-        IReader<HandleToDocument, DocumentHandle> _handleReader;
+        IReader<ExHandleToDocument, DocumentHandle> _handleReader;
         IReader<DocumentReadModel, DocumentId> _documentReader;
 
         [SetUp]
@@ -52,7 +52,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _filestore = tenant.Container.Resolve<IBlobStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
 
-            _handleReader = tenant.Container.Resolve<IReader<HandleToDocument, DocumentHandle>>();
+            _handleReader = tenant.Container.Resolve<IReader<ExHandleToDocument, DocumentHandle>>();
             _documentReader = tenant.Container.Resolve<IReader<DocumentReadModel, DocumentId>>();
         }
 

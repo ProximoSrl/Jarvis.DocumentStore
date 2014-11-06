@@ -170,6 +170,7 @@
     <Compile Include="EventHandlers\DocumentByHashReader.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
+    <Compile Include="EventHandlers\HandleProjection.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="EventHandlers\StreamHelper.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
@@ -220,9 +221,10 @@
     <Compile Include="Processing\Pdf\CreatePdfImageTaskParams.cs" />
     <Compile Include="Processing\Tools\ImageResizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadModel\HandleToDocument.cs" />
+    <Compile Include="ReadModel\ExHandleToDocument.cs" />
     <Compile Include="ReadModel\DocumentReadModel.cs" />
     <Compile Include="ReadModel\DocumentStats.cs" />
+    <Compile Include="ReadModel\HandleReadModel.cs" />
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Services\ContentFormatBuilder.cs" />
     <Compile Include="Storage\BlobStoreByFormat.cs" />
@@ -240,7 +242,7 @@
     <Compile Include="Support\CustomQuartzFacility.cs" />
     <Compile Include="Support\DocumentStoreConfiguration.cs" />
     <Compile Include="Support\IShutdownActivity.cs" />
-    <Compile Include="Support\ProjectionsInstaller.cs" />
+    <Compile Include="Support\TenantProjectionsInstaller.cs" />
     <Compile Include="Support\SchedulerInstaller.cs" />
     <Compile Include="Support\SchedulerShutdown.cs" />
     <Compile Include="Support\SizeInfoHelper.cs" />

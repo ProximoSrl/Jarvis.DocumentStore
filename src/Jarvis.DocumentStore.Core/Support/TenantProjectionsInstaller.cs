@@ -8,24 +8,24 @@ using CQRS.Kernel.Events;
 using CQRS.Kernel.ProjectionEngine;
 using CQRS.Kernel.ProjectionEngine.Client;
 using CQRS.Kernel.ProjectionEngine.RecycleBin;
-using CQRS.Shared.IdentitySupport;
 using CQRS.Shared.Messages;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
-using CQRS.Shared.Storage;
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.EventHandlers;
+using Jarvis.DocumentStore.Core.ReadModel;
 using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
-    public class ProjectionsInstaller<TNotifier> : IWindsorInstaller where TNotifier : INotifyToSubscribers
+    public class TenantProjectionsInstaller<TNotifier> : IWindsorInstaller where TNotifier : INotifyToSubscribers
     {
         readonly ITenant _tenant;
+        readonly bool _enableProjections;
 
-        public ProjectionsInstaller(ITenant tenant)
+        public TenantProjectionsInstaller(ITenant tenant, bool enableProjections)
         {
             _tenant = tenant;
+            _enableProjections = enableProjections;
         }
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
@@ -43,6 +43,21 @@ namespace Jarvis.DocumentStore.Core.Support
             };
 
             var readModelDb = _tenant.Get<MongoDatabase>("readmodel.db");
+
+
+            container.Register(
+                Component
+                    .For<IHandleWriter>()
+                    .ImplementedBy<HandleWriter>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
+                Component
+                    .For(typeof(IReader<,>), typeof(IMongoDbReader<,>))
+                    .ImplementedBy(typeof(MongoReaderForProjections<,>))
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
+            );
+            
+            if (!_enableProjections)
+                return;
 
             container.Register(
                 Component
@@ -85,10 +100,6 @@ namespace Jarvis.DocumentStore.Core.Support
                         typeof (IReadOnlyCollectionWrapper<,>)
                     })
                     .ImplementedBy(typeof(CollectionWrapper<,>))
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
-                Component
-                    .For(typeof(IReader<,>), typeof(IMongoDbReader<,>))
-                    .ImplementedBy(typeof(MongoReaderForProjections<,>))
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 Component
                     .For<IPollingClient>()

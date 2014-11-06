@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected DocumentsController Controller;
         protected IBlobStore BlobStore;
         protected IIdentityGenerator IdentityGenerator;
-        protected IReader<HandleToDocument, DocumentHandle> HandleToDocumentReader;
+        protected IReader<ExHandleToDocument, DocumentHandle> HandleToDocumentReader;
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
 
@@ -33,7 +33,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         {
             BlobStore = Substitute.For<IBlobStore>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
-            HandleToDocumentReader = Substitute.For<IReader<HandleToDocument, DocumentHandle>>();
+            HandleToDocumentReader = Substitute.For<IReader<ExHandleToDocument, DocumentHandle>>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
             var bus = Substitute.For<IInProcessCommandBus>();
 
@@ -65,7 +65,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         {
             HandleToDocumentReader
                 .FindOneById(handleInfo.Handle)
-                .Returns(info => new HandleToDocument(handleInfo, documentId));
+                .Returns(info => new ExHandleToDocument(handleInfo, documentId));
         }
     }
 }

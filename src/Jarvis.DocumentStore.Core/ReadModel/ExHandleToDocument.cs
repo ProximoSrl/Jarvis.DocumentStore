@@ -10,9 +10,9 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
-    public class HandleToDocument : AbstractReadModel<DocumentHandle>
+    public class ExHandleToDocument : AbstractReadModel<DocumentHandle>
     {
-        public HandleToDocument(DocumentHandleInfo handleInfo, DocumentId documentid)
+        public ExHandleToDocument(DocumentHandleInfo handleInfo, DocumentId documentid)
         {
             this.Id = handleInfo.Handle;
             Link(handleInfo, documentid);

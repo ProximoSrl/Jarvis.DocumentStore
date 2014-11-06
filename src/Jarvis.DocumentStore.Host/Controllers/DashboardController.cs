@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 {
     public class DashboardController : ApiController, ITenantController
     {
-        public DashboardController(IBlobStore blobStore, IMongoDbReader<DocumentStats, string> docStats, IReader<HandleToDocument, DocumentHandle> handles)
+        public DashboardController(IBlobStore blobStore, IMongoDbReader<DocumentStats, string> docStats, IReader<ExHandleToDocument, DocumentHandle> handles)
         {
             Handles = handles;
             DocStats = docStats;
@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public IBlobStore BlobStore{ get; set; }
         public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
-        public IReader<HandleToDocument, DocumentHandle> Handles { get; set; }
+        public IReader<ExHandleToDocument, DocumentHandle> Handles { get; set; }
 
         [HttpGet]
         [Route("{tenantId}/dashboard")]

@@ -26,7 +26,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentHasBeenDeduplicated>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
-        private readonly ICollectionWrapper<HandleToDocument, DocumentHandle> _handles;
+        private readonly ICollectionWrapper<ExHandleToDocument, DocumentHandle> _handles;
         private readonly IBlobStore _blobStore;
         private readonly DeduplicationHelper _deduplicationHelper;
         private readonly ICommandBus _commandBus;
@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public DocumentProjection(
             ICollectionWrapper<DocumentReadModel, DocumentId> documents, 
-            ICollectionWrapper<HandleToDocument, DocumentHandle> handles,
+            ICollectionWrapper<ExHandleToDocument, DocumentHandle> handles,
             IBlobStore blobStore, 
             DeduplicationHelper deduplicationHelper, 
             ICommandBus commandBus, 
@@ -139,7 +139,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var handle = _handles.FindOneById(e.HandleInfo.Handle);
             if (handle == null)
             {
-                _handles.Insert(e, new HandleToDocument(e.HandleInfo, documentid));
+                _handles.Insert(e, new ExHandleToDocument(e.HandleInfo, documentid));
             }
             else
             {

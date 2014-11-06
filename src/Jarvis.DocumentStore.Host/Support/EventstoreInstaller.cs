@@ -20,6 +20,7 @@ using CQRS.Shared.IdentitySupport.Serialization;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.Storage;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Bson.Serialization;
 using NEventStore;
@@ -138,6 +139,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
             });
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
+            EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
             StringValueCustomBsonTypeMapper.Register<BlobId>();
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
             StringValueCustomBsonTypeMapper.Register<FileHash>();
