@@ -155,6 +155,8 @@
     <Compile Include="Domain\Document\Events\DocumentQueuedForProcessing.cs" />
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\DocumentFormat.cs" />
+    <Compile Include="Domain\Handle\Handle.cs" />
+    <Compile Include="Domain\Handle\HandleId.cs" />
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DeduplicationHelper.cs" />
     <Compile Include="EventHandlers\DocumentByHashReader.cs" />

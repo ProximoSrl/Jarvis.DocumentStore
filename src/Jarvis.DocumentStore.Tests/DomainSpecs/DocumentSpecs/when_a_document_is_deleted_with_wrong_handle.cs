@@ -1,16 +1,18 @@
 using System;
 using CQRS.Kernel.Engine;
+using CQRS.TestHelpers;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Machine.Specifications;
 using NUnit.Framework;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     [Subject("Document")]
     public class when_a_document_is_deleted_with_wrong_handle : DocumentSpecifications
     {
         private static Exception Exception { get; set; }
-        Establish context = () => Create();
+        Establish context = () => AggregateSpecification<Core.Domain.Document.Document, DocumentState>.Create();
 
         Because of = () =>
         {

@@ -1,10 +1,11 @@
+using CQRS.TestHelpers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Machine.Specifications;
 using NUnit.Framework;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     [Subject("with a document")]
     public class when_a_document_is_deduplicated : DocumentSpecifications
@@ -15,26 +16,26 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             new FileNameWithExtension("Another.document")
             );
 
-        Establish context = () => SetUp(new DocumentState());
+        Establish context = () => AggregateSpecification<Core.Domain.Document.Document, DocumentState>.SetUp(new DocumentState());
 
         Because of = () => Document.Deduplicate(_otherDocumentId, _otherHandleInfo);
 
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
-            EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
+            AggregateSpecification<Core.Domain.Document.Document, DocumentState>.EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
 
         It DocumentHandleAttached_event_should_be_raised = () =>
-            EventHasBeenRaised<DocumentHandleAttached>().ShouldBeTrue();
+            AggregateSpecification<Core.Domain.Document.Document, DocumentState>.EventHasBeenRaised<DocumentHandleAttached>().ShouldBeTrue();
 
         It DocumentHasBeenDeduplicated_event_should_have_documentId_and_handle = () =>
         {
-            var e = RaisedEvent<DocumentHasBeenDeduplicated>();
+            var e = AggregateSpecification<Core.Domain.Document.Document, DocumentState>.RaisedEvent<DocumentHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
             Assert.AreSame(_otherHandleInfo.Handle, e.Handle);
         };
 
         It DocumentHandleAttached_event_should_have_handle_and_fileName = () =>
         {
-            var e = RaisedEvent<DocumentHandleAttached>();
+            var e = AggregateSpecification<Core.Domain.Document.Document, DocumentState>.RaisedEvent<DocumentHandleAttached>();
             Assert.AreSame(_otherHandleInfo, e.HandleInfo);
         };
     }

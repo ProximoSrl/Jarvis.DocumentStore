@@ -1,13 +1,10 @@
-﻿using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CQRS.TestHelpers;
+﻿using CQRS.TestHelpers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 
 // ReSharper disable InconsistentNaming
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     public abstract class DocumentSpecifications : AggregateSpecification<Document, DocumentState>
     {

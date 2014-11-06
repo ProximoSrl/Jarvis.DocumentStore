@@ -1,8 +1,10 @@
 using System;
 using CQRS.Kernel.Engine;
+using CQRS.TestHelpers;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     public class when_a_document_is_created_twice : DocumentSpecifications
     {
@@ -10,7 +12,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
 
         Establish context = () =>
         {
-            Create();
+            AggregateSpecification<Core.Domain.Document.Document, DocumentState>.Create();
             Document.Create(_id, _blobId, _handleInfo);
         };
 

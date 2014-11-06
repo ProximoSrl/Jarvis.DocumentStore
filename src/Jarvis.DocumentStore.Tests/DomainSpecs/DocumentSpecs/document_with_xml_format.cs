@@ -4,7 +4,7 @@ using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     [Subject("document with xml format")]
     public class document_with_xml_format : DocumentSpecifications
