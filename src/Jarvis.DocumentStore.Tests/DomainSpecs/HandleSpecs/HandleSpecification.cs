@@ -61,6 +61,9 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
 
         It event_should_have_document_id = () =>
             RaisedEvent<HandleLinked>().DocumentId.ShouldBeLike(Document_1);
+
+        It event_should_have_old_document_id = () =>
+            RaisedEvent<HandleLinked>().PreviousDocumentId.ShouldBeNull();
     }
 
     public class with_an_handle_linked_to_document_1 : with_an_initialized_handle
@@ -80,6 +83,21 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
 
         It handleLinkedEvent_should_not_be_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeFalse();
+    }
+
+    [Subject("with a handle linked to Document_1")]
+    public class when_i_link_document_2_again : with_an_handle_linked_to_document_1
+    {
+        Because of = () => Handle.Link(Document_2);
+
+        It handleLinkedEvent_should_have_been_raised = () =>
+            EventHasBeenRaised<HandleLinked>().ShouldBeTrue();
+
+        It handleLinkedEvent_should_have_old_document_set_to_document_1 = () =>
+            RaisedEvent<HandleLinked>().PreviousDocumentId.ShouldBeLike(Document_1);
+
+        It handleLinkedEvent_should_have_new_document_set_to_document_2 = () =>
+            RaisedEvent<HandleLinked>().DocumentId.ShouldBeLike(Document_2);
     }
 
     [Subject("with a handle linked to Document_1")]
