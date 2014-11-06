@@ -28,12 +28,15 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
         public IDictionary<DocumentFormat, FormatInfo> Formats { get; private set; }
+        public HashSet<DocumentHandle> Handles { get; private set; }
+
         public FileHash Hash { get; set; }        
         public int FormatsCount { get; set; }
 
         public DocumentReadModel(DocumentId id, BlobId blobId)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
+            this.Handles = new HashSet<DocumentHandle>();
             this.Id = id;
 
             AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), blobId);
@@ -42,6 +45,16 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void AddFormat(PipelineId pipelineId, DocumentFormat format, BlobId blobId)
         {
             this.Formats[format] = new FormatInfo(blobId, pipelineId);
+        }
+
+        public void AddHandle(DocumentHandle handle)
+        {
+            this.Handles.Add(handle);
+        }
+
+        public void Remove(DocumentHandle handle)
+        {
+            this.Handles.Remove(handle);
         }
 
         public BlobId GetFormatBlobId(DocumentFormat format)

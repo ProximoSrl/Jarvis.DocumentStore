@@ -170,6 +170,7 @@
     <Compile Include="EventHandlers\DocumentByHashReader.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
+    <Compile Include="EventHandlers\DocumentWorkflow.cs" />
     <Compile Include="EventHandlers\HandleProjection.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="EventHandlers\StreamHelper.cs" />
