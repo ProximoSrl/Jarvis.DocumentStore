@@ -10,7 +10,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
     public class DocumentState : AggregateState
     {
         public IDictionary<DocumentFormat, BlobId> Formats { get; private set; }
-        public Dictionary<DocumentHandle, int> Handles { get; private set; }
         public BlobId BlobId { get; private set; }
         
         public DocumentState(params KeyValuePair<DocumentFormat, BlobId>[] formats)
@@ -25,7 +24,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public DocumentState()
         {
             this.Formats = new Dictionary<DocumentFormat, BlobId>();
-            this.Handles = new Dictionary<DocumentHandle, int>();
         }
 
         void When(DocumentDeleted e)
@@ -54,31 +52,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public bool HasFormat(DocumentFormat documentFormat)
         {
             return Formats.ContainsKey(documentFormat);
-        }
-
-        public bool IsValidHandle(DocumentHandle handle)
-        {
-            return Handles.ContainsKey(handle);
-        }
-
-        public int HandleCount(DocumentHandle handle)
-        {
-            return Handles[handle];
-        }
-
-        public override void EnsureInvariantsAreSatisfied()
-        {
-            foreach (var handle in Handles.Where(handle => handle.Value <0))
-            {
-                throw new Exception(string.Format("Handle {0} has count:{1}", handle.Key, handle.Value));
-            }
-            
-            base.EnsureInvariantsAreSatisfied();
-        }
-
-        public bool HasActiveHandles()
-        {
-            return Handles.Any(x => x.Value > 0);
         }
     }
 }

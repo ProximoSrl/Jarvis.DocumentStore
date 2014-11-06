@@ -10,13 +10,13 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
     public class DeduplicateDocument : DocumentCommand
     {
         public DocumentId OtherDocumentId { get; private set; }
-        public DocumentHandleInfo OtherHandleInfo { get; private set; }
+        public DocumentHandle OtherHandle { get; private set; }
 
-        public DeduplicateDocument(DocumentId documentId, DocumentId otherDocumentId, DocumentHandleInfo otherHandleInfo)
+        public DeduplicateDocument(DocumentId documentId, DocumentId otherDocumentId, DocumentHandle otherHandle)
             : base(documentId)
         {
             OtherDocumentId = otherDocumentId;
-            OtherHandleInfo = otherHandleInfo;
+            OtherHandle = otherHandle;
         }
     }
 }

@@ -19,24 +19,12 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         It DocumentDeleted_event_should_not_have_been_raised = () =>
             EventHasBeenRaised<DocumentDeleted>().ShouldBeFalse();
 
-        It Internal_state_should_not_track_old_handle = () =>
-        {
-            State.IsValidHandle(Handle).ShouldBeTrue();
-            State.HandleCount(Handle).ShouldBeLike(0);
-        };
-
-        It Internal_state_should_track_other_handle = () =>
-            State.IsValidHandle(_otherHandle).ShouldBeTrue();
-
         Establish context = () => Create();
 
         Because of = () =>
         {
             Document.Create(_id, _blobId, _handleInfo);
-            Document.Deduplicate(
-                new DocumentId(2),
-                _otherInfo
-                );
+            Document.Deduplicate(new DocumentId(2),_otherInfo.Handle);
             Document.Delete(Handle);
         };
     }

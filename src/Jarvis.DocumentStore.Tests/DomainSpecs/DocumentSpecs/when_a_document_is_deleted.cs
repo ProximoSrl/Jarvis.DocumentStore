@@ -12,13 +12,6 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
             EventHasBeenRaised<DocumentDeleted>()
                 .ShouldBeTrue();
 
-        It Internal_state_should_not_track_old_handle = () =>
-        {
-            State.IsValidHandle(Handle)
-                .ShouldBeTrue();
-            State.HandleCount(Handle)
-                .ShouldBeLike(0);
-        };
 
         Establish context = () =>
         {

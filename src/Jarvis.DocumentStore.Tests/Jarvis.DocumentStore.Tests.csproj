@@ -148,7 +148,6 @@
     <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_deleted_with_wrong_handle.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_a_filename_with_surrounding_quotes_is_created.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_a_format_is_added_to_a_document.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_deleting_an_handle.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_document_format_deleted_will_be_deleted.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_document_format_has_been_deleted.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_trying_to_delete_with_a_wrong_handle.cs" />

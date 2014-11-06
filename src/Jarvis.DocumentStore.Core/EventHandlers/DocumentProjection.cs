@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (duplicatedId != null)
             {
                 _commandBus.Send(new DeduplicateDocument(
-                    duplicatedId, document.Id, e.HandleInfo 
+                    duplicatedId, document.Id, e.HandleInfo.Handle
                 ));
             }
             else
