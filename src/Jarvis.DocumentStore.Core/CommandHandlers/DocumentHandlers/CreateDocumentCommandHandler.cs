@@ -1,14 +1,14 @@
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Handle;
+using Jarvis.DocumentStore.Core.ReadModel;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
     public class CreateDocumentCommandHandler : DocumentCommandHandler<CreateDocument>
     {
         readonly IHandleMapper _mapper;
-
-        public CreateDocumentCommandHandler(IHandleMapper mapper)
+        public CreateDocumentCommandHandler(IHandleMapper mapper, IHandleWriter writer)
         {
             _mapper = mapper;
         }
@@ -20,7 +20,6 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
                 doc => doc.Create(cmd.AggregateId,cmd.BlobId,cmd.HandleInfo),
                 true
             );
-
             LinkHandle(cmd);
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -44,20 +45,21 @@ namespace Jarvis.DocumentStore.Host.Controllers
         BlobId _blobId;
 
         public DocumentsController(
-            IBlobStore blobStore, 
-            ConfigService configService, 
-            IIdentityGenerator identityGenerator, 
-            IReader<DocumentReadModel, DocumentId> documentReader, 
-            IInProcessCommandBus commandBus, 
+            IBlobStore blobStore,
+            ConfigService configService,
+            IIdentityGenerator identityGenerator,
+            IReader<DocumentReadModel, DocumentId> documentReader,
+            IInProcessCommandBus commandBus,
             IHandleWriter handleWriter
-        ){
+        )
+        {
             _blobStore = blobStore;
             _configService = configService;
             _identityGenerator = identityGenerator;
             _documentReader = documentReader;
             CommandBus = commandBus;
             _handleWriter = handleWriter;
-            }
+        }
 
         [Route("{tenantId}/documents/{handle}")]
         [HttpPost]
@@ -84,12 +86,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var storedFile = _blobStore.GetDescriptor(_blobId);
 
             return Request.CreateResponse(
-                HttpStatusCode.OK, 
-                new UploadedDocumentResponse{
+                HttpStatusCode.OK,
+                new UploadedDocumentResponse
+                {
                     Handle = handle,
                     Hash = storedFile.Hash,
                     HashType = "md5",
-                    Uri = Url.Content("/"+tenantId+"/documents/" + handle)
+                    Uri = Url.Content("/" + tenantId + "/documents/" + handle)
                 }
             );
         }
@@ -132,7 +135,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (data == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Document not found");
 
-            return Request.CreateResponse(HttpStatusCode.OK,data.CustomData);
+            return Request.CreateResponse(HttpStatusCode.OK, data.CustomData);
         }
 
         [Route("{tenantId}/documents/{handle}")]
@@ -140,7 +143,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public async Task<HttpResponseMessage> GetFormatList(
             TenantId tenantId,
             DocumentHandle handle
-        ){
+        )
+        {
             var document = GetDocumentByHandle(handle);
 
             if (document == null)
@@ -149,7 +153,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             var formats = document.Formats.ToDictionary(x =>
-                (string) x.Key,
+                (string)x.Key,
                 x => Url.Content("/" + tenantId + "/documents/" + handle + "/" + x.Key)
             );
             return Request.CreateResponse(HttpStatusCode.OK, formats);
@@ -161,7 +165,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
             TenantId tenantId,
             DocumentHandle handle,
             DocumentFormat format
-        ){
+        )
+        {
             var mapping = _handleWriter.FindOneById(handle);
             if (mapping == null)
                 return DocumentNotFound(handle);
@@ -251,7 +256,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             CommandBus.Send(new DeleteDocument(documentId, handle), "api");
         }
-        
+
         private void CreateDocument(
             DocumentId documentId,
             BlobId blobId,
@@ -262,6 +267,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
             var createDocument = new CreateDocument(documentId, blobId, handleInfo);
+            _handleWriter.Promise(handle, fileName, documentId, 0);
             CommandBus.Send(createDocument, "api");
         }
 
