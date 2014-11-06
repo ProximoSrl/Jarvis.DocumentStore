@@ -156,7 +156,11 @@
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\DocumentFormat.cs" />
     <Compile Include="Domain\Handle\Handle.cs" />
+    <Compile Include="Domain\Handle\Events\HandleDeleted.cs" />
     <Compile Include="Domain\Handle\HandleId.cs" />
+    <Compile Include="Domain\Handle\Events\HandleInitialized.cs" />
+    <Compile Include="Domain\Handle\Events\HandleLinked.cs" />
+    <Compile Include="Domain\Handle\HandleState.cs" />
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DeduplicationHelper.cs" />
     <Compile Include="EventHandlers\DocumentByHashReader.cs" />
