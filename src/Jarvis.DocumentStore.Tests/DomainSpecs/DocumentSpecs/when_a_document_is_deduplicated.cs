@@ -23,20 +23,11 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
             AggregateSpecification<Core.Domain.Document.Document, DocumentState>.EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();
 
-        It DocumentHandleAttached_event_should_be_raised = () =>
-            AggregateSpecification<Core.Domain.Document.Document, DocumentState>.EventHasBeenRaised<DocumentHandleAttached>().ShouldBeTrue();
-
         It DocumentHasBeenDeduplicated_event_should_have_documentId_and_handle = () =>
         {
             var e = AggregateSpecification<Core.Domain.Document.Document, DocumentState>.RaisedEvent<DocumentHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
             Assert.AreSame(_otherHandleInfo.Handle, e.Handle);
-        };
-
-        It DocumentHandleAttached_event_should_have_handle_and_fileName = () =>
-        {
-            var e = AggregateSpecification<Core.Domain.Document.Document, DocumentState>.RaisedEvent<DocumentHandleAttached>();
-            Assert.AreSame(_otherHandleInfo, e.HandleInfo);
         };
     }
 }

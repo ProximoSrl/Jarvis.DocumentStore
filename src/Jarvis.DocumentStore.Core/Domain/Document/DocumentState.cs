@@ -46,23 +46,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             this.Formats.Add(e.DocumentFormat, e.BlobId);
         }
 
-        private void When(DocumentHandleAttached e)
-        {
-            if (Handles.ContainsKey(e.HandleInfo.Handle))
-            {
-                Handles[e.HandleInfo.Handle]++;
-            }
-            else
-            {
-                Handles[e.HandleInfo.Handle] = 1;
-            }
-        }
-
-        void When(DocumentHandleDetached e)
-        {
-            Handles[e.Handle]--;
-        }
-
         void When(DocumentFormatHasBeenDeleted e)
         {
             this.Formats.Remove(e.DocumentFormat);

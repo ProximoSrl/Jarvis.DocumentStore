@@ -20,13 +20,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
         IEventHandler<DocumentDeleted>,
-        IEventHandler<DocumentHandleAttached>,
-        IEventHandler<DocumentHandleDetached>,
         IEventHandler<DocumentQueuedForProcessing>,
         IEventHandler<DocumentHasBeenDeduplicated>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
-        private readonly ICollectionWrapper<ExHandleToDocument, DocumentHandle> _handles;
         private readonly IBlobStore _blobStore;
         private readonly DeduplicationHelper _deduplicationHelper;
         private readonly ICommandBus _commandBus;
@@ -34,7 +31,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public DocumentProjection(
             ICollectionWrapper<DocumentReadModel, DocumentId> documents, 
-            ICollectionWrapper<ExHandleToDocument, DocumentHandle> handles,
             IBlobStore blobStore, 
             DeduplicationHelper deduplicationHelper, 
             ICommandBus commandBus, 
@@ -46,14 +42,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _deduplicationHelper = deduplicationHelper;
             _commandBus = commandBus;
             _pipelineManager = pipelineManager;
-            _handles = handles;
 
             _documents.Attach(this, false);
-            _handles.Attach(this, false);
 
             _documents.OnSave = d =>
             {
-                d.HandlesCount = d.Handles.Count;
                 d.FormatsCount = d.Formats.Count;
             };
         }
@@ -117,40 +110,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentDeleted e)
         {
             _documents.Delete(e, (DocumentId)e.AggregateId);
-        }
-
-        public void On(DocumentHandleDetached e)
-        {
-            var documentId = (DocumentId)e.AggregateId;
-            _documents.FindAndModify(e, documentId, d => d.RemoveHandle(e.Handle));
-
-            var h = _handles.FindOneById(e.Handle);
-            if (h != null && h.DocumentId == documentId)
-            {
-                _handles.Delete(e, e.Handle);
-            }
-        }
-
-        public void On(DocumentHandleAttached e)
-        {
-            var documentid = (DocumentId)e.AggregateId;
-            _documents.FindAndModify(e, documentid, d => d.AddHandle(e.HandleInfo));
-
-            var handle = _handles.FindOneById(e.HandleInfo.Handle);
-            if (handle == null)
-            {
-                _handles.Insert(e, new ExHandleToDocument(e.HandleInfo, documentid));
-            }
-            else
-            {
-                if (!IsReplay && handle.DocumentId != documentid)
-                {
-                    _commandBus.Send(new DeleteDocument(handle.DocumentId, handle.Id));
-                }
-
-                handle.Link(e.HandleInfo, documentid);
-                _handles.Save(e, handle);
-            }
         }
 
         public void On(DocumentQueuedForProcessing e)

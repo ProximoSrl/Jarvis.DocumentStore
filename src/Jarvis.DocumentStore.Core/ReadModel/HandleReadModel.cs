@@ -1,3 +1,4 @@
+using System.Linq;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle;
@@ -6,6 +7,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
+using MongoDB.Driver.Linq;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
@@ -20,10 +22,18 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         
         public long ProjectedAt { get; private set; }
         public HandleCustomData CustomData { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
 
         public HandleReadModel(DocumentHandle handle)
         {
             Handle = handle;
+        }
+
+        public HandleReadModel(DocumentHandle handle, DocumentId documentid, FileNameWithExtension fileName)
+        {
+            Handle = handle;
+            DocumentId = documentid;
+            FileName = fileName;
         }
 
         public bool IsPending()
@@ -34,13 +44,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
     public interface IHandleWriter
     {
-        void Promise(DocumentHandle handle, DocumentId id, long createdAt);
-        HandleReadModel Get(DocumentHandle handle);
+        void Promise(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long createdAt);
+        HandleReadModel FindOneById(DocumentHandle handle);
         void Drop();
         void Init();
         void ConfirmLink(DocumentHandle handle, DocumentId id, long projectedAt);
         void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
+        IQueryable<HandleReadModel> AllSortedByHandle { get;}
     }
 
     public class HandleWriter : IHandleWriter
@@ -52,7 +63,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             _collection = readModelDb.GetCollection<HandleReadModel>(CollectionNames.GetCollectionName<HandleReadModel>());
         }
 
-        public void Promise(DocumentHandle handle, DocumentId id, long createdAt)
+        public void Promise(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long createdAt)
         {
             var args = new FindAndModifyArgs
             {
@@ -60,13 +71,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .EQ(x => x.Handle, handle), 
                 Update = Update<HandleReadModel>
                     .Set(x=>x.DocumentId, id)
-                    .Set(x=>x.CreatetAt, createdAt),
+                    .Set(x=>x.CreatetAt, createdAt)
+                    .Set(x=>x.FileName, fileName),
                 Upsert = true
             };
             _collection.FindAndModify(args);
         }
 
-        public void ConfirmLink(DocumentHandle handle, DocumentId id, long projectedAt)
+        public void ConfirmLink(DocumentHandle handle,DocumentId id, long projectedAt)
         {
             var args = new FindAndModifyArgs
             {
@@ -106,7 +118,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             _collection.FindAndRemove(args);
         }
 
-        public HandleReadModel Get(DocumentHandle handle)
+        public IQueryable<HandleReadModel> AllSortedByHandle {
+            get { return _collection.AsQueryable().OrderBy(x => x.Handle); }
+        }
+
+        public HandleReadModel FindOneById(DocumentHandle handle)
         {
             return _collection.FindOneById(BsonValue.Create(handle));
         }

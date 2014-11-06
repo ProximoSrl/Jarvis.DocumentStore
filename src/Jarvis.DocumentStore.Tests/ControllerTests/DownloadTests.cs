@@ -86,7 +86,6 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 new DocumentId(1),
                 blobId
                 );
-            doc.AddHandle(info);
 
             SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
@@ -117,8 +116,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var doc = new DocumentReadModel(
                 new DocumentId(1),
                 blobId
-                );
-            doc.AddHandle(info);
+            );
 
             SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);

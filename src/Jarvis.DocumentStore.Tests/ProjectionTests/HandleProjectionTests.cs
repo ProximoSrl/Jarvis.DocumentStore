@@ -22,6 +22,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         readonly DocumentHandle _documentHandle = new DocumentHandle("a");
         readonly DocumentId Document_1 = new DocumentId(1);
         readonly DocumentId Document_2 = new DocumentId(2);
+        readonly FileNameWithExtension FileName_1 = new FileNameWithExtension("a", "file");
 
         [SetUp]
         public void SetUp()
@@ -45,20 +46,21 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void Promise()
         {
-            _writer.Promise(_documentHandle, Document_1, 1);
+            _writer.Promise(_documentHandle, FileName_1, Document_1, 1);
 
-            var h = _writer.Get(_documentHandle);
+            var h = _writer.FindOneById(_documentHandle);
             Assert.NotNull(h);
             Assert.AreEqual(Document_1, h.DocumentId);
             Assert.AreEqual(0, h.ProjectedAt);
             Assert.AreEqual(1, h.CreatetAt);
+            Assert.AreEqual(FileName_1, h.FileName);
         }
 
         [Test]
         public void create()
         {
             _writer.Create(_documentHandle);
-            var h = _writer.Get(_documentHandle);
+            var h = _writer.FindOneById(_documentHandle);
 
             Assert.NotNull(h);
             Assert.IsNull(h.DocumentId);
@@ -72,7 +74,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.Create(_documentHandle);
             var handleCustomData = new HandleCustomData() { { "a", "b" } };
             _writer.UpdateCustomData(_documentHandle, handleCustomData);
-            var h = _writer.Get(_documentHandle);
+            var h = _writer.FindOneById(_documentHandle);
 
             Assert.NotNull(h.CustomData);
             Assert.AreEqual("b", (string)h.CustomData["a"]);
@@ -86,11 +88,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             var promisedDocumentId = new DocumentId(promisedDocId);
             var expectedDocumentId = new DocumentId(expectedDocId);
-            _writer.Promise(_documentHandle, promisedDocumentId, 10);
+            _writer.Promise(_documentHandle, FileName_1, promisedDocumentId, 10);
 
             _writer.ConfirmLink(_documentHandle, Document_2, projectedAt);
 
-            var h = _writer.Get(_documentHandle);
+            var h = _writer.FindOneById(_documentHandle);
             Assert.NotNull(h);
             Assert.AreEqual(expectedDocumentId, h.DocumentId);
             Assert.AreEqual(10, h.CreatetAt);
@@ -105,10 +107,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void should_delete()
         {
             _writer.Create(_documentHandle);
-            _writer.Promise(_documentHandle, Document_1, 10);
+            _writer.Promise(_documentHandle, FileName_1, Document_1, 10);
             
             _writer.Delete(_documentHandle, 11);
-            var h = _writer.Get(_documentHandle);
+            var h = _writer.FindOneById(_documentHandle);
             Assert.IsNull(h);
         }
 
@@ -116,10 +118,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void should_not_delete()
         {
             _writer.Create(_documentHandle);
-            _writer.Promise(_documentHandle, Document_1, 10);
+            _writer.Promise(_documentHandle, FileName_1, Document_1, 10);
             
             _writer.Delete(_documentHandle, 9);
-            var h = _writer.Get(_documentHandle);
+            var h = _writer.FindOneById(_documentHandle);
             Assert.IsNotNull(h);
         }
     }

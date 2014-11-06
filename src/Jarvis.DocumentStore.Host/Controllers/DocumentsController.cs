@@ -34,10 +34,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IBlobStore _blobStore;
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
-        readonly IReader<ExHandleToDocument, DocumentHandle> _handleToDocument;
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
+        readonly IHandleWriter _handleWriter;
 
         HandleCustomData _customData;
         FileNameWithExtension _fileName;
@@ -47,17 +47,17 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IBlobStore blobStore, 
             ConfigService configService, 
             IIdentityGenerator identityGenerator, 
-            IReader<ExHandleToDocument, DocumentHandle> handleToDocument, 
             IReader<DocumentReadModel, DocumentId> documentReader, 
-            IInProcessCommandBus commandBus
+            IInProcessCommandBus commandBus, 
+            IHandleWriter handleWriter
         ){
             _blobStore = blobStore;
             _configService = configService;
             _identityGenerator = identityGenerator;
-            _handleToDocument = handleToDocument;
             _documentReader = documentReader;
             CommandBus = commandBus;
-        }
+            _handleWriter = handleWriter;
+            }
 
         [Route("{tenantId}/documents/{handle}")]
         [HttpPost]
@@ -128,7 +128,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpGet]
         public HttpResponseMessage GetCustomData(TenantId tenantId, DocumentHandle handle)
         {
-            var data = _handleToDocument.FindOneById(handle);
+            var data = _handleWriter.FindOneById(handle);
             if (data == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Document not found");
 
@@ -162,7 +162,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentHandle handle,
             DocumentFormat format
         ){
-            var document = GetDocumentByHandle(handle);
+            var mapping = _handleWriter.FindOneById(handle);
+            if (mapping == null)
+                return DocumentNotFound(handle);
+
+            var document = _documentReader.FindOneById(mapping.DocumentId);
 
             if (document == null)
             {
@@ -173,7 +177,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 return StreamFile(
                     document.GetFormatBlobId(format),
-                    document.GetFileName(handle)
+                    mapping.FileName
                 );
             }
 
@@ -263,7 +267,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         DocumentReadModel GetDocumentByHandle(DocumentHandle handle)
         {
-            var mapping = _handleToDocument.FindOneById(handle);
+            var mapping = _handleWriter.FindOneById(handle);
             if (mapping == null)
                 return null;
 

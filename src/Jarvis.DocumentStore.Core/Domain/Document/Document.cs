@@ -28,7 +28,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 throw new DomainException((IIdentity)id, "Already created");
 
             RaiseEvent(new DocumentCreated(id, blobId, handleInfo));
-            RaiseEvent(new DocumentHandleAttached(handleInfo));
         }
 
         public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
@@ -66,8 +65,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 return;
             }
 
-            RaiseEvent(new DocumentHandleDetached(handle));
-
             if (!InternalState.HasActiveHandles())
             {
                 RaiseEvent(new DocumentDeleted(
@@ -80,7 +77,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public void Deduplicate(DocumentId documentId, DocumentHandleInfo handleInfo)
         {
             ThrowIfDeleted();
-            RaiseEvent(new DocumentHandleAttached(handleInfo));
             RaiseEvent(new DocumentHasBeenDeduplicated(documentId, handleInfo.Handle));
         }
 

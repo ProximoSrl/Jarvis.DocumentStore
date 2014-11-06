@@ -145,8 +145,6 @@
     <Compile Include="Domain\Document\Commands\ProcessDocument.cs" />
     <Compile Include="Domain\Document\Document.cs" />
     <Compile Include="Domain\Document\DocumentHandleInfo.cs" />
-    <Compile Include="Domain\Document\Events\DocumentHandleAttached.cs" />
-    <Compile Include="Domain\Document\Events\DocumentHandleDetached.cs" />
     <Compile Include="Domain\Document\Events\DocumentHasBeenDeduplicated.cs" />
     <Compile Include="Domain\Document\DocumentId.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
@@ -221,7 +219,6 @@
     <Compile Include="Processing\Pdf\CreatePdfImageTaskParams.cs" />
     <Compile Include="Processing\Tools\ImageResizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadModel\ExHandleToDocument.cs" />
     <Compile Include="ReadModel\DocumentReadModel.cs" />
     <Compile Include="ReadModel\DocumentStats.cs" />
     <Compile Include="ReadModel\HandleReadModel.cs" />

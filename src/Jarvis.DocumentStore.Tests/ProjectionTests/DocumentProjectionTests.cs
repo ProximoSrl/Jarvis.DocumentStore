@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private DocumentStoreBootstrapper _documentStoreService;
         private ICommandBus _bus;
         IBlobStore _filestore;
-        IReader<ExHandleToDocument, DocumentHandle> _handleReader;
+        IHandleWriter _handleWriter;
         IReader<DocumentReadModel, DocumentId> _documentReader;
 
         [SetUp]
@@ -52,7 +52,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _filestore = tenant.Container.Resolve<IBlobStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
 
-            _handleReader = tenant.Container.Resolve<IReader<ExHandleToDocument, DocumentHandle>>();
+            _handleWriter = tenant.Container.Resolve<IHandleWriter>();
             _documentReader = tenant.Container.Resolve<IReader<DocumentReadModel, DocumentId>>();
         }
 
@@ -85,10 +85,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             Thread.Sleep(1000);
 
-            var list = _handleReader.AllSortedById.ToArray();
+            var list = _handleWriter.AllSortedByHandle.ToArray();
             Assert.AreEqual(2, list.Length);
-            Assert.AreEqual(new DocumentHandle("handle"), list[0].Id);
-            Assert.AreEqual(new DocumentHandle("handle_bis"), list[1].Id);
+            Assert.AreEqual(new DocumentHandle("handle"), list[0].Handle);
+            Assert.AreEqual(new DocumentHandle("handle_bis"), list[1].Handle);
 
             Assert.AreEqual(new DocumentId(1), list[0].DocumentId);
             Assert.AreEqual(new DocumentId(1), list[1].DocumentId);
@@ -106,7 +106,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
             Assert.NotNull(new_handle_bis_document);
-            Assert.AreEqual(1, new_handle_bis_document.HandlesCount);
         }
 
         [Test]
@@ -122,7 +121,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
             Assert.NotNull(new_handle_bis_document);
-            Assert.AreEqual(2, new_handle_bis_document.HandlesCount);
         }
 
         [Test]
@@ -135,9 +133,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var original = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNotNull(original);
-            Assert.AreEqual(1, original.HandlesCount);
             
-            var handle = _handleReader.FindOneById(new DocumentHandle("handle"));
+            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);
             Assert.AreEqual(handle.DocumentId, new DocumentId(1));
 
@@ -156,9 +153,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var original = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNotNull(original);
-            Assert.AreEqual(1, original.HandlesCount);
 
-            var handle = _handleReader.FindOneById(new DocumentHandle("handle"));
+            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);
             Assert.AreEqual(handle.DocumentId, new DocumentId(1));
 

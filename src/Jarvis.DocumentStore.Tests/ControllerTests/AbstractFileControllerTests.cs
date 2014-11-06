@@ -24,35 +24,37 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected DocumentsController Controller;
         protected IBlobStore BlobStore;
         protected IIdentityGenerator IdentityGenerator;
-        protected IReader<ExHandleToDocument, DocumentHandle> HandleToDocumentReader;
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
+        IHandleWriter _handleWriter;
 
         [SetUp]
         public void SetUp()
         {
             BlobStore = Substitute.For<IBlobStore>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
-            HandleToDocumentReader = Substitute.For<IReader<ExHandleToDocument, DocumentHandle>>();
+            _handleWriter = Substitute.For<IHandleWriter>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
             var bus = Substitute.For<IInProcessCommandBus>();
 
-            Controller = new DocumentsController(BlobStore, new ConfigService(), IdentityGenerator, HandleToDocumentReader, DocumentReader, bus)
+            Controller = new DocumentsController(BlobStore, new ConfigService(), IdentityGenerator, DocumentReader, bus, _handleWriter)
             {
                 Request = new HttpRequestMessage
                 {
                     RequestUri = new Uri("http://localhost/api/products")
                 },
                 Logger = new ConsoleLogger(),
-                Configuration = new HttpConfiguration()
+                Configuration = new HttpConfiguration(),
+                RequestContext =
+                {
+                    RouteData = new HttpRouteData(
+                        route: new HttpRoute(),
+                        values: new HttpRouteValueDictionary {{"controller", "file"}})
+                }
             };
 
             //  Controller.Configuration.MapHttpAttributeRoutes();
 
-            Controller.RequestContext.RouteData = new HttpRouteData(
-                route: new HttpRoute(),
-                values: new HttpRouteValueDictionary { { "controller", "file" } });
-            
             Controller.Request.Properties.Add(HttpPropertyKeys.HttpConfigurationKey, new HttpConfiguration());
         }
 
@@ -63,9 +65,9 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
         protected void SetupDocumentHandle(DocumentHandleInfo handleInfo, DocumentId documentId)
         {
-            HandleToDocumentReader
+            _handleWriter
                 .FindOneById(handleInfo.Handle)
-                .Returns(info => new ExHandleToDocument(handleInfo, documentId));
+                .Returns(info => new HandleReadModel(handleInfo.Handle, documentId, handleInfo.FileName));
         }
     }
 }

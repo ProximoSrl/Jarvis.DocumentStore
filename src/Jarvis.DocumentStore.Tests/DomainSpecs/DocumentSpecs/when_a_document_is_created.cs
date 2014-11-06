@@ -22,14 +22,5 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
             var e = AggregateSpecification<Core.Domain.Document.Document, DocumentState>.RaisedEvent<DocumentCreated>();
             e.BlobId.ShouldEqual(_blobId);
         };
-
-        It DocumentHandleAttachedEvent_should_have_been_raised = ()=>
-            AggregateSpecification<Core.Domain.Document.Document, DocumentState>.EventHasBeenRaised<DocumentHandleAttached>().ShouldBeTrue();
-        
-        It DocumentHandleAttachedEvent_should_store_relevant_info = () =>
-        {
-            var e = AggregateSpecification<Core.Domain.Document.Document, DocumentState>.RaisedEvent<DocumentHandleAttached>();
-            e.HandleInfo.ShouldEqual(_handleInfo);
-        };
     }
 }
