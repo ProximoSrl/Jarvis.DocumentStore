@@ -22,6 +22,9 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         public static readonly HandleId HandleId = new HandleId(1);
         public static readonly DocumentId Document_1 = new DocumentId(1);
         public static readonly DocumentId Document_2 = new DocumentId(2);
+        public static readonly HandleCustomData CustomData_1 = new HandleCustomData();
+        public static readonly HandleCustomData CustomData_2 = new HandleCustomData();
+        public static readonly HandleCustomData CustomData_3 = new HandleCustomData(){{"a", "b"}};
         public static readonly DocumentHandle DocumentHandle = new DocumentHandle("this_is_an_handle");
         public static Handle Handle { get { return Aggregate; }}
     }
@@ -101,5 +104,64 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
 
         It HandleDeletedEvent_should_be_raised = () =>
             EventHasBeenRaised<HandleDeleted>().ShouldBeFalse();
+    }
+
+    [Subject("with an initialized handle")]
+    public class when_customData_are_set : with_an_initialized_handle
+    {
+        Because of = () => Handle.SetCustomData(CustomData_1);
+
+        It CustomDataSetEvent_have_beed_raised = () => 
+            EventHasBeenRaised<HandleCustomDataSet>().ShouldBeTrue();
+
+        It CustomDataSetEvent_should_have_data_set = () =>
+        {
+            var e = RaisedEvent<HandleCustomDataSet>();
+            e.CustomData.ShouldNotBeNull();
+            e.CustomData.ShouldBeLike(CustomData_1);
+        };
+
+        It State_should_track_latest_customData = ()=>
+            State.CustomData.ShouldBeLike(CustomData_1);
+    }
+
+    public abstract class with_custom_data_set_to_custom_data_1 : with_an_initialized_handle
+    {
+        Establish context = () => State.SetCustomData(CustomData_1);
+    }
+
+    [Subject("with an handle with CustomData_1")]
+    public class when_trying_to_set_custom_data_2: with_custom_data_set_to_custom_data_1
+    {
+        Because of = () => Handle.SetCustomData(CustomData_2);
+    
+        It CustomDataSetEvent_should_not_have_beed_raised = () =>
+           EventHasBeenRaised<HandleCustomDataSet>().ShouldBeFalse();
+    }
+
+    [Subject("with an handle with CustomData_1")]
+    public class when_trying_to_set_custom_data_3: with_custom_data_set_to_custom_data_1
+    {
+        Because of = () => Handle.SetCustomData(CustomData_3);
+    
+        It CustomDataSetEvent_should_have_beed_raised = () =>
+           EventHasBeenRaised<HandleCustomDataSet>().ShouldBeTrue();
+    }
+
+    [Subject("with an initialized handle")]
+    public class when_trying_to_set_null_custom_data : with_an_initialized_handle
+    {
+        Because of = () => Handle.SetCustomData(null);
+        It CustomDataSetEvent_should_not_have_beed_raised = () =>
+          EventHasBeenRaised<HandleCustomDataSet>().ShouldBeFalse();
+    }
+
+    [Subject("with an handle with CustomData_1")]
+    public class when_trying_to_unset_custom_data : with_custom_data_set_to_custom_data_1
+    {
+        Because of = () => Handle.SetCustomData(null);
+
+        It CustomDataSetEvent_should_have_beed_raised = () =>
+           EventHasBeenRaised<HandleCustomDataSet>().ShouldBeTrue();
     }
 }

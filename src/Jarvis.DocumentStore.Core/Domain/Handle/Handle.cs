@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,35 +16,46 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         {
         }
 
-        public Handle(HandleState initialState) : base(initialState)
+        public Handle(HandleState initialState)
+            : base(initialState)
         {
         }
 
         public void Initialize(HandleId id, DocumentHandle handle)
         {
-            if(HasBeenCreated)
+            if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "handle already initialized");
             ThrowIfDeleted();
-            
+
             RaiseEvent(new HandleInitialized(id, handle));
         }
 
         public void Link(DocumentId documentId)
         {
             ThrowIfDeleted();
-            if(InternalState.LinkedDocument != documentId)
+            if (InternalState.LinkedDocument != documentId)
                 RaiseEvent(new HandleLinked(documentId));
+        }
+
+        public void SetCustomData(HandleCustomData customData)
+        {
+            ThrowIfDeleted();
+
+            if (HandleCustomData.IsEquals(InternalState.CustomData, customData))
+                return;
+
+            RaiseEvent(new HandleCustomDataSet(customData));
         }
 
         public void Delete()
         {
-            if(!InternalState.HasBeenDeleted)
+            if (!InternalState.HasBeenDeleted)
                 RaiseEvent(new HandleDeleted());
         }
 
         void ThrowIfDeleted()
         {
-            if(InternalState.HasBeenDeleted)
+            if (InternalState.HasBeenDeleted)
                 throw new DomainException((IIdentity)Id, "Handle has been deleted");
         }
     }

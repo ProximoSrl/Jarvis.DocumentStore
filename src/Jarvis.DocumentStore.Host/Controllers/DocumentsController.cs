@@ -17,6 +17,7 @@ using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -37,8 +38,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
-        
-        IDictionary<string, object> _customData;
+
+        HandleCustomData _customData;
         FileNameWithExtension _fileName;
         BlobId _blobId;
 
@@ -115,7 +116,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (provider.FormData["custom-data"] != null)
             {
-                _customData = JsonConvert.DeserializeObject<IDictionary<string, object>>(provider.FormData["custom-data"]);
+                _customData = JsonConvert.DeserializeObject<HandleCustomData>(provider.FormData["custom-data"]);
             }
 
             _fileName = provider.Filename;
@@ -252,7 +253,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             BlobId blobId,
             DocumentHandle handle,
             FileNameWithExtension fileName,
-            IDictionary<string, object> customData
+            HandleCustomData customData
         )
         {
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);

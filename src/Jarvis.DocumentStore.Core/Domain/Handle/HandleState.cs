@@ -25,6 +25,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             MarkAsDeleted();
         }
 
+        void When(HandleCustomDataSet e)
+        {
+            this.CustomData = e.CustomData;
+        }
+
         public void Link(DocumentId documentId)
         {
             this.LinkedDocument = documentId;
@@ -38,5 +43,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         }
 
         public bool HasBeenDeleted { get; private set; }
+        public HandleCustomData CustomData { get; private set; }
+
+        public void SetCustomData(HandleCustomData data)
+        {
+            this.CustomData = data;
+        }
     }
 }

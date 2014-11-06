@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
@@ -6,13 +7,13 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
     public class DocumentHandleInfo
     {
         public FileNameWithExtension FileName { get; private set; }
-        public IDictionary<string, object> CustomData { get; private set; }
+        public HandleCustomData CustomData { get; private set; }
         public DocumentHandle Handle { get; private set; }
 
         public DocumentHandleInfo(
             DocumentHandle handle,
             FileNameWithExtension fileName,
-            IDictionary<string, object> customData = null
+            HandleCustomData customData = null
             )
         {
             Handle = handle;
