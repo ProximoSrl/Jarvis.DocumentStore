@@ -129,12 +129,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandHandlers\AddFormatToDocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\CreateDocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DeduplicateDocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DeleteDocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\ProcessDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\AddFormatToDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\DeduplicateDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\DocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\ProcessDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\HandleHandlers\HandleMapper.cs" />
+    <Compile Include="CommandHandlers\HandleHandlers\IHandleMapper.cs" />
     <Compile Include="Domain\Document\Commands\AddFormatToDocument.cs" />
     <Compile Include="Domain\Document\Commands\CreateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeduplicateDocument.cs" />
@@ -222,6 +224,7 @@
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Services\ContentFormatBuilder.cs" />
     <Compile Include="Storage\BlobStoreByFormat.cs" />
+    <Compile Include="Storage\BlobStoreInfo.cs" />
     <Compile Include="Storage\BlobWriter.cs" />
     <Compile Include="Storage\BlobStoreExtensions.cs" />
     <Compile Include="Storage\IBlobWriter.cs" />
@@ -231,7 +234,7 @@
     <Compile Include="Storage\IBlobStore.cs" />
     <Compile Include="Storage\IBlobDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
-    <Compile Include="Support\CoreTenantInstaller.cs" />
+    <Compile Include="Support\TenantCoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
     <Compile Include="Support\DocumentStoreConfiguration.cs" />
     <Compile Include="Support\IShutdownActivity.cs" />
@@ -239,7 +242,6 @@
     <Compile Include="Support\SchedulerInstaller.cs" />
     <Compile Include="Support\SchedulerShutdown.cs" />
     <Compile Include="Support\SizeInfoHelper.cs" />
-    <Compile Include="Support\StartupCoordinator.cs" />
     <Compile Include="Support\TenantJobFactory.cs" />
     <Compile Include="Support\TenantJobsInstaller.cs" />
   </ItemGroup>
@@ -262,6 +264,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Domain\Handle\Commands\" />
     <Folder Include="Storage\Stats\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

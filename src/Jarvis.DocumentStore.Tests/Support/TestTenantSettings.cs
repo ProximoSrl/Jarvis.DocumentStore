@@ -16,8 +16,8 @@ namespace Jarvis.DocumentStore.Tests.Support
 
             Set("originals.db", GetDatabase("originals"));
             Set("artifacts.db", GetDatabase("artifacts"));
-
-            Set("db.readmodel",GetDatabase("readmodel"));
+            Set("system.db", GetDatabase("system"));
+            Set("readmodel.db",GetDatabase("readmodel"));
         }
 
         private void SetConnectionString(string name)

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+﻿using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 
-namespace Jarvis.DocumentStore.Core.CommandHandlers
+namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
     public class DeleteDocumentCommandHandler : DocumentCommandHandler<DeleteDocument>
     {

@@ -1,6 +1,6 @@
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 
-namespace Jarvis.DocumentStore.Core.CommandHandlers
+namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
     public class ProcessDocumentCommandHandler : DocumentCommandHandler<ProcessDocument>
     {

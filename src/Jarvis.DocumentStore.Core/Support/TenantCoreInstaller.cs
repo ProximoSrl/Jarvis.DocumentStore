@@ -8,11 +8,11 @@ using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
-    public class CoreTenantInstaller : IWindsorInstaller
+    public class TenantCoreInstaller : IWindsorInstaller
     {
         readonly ITenant _tenant;
 
-        public CoreTenantInstaller(ITenant tenant)
+        public TenantCoreInstaller(ITenant tenant)
         {
             _tenant = tenant;
         }

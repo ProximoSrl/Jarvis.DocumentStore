@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Core.Support
                 TenantId = _tenant.Id
             };
 
-            var readModelDb = _tenant.Get<MongoDatabase>("db.readmodel");
+            var readModelDb = _tenant.Get<MongoDatabase>("readmodel.db");
 
             container.Register(
                 Component

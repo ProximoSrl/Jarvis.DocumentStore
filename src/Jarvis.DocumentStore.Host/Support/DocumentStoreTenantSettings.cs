@@ -24,9 +24,10 @@ namespace Jarvis.DocumentStore.Host.Support
             SetConnectionString("system");
             SetConnectionString("readmodel");
 
+            Set("system.db", GetDatabase("system"));
             Set("originals.db", GetDatabase("originals"));
             Set("artifacts.db", GetDatabase("artifacts"));
-            Set("db.readmodel", GetDatabase("readmodel"));
+            Set("readmodel.db", GetDatabase("readmodel"));
         }
     }
 }

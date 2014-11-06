@@ -68,8 +68,8 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 var tenantInstallers = new List<IWindsorInstaller>
                 {
-                    new CoreTenantInstaller(tenant),
-                    new HandlersInstaller(),
+                    new TenantCoreInstaller(tenant),
+                    new TenantHandlersInstaller(tenant),
                     new TenantJobsInstaller(tenant)
                 };
 
