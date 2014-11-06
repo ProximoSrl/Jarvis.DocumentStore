@@ -40,6 +40,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void Init();
         void ConfirmLink(DocumentHandle handle, DocumentId id, long projectedAt);
         void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
+        void Delete(DocumentHandle handle, long projectedAt);
     }
 
     public class HandleWriter : IHandleWriter
@@ -91,6 +92,18 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .Set(x => x.CustomData, customData)
             };
             _collection.FindAndModify(args);            
+        }
+
+        public void Delete(DocumentHandle handle, long projectedAt)
+        {
+            var args = new FindAndRemoveArgs()
+            {
+                Query = Query.And(
+                    Query<HandleReadModel>.EQ(x => x.Handle, handle),
+                    Query<HandleReadModel>.LTE(x => x.CreatetAt, projectedAt)
+                )
+            };
+            _collection.FindAndRemove(args);
         }
 
         public HandleReadModel Get(DocumentHandle handle)

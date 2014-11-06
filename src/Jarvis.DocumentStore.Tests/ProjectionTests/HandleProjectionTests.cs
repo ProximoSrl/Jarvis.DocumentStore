@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void SetUp()
         {
             MongoDbTestConnectionProvider.ReadModelDb.Drop();
-            
+
             var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
             mngr.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
 
@@ -38,14 +38,14 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             StringValueCustomBsonTypeMapper.Register<BlobId>();
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
             StringValueCustomBsonTypeMapper.Register<FileHash>();
-            
+
             _writer = new HandleWriter(MongoDbTestConnectionProvider.ReadModelDb);
         }
 
         [Test]
         public void Promise()
         {
-            _writer.Promise(_documentHandle,Document_1, 1);
+            _writer.Promise(_documentHandle, Document_1, 1);
 
             var h = _writer.Get(_documentHandle);
             Assert.NotNull(h);
@@ -70,7 +70,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void update_custom_data()
         {
             _writer.Create(_documentHandle);
+            var handleCustomData = new HandleCustomData() { { "a", "b" } };
+            _writer.UpdateCustomData(_documentHandle, handleCustomData);
             var h = _writer.Get(_documentHandle);
+
+            Assert.NotNull(h.CustomData);
+            Assert.AreEqual("b", (string)h.CustomData["a"]);
         }
 
         [Test]
@@ -94,6 +99,28 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                 Assert.AreEqual(projectedAt, h.ProjectedAt);
 
             Assert.AreEqual(isPending, h.IsPending());
+        }
+
+        [Test]
+        public void should_delete()
+        {
+            _writer.Create(_documentHandle);
+            _writer.Promise(_documentHandle, Document_1, 10);
+            
+            _writer.Delete(_documentHandle, 11);
+            var h = _writer.Get(_documentHandle);
+            Assert.IsNull(h);
+        }
+
+        [Test]
+        public void should_not_delete()
+        {
+            _writer.Create(_documentHandle);
+            _writer.Promise(_documentHandle, Document_1, 10);
+            
+            _writer.Delete(_documentHandle, 9);
+            var h = _writer.Get(_documentHandle);
+            Assert.IsNotNull(h);
         }
     }
 }

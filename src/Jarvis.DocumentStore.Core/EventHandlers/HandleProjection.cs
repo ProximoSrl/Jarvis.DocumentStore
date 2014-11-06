@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         ,IEventHandler<HandleInitialized>
         ,IEventHandler<HandleLinked>
         ,IEventHandler<HandleCustomDataSet>
-        ,IEventHandler<HandledEventArgs>
+        ,IEventHandler<HandleDeleted>
     {
         readonly IHandleWriter _writer;
 
@@ -48,14 +48,16 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.UpdateCustomData(e.Handle, e.CustomData);
         }
 
-        public void On(HandledEventArgs e)
-        {
-            
-        }
+
 
         public void On(HandleInitialized e)
         {
             
+        }
+
+        public void On(HandleDeleted e)
+        {
+            _writer.Delete(e.Handle, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
         }
     }
 }
