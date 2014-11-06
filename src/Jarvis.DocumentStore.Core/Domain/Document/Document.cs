@@ -28,6 +28,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 throw new DomainException((IIdentity)id, "Already created");
 
             RaiseEvent(new DocumentCreated(id, blobId, handleInfo));
+            Attach(handleInfo.Handle);
         }
 
         public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
@@ -52,32 +53,35 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             }
         }
 
+        public void Attach(DocumentHandle handle)
+        {
+            if(!InternalState.IsValidHandle(handle))
+                RaiseEvent(new DocumentHandleAttacched(handle));
+        }
+
         public void Delete(DocumentHandle handle)
         {
-            //if (!InternalState.IsValidHandle(handle))
-            //{
-            //    throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
-            //}
+            if (!InternalState.IsValidHandle(handle))
+            {
+                throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
+            }
 
-            //if (InternalState.HandleCount(handle) == 0)
-            //{
-            //    Logger.DebugFormat("Handle {0} not found on {1}, skipping", handle, this.Id);
-            //    return;
-            //}
+            RaiseEvent(new DocumentHandleDetached(handle));
 
-            //if (!InternalState.HasActiveHandles())
-            //{
-            RaiseEvent(new DocumentDeleted(
-                InternalState.BlobId,
-                InternalState.Formats.Select(x => x.Value).ToArray()
-            ));
-            //}
+            if (!InternalState.HasActiveHandles())
+            {
+                RaiseEvent(new DocumentDeleted(
+                    InternalState.BlobId,
+                    InternalState.Formats.Select(x => x.Value).ToArray()
+                ));
+            }
         }
 
         public void Deduplicate(DocumentId documentId, DocumentHandle handle)
         {
             ThrowIfDeleted();
             RaiseEvent(new DocumentHasBeenDeduplicated(documentId, handle));
+            Attach(handle);
         }
 
         void ThrowIfDeleted()

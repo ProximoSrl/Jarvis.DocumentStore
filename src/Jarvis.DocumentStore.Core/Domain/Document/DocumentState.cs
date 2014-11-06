@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using CQRS.Kernel.Engine;
@@ -9,49 +8,71 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 {
     public class DocumentState : AggregateState
     {
-        public IDictionary<DocumentFormat, BlobId> Formats { get; private set; }
-        public BlobId BlobId { get; private set; }
-        
+        private readonly HashSet<DocumentHandle> _handles = new Quartz.Collection.HashSet<DocumentHandle>();
+
         public DocumentState(params KeyValuePair<DocumentFormat, BlobId>[] formats)
             : this()
         {
             foreach (var keyValuePair in formats)
             {
-                this.Formats.Add(keyValuePair);
+                Formats.Add(keyValuePair);
             }
         }
 
         public DocumentState()
         {
-            this.Formats = new Dictionary<DocumentFormat, BlobId>();
+            Formats = new Dictionary<DocumentFormat, BlobId>();
         }
 
-        void When(DocumentDeleted e)
-        {
-            this.HasBeenDeleted = true;
-        }
+        public IDictionary<DocumentFormat, BlobId> Formats { get; private set; }
+        public BlobId BlobId { get; private set; }
 
         public bool HasBeenDeleted { get; private set; }
 
-        void When(DocumentCreated e)
+        private void When(DocumentDeleted e)
         {
-            this.AggregateId = e.AggregateId;
-            this.BlobId = e.BlobId;
+            HasBeenDeleted = true;
         }
 
-        void When(FormatAddedToDocument e)
+        private void When(DocumentCreated e)
         {
-            this.Formats.Add(e.DocumentFormat, e.BlobId);
+            AggregateId = e.AggregateId;
+            BlobId = e.BlobId;
         }
 
-        void When(DocumentFormatHasBeenDeleted e)
+        private void When(FormatAddedToDocument e)
         {
-            this.Formats.Remove(e.DocumentFormat);
+            Formats.Add(e.DocumentFormat, e.BlobId);
+        }
+
+        private void When(DocumentFormatHasBeenDeleted e)
+        {
+            Formats.Remove(e.DocumentFormat);
+        }
+
+        private void When(DocumentHandleAttacched e)
+        {
+            _handles.Add(e.Handle);
+        }
+
+        private void When(DocumentHandleDetached e)
+        {
+            _handles.Remove(e.Handle);
         }
 
         public bool HasFormat(DocumentFormat documentFormat)
         {
             return Formats.ContainsKey(documentFormat);
+        }
+
+        public bool IsValidHandle(DocumentHandle handle)
+        {
+            return _handles.Contains(handle);
+        }
+
+        public bool HasActiveHandles()
+        {
+            return _handles.Any();
         }
     }
 }

@@ -11,21 +11,19 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     {
         static readonly DocumentHandle _otherHandle = new DocumentHandle("other");
 
-        static readonly DocumentHandleInfo _otherInfo = new DocumentHandleInfo(
-            new DocumentHandle("other"),
-            new FileNameWithExtension("a.file")
-            );
-
-        It DocumentDeleted_event_should_not_have_been_raised = () =>
-            EventHasBeenRaised<DocumentDeleted>().ShouldBeFalse();
-
-        Establish context = () => Create();
+        Establish context = () =>
+        {
+            Create();
+            Document.Create(_id, _blobId, _handleInfo);
+            Document.Deduplicate(new DocumentId(2), _otherHandle);
+        };
 
         Because of = () =>
         {
-            Document.Create(_id, _blobId, _handleInfo);
-            Document.Deduplicate(new DocumentId(2),_otherInfo.Handle);
             Document.Delete(Handle);
         };
+
+        It DocumentDeleted_event_should_not_have_been_raised = () =>
+            EventHasBeenRaised<DocumentDeleted>().ShouldBeFalse();
     }
 }

@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     public class when_a_document_is_deleted_with_wrong_handle : DocumentSpecifications
     {
         private static Exception Exception { get; set; }
-        Establish context = () => AggregateSpecification<Core.Domain.Document.Document, DocumentState>.Create();
+        Establish context = () => AggregateSpecification<Document, DocumentState>.Create();
 
         Because of = () =>
         {
