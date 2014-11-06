@@ -15,8 +15,10 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp".Split('|');
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline)
         {
+            if (fromPipeline != null && fromPipeline.Id == "office")
+                return false;
             return _formats.Contains(storeDescriptor.FileNameWithExtension.Extension);
         }
 

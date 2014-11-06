@@ -18,7 +18,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _formats = "eml|msg".Split('|');
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline)
         {
             return _formats.Contains(storeDescriptor.FileNameWithExtension.Extension);
         }
@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IBlobDescriptor descriptor)
         {
             Logger.DebugFormat("Email {0} has been converted to format {1}: {2}", documentId, format, descriptor.BlobId);
-            PipelineManager.Start(documentId, descriptor);
+            PipelineManager.Start(documentId, descriptor, this);
         }
     }
 }

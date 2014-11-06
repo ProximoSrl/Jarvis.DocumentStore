@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _formats = "png|jpg|jpeg".Split('|');
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline)
         {
             return _formats.Contains(storeDescriptor.FileNameWithExtension.Extension);
         }

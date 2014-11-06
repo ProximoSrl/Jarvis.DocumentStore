@@ -12,10 +12,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _jobHelper = jobHelper;
         }
 
-        public override bool ShouldHandleFile(
-            DocumentId documentId, 
-            IBlobDescriptor storeDescriptor
-        )
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline)
         {
             if (storeDescriptor.FileNameWithExtension.Extension == "htmlzip")
                 return true;
@@ -33,7 +30,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
 
         protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IBlobDescriptor descriptor)
         {
-            PipelineManager.Start(documentId, descriptor);
+            PipelineManager.Start(documentId, descriptor,this);
         }
     }
 }

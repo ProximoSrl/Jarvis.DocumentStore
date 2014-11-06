@@ -19,10 +19,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         }
 
         public PipelineId Id { get; private set; }
-        public abstract bool ShouldHandleFile(
-            DocumentId documentId, 
-            IBlobDescriptor storeDescriptor
-        );
+        public abstract bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline);
 
         public void Start(DocumentId documentId, IBlobDescriptor storeDescriptor)
         {

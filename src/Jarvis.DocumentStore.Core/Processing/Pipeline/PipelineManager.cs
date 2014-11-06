@@ -32,11 +32,11 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             pipeline.FormatAvailable(documentId, format, descriptor);
         }
 
-        public void Start(DocumentId documentId, IBlobDescriptor descriptor)
+        public void Start(DocumentId documentId, IBlobDescriptor descriptor, IPipeline fromPipeline)
         {
             foreach (var pipeline in _pipelines.Values)
             {
-                if (pipeline.ShouldHandleFile(documentId, descriptor))
+                if (pipeline.ShouldHandleFile(documentId, descriptor, fromPipeline))
                 {
                     pipeline.Start(documentId, descriptor);
                 }

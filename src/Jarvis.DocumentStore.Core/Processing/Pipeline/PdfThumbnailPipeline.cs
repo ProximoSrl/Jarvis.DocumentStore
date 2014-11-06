@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         {
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline)
         {
             return storeDescriptor.FileNameWithExtension.Extension == "pdf";
         }

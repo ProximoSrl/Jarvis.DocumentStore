@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
             _formats = "xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp".Split('|');
         }
 
-        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor)
+        public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline)
         {
             return _formats.Contains(storeDescriptor.FileNameWithExtension.Extension);
         }
@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
         ){
             if (format == DocumentFormats.Pdf)
             {
-                PipelineManager.Start(documentId, descriptor);
+                PipelineManager.Start(documentId, descriptor, this);
             }
         }
     }

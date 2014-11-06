@@ -119,7 +119,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var document = _documents.FindOneById((DocumentId) e.AggregateId);
             BlobId originalBlobId = document.GetOriginalBlobId();
             var descriptor = _blobStore.GetDescriptor(originalBlobId);
-            _pipelineManager.Start(document.Id, descriptor);
+            _pipelineManager.Start(document.Id, descriptor, null);
         }
 
         public void On(DocumentHasBeenDeduplicated e)
