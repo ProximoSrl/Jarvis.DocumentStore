@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
             FindAndModify(
                 cmd.AggregateId, 
-                doc => doc.Create(cmd.AggregateId,cmd.BlobId,cmd.HandleInfo),
+                doc => doc.Create(cmd.AggregateId,cmd.BlobId,cmd.HandleInfo,cmd.Hash),
                 true
             );
             LinkHandle(cmd);

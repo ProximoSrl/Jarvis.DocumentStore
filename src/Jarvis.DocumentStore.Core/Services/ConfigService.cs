@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Core.Services
 
             IsDeduplicationActive = GetConfigValue(
                 "JARVIS_DOCUMENTSTORE_DEDUPLICATION",
-                "off"
+                "on"
             ).ToLowerInvariant() == "on";
         }
 

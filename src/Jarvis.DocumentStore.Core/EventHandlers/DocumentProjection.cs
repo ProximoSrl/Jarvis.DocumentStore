@@ -7,8 +7,6 @@ using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
@@ -19,29 +17,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     public class DocumentProjection : AbstractProjection,
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
-        IEventHandler<DocumentDeleted>,
-        IEventHandler<DocumentQueuedForProcessing>,
-        IEventHandler<DocumentHasBeenDeduplicated>
+        IEventHandler<DocumentDeleted>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
-        private readonly IBlobStore _blobStore;
-        private readonly DeduplicationHelper _deduplicationHelper;
-        private readonly ICommandBus _commandBus;
-        readonly IPipelineManager _pipelineManager;
 
         public DocumentProjection(
-            ICollectionWrapper<DocumentReadModel, DocumentId> documents, 
-            IBlobStore blobStore, 
-            DeduplicationHelper deduplicationHelper, 
-            ICommandBus commandBus, 
-            IPipelineManager pipelineManager
-            )
+            ICollectionWrapper<DocumentReadModel, DocumentId> documents
+        )
         {
             _documents = documents;
-            _blobStore = blobStore;
-            _deduplicationHelper = deduplicationHelper;
-            _commandBus = commandBus;
-            _pipelineManager = pipelineManager;
 
             _documents.Attach(this, false);
 
@@ -63,28 +47,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentCreated e)
         {
-            var descriptor = _blobStore.GetDescriptor(e.BlobId);
             var document = new DocumentReadModel((DocumentId)e.AggregateId, e.BlobId)
             {
-                Hash = descriptor.Hash
+                Hash = e.Hash
             };
 
             _documents.Insert(e, document);
-
-            if (IsReplay)
-                return;
-
-            var duplicatedId = _deduplicationHelper.FindDuplicateDocumentId(document);
-            if (duplicatedId != null)
-            {
-                _commandBus.Send(new DeduplicateDocument(
-                    duplicatedId, document.Id, e.HandleInfo.Handle
-                ));
-            }
-            else
-            {
-                _commandBus.Send(new ProcessDocument(document.Id));
-            }
         }
 
         public void On(FormatAddedToDocument e)
@@ -93,33 +61,48 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             {
                 d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
             });
-
-            if (IsReplay)
-                return;
-
-            var descriptor = _blobStore.GetDescriptor(e.BlobId);
-            Logger.DebugFormat("Next conversion step for document {0} {1}", e.BlobId, descriptor.FileNameWithExtension);
-            _pipelineManager.FormatAvailable(
-                e.CreatedBy,
-                (DocumentId)e.AggregateId, 
-                e.DocumentFormat,
-                descriptor
-            );
         }
 
         public void On(DocumentDeleted e)
         {
             _documents.Delete(e, (DocumentId)e.AggregateId);
         }
+    }
+
+    public class DocumentWorkflow : AbstractProjection,
+        IEventHandler<DocumentQueuedForProcessing>,
+        IEventHandler<DocumentHasBeenDeduplicated>,
+        IEventHandler<DocumentCreated>,
+        IEventHandler<FormatAddedToDocument>
+    {
+        private readonly ICommandBus _commandBus;
+        private readonly IBlobStore _blobStore;
+        private readonly DeduplicationHelper _deduplicationHelper;
+        readonly IPipelineManager _pipelineManager;
+
+        public DocumentWorkflow(ICommandBus commandBus, IBlobStore blobStore, DeduplicationHelper deduplicationHelper, IPipelineManager pipelineManager)
+        {
+            _commandBus = commandBus;
+            _blobStore = blobStore;
+            _deduplicationHelper = deduplicationHelper;
+            _pipelineManager = pipelineManager;
+        }
+
+        public override void Drop()
+        {
+            
+        }
+
+        public override void SetUp()
+        {
+        }
 
         public void On(DocumentQueuedForProcessing e)
         {
             if (IsReplay) return;
 
-            var document = _documents.FindOneById((DocumentId) e.AggregateId);
-            BlobId originalBlobId = document.GetOriginalBlobId();
-            var descriptor = _blobStore.GetDescriptor(originalBlobId);
-            _pipelineManager.Start(document.Id, descriptor, null);
+            var descriptor = _blobStore.GetDescriptor(e.BlobId);
+            _pipelineManager.Start((DocumentId) e.AggregateId, descriptor, null);
         }
 
         public void On(DocumentHasBeenDeduplicated e)
@@ -128,6 +111,45 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 return;
 
             _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle));
+        }
+        public void On(FormatAddedToDocument e)
+        {
+            if (IsReplay)
+                return;
+
+            var descriptor = _blobStore.GetDescriptor(e.BlobId);
+            Logger.DebugFormat("Next conversion step for document {0} {1}", e.BlobId, descriptor.FileNameWithExtension);
+            _pipelineManager.FormatAvailable(
+                e.CreatedBy,
+                (DocumentId)e.AggregateId,
+                e.DocumentFormat,
+                descriptor
+            );
+        }
+
+        public void On(DocumentCreated e)
+        {
+            if (IsReplay)
+                return;
+
+            var thisDocumentId = (DocumentId) e.AggregateId;
+
+            var duplicatedId = _deduplicationHelper.FindDuplicateDocumentId(
+                thisDocumentId,
+                e.Hash,
+                e.BlobId
+            );
+
+            if (duplicatedId != null)
+            {
+                _commandBus.Send(new DeduplicateDocument(
+                    duplicatedId, thisDocumentId, e.HandleInfo.Handle
+                ));
+            }
+            else
+            {
+                _commandBus.Send(new ProcessDocument(thisDocumentId));
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         Establish context = () =>
         {
             Create();
-            Document.Create(_id, _blobId, _handleInfo);
+            Document.Create(_id, _blobId, _handleInfo,_fileHash);
         };
 
         Because of = () => { Document.Delete(Handle); };

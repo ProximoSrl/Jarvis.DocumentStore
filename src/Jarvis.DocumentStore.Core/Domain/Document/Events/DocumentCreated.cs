@@ -8,8 +8,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
     {
         public BlobId BlobId { get; private set; }
         public DocumentHandleInfo HandleInfo { get; private set; }
-        public DocumentCreated(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo)
+        public FileHash Hash { get; private set; }
+
+        public DocumentCreated(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash)
         {
+            Hash = hash;
             HandleInfo = handleInfo;
             BlobId = blobId;
             this.AggregateId = id;

@@ -9,7 +9,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     {
         Establish context = () => AggregateSpecification<Core.Domain.Document.Document, DocumentState>.Create();
 
-        Because of = () => Document.Create(_id, _blobId, _handleInfo);
+        Because of = () => Document.Create(_id, _blobId, _handleInfo,_fileHash);
 
         It DocumentCreatedEvent_should_have_been_raised = () =>
             AggregateSpecification<Core.Domain.Document.Document, DocumentState>.EventHasBeenRaised<DocumentCreated>().ShouldBeTrue();

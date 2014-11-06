@@ -20,14 +20,14 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Create(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo)
+        public void Create(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash)
         {
             ThrowIfDeleted();
 
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "Already created");
 
-            RaiseEvent(new DocumentCreated(id, blobId, handleInfo));
+            RaiseEvent(new DocumentCreated(id, blobId, handleInfo, hash));
             Attach(handleInfo.Handle);
         }
 
@@ -92,7 +92,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Process()
         {
-            RaiseEvent(new DocumentQueuedForProcessing());
+            RaiseEvent(new DocumentQueuedForProcessing(InternalState.BlobId));
         }
     }
 }

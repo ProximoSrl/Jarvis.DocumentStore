@@ -1,6 +1,6 @@
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 
@@ -19,18 +19,22 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _blobStore = blobStore;
         }
 
-        public DocumentId FindDuplicateDocumentId(DocumentReadModel document)
+        public DocumentId FindDuplicateDocumentId(
+            DocumentId sourceDocumentId, 
+            FileHash sourceHash,
+            BlobId sourceBlobId 
+            )
         {
             if (!_configService.IsDeduplicationActive)
                 return null;
 
-            var original = _blobStore.GetDescriptor(document.GetOriginalBlobId());
+            var original = _blobStore.GetDescriptor(sourceBlobId);
 
-            var matches = _hashReader.FindDocumentByHash(document.Hash);
-            Logger.DebugFormat("Deduplicating document {0}", document.Id);
+            var matches = _hashReader.FindDocumentByHash(sourceHash);
+            Logger.DebugFormat("Deduplicating document {0}", sourceDocumentId);
             foreach (var match in matches)
             {
-                if (match.DocumentId == document.Id)
+                if (match.DocumentId == sourceDocumentId)
                     continue;
 
                 Logger.DebugFormat("Checking document {0}", match.DocumentId);
@@ -61,14 +65,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     if (StreamHelper.StreamsContentsAreEqual(candidateStream, originalStream))
                     {
                         Logger.DebugFormat("{0} has same content of {1}: match found!",
-                            match.DocumentId, document.Id
+                            match.DocumentId, sourceDocumentId
                             );
                         return match.DocumentId;
                     }
                     else
                     {
                         Logger.DebugFormat("{0} has different content of {1}, skipping",
-                            match.DocumentId, document.Id
+                            match.DocumentId, sourceDocumentId
                             );                        
                     }
                 }

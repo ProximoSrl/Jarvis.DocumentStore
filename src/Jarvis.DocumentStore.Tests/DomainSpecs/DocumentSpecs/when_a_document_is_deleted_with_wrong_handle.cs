@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 
         Because of = () =>
         {
-            Document.Create(_id, _blobId, _handleInfo);
+            Document.Create(_id, _blobId, _handleInfo,_fileHash);
             Exception = Catch.Exception(() => Document.Delete(new DocumentHandle("not_this_one")));
         };
 

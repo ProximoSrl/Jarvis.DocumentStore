@@ -70,7 +70,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _bus.Send(new CreateDocument(
                 new DocumentId(id),
                 _filestore.Upload(Core.Processing.DocumentFormats.Original, pathToFile),
-                info
+                info,
+                new FileHash("1234abcd")
             ));
         }
 
