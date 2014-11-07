@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay)
                 return;
 
-            _commandBus.Send(new LinkHandleToDocument(e.Handle, e.OtherDocumentId, e.OtherFileName));
+            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId)e.AggregateId, e.OtherFileName));
             _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle));
         }
         public void On(FormatAddedToDocument e)
