@@ -60,13 +60,15 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void Delete(DocumentHandle handle)
         {
-            if (!InternalState.IsValidHandle(handle))
+            if (handle != DocumentHandle.Empty)
             {
-                return;
-//                throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
-            }
+                if (!InternalState.IsValidHandle(handle))
+                {
+                    throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
+                }
 
-            RaiseEvent(new DocumentHandleDetached(handle));
+                RaiseEvent(new DocumentHandleDetached(handle));
+            }
 
             if (!InternalState.HasActiveHandles())
             {

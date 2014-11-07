@@ -5,6 +5,7 @@ using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
 using Jarvis.DocumentStore.Core.Domain.Handle.Events;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Storage;
 
@@ -45,7 +46,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             if (IsReplay) return;
 
-            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId) e.AggregateId));
+            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId) e.AggregateId,"Queued for processing of "+e.AggregateId));
 
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             _pipelineManager.Start((DocumentId) e.AggregateId, descriptor, null);
@@ -56,8 +57,17 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay)
                 return;
 
-            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId)e.AggregateId));
-//            _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle, "deduplication of " + e.AggregateId));
+            _commandBus.Send(new LinkHandleToDocument(
+                e.Handle, 
+                (DocumentId)e.AggregateId, 
+                "Document "+e.OtherDocumentId+" deduplicated to "+e.AggregateId
+            ));
+            
+            _commandBus.Send(new DeleteDocument(
+                e.OtherDocumentId, 
+                DocumentHandle.Empty, 
+                "deduplication of " + e.AggregateId
+            ));
         }
 
         public void On(FormatAddedToDocument e)
@@ -110,7 +120,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if(IsReplay)return;
             
             if(e.PreviousDocumentId != null)
-                _commandBus.Send(new DeleteDocument(e.PreviousDocumentId, e.Handle, "Handle relinked"));
+                _commandBus.Send(new DeleteDocument(e.PreviousDocumentId, e.Handle, 
+                    string.Format("Handle relinked from {0} to {1}", e.PreviousDocumentId, e.DocumentId)
+                ));
         }
     }
 }

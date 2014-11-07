@@ -35,7 +35,6 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 
             handle.SetFileName(cmd.FileName);
             handle.SetCustomData(cmd.HandleInfo.CustomData);
-            handle.Link(cmd.AggregateId);
             
             Repository.Save(handle, cmd.MessageId, h => { });
         }

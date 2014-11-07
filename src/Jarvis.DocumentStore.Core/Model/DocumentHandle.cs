@@ -12,6 +12,8 @@ namespace Jarvis.DocumentStore.Core.Model
     [TypeConverter(typeof(StringValueTypeConverter<DocumentHandle>))]
     public class DocumentHandle : LowercaseStringValue
     {
+        public static readonly DocumentHandle Empty = new DocumentHandle(string.Empty);
+        
         public DocumentHandle(string value) : base(value)
         {
         }

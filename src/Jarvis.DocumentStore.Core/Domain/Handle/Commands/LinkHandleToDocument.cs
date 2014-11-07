@@ -11,10 +11,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle.Commands
 {
     public class LinkHandleToDocument : Command
     {
-        public LinkHandleToDocument(DocumentHandle handle, DocumentId documentId)
+        public LinkHandleToDocument(DocumentHandle handle, DocumentId documentId, string description)
         {
             Handle = handle;
             DocumentId = documentId;
+
+            Context.Add("reason", description);
         }
 
         public DocumentHandle Handle { get; private set; }
