@@ -116,7 +116,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
             CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(5000);
+            Thread.Sleep(3000);
 
             var old_handle_bis_document = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNull(old_handle_bis_document);

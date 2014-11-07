@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         It handle_initialized_event_should_have_id_and_handle = () =>
         {
             var e = RaisedEvent<HandleInitialized>();
-            e.Handle.ShouldBeLike(DocumentHandle);
+            e.Handle.ShouldBeTheSameAs(DocumentHandle);
             e.Id.ShouldBeLike(HandleId);
         };
 
