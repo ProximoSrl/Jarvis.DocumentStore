@@ -22,6 +22,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         public static readonly HandleId HandleId = new HandleId(1);
         public static readonly DocumentId Document_1 = new DocumentId(1);
         public static readonly DocumentId Document_2 = new DocumentId(2);
+        public static readonly FileNameWithExtension FileName_1 = new FileNameWithExtension("a","file");
         public static readonly HandleCustomData CustomData_1 = new HandleCustomData();
         public static readonly HandleCustomData CustomData_2 = new HandleCustomData();
         public static readonly HandleCustomData CustomData_3 = new HandleCustomData(){{"a", "b"}};
@@ -54,7 +55,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject(typeof(with_an_initialized_handle))]
     public class when_link_a_document : with_an_initialized_handle
     {
-        Because of = () => Handle.Link(Document_1);
+        Because of = () => Handle.Link(Document_1,FileName_1);
         
         It handleLinkedEvent_should_be_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeTrue();
@@ -79,7 +80,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with a handle linked to Document_1")]
     public class when_i_link_document_1_again : with_an_handle_linked_to_document_1
     {
-        Because of = () => Handle.Link(Document_1);
+        Because of = () => Handle.Link(Document_1,FileName_1);
 
         It handleLinkedEvent_should_not_be_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeFalse();
@@ -88,7 +89,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with a handle linked to Document_1")]
     public class when_i_link_document_2_again : with_an_handle_linked_to_document_1
     {
-        Because of = () => Handle.Link(Document_2);
+        Because of = () => Handle.Link(Document_2,FileName_1);
 
         It handleLinkedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeTrue();

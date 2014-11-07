@@ -15,7 +15,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
         IEventHandler<DocumentDeleted>,
-        IEventHandler<DocumentHasBeenDeduplicated>,
         IEventHandler<DocumentHandleAttacched>,
         IEventHandler<DocumentHandleDetached>
     {
@@ -78,13 +77,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => d.Remove(e.Handle));
         }
 
-        public void On(DocumentHasBeenDeduplicated e)
-        {
-            _handleWriter.ConfirmLink(
-                e.Handle, 
-                (DocumentId)e.AggregateId,
-                LongCheckpoint.Parse(e.CheckpointToken).LongValue
-            );
-        }
+
     }
 }

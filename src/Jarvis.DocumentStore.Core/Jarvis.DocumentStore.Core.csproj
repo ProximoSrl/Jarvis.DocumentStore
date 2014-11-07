@@ -137,6 +137,7 @@
     <Compile Include="CommandHandlers\DocumentHandlers\ProcessDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\HandleMapper.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\IHandleMapper.cs" />
+    <Compile Include="CommandHandlers\HandleHandlers\LinkHandleToDocumentCommandHandler.cs" />
     <Compile Include="Domain\Document\Commands\AddFormatToDocument.cs" />
     <Compile Include="Domain\Document\Commands\CreateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeduplicateDocument.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Domain\Document\Events\DocumentQueuedForProcessing.cs" />
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\DocumentFormat.cs" />
+    <Compile Include="Domain\Handle\Commands\LinkHandleToDocument.cs" />
     <Compile Include="Domain\Handle\Events\HandleCustomDataSet.cs" />
     <Compile Include="Domain\Handle\Handle.cs" />
     <Compile Include="Domain\Handle\Events\HandleDeleted.cs" />
@@ -269,7 +271,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Domain\Handle\Commands\" />
     <Folder Include="Storage\Stats\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

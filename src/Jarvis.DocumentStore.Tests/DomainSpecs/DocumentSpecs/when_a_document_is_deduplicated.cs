@@ -18,7 +18,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 
         Establish context = () => AggregateSpecification<Core.Domain.Document.Document, DocumentState>.SetUp(new DocumentState());
 
-        Because of = () => Document.Deduplicate(_otherDocumentId, _otherHandleInfo.Handle);
+        Because of = () => Document.Deduplicate(_otherDocumentId, _otherHandleInfo.Handle,_fname);
 
         It DocumentHasBeenDeduplicated_event_should_be_raised = () =>
             AggregateSpecification<Core.Domain.Document.Document, DocumentState>.EventHasBeenRaised<DocumentHasBeenDeduplicated>().ShouldBeTrue();

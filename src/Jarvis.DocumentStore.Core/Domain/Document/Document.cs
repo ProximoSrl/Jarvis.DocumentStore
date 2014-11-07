@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             }
         }
 
-        public void Attach(DocumentHandle handle)
+        void Attach(DocumentHandle handle)
         {
             if(!InternalState.IsValidHandle(handle))
                 RaiseEvent(new DocumentHandleAttacched(handle));
@@ -77,10 +77,10 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             }
         }
 
-        public void Deduplicate(DocumentId documentId, DocumentHandle handle)
+        public void Deduplicate(DocumentId otherDocumentId, DocumentHandle handle, FileNameWithExtension fileName)
         {
             ThrowIfDeleted();
-            RaiseEvent(new DocumentHasBeenDeduplicated(documentId, handle));
+            RaiseEvent(new DocumentHasBeenDeduplicated(otherDocumentId, handle, fileName));
             Attach(handle);
         }
 

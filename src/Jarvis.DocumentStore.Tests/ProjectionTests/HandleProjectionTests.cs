@@ -90,7 +90,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var expectedDocumentId = new DocumentId(expectedDocId);
             _writer.Promise(_documentHandle, FileName_1, promisedDocumentId, 10);
 
-            _writer.ConfirmLink(_documentHandle, Document_2, projectedAt);
+            _writer.LinkDocument(_documentHandle, FileName_1, Document_2, projectedAt);
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.NotNull(h);
@@ -98,7 +98,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.AreEqual(10, h.CreatetAt);
 
             if (h.ProjectedAt >= h.CreatetAt)
+            {
+                Assert.AreEqual(FileName_1, h.FileName);
                 Assert.AreEqual(projectedAt, h.ProjectedAt);
+            }
 
             Assert.AreEqual(isPending, h.IsPending());
         }
@@ -123,6 +126,28 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.Delete(_documentHandle, 9);
             var h = _writer.FindOneById(_documentHandle);
             Assert.IsNotNull(h);
+        }
+
+        [Test]
+        public void should_not_update_a_deleted_handle()
+        {
+            // arrage
+            _writer.Create(_documentHandle);
+            _writer.Promise(_documentHandle, FileName_1, Document_1, 10);
+
+            var h1 = _writer.FindOneById(_documentHandle);
+
+            // act
+            _writer.Delete(_documentHandle, 20);
+            _writer.LinkDocument(_documentHandle, FileName_1, Document_2, 15);
+            var h2 = _writer.FindOneById(_documentHandle);
+            _writer.LinkDocument(_documentHandle, FileName_1, Document_2, 55);
+            var h3 = _writer.FindOneById(_documentHandle);
+
+            // assert
+            Assert.IsNotNull(h1);
+            Assert.IsNull(h2);
+            Assert.IsNull(h3);
         }
     }
 }

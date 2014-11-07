@@ -36,8 +36,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(HandleLinked e)
         {
-            _writer.ConfirmLink(
+            _writer.LinkDocument(
                 e.Handle, 
+                e.FileName,
                 e.DocumentId, 
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
@@ -48,11 +49,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.UpdateCustomData(e.Handle, e.CustomData);
         }
 
-
-
         public void On(HandleInitialized e)
         {
-            
+            _writer.CreateIfMissing(
+                e.Handle,
+                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+            );
         }
 
         public void On(HandleDeleted e)

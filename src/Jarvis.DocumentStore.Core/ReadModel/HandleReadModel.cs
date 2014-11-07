@@ -48,10 +48,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         HandleReadModel FindOneById(DocumentHandle handle);
         void Drop();
         void Init();
-        void ConfirmLink(DocumentHandle handle, DocumentId id, long projectedAt);
+        void LinkDocument(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long projectedAt);
         void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<HandleReadModel> AllSortedByHandle { get;}
+        void CreateIfMissing(DocumentHandle handle,long createdAt);
     }
 
     public class HandleWriter : IHandleWriter
@@ -70,7 +71,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Query = Query<HandleReadModel>
                     .EQ(x => x.Handle, handle), 
                 Update = Update<HandleReadModel>
-                    .Set(x=>x.DocumentId, id)
+                    .SetOnInsert(x => x.CustomData, null)
+                    .SetOnInsert(x => x.ProjectedAt, 0)
+                    .Set(x => x.DocumentId, id)
                     .Set(x=>x.CreatetAt, createdAt)
                     .Set(x=>x.FileName, fileName),
                 Upsert = true
@@ -78,7 +81,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             _collection.FindAndModify(args);
         }
 
-        public void ConfirmLink(DocumentHandle handle,DocumentId id, long projectedAt)
+        public void LinkDocument(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long projectedAt)
         {
             var args = new FindAndModifyArgs
             {
@@ -88,6 +91,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 ),
                 Update = Update<HandleReadModel>
                     .Set(x => x.DocumentId, id)
+                    .Set(x => x.FileName, fileName)
                     .Set(x => x.ProjectedAt, projectedAt)
             };
             _collection.FindAndModify(args);
@@ -120,6 +124,23 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public IQueryable<HandleReadModel> AllSortedByHandle {
             get { return _collection.AsQueryable().OrderBy(x => x.Handle); }
+        }
+
+        public void CreateIfMissing(DocumentHandle handle, long createdAt)
+        {
+            var args = new FindAndModifyArgs
+            {
+                Query = Query<HandleReadModel>
+                    .EQ(x => x.Handle, handle),
+                Update = Update<HandleReadModel>
+                    .SetOnInsert(x => x.CustomData, null)
+                    .SetOnInsert(x => x.ProjectedAt, 0)
+                    .SetOnInsert(x => x.DocumentId, null)
+                    .SetOnInsert(x => x.CreatetAt, createdAt)
+                    .SetOnInsert(x => x.FileName, null),
+                Upsert = true
+            };
+            _collection.FindAndModify(args);            
         }
 
         public HandleReadModel FindOneById(DocumentHandle handle)

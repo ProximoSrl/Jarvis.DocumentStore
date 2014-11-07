@@ -11,6 +11,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
     {
         public DocumentId OtherDocumentId { get; private set; }
         public DocumentHandle OtherHandle { get; private set; }
+        public FileNameWithExtension OtherFileName { get; private set; }
 
         public DeduplicateDocument(DocumentId documentId, DocumentId otherDocumentId, DocumentHandle otherHandle)
             : base(documentId)

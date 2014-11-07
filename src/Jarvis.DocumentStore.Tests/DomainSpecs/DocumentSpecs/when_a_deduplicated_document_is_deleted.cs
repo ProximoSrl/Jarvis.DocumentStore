@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         {
             Create();
             Document.Create(_id, _blobId, _handleInfo, _fileHash);
-            Document.Deduplicate(new DocumentId(2), _otherHandle);
+            Document.Deduplicate(new DocumentId(2), _otherHandle, _fname);
         };
 
         Because of = () =>

@@ -267,7 +267,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
             var descriptor = _blobStore.GetDescriptor(blobId);
-            var createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash);
+            var createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
             CommandBus.Send(createDocument, "api");
         }
 

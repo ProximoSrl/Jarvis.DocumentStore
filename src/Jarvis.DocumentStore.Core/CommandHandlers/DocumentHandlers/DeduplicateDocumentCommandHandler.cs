@@ -8,7 +8,8 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
            FindAndModify(cmd.AggregateId, doc => doc.Deduplicate(
                cmd.OtherDocumentId, 
-               cmd.OtherHandle
+               cmd.OtherHandle,
+               cmd.OtherFileName
             )); 
         }
     }

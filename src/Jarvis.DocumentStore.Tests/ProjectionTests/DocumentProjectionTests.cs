@@ -71,7 +71,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                 new DocumentId(id),
                 _filestore.Upload(Core.Processing.DocumentFormats.Original, pathToFile),
                 info,
-                new FileHash("1234abcd")
+                new FileHash("1234abcd"),
+                new FileNameWithExtension("a","file")
             ));
         }
 

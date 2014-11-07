@@ -3,6 +3,7 @@ using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Storage;
 
@@ -49,6 +50,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay)
                 return;
 
+            _commandBus.Send(new LinkHandleToDocument(e.Handle, e.OtherDocumentId, e.OtherFileName));
             _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle));
         }
         public void On(FormatAddedToDocument e)

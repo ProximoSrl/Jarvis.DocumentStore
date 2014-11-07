@@ -30,11 +30,18 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             RaiseEvent(new HandleInitialized(id, handle));
         }
 
-        public void Link(DocumentId documentId)
+        public void Link(DocumentId documentId, FileNameWithExtension fileName)
         {
             ThrowIfDeleted();
-            if (InternalState.LinkedDocument != documentId)
-                RaiseEvent(new HandleLinked(InternalState.Handle, documentId, InternalState.LinkedDocument));
+
+            if (InternalState.LinkedDocument != documentId){
+                RaiseEvent(new HandleLinked(
+                    InternalState.Handle, 
+                    documentId, 
+                    InternalState.LinkedDocument, 
+                    fileName
+                ));
+            }
         }
 
         public void SetCustomData(HandleCustomData customData)
