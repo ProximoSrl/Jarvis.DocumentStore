@@ -27,14 +27,14 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         public static readonly HandleCustomData CustomData_2 = new HandleCustomData();
         public static readonly HandleCustomData CustomData_3 = new HandleCustomData(){{"a", "b"}};
         public static readonly DocumentHandle DocumentHandle = new DocumentHandle("this_is_an_handle");
-        public static Handle Handle { get { return Aggregate; }}
+        public static Handle HandleAggregate { get { return Aggregate; }}
     }
 
     [Subject("with a uninitialized handle")]
     public class when_creating_an_handle : HandleSpecification
     {
         Establish context = () => Create();
-        Because of = () => Handle.Initialize(HandleId, DocumentHandle);
+        Because of = () => HandleAggregate.Initialize(HandleId, DocumentHandle);
 
         It handle_initilized_event_should_be_raised = () =>
             EventHasBeenRaised<HandleInitialized>().ShouldBeTrue();
@@ -52,13 +52,13 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
 
     public abstract class with_an_initialized_handle : HandleSpecification
     {
-        Establish context = () => SetUp(new HandleState(HandleId, Handle));
+        Establish context = () => SetUp(new HandleState(HandleId, DocumentHandle));
     }
 
     [Subject(typeof(with_an_initialized_handle))]
     public class when_link_a_document : with_an_initialized_handle
     {
-        Because of = () => Handle.Link(Document_1,FileName_1);
+        Because of = () => HandleAggregate.Link(Document_1,FileName_1);
 
         It linked_document_should_document_1 = () => {
             State.LinkedDocument.ShouldNotBeNull();
@@ -79,7 +79,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     {
         Establish context = () =>
         {
-            var handleState = new HandleState(HandleId, Handle);
+            var handleState = new HandleState(HandleId, DocumentHandle);
             handleState.Link(Document_1);
             SetUp(handleState);
         };
@@ -88,7 +88,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with a handle linked to Document_1")]
     public class when_i_link_document_1_again : with_an_handle_linked_to_document_1
     {
-        Because of = () => Handle.Link(Document_1,FileName_1);
+        Because of = () => HandleAggregate.Link(Document_1,FileName_1);
 
         It handleLinkedEvent_should_not_be_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeFalse();
@@ -97,7 +97,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with a handle linked to Document_1")]
     public class when_i_link_document_2_again : with_an_handle_linked_to_document_1
     {
-        Because of = () => Handle.Link(Document_2,FileName_1);
+        Because of = () => HandleAggregate.Link(Document_2,FileName_1);
 
         It handleLinkedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeTrue();
@@ -112,7 +112,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with a handle linked to Document_1")]
     public class when_i_delete_the_handle: with_an_handle_linked_to_document_1
     {
-        Because of = () => Handle.Delete();
+        Because of = () => HandleAggregate.Delete();
 
         It HandleDeletedEvent_should_be_raised = () =>
             EventHasBeenRaised<HandleDeleted>().ShouldBeTrue();
@@ -127,7 +127,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         Establish context = () => {
             State.MarkAsDeleted();
         };
-        Because of = () => Handle.Delete();
+        Because of = () => HandleAggregate.Delete();
 
         It HandleDeletedEvent_should_be_raised = () =>
             EventHasBeenRaised<HandleDeleted>().ShouldBeFalse();
@@ -136,7 +136,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with an initialized handle")]
     public class when_customData_are_set : with_an_initialized_handle
     {
-        Because of = () => Handle.SetCustomData(CustomData_1);
+        Because of = () => HandleAggregate.SetCustomData(CustomData_1);
 
         It CustomDataSetEvent_have_beed_raised = () => 
             EventHasBeenRaised<HandleCustomDataSet>().ShouldBeTrue();
@@ -160,7 +160,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with an handle with CustomData_1")]
     public class when_trying_to_set_custom_data_2: with_custom_data_set_to_custom_data_1
     {
-        Because of = () => Handle.SetCustomData(CustomData_2);
+        Because of = () => HandleAggregate.SetCustomData(CustomData_2);
     
         It CustomDataSetEvent_should_not_have_beed_raised = () =>
            EventHasBeenRaised<HandleCustomDataSet>().ShouldBeFalse();
@@ -169,7 +169,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with an handle with CustomData_1")]
     public class when_trying_to_set_custom_data_3: with_custom_data_set_to_custom_data_1
     {
-        Because of = () => Handle.SetCustomData(CustomData_3);
+        Because of = () => HandleAggregate.SetCustomData(CustomData_3);
     
         It CustomDataSetEvent_should_have_beed_raised = () =>
            EventHasBeenRaised<HandleCustomDataSet>().ShouldBeTrue();
@@ -178,7 +178,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with an initialized handle")]
     public class when_trying_to_set_null_custom_data : with_an_initialized_handle
     {
-        Because of = () => Handle.SetCustomData(null);
+        Because of = () => HandleAggregate.SetCustomData(null);
         It CustomDataSetEvent_should_not_have_beed_raised = () =>
           EventHasBeenRaised<HandleCustomDataSet>().ShouldBeFalse();
     }
@@ -186,7 +186,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with an handle with CustomData_1")]
     public class when_trying_to_unset_custom_data : with_custom_data_set_to_custom_data_1
     {
-        Because of = () => Handle.SetCustomData(null);
+        Because of = () => HandleAggregate.SetCustomData(null);
 
         It CustomDataSetEvent_should_have_beed_raised = () =>
            EventHasBeenRaised<HandleCustomDataSet>().ShouldBeTrue();

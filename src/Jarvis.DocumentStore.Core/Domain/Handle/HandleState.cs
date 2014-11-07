@@ -7,9 +7,10 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
 {
     public class HandleState : AggregateState
     {
-        public HandleState(HandleId handleId, Handle handle)
+        public HandleState(HandleId handleId, DocumentHandle handle)
         {
             this.AggregateId = handleId;
+            this.Handle = handle;
         }
 
         public HandleState()
