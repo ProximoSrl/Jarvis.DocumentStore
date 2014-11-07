@@ -1,0 +1,17 @@
+{
+	"connectionStrings" : {
+		"ds-quartz" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-quartz",
+		"docs" : {
+			"filestore" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-docs-fs",
+			"system" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-docs-sys",
+			"events" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-docs-events",
+			"readmodel" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-docs-rm"
+		},
+		"demo" : {
+			"filestore" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-demo-fs",
+			"system" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-demo-sys",
+			"events" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-demo-events",
+			"readmodel" : "mongodb://avalanche.cyberpunk.local,earthquake.cyberpunk.local,typhoon.cyberpunk.local/ds-demo-rm"
+		}
+	}
+}
