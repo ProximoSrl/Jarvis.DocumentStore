@@ -165,7 +165,7 @@
     <Compile Include="Domain\Handle\Events\HandleInitialized.cs" />
     <Compile Include="Domain\Handle\Events\HandleLinked.cs" />
     <Compile Include="Domain\Handle\HandleState.cs" />
-    <Compile Include="EvenstoreHooks\HandleUpdaterHook.cs" />
+    <Compile Include="EvenstoreHooks\ReadModelPromisesHook.cs" />
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DeduplicationHelper.cs" />
     <Compile Include="EventHandlers\DocumentByHashReader.cs" />

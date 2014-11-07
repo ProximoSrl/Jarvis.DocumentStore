@@ -5,20 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
-using Jarvis.DocumentStore.Core.Domain.Handle;
-using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using NEventStore;
-using NEventStore.Persistence;
 
 namespace Jarvis.DocumentStore.Core.EvenstoreHooks
 {
-    public class HandleUpdaterHook : PipelineHookBase
+    public class ReadModelPromisesHook : PipelineHookBase
     {
         private readonly IHandleWriter _handleWriter;
         private static readonly string DocumentTypeName = typeof (Document).FullName;
 
-        public HandleUpdaterHook(IHandleWriter handleWriter)
+        public ReadModelPromisesHook(IHandleWriter handleWriter)
         {
             _handleWriter = handleWriter;
         }
@@ -32,7 +29,11 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
             if (type != DocumentTypeName)
                 return;
 
-            var docCreated = committed.Events.Where(x => x.Body is DocumentCreated).Select(x => (DocumentCreated)x.Body).FirstOrDefault();
+            var docCreated = committed.Events
+                .Where(x => x.Body is DocumentCreated)
+                .Select(x => (DocumentCreated)x.Body)
+                .FirstOrDefault();
+
             if (docCreated != null)
             {
                 _handleWriter.Promise(
