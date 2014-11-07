@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             Formats.Remove(e.DocumentFormat);
         }
 
-        private void When(DocumentHandleAttacched e)
+        private void When(DocumentHandleAttached e)
         {
             _handles.Add(e.Handle);
         }

@@ -33,6 +33,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             this.CustomData = e.CustomData;
         }
 
+        void When(HandleFileNameSet e)
+        {
+            this.FileName = e.FileName;
+        }
+
         void When(HandleLinked e)
         {
             Link(e.DocumentId);
@@ -53,10 +58,16 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         public bool HasBeenDeleted { get; private set; }
         public HandleCustomData CustomData { get; private set; }
         public DocumentHandle Handle { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
 
         public void SetCustomData(HandleCustomData data)
         {
             this.CustomData = data;
+        }
+
+        public void SetFileName(FileNameWithExtension fileNameWithExtension)
+        {
+            this.FileName = fileNameWithExtension;
         }
     }
 }

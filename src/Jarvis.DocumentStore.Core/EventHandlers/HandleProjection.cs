@@ -14,7 +14,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     public class HandleProjection : AbstractProjection
         ,IEventHandler<HandleInitialized>
         ,IEventHandler<HandleLinked>
-        ,IEventHandler<HandleCustomDataSet>
+        ,IEventHandler<HandleFileNameSet>,
+        IEventHandler<HandleCustomDataSet>
         ,IEventHandler<HandleDeleted>
     {
         readonly IHandleWriter _writer;
@@ -38,7 +39,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _writer.LinkDocument(
                 e.Handle, 
-                e.FileName,
                 e.DocumentId, 
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
@@ -60,6 +60,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(HandleDeleted e)
         {
             _writer.Delete(e.Handle, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
+        }
+
+        public void On(HandleFileNameSet e)
+        {
+            _writer.SetFileName(e.Handle, e.FileName, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
         }
     }
 }

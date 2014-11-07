@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject(typeof(with_an_initialized_handle))]
     public class when_link_a_document : with_an_initialized_handle
     {
-        Because of = () => HandleAggregate.Link(Document_1,FileName_1);
+        Because of = () => HandleAggregate.Link(Document_1);
 
         It linked_document_should_document_1 = () => {
             State.LinkedDocument.ShouldNotBeNull();
@@ -75,6 +75,35 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
             RaisedEvent<HandleLinked>().PreviousDocumentId.ShouldBeNull();
     }
 
+    [Subject("with an handle wihout file name")]
+    public class when_filename_is_set : with_an_initialized_handle
+    {
+        Because of = () => 
+            HandleAggregate.SetFileName(new FileNameWithExtension("a","file"));
+        
+        It filename_should_be_set = () => 
+            State.FileName.ShouldBeLike(new FileNameWithExtension("a","file"));
+        
+        It filename_set_event_should_have_been_raised = () => 
+            EventHasBeenRaised<HandleFileNameSet>().ShouldBeTrue();
+    }
+
+    [Subject("with an handle with file name")]
+    public class when_filename_is_set_twice : with_an_initialized_handle
+    {
+        Establish context = () => 
+            State.SetFileName(new FileNameWithExtension("a", "file"));
+        
+        Because of = () => 
+            HandleAggregate.SetFileName(new FileNameWithExtension("a","file"));
+        
+        It filename_should_be_set = () => 
+            State.FileName.ShouldBeLike(new FileNameWithExtension("a","file"));
+        
+        It filename_set_event_should_have_not_been_raised = () =>
+            EventHasBeenRaised<HandleFileNameSet>().ShouldBeFalse();
+    }
+
     public class with_an_handle_linked_to_document_1 : with_an_initialized_handle
     {
         Establish context = () =>
@@ -88,7 +117,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with a handle linked to Document_1")]
     public class when_i_link_document_1_again : with_an_handle_linked_to_document_1
     {
-        Because of = () => HandleAggregate.Link(Document_1,FileName_1);
+        Because of = () => HandleAggregate.Link(Document_1);
 
         It handleLinkedEvent_should_not_be_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeFalse();
@@ -97,7 +126,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     [Subject("with a handle linked to Document_1")]
     public class when_i_link_document_2_again : with_an_handle_linked_to_document_1
     {
-        Because of = () => HandleAggregate.Link(Document_2,FileName_1);
+        Because of = () => HandleAggregate.Link(Document_2);
 
         It handleLinkedEvent_should_have_been_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeTrue();

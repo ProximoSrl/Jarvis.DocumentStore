@@ -28,7 +28,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 throw new DomainException((IIdentity)id, "Already created");
 
             RaiseEvent(new DocumentCreated(id, blobId, handleInfo, hash));
-            Attach(handleInfo.Handle);
         }
 
         public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
@@ -56,14 +55,15 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         void Attach(DocumentHandle handle)
         {
             if(!InternalState.IsValidHandle(handle))
-                RaiseEvent(new DocumentHandleAttacched(handle));
+                RaiseEvent(new DocumentHandleAttached(handle));
         }
 
         public void Delete(DocumentHandle handle)
         {
             if (!InternalState.IsValidHandle(handle))
             {
-                throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
+                return;
+//                throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
             }
 
             RaiseEvent(new DocumentHandleDetached(handle));
@@ -90,9 +90,10 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 throw new DomainException(this.Id, "Document has been deleted");
         }
 
-        public void Process()
+        public void Process(DocumentHandle handle)
         {
-            RaiseEvent(new DocumentQueuedForProcessing(InternalState.BlobId));
+            RaiseEvent(new DocumentQueuedForProcessing(InternalState.BlobId, handle));
+            Attach(handle);
         }
     }
 }

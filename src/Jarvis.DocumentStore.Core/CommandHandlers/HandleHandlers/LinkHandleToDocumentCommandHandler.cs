@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
         protected override void Execute(LinkHandleToDocument cmd)
         {
             var handleId = _mapper.Map(cmd.Handle);
-            FindAndModify(handleId, h => h.Link(cmd.DocumentId, cmd.FileName));
+            FindAndModify(handleId, h => h.Link(cmd.DocumentId));
         }
     }
 

@@ -43,10 +43,8 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
             {
                 _handleWriter.Promise(
                     docCreated.HandleInfo.Handle,
-                    docCreated.HandleInfo.FileName,
-                    (DocumentId) docCreated.AggregateId,
                     LongCheckpoint.Parse(committed.CheckpointToken).LongValue
-                    );
+                );
             }
         }
     }

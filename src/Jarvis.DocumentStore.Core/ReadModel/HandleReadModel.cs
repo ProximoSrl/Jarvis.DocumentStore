@@ -44,15 +44,16 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
     public interface IHandleWriter
     {
-        void Promise(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long createdAt);
+        void Promise(DocumentHandle handle, long createdAt);
         HandleReadModel FindOneById(DocumentHandle handle);
         void Drop();
         void Init();
-        void LinkDocument(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long projectedAt);
+        void LinkDocument(DocumentHandle handle, DocumentId id, long projectedAt);
         void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<HandleReadModel> AllSortedByHandle { get;}
         void CreateIfMissing(DocumentHandle handle,long createdAt);
+        void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
     }
 
     public class HandleWriter : IHandleWriter
@@ -64,7 +65,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             _collection = readModelDb.GetCollection<HandleReadModel>(CollectionNames.GetCollectionName<HandleReadModel>());
         }
 
-        public void Promise(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long createdAt)
+        public void Promise(DocumentHandle handle, long createdAt)
         {
             var args = new FindAndModifyArgs
             {
@@ -73,15 +74,30 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<HandleReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
-                    .Set(x => x.DocumentId, id)
+                    .Set(x => x.DocumentId, null)
                     .Set(x=>x.CreatetAt, createdAt)
-                    .Set(x=>x.FileName, fileName),
+                    .Set(x=>x.FileName, null),
                 Upsert = true
             };
             _collection.FindAndModify(args);
         }
 
-        public void LinkDocument(DocumentHandle handle, FileNameWithExtension fileName, DocumentId id, long projectedAt)
+        public void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt)
+        {
+            var args = new FindAndModifyArgs
+            {
+                Query = Query.And(
+                    Query<HandleReadModel>.EQ(x => x.Handle, handle),
+                    Query<HandleReadModel>.LTE(x => x.CreatetAt, projectedAt)
+                ),
+                Update = Update<HandleReadModel>
+                    .Set(x => x.FileName, fileName)
+                    .Set(x => x.ProjectedAt, projectedAt)
+            };
+            _collection.FindAndModify(args);
+        }
+
+        public void LinkDocument(DocumentHandle handle, DocumentId id, long projectedAt)
         {
             var args = new FindAndModifyArgs
             {
@@ -91,7 +107,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 ),
                 Update = Update<HandleReadModel>
                     .Set(x => x.DocumentId, id)
-                    .Set(x => x.FileName, fileName)
                     .Set(x => x.ProjectedAt, projectedAt)
             };
             _collection.FindAndModify(args);

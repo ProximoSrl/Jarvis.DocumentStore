@@ -11,16 +11,14 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle.Commands
 {
     public class LinkHandleToDocument : Command
     {
-        public LinkHandleToDocument(DocumentHandle handle, DocumentId documentId, FileNameWithExtension fileName)
+        public LinkHandleToDocument(DocumentHandle handle, DocumentId documentId)
         {
-            FileName = fileName;
             Handle = handle;
             DocumentId = documentId;
         }
 
         public DocumentHandle Handle { get; private set; }
         public DocumentId DocumentId { get; private set; }
-        public FileNameWithExtension FileName { get; private set; }
     }
 
     public class DeleteHandle : Command

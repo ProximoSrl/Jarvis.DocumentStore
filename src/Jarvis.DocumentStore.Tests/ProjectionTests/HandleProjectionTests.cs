@@ -46,14 +46,14 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void Promise()
         {
-            _writer.Promise(_documentHandle, FileName_1, Document_1, 1);
+            _writer.Promise(_documentHandle, 1);
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.NotNull(h);
-            Assert.AreEqual(Document_1, h.DocumentId);
+            Assert.IsNull(h.DocumentId);
             Assert.AreEqual(0, h.ProjectedAt);
             Assert.AreEqual(1, h.CreatetAt);
-            Assert.AreEqual(FileName_1, h.FileName);
+            Assert.IsNull(h.FileName);
         }
 
         [Test]
@@ -69,6 +69,17 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
+        public void SetFileName()
+        {
+            _writer.Create(_documentHandle);
+            _writer.SetFileName(_documentHandle, FileName_1, 10 );
+            var h = _writer.FindOneById(_documentHandle);
+
+            Assert.AreEqual(FileName_1, h.FileName);
+        
+        }
+
+        [Test]
         public void update_custom_data()
         {
             _writer.Create(_documentHandle);
@@ -81,25 +92,23 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        [TestCase(1, 2, 10, false)]
-        [TestCase(1, 2, 11, false)]
-        [TestCase(1, 1, 9, true)]
-        public void Projected(int promisedDocId, int expectedDocId, int projectedAt, bool isPending)
+        [TestCase(2, 10, false)]
+        [TestCase(2, 11, false)]
+        [TestCase(1, 9, true)]
+        public void Projected(int expectedDocId, int projectedAt, bool isPending)
         {
-            var promisedDocumentId = new DocumentId(promisedDocId);
             var expectedDocumentId = new DocumentId(expectedDocId);
-            _writer.Promise(_documentHandle, FileName_1, promisedDocumentId, 10);
-
-            _writer.LinkDocument(_documentHandle, FileName_1, Document_2, projectedAt);
+            _writer.Promise(_documentHandle, 10);
+            _writer.LinkDocument(_documentHandle, Document_2, projectedAt);
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.NotNull(h);
-            Assert.AreEqual(expectedDocumentId, h.DocumentId);
             Assert.AreEqual(10, h.CreatetAt);
+            Assert.IsNull(h.FileName);
 
             if (h.ProjectedAt >= h.CreatetAt)
             {
-                Assert.AreEqual(FileName_1, h.FileName);
+                Assert.AreEqual(expectedDocumentId, h.DocumentId);
                 Assert.AreEqual(projectedAt, h.ProjectedAt);
             }
 
@@ -110,7 +119,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void should_delete()
         {
             _writer.Create(_documentHandle);
-            _writer.Promise(_documentHandle, FileName_1, Document_1, 10);
+            _writer.Promise(_documentHandle, 10);
             
             _writer.Delete(_documentHandle, 11);
             var h = _writer.FindOneById(_documentHandle);
@@ -121,7 +130,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void should_not_delete()
         {
             _writer.Create(_documentHandle);
-            _writer.Promise(_documentHandle, FileName_1, Document_1, 10);
+            _writer.Promise(_documentHandle, 10);
             
             _writer.Delete(_documentHandle, 9);
             var h = _writer.FindOneById(_documentHandle);
@@ -133,15 +142,15 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             // arrage
             _writer.Create(_documentHandle);
-            _writer.Promise(_documentHandle, FileName_1, Document_1, 10);
+            _writer.Promise(_documentHandle, 10);
 
             var h1 = _writer.FindOneById(_documentHandle);
 
             // act
             _writer.Delete(_documentHandle, 20);
-            _writer.LinkDocument(_documentHandle, FileName_1, Document_2, 15);
+            _writer.LinkDocument(_documentHandle, Document_2, 15);
             var h2 = _writer.FindOneById(_documentHandle);
-            _writer.LinkDocument(_documentHandle, FileName_1, Document_2, 55);
+            _writer.LinkDocument(_documentHandle, Document_2, 55);
             var h3 = _writer.FindOneById(_documentHandle);
 
             // assert

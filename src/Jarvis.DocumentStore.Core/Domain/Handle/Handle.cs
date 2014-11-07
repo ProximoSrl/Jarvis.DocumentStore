@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             RaiseEvent(new HandleInitialized(id, handle));
         }
 
-        public void Link(DocumentId documentId, FileNameWithExtension fileName)
+        public void Link(DocumentId documentId)
         {
             ThrowIfDeleted();
 
@@ -38,10 +38,19 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
                 RaiseEvent(new HandleLinked(
                     InternalState.Handle, 
                     documentId, 
-                    InternalState.LinkedDocument, 
-                    fileName
+                    InternalState.LinkedDocument,
+                    InternalState.FileName
                 ));
             }
+        }
+
+        public void SetFileName(FileNameWithExtension fileName)
+        {
+            ThrowIfDeleted();
+            if (InternalState.FileName == fileName)
+                return;
+
+            RaiseEvent(new HandleFileNameSet(InternalState.Handle, fileName));
         }
 
         public void SetCustomData(HandleCustomData customData)

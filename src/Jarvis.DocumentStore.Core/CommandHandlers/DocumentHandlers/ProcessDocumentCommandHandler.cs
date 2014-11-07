@@ -6,7 +6,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
     {
         protected override void Execute(ProcessDocument cmd)
         {
-            FindAndModify(cmd.AggregateId, doc => doc.Process()); 
+            FindAndModify(cmd.AggregateId, doc => doc.Process(cmd.Handle)); 
         }
     }
 }

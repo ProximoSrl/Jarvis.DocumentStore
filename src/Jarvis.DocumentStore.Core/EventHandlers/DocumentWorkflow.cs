@@ -15,7 +15,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentHasBeenDeduplicated>,
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
-        IEventHandler<HandleDeleted>
+        IEventHandler<HandleDeleted>,
+        IEventHandler<HandleLinked>
+
     {
         private readonly ICommandBus _commandBus;
         private readonly IBlobStore _blobStore;
@@ -43,6 +45,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             if (IsReplay) return;
 
+            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId) e.AggregateId));
+
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             _pipelineManager.Start((DocumentId) e.AggregateId, descriptor, null);
         }
@@ -52,9 +56,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay)
                 return;
 
-            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId)e.AggregateId, e.OtherFileName));
-            _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle));
+            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId)e.AggregateId));
+//            _commandBus.Send(new DeleteDocument(e.OtherDocumentId, e.Handle, "deduplication of " + e.AggregateId));
         }
+
         public void On(FormatAddedToDocument e)
         {
             if (IsReplay)
@@ -85,13 +90,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
             if (duplicatedId != null)
             {
-                _commandBus.Send(new DeduplicateDocument(
-                    duplicatedId, thisDocumentId, e.HandleInfo.Handle
-                    ));
+                _commandBus.Send(new DeduplicateDocument(duplicatedId, thisDocumentId, e.HandleInfo.Handle));
             }
             else
             {
-                _commandBus.Send(new ProcessDocument(thisDocumentId));
+                _commandBus.Send(new ProcessDocument(thisDocumentId, e.HandleInfo.Handle));
             }
         }
 
@@ -99,7 +102,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             if(IsReplay)return;
 
-            _commandBus.Send(new DeleteDocument(e.DocumentId, e.Handle));
+            _commandBus.Send(new DeleteDocument(e.DocumentId, e.Handle, "Handle deleted"));
+        }
+
+        public void On(HandleLinked e)
+        {
+            if(IsReplay)return;
+            
+            if(e.PreviousDocumentId != null)
+                _commandBus.Send(new DeleteDocument(e.PreviousDocumentId, e.Handle, "Handle relinked"));
         }
     }
 }

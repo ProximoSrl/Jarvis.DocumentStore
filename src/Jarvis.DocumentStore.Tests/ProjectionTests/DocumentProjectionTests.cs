@@ -162,6 +162,20 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var copy = _documentReader.FindOneById(new DocumentId(2));
             Assert.IsNull(copy);
+        }     
+        
+        [Test]
+        public void should_create_a_document()
+        {
+            CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
+            Thread.Sleep(1000);
+
+            var original = _documentReader.FindOneById(new DocumentId(1));
+            Assert.IsNotNull(original);
+
+            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
+            Assert.IsNotNull(handle);
+            Assert.AreEqual(handle.DocumentId, new DocumentId(1));
         }
     }
 }

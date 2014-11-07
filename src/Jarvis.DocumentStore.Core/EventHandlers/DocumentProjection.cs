@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentCreated>,
         IEventHandler<FormatAddedToDocument>,
         IEventHandler<DocumentDeleted>,
-        IEventHandler<DocumentHandleAttacched>,
+        IEventHandler<DocumentHandleAttached>,
         IEventHandler<DocumentHandleDetached>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
@@ -67,7 +67,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.Delete(e, (DocumentId)e.AggregateId);
         }
 
-        public void On(DocumentHandleAttacched e)
+        public void On(DocumentHandleAttached e)
         {
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => d.AddHandle(e.Handle));
         }

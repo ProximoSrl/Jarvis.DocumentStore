@@ -146,7 +146,7 @@
     <Compile Include="Domain\Document\Commands\ProcessDocument.cs" />
     <Compile Include="Domain\Document\Document.cs" />
     <Compile Include="Domain\Document\DocumentHandleInfo.cs" />
-    <Compile Include="Domain\Document\Events\DocumentHandleAttacched.cs" />
+    <Compile Include="Domain\Document\Events\DocumentHandleAttached.cs" />
     <Compile Include="Domain\Document\Events\DocumentHandleDetached.cs" />
     <Compile Include="Domain\Document\Events\DocumentHasBeenDeduplicated.cs" />
     <Compile Include="Domain\Document\DocumentId.cs" />
@@ -160,6 +160,7 @@
     <Compile Include="Domain\Document\DocumentFormat.cs" />
     <Compile Include="Domain\Handle\Commands\LinkHandleToDocument.cs" />
     <Compile Include="Domain\Handle\Events\HandleCustomDataSet.cs" />
+    <Compile Include="Domain\Handle\Events\HandleFileNameSet.cs" />
     <Compile Include="Domain\Handle\Handle.cs" />
     <Compile Include="Domain\Handle\Events\HandleDeleted.cs" />
     <Compile Include="Domain\Handle\HandleCustomData.cs" />
