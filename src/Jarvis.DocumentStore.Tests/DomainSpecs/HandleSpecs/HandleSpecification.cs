@@ -45,6 +45,9 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
             e.Handle.ShouldBeLike(DocumentHandle);
             e.Id.ShouldBeLike(HandleId);
         };
+
+        It linked_document_should_be_null = () =>
+            State.LinkedDocument.ShouldBeNull();
     }
 
     public abstract class with_an_initialized_handle : HandleSpecification
@@ -56,7 +59,12 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     public class when_link_a_document : with_an_initialized_handle
     {
         Because of = () => Handle.Link(Document_1,FileName_1);
-        
+
+        It linked_document_should_document_1 = () => {
+            State.LinkedDocument.ShouldNotBeNull();
+            State.LinkedDocument.ShouldBeLike(Document_1);
+        };
+
         It handleLinkedEvent_should_be_raised = () =>
             EventHasBeenRaised<HandleLinked>().ShouldBeTrue();
 

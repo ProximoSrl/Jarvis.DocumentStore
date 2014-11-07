@@ -32,6 +32,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             this.CustomData = e.CustomData;
         }
 
+        void When(HandleLinked e)
+        {
+            Link(e.DocumentId);
+        }
+
         public void Link(DocumentId documentId)
         {
             this.LinkedDocument = documentId;

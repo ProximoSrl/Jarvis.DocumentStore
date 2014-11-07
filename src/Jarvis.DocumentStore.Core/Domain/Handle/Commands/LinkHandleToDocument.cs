@@ -22,4 +22,14 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle.Commands
         public DocumentId DocumentId { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
     }
+
+    public class DeleteHandle : Command
+    {
+        public DeleteHandle(DocumentHandle handle)
+        {
+            Handle = handle;
+        }
+
+        public DocumentHandle Handle { get; private set; }
+    }
 }

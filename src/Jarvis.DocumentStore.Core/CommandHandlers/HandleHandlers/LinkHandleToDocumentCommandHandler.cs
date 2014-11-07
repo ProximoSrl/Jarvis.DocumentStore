@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
 {
     public class LinkHandleToDocumentCommandHandler : RepositoryCommandHandler<Handle, LinkHandleToDocument>
     {
-        IHandleMapper _mapper;
+        readonly IHandleMapper _mapper;
 
         public LinkHandleToDocumentCommandHandler(IHandleMapper mapper)
         {
@@ -22,7 +22,22 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
         {
             var handleId = _mapper.Map(cmd.Handle);
             FindAndModify(handleId, h => h.Link(cmd.DocumentId, cmd.FileName));
+        }
+    }
 
+    public class DeleteHandleCommandHandler : RepositoryCommandHandler<Handle, DeleteHandle>
+    {
+        readonly IHandleMapper _mapper;
+
+        public DeleteHandleCommandHandler(IHandleMapper mapper)
+        {
+            _mapper = mapper;
+        }
+
+        protected override void Execute(DeleteHandle cmd)
+        {
+            var handleId = _mapper.Map(cmd.Handle);
+            FindAndModify(handleId, h => h.Delete());
         }
     }
 }

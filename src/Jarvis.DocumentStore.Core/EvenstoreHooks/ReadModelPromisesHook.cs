@@ -29,9 +29,14 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
             if (type != DocumentTypeName)
                 return;
 
+            HandleDocumentCreation(committed);
+        }
+
+        void HandleDocumentCreation(ICommit committed)
+        {
             var docCreated = committed.Events
                 .Where(x => x.Body is DocumentCreated)
-                .Select(x => (DocumentCreated)x.Body)
+                .Select(x => (DocumentCreated) x.Body)
                 .FirstOrDefault();
 
             if (docCreated != null)
@@ -39,9 +44,9 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
                 _handleWriter.Promise(
                     docCreated.HandleInfo.Handle,
                     docCreated.HandleInfo.FileName,
-                    (DocumentId)docCreated.AggregateId,
+                    (DocumentId) docCreated.AggregateId,
                     LongCheckpoint.Parse(committed.CheckpointToken).LongValue
-                );
+                    );
             }
         }
     }

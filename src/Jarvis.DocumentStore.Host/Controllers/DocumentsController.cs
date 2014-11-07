@@ -19,6 +19,7 @@ using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Handle;
+using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -244,7 +245,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (document == null)
                 return DocumentNotFound(handle);
 
-            DeleteDocument(document.Id, handle);
+            CommandBus.Send(new DeleteHandle(handle), "api");
 
             return Request.CreateResponse(
                 HttpStatusCode.Accepted,
@@ -252,10 +253,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
-        void DeleteDocument(DocumentId documentId, DocumentHandle handle)
-        {
-            CommandBus.Send(new DeleteDocument(documentId, handle), "api");
-        }
 
         private void CreateDocument(
             DocumentId documentId,

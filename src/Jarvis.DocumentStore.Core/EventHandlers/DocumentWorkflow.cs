@@ -4,6 +4,7 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
+using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Storage;
 
@@ -13,7 +14,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentQueuedForProcessing>,
         IEventHandler<DocumentHasBeenDeduplicated>,
         IEventHandler<DocumentCreated>,
-        IEventHandler<FormatAddedToDocument>
+        IEventHandler<FormatAddedToDocument>,
+        IEventHandler<HandleDeleted>
     {
         private readonly ICommandBus _commandBus;
         private readonly IBlobStore _blobStore;
@@ -91,6 +93,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             {
                 _commandBus.Send(new ProcessDocument(thisDocumentId));
             }
+        }
+
+        public void On(HandleDeleted e)
+        {
+            if(IsReplay)return;
+
+            _commandBus.Send(new DeleteDocument(e.DocumentId, e.Handle));
         }
     }
 }

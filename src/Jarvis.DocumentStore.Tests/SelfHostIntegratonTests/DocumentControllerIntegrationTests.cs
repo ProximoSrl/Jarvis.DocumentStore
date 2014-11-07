@@ -6,10 +6,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using CQRS.Shared.MultitenantSupport;
+using CQRS.Shared.ReadModel;
 using CQRS.Tests.DomainTests;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.JobTests;
 using Jarvis.DocumentStore.Tests.PipelineTests;
@@ -177,6 +180,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             });
 
             Assert.IsTrue(ex.Message.Contains("404"));
+
+            // check readmodel
+            var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
+            var tenant = tenantAccessor.GetTenant(new TenantId(TestConfig.Tenant));
+            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentReadModel, DocumentId>>();
+
+            var allDocuments = docReader.AllUnsorted.Count();
+            Assert.AreEqual(0, allDocuments);
         }
 
         [Test, Explicit]

@@ -57,7 +57,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         public void Delete()
         {
             if (!InternalState.HasBeenDeleted)
-                RaiseEvent(new HandleDeleted(InternalState.Handle));
+                RaiseEvent(new HandleDeleted(InternalState.Handle, InternalState.LinkedDocument));
         }
 
         void ThrowIfDeleted()
