@@ -265,6 +265,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
             var descriptor = _blobStore.GetDescriptor(blobId);
             var createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
+//            createDocument.WithDiagnosticDescription("Created by rest api");
             CommandBus.Send(createDocument, "api");
         }
 
