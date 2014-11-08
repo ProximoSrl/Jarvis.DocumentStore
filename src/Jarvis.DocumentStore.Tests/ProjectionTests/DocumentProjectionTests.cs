@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Castle.Core.Logging;
-using Castle.MicroKernel.Registration;
 using CQRS.Kernel.Commands;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Kernel.ProjectionEngine;
@@ -14,10 +12,8 @@ using CQRS.Shared.Commands;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using CQRS.Tests.DomainTests;
-using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
@@ -37,7 +33,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         IBlobStore _filestore;
         IHandleWriter _handleWriter;
         IReader<DocumentReadModel, DocumentId> _documentReader;
-
+        private ITriggerProjectionsUpdate _projections;
         [SetUp]
         public void SetUp()
         {
@@ -51,7 +47,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _bus = tenant.Container.Resolve<ICommandBus>();
             _filestore = tenant.Container.Resolve<IBlobStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
-
+            _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _handleWriter = tenant.Container.Resolve<IHandleWriter>();
             _documentReader = tenant.Container.Resolve<IReader<DocumentReadModel, DocumentId>>();
         }
@@ -77,15 +73,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void should_deduplicate()
+        public async void should_deduplicate()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPng);
 
-            //CreateDocument(1, "handle_1", TestConfig.PathToDocumentPdf);
-            //CreateDocument(3, "handle_3", TestConfig.PathToOpenDocumentSpreadsheet);
-
-            Thread.Sleep(1000);
+            await _projections.UpdateAndWait();
 
             var list = _handleWriter.AllSortedByHandle.ToArray();
             Assert.AreEqual(2, list.Length);
@@ -97,11 +90,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void should_remove_handle_previous_document()
+        public async void should_remove_handle_previous_document()
         {
             CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(1000);
+            await _projections.UpdateAndWait();
 
             var old_handle_bis_document = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNull(old_handle_bis_document);
@@ -111,12 +104,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void should_remove_orphaned_document()
+        public async void should_remove_orphaned_document()
         {
             CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
             CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(3000);
+            await _projections.UpdateAndWait();
 
             var old_handle_bis_document = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNull(old_handle_bis_document);
@@ -126,12 +119,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void should_deduplicate_twice()
+        public async void should_deduplicate_twice()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
             CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
             CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(1000);
+            await _projections.UpdateAndWait();
 
             var original = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNotNull(original);
@@ -147,11 +140,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }       
         
         [Test]
-        public void should_deduplicate_a_document_with_same_content_and_handle()
+        public async void should_deduplicate_a_document_with_same_content_and_handle()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
             CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(1000);
+            await _projections.UpdateAndWait();
 
             var original = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNotNull(original);
@@ -165,10 +158,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }     
         
         [Test]
-        public void should_create_a_document()
+        public async void should_create_a_document()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(1000);
+            await _projections.UpdateAndWait();
 
             var original = _documentReader.FindOneById(new DocumentId(1));
             Assert.IsNotNull(original);
