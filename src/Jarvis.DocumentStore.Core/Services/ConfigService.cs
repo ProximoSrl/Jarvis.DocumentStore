@@ -25,7 +25,6 @@ namespace Jarvis.DocumentStore.Core.Services
                 ).ToLowerInvariant();
 
             _allowedExtensions = configExtensions != "*" ? configExtensions.Split('|') : null;
-
             IsDeduplicationActive = GetConfigValue(
                 "JARVIS_DOCUMENTSTORE_DEDUPLICATION",
                 "on"
@@ -41,7 +40,11 @@ namespace Jarvis.DocumentStore.Core.Services
 
         public string GetPathToLibreOffice()
         {
-            return GetConfigValue("LIBREOFFICE_PATH");
+            var libreOffice = GetConfigValue("LIBREOFFICE_PATH");
+            if(String.IsNullOrWhiteSpace(libreOffice))
+                throw new Exception("Please set LIBREOFFICE_PATH in app.config or env variable");
+
+            return libreOffice;
         }
 
         public string GetPathToJava()

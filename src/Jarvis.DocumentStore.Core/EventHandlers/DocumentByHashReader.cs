@@ -33,7 +33,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             return _reader.Collection
                 .Find(Query<DocumentReadModel>.EQ(x => x.Hash, hash))
-                .SetSnapshot()
+                .SetSortOrder(SortBy<DocumentReadModel>.Ascending(x=>x.SequenceNumber))
                 .Select(x => new Match(x.Id, x.GetOriginalBlobId()));
         }
     }

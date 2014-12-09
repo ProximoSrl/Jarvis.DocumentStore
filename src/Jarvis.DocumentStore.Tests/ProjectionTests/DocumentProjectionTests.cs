@@ -38,7 +38,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void SetUp()
         {
             var config = new DocumentStoreTestConfiguration();
-            MongoDbTestConnectionProvider.DropTenant1();
+            MongoDbTestConnectionProvider.DropAll();
+            
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _documentStoreService.Start(config);
 
@@ -121,22 +122,23 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public async void should_deduplicate_twice()
         {
-            CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
-            CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
-            CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
+            CreateDocument(9, "handle", TestConfig.PathToDocumentPdf);
+            CreateDocument(10, "handle", TestConfig.PathToDocumentPdf);
+            CreateDocument(11, "handle", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
 
-            var original = _documentReader.FindOneById(new DocumentId(1));
-            Assert.IsNotNull(original);
-            
-            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
-            Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentId(1));
+            var original = _documentReader.FindOneById(new DocumentId(9));
+            var copy = _documentReader.FindOneById(new DocumentId(10));
+            var copy2 = _documentReader.FindOneById(new DocumentId(11));
 
-            var copy = _documentReader.FindOneById(new DocumentId(2));
+            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
+
+            Assert.IsNotNull(original);
             Assert.IsNull(copy);
-            copy = _documentReader.FindOneById(new DocumentId(3));
-            Assert.IsNull(copy);
+            Assert.IsNull(copy2);
+            
+            Assert.IsNotNull(handle);
+            Assert.AreEqual(handle.DocumentId, new DocumentId(9));
         }       
         
         [Test]

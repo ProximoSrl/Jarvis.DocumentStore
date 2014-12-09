@@ -1,4 +1,7 @@
+using System;
 using System.Linq;
+using System.Threading;
+using Castle.Core.Logging;
 using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle;
@@ -58,7 +61,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
     public class HandleWriter : IHandleWriter
     {
+        public ILogger Logger
+        {
+            get { return _logger; }
+            set { _logger = value; }
+        }
+
         readonly MongoCollection<HandleReadModel> _collection;
+        private ILogger _logger = NullLogger.Instance;
 
         public HandleWriter(MongoDatabase readModelDb)
         {
@@ -67,10 +77,13 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void Promise(DocumentHandle handle, long createdAt)
         {
+            Logger.DebugFormat("Promise on handle {0} [{1}]", handle, createdAt);
             var args = new FindAndModifyArgs
             {
-                Query = Query<HandleReadModel>
-                    .EQ(x => x.Handle, handle), 
+                Query = Query.And(
+                    Query<HandleReadModel>.EQ(x => x.Handle, handle),
+                    Query<HandleReadModel>.LT(x => x.ProjectedAt, createdAt)
+                ),
                 Update = Update<HandleReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
@@ -79,11 +92,20 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .Set(x=>x.FileName, null),
                 Upsert = true
             };
-            _collection.FindAndModify(args);
+            
+            try
+            {
+                _collection.FindAndModify(args);
+            }
+            catch (MongoCommandException ex)
+            {
+                Logger.WarnFormat("update to handle {0} failed (concurrency): {1}", handle, ex.Message);
+            }
         }
 
         public void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt)
         {
+            Logger.DebugFormat("SetFilename on handle {0} [{1}]", handle, projectedAt);
             var args = new FindAndModifyArgs
             {
                 Query = Query.And(
@@ -99,6 +121,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void LinkDocument(DocumentHandle handle, DocumentId id, long projectedAt)
         {
+            Logger.DebugFormat("LinkDocument on handle {0} [{1}]", handle, projectedAt);
+
             var args = new FindAndModifyArgs
             {
                 Query = Query.And(
@@ -114,6 +138,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void UpdateCustomData(DocumentHandle handle, HandleCustomData customData)
         {
+            Logger.DebugFormat("UpdateCustomData on handle {0}", handle);
             var args = new FindAndModifyArgs
             {
                 Query = Query.And(
@@ -127,6 +152,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void Delete(DocumentHandle handle, long projectedAt)
         {
+            Logger.DebugFormat("Delete on handle {0} [{1}]", handle, projectedAt);
             var args = new FindAndRemoveArgs()
             {
                 Query = Query.And(
@@ -143,6 +169,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void CreateIfMissing(DocumentHandle handle, long createdAt)
         {
+            Logger.DebugFormat("CreateIfMissing on handle {0} [{1}]", handle, createdAt);
             var args = new FindAndModifyArgs
             {
                 Query = Query<HandleReadModel>

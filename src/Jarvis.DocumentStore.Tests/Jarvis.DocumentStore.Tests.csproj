@@ -170,6 +170,7 @@
     <Compile Include="PipelineTests\TestConfig.cs" />
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
     <Compile Include="ProjectionTests\HandleProjectionTests.cs" />
+    <Compile Include="ProjectionTests\HandleWriterTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServicesTests\EnhancedFileStoreTests.cs" />

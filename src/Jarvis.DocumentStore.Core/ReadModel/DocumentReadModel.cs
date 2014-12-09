@@ -32,13 +32,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public FileHash Hash { get; set; }        
         public int FormatsCount { get; set; }
+        public long SequenceNumber { get; set; }
 
         public DocumentReadModel(DocumentId id, BlobId blobId)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
             this.Handles = new HashSet<DocumentHandle>();
             this.Id = id;
-
+            this.SequenceNumber = id.Id;
             AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), blobId);
         }
 
