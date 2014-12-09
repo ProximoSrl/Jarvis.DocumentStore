@@ -71,6 +71,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                 new FileHash("1234abcd"),
                 new FileNameWithExtension("a","file")
             ));
+            Thread.Sleep(50);
         }
 
         [Test]
@@ -123,11 +124,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public async void should_deduplicate_twice()
         {
             CreateDocument(9, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(100);
             CreateDocument(10, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(100);
             CreateDocument(11, "handle", TestConfig.PathToDocumentPdf);
-            Thread.Sleep(100);
             await _projections.UpdateAndWait();
 
             var original = _documentReader.FindOneById(new DocumentId(9));
