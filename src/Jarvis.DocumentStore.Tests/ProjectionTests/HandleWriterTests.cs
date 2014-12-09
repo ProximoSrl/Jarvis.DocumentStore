@@ -17,7 +17,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
     {
         private IHandleWriter _writer;
         private DocumentHandle _handle = new DocumentHandle("handle_1");
-        private DocumentId _documentId = new DocumentId(1);
+        private DocumentId _doc1 = new DocumentId(1);
+        private DocumentId _doc2 = new DocumentId(2);
         private DocumentStoreBootstrapper _documentStoreService;
 
         [SetUp]
@@ -47,10 +48,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             _writer.Promise(_handle, 1);
             _writer.CreateIfMissing(_handle, 1);
-            _writer.LinkDocument(_handle, _documentId, 2);
+            _writer.LinkDocument(_handle, _doc1, 2);
 
             var h = _writer.FindOneById(_handle);
-            Assert.AreEqual(_documentId, h.DocumentId);
+            Assert.AreEqual(_doc1, h.DocumentId);
         }
 
         [Test]
@@ -58,21 +59,54 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             _writer.CreateIfMissing(_handle, 1);
             _writer.Promise(_handle, 1);
-            _writer.LinkDocument(_handle, _documentId, 2);
+            _writer.LinkDocument(_handle, _doc1, 2);
         
             var h = _writer.FindOneById(_handle);
-            Assert.AreEqual(_documentId, h.DocumentId);
+            Assert.AreEqual(_doc1, h.DocumentId);
         }
 
         [Test]
         public void with_link_and_promise_handle_should_be_linked_to_document_1()
         {
             _writer.CreateIfMissing(_handle, 1);
-            _writer.LinkDocument(_handle, _documentId, 2);
+            _writer.LinkDocument(_handle, _doc1, 2);
             _writer.Promise(_handle, 1);
         
             var h = _writer.FindOneById(_handle);
-            Assert.AreEqual(_documentId, h.DocumentId);
+            Assert.AreEqual(_doc1, h.DocumentId);
+        }   
+        
+        [Test]
+        public void promise_should_set_document_id_equals_to_null()
+        {
+            _writer.CreateIfMissing(_handle, 1);
+            _writer.LinkDocument(_handle, _doc1, 2);
+            _writer.Promise(_handle, 1);
+
+            _writer.Promise(_handle, 3);
+
+            var h = _writer.FindOneById(_handle);
+            Assert.IsNull(h.DocumentId);
+        }
+
+        [Test]
+        public void first_promise_should_create_handle()
+        {
+            _writer.Promise(_handle, 1);
+            var h = _writer.FindOneById(_handle);
+            Assert.NotNull(h);
+        }
+
+        [Test]
+        public void second_promise_should_unlink_document()
+        {
+            _writer.Promise(_handle, 1);
+            _writer.LinkDocument(_handle, _doc1, 2);
+            _writer.Promise(_handle, 3);
+
+            var h = _writer.FindOneById(_handle);
+            Assert.NotNull(h);
+            Assert.IsNull(h.DocumentId);
         }
     }
 }

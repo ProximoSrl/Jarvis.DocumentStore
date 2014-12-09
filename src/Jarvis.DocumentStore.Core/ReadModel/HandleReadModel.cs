@@ -90,12 +90,20 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .Set(x => x.DocumentId, null)
                     .Set(x=>x.CreatetAt, createdAt)
                     .Set(x=>x.FileName, null),
-                Upsert = true
+                Upsert = true,
+                VersionReturned = FindAndModifyDocumentVersion.Modified
             };
             
             try
             {
-                _collection.FindAndModify(args);
+                var result = _collection.FindAndModify(args);
+
+                if (Logger.IsDebugEnabled)
+                {
+                    Logger.DebugFormat("Promise on handle {0} [{1}] : {2}", handle, createdAt,
+                        result.ModifiedDocument != null ? result.ModifiedDocument.ToJson() : "null");
+                }
+
             }
             catch (MongoCommandException ex)
             {
@@ -131,9 +139,16 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 ),
                 Update = Update<HandleReadModel>
                     .Set(x => x.DocumentId, id)
-                    .Set(x => x.ProjectedAt, projectedAt)
+                    .Set(x => x.ProjectedAt, projectedAt),
+                VersionReturned = FindAndModifyDocumentVersion.Modified
             };
-            _collection.FindAndModify(args);
+            var result = _collection.FindAndModify(args);
+            
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.DebugFormat("LinkDocument on handle {0} [{1}] : {2}", handle, projectedAt,
+                    result.ModifiedDocument != null ? result.ModifiedDocument.ToJson() : "null");
+            }
         }
 
         public void UpdateCustomData(DocumentHandle handle, HandleCustomData customData)
