@@ -53,8 +53,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 Documents = documents,
                 DocBytes = bytes,
                 Handles = Handles.Count(),
-                Files = files,
-                Jobs = 444
+                Files = files
             };
 
             return Ok(stats);

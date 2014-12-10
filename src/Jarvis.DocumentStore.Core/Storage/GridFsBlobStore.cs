@@ -24,6 +24,19 @@ namespace Jarvis.DocumentStore.Core.Storage
         {
             _database = database;
             _counterService = counterService;
+
+            LoadFormatsFromDatabase();
+        }
+
+        private void LoadFormatsFromDatabase()
+        {
+            var cnames = _database.GetCollectionNames().ToArray();
+            var names = cnames.Where(x => x.EndsWith(".files")).Select(x => x.Substring(0, x.LastIndexOf(".files"))).ToArray();
+
+            foreach (var name in names)
+            {
+                GetGridFsByFormat(new DocumentFormat(name));
+            }
         }
 
         public IBlobWriter CreateNew(DocumentFormat format, FileNameWithExtension fname)
