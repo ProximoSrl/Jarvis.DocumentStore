@@ -16,7 +16,7 @@
             .state('dashboard', {
                 url: "/dashboard",
                 templateUrl: "dashboard/dashboard.html",
-                controller: "Dashboard as dashboard",
+                controller: "DashboardController as dashboard",
                 data : { pageTitle: 'Dashboard', description: 'metrics' }
             })
             .state('logs', {

@@ -57,6 +57,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         IQueryable<HandleReadModel> AllSortedByHandle { get;}
         void CreateIfMissing(DocumentHandle handle,long createdAt);
         void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
+        long Count();
     }
 
     public class HandleWriter : IHandleWriter
@@ -125,6 +126,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .Set(x => x.ProjectedAt, projectedAt)
             };
             _collection.FindAndModify(args);
+        }
+
+        public long Count()
+        {
+            return _collection.Count();
         }
 
         public void LinkDocument(DocumentHandle handle, DocumentId id, long projectedAt)

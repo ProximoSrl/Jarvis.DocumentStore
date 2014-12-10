@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [SetUp]
         public void SetUp()
         {
-            MongoDbTestConnectionProvider.DropTenant1();
+            MongoDbTestConnectionProvider.DropTestsTenant();
 
             _blobStore = new GridFsBlobStore(MongoDbTestConnectionProvider.OriginalsDb, new InMemoryCounterService())
             {

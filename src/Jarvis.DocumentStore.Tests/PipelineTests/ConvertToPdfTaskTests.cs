@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            MongoDbTestConnectionProvider.DropTenant1();
+            MongoDbTestConnectionProvider.DropTestsTenant();
 
             _mapping["docx"] = TestConfig.PathToWordDocument;
             _mapping["xlsx"] = TestConfig.PathToExcelDocument;

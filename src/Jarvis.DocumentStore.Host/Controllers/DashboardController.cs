@@ -27,6 +27,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public IBlobStore BlobStore{ get; set; }
         public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
+        public IHandleWriter Handles { get; set; }
 
         [HttpGet]
         [Route("{tenantId}/dashboard")]
@@ -48,9 +49,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             var stats = new
             {
+                Tenant = tenantId,
                 Documents = documents,
                 DocBytes = bytes,
-//                Handles = Handles.AllUnsorted.LongCount(),
+                Handles = Handles.Count(),
                 Files = files,
                 Jobs = 444
             };

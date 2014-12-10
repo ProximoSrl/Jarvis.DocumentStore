@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void SetUp()
         {
             var config = new DocumentStoreTestConfiguration();
-            MongoDbTestConnectionProvider.DropAll();
+            MongoDbTestConnectionProvider.DropTestsTenant();
 
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _documentStoreService.Start(config);

@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Tests.Support
         public static MongoDatabase EventsDb { get; private set; }
         public static MongoDatabase ReadModelDb { get; private set; }
 
-        public static void DropTenant1()
+        public static void DropTestsTenant()
         {
             OriginalsDb.Drop();
             ArtifactsDb.Drop();

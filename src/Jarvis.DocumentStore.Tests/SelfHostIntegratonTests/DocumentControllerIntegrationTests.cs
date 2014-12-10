@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void SetUp()
         {
             var config = new DocumentStoreTestConfiguration();
-            MongoDbTestConnectionProvider.DropTenant1();
+            MongoDbTestConnectionProvider.DropTestsTenant();
 
             _documentStoreService = new DocumentStoreBootstrapper(TestConfig.ServerAddress);
             _documentStoreService.Start(config);

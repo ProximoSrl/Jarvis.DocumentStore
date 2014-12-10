@@ -49,7 +49,7 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         [SetUp]
         public void SetUp()
         {
-            MongoDbTestConnectionProvider.DropTenant1();
+            MongoDbTestConnectionProvider.DropTestsTenant();
 
             _fs = new GridFsBlobStore
             (
