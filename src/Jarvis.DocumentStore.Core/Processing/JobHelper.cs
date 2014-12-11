@@ -114,7 +114,13 @@ namespace Jarvis.DocumentStore.Core.Processing
 
         public void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
-            var job = GetBuilderForJob<ExtractTextWithTikaJob>()
+            JobBuilder builder = null;
+            if(_config.UseEmbeddedTika)
+                builder = GetBuilderForJob<ExtractTextWithTikaNetJob>();
+            else
+                builder = GetBuilderForJob<ExtractTextWithTikaJob>();
+
+            var job = builder
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
                 .UsingJobData(JobKeys.BlobId, blobId)

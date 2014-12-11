@@ -29,9 +29,15 @@ namespace Jarvis.DocumentStore.Core.Services
                 "JARVIS_DOCUMENTSTORE_DEDUPLICATION",
                 "on"
             ).ToLowerInvariant() == "on";
+
+            UseEmbeddedTika = GetConfigValue(
+                "JARVIS_DOCUMENTSORE_TIKAEMBEDDED", 
+                "true"
+            ).ToLowerInvariant() =="true";
         }
 
         public bool IsDeduplicationActive { get; private set; }
+        public bool UseEmbeddedTika { get; private set; }
 
         public ImageSizeInfo[] GetDefaultSizes()
         {
