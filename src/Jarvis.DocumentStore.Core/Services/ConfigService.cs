@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Core.Services
             ).ToLowerInvariant());
 
             var configExtensions = GetConfigValue(
-                "JARVIS_IMGSRVCS_ALLOWED_FILE_TYPES",
+                "JARVIS_DOCUMENTSTORE_ALLOWED_FILE_TYPES",
                 "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png"
                 ).ToLowerInvariant();
 
@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Core.Services
             ).ToLowerInvariant() == "on";
 
             UseEmbeddedTika = GetConfigValue(
-                "JARVIS_DOCUMENTSORE_TIKAEMBEDDED", 
+                "JARVIS_DOCUMENTSTORE_TIKA_EMBEDDED", 
                 "true"
             ).ToLowerInvariant() =="true";
         }
