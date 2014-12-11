@@ -24,6 +24,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [SetUp]
         public void SetUp()
         {
+            BsonClassMapHelper.Clear();
+
             var config = new DocumentStoreTestConfiguration();
             MongoDbTestConnectionProvider.DropTestsTenant();
 
