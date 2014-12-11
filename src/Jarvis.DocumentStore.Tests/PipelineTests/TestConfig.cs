@@ -116,5 +116,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
 
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }
+
+        public static string ReadLangFile(string expectedLang)
+        {
+            var pathToFile = Path.Combine(DocumentsFolder, "lang", expectedLang + ".txt");
+            return File.ReadAllText(pathToFile);
+        }
     }
 }

@@ -154,6 +154,15 @@
     <Reference Include="IKVM.Runtime.JNI">
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
     </Reference>
+    <Reference Include="IvanAkcheurov.Commons">
+      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.Commons.dll</HintPath>
+    </Reference>
+    <Reference Include="IvanAkcheurov.NClassify">
+      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NClassify.dll</HintPath>
+    </Reference>
+    <Reference Include="IvanAkcheurov.NTextCat.Lib">
+      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NTextCat.Lib.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
@@ -260,10 +269,13 @@
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="EventHandlers\StreamHelper.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
-    <Compile Include="Jobs\CleanupJob.cs" />
-    <Compile Include="Jobs\CommandRunnerJob.cs" />
+    <Compile Include="Jobs\AbstractTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
+    <Compile Include="Processing\Analyzers\LanguageAnalyzer.cs" />
+    <Compile Include="Processing\Conversions\TikaNetAnalyzer.cs" />
+    <Compile Include="Jobs\CleanupJob.cs" />
+    <Compile Include="Jobs\CommandRunnerJob.cs" />
     <Compile Include="Jobs\HtmlToPdfJob.cs" />
     <Compile Include="Jobs\ISystemJob.cs" />
     <Compile Include="Jobs\ITenantJob.cs" />

@@ -270,6 +270,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\Core14.profile.xml">
+      <Link>Core14.profile.xml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="app\app.js" />
     <Content Include="app\dashboard\dashboard.html" />
     <Content Include="app\dashboard\dashboardModule.js" />
