@@ -16,19 +16,17 @@
             "jobs": 0
         };
 
-        dashboardData.getMeters().then(function (d) {
-            vm.meters = d;
+        var update = function() {
+            dashboardData.getMeters().then(function(d) {
+                vm.meters = d;
+            });
+        };
+
+        update();
+        var stop = $interval(update, 10000);
+
+        $scope.$on('$destroy', function () {
+            $interval.cancel(stop);
         });
-
-        /* */
-        //var stop = $interval(function () {
-        //    dashboardData.getMeters().then(function (d) {
-        //        vm.meters = d;
-        //    });
-        //}, 2500);
-
-        //$scope.$on('$destroy', function () {
-        //    $interval.cancel(stop);
-        //});
     }
 })(window, window.angular);

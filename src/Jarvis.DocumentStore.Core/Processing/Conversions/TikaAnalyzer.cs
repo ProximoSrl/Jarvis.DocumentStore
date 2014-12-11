@@ -5,7 +5,12 @@ using Jarvis.DocumentStore.Core.Services;
 
 namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
-    public class TikaAnalyzer
+    public interface ITikaAnalyzer
+    {
+        string GetHtmlContent(string pathToInputFile);
+    }
+
+    public class TikaAnalyzer : ITikaAnalyzer
     {
         public TikaAnalyzer(ConfigService configService)
         {
@@ -15,7 +20,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
         public ILogger Logger { get; set; }
         private ConfigService ConfigService { get; set; }
 
-        public void Run(string pathToInputFile, Action<string> writer)
+        public string GetHtmlContent(string pathToInputFile)
         {
             string pathToJavaExe = ConfigService.GetPathToJava();
 
@@ -36,6 +41,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
                 WindowStyle = ProcessWindowStyle.Minimized
             };
 
+            string content = null;
             using (var p = Process.Start(psi))
             {
                 //
@@ -43,12 +49,13 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
                 //
                 using (var reader = p.StandardOutput)
                 {
-                    var content = reader.ReadToEnd();
-                    writer(content);
+                    content = reader.ReadToEnd();
                 }
 
                 p.WaitForExit();
             }
+
+            return content;
         }
     }
 }

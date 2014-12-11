@@ -20,8 +20,7 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 
 namespace Jarvis.DocumentStore.Tests.JobTests
 {
-    [TestFixture(Category = "jobs")]
-    public class ExtractTextWithTikaJobTest : AbstractJobTest
+    public abstract class AbstractTikaJobTest : AbstractJobTest
     {
         [Test]
         public void should_extract_html_from_pdf()
@@ -29,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             ConfigureFileDownload("pdf", TestConfig.PathToDocumentPdf);
             SetupCreateNew(new BlobId(DocumentFormats.Content,1));
 
-            var job = BuildJob<ExtractTextWithTikaJob>();
+            var job = BuildTikaJob();
 
             job.Execute(AbstractJobTest.BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
@@ -46,7 +45,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             ConfigureFileDownload("doc", TestConfig.PathToMultipageWordDocument);
             var stream = SetupCreateNew(new BlobId(DocumentFormats.Content,1));
 
-            var job = BuildJob<ExtractTextWithTikaJob>();
+            var job = BuildTikaJob();
 
             job.Execute(AbstractJobTest.BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
@@ -62,6 +61,26 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             Assert.NotNull(content);
             Assert.AreEqual(1, content.Pages.Length);
             Assert.IsTrue(content.Metadata.Any(x=>x.Name == DocumentContent.MetadataWithoutPageInfo));
+        }
+
+        protected abstract AbstractTikaJob BuildTikaJob();
+    }
+
+    [TestFixture(Category = "jobs")]
+    public class ExtractTextWithTikaJobTest : AbstractTikaJobTest
+    {
+        protected override AbstractTikaJob BuildTikaJob()
+        {
+            return BuildJob<ExtractTextWithTikaJob>();
+        }
+    }
+
+    [TestFixture(Category = "jobs")]
+    public class ExtractTextWithTikaNetJobTest : AbstractTikaJobTest
+    {
+        protected override AbstractTikaJob BuildTikaJob()
+        {
+            return BuildJob<ExtractTextWithTikaJob>();
         }
     }
 }
