@@ -84,7 +84,7 @@ namespace Jarvis.DocumentStore.Core.Support
             config["quartz.scheduler.instanceName"] = QuartzMongoConfiguration.Name;
             config["quartz.scheduler.instanceId"] = Environment.MachineName + "-" + DateTime.Now.ToShortTimeString();
             config["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
-            config["quartz.threadPool.threadCount"] = Environment.ProcessorCount.ToString();
+            config["quartz.threadPool.threadCount"] = (Environment.ProcessorCount *2).ToString();
             config["quartz.threadPool.threadPriority"] = "Normal";
             config["quartz.jobStore.type"] = "Quartz.Impl.MongoDB.JobStore, Quartz.Impl.MongoDB";
             return config;
