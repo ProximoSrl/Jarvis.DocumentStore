@@ -13,6 +13,7 @@ namespace Jarvis.DocumentStore.Core.Processing
     public class JobHelper : IJobHelper
     {
         readonly IScheduler _scheduler;
+
         readonly ConfigService _config;
 
         public JobHelper(IScheduler scheduler, ConfigService config)

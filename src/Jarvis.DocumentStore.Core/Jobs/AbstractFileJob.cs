@@ -27,13 +27,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
         
         public void Execute(IJobExecutionContext context)
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
+            var jobDataMap = context.MergedJobDataMap;
             PipelineId = new PipelineId(jobDataMap.GetString(JobKeys.PipelineId));
 
             InputDocumentId = new DocumentId(jobDataMap.GetString(JobKeys.DocumentId));
             InputBlobId = new BlobId(jobDataMap.GetString(JobKeys.BlobId));
             InputDocumentFormat = new DocumentFormat(jobDataMap.GetString(JobKeys.Format));
-
+            TenantId = TenantId ?? new TenantId(jobDataMap.GetString(JobKeys.TenantId));
             if (TenantId == null)
                 throw new Exception("tenant not set!");
 
