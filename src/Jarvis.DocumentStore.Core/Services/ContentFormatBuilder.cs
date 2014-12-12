@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Core.Services
             for (int i = 0; i < pages.Length; i++)
             {
                 var page = pages[i];
-                pagesList.Add(new DocumentContent.DocumentPage(i, page.TextContent));
+                pagesList.Add(new DocumentContent.DocumentPage(i+1, page.TextContent));
             }
 
             if (pages.Length == 0)

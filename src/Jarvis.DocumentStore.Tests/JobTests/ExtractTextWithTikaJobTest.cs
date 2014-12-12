@@ -46,6 +46,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
 
             Assert.NotNull(content);
             Assert.AreEqual(1, content.Pages.Length);
+            Assert.AreEqual(1, content.Pages[0].PageNumber);
             Assert.IsTrue(content.Metadata.Any(x=>x.Name == DocumentContent.MetadataWithoutPageInfo));
         }
 
@@ -78,6 +79,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
 
             Assert.NotNull(content);
             Assert.AreEqual(1, content.Pages.Length);
+            Assert.AreEqual(1, content.Pages[0].PageNumber);
             var language = content.SafeGetMetadata(DocumentContent.MedatataLanguage);
             Assert.AreEqual("ita", language);
         }
@@ -89,6 +91,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests
 
             Assert.NotNull(content);
             Assert.AreEqual(1, content.Pages.Length);   // DOCX is single page content
+            Assert.AreEqual(1, content.Pages[0].PageNumber);
             var language = content.SafeGetMetadata(DocumentContent.MedatataLanguage);
             Assert.AreEqual("ita", language);
         }
@@ -100,6 +103,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests
 
             Assert.NotNull(content);
             Assert.AreEqual(2, content.Pages.Length);   // PDF has pages info
+            Assert.AreEqual(1, content.Pages[0].PageNumber);
+            Assert.AreEqual(2, content.Pages[1].PageNumber);
             var language = content.SafeGetMetadata(DocumentContent.MedatataLanguage);
             Assert.AreEqual("eng", language);
         }
