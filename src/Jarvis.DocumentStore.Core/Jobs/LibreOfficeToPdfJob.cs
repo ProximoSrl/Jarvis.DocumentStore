@@ -12,6 +12,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
     /// <summary>
     /// Converts a file to pdf using headless libreoffice
     /// </summary>
+    [DisallowConcurrentExecution]
     public class LibreOfficeToPdfJob : AbstractFileJob
     {
         readonly ILibreOfficeConversion _libreOfficeConversion;
