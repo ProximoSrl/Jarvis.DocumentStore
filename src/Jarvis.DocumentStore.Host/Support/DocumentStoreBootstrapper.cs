@@ -49,7 +49,7 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 new CoreInstaller(config),
                 new EventStoreInstaller(manager),
-                new SchedulerInstaller(config.QuartzConnectionString, config.IsWorker)
+                new SchedulerInstaller(config.QuartzConnectionString, false)
             };
 
             _logger.Debug("Configured Scheduler");
@@ -63,7 +63,6 @@ namespace Jarvis.DocumentStore.Host.Support
             }
 
             _container.Install(installers.ToArray());
-
             foreach (var tenant in manager.Tenants)
             {
                 var tenantInstallers = new List<IWindsorInstaller>
@@ -83,12 +82,26 @@ namespace Jarvis.DocumentStore.Host.Support
                 
                 tenant.Container.Install(tenantInstallers.ToArray());
             }
+
+            foreach (var act in _container.ResolveAll<IStartupActivity>())
+            {
+                _logger.DebugFormat("Starting activity: {0}", act.GetType().FullName);
+                try
+                {
+                    act.Start();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorFormat(ex, "Shutting down {0}", act.GetType().FullName);
+                }
+            }
         }
 
         void BuildContainer(DocumentStoreConfiguration config)
         {
             _container = new WindsorContainer();
             ContainerAccessor.Instance = _container;
+            _container.Register(Component.For<DocumentStoreConfiguration>().Instance(config));
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
 
@@ -99,6 +112,7 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.AddFacility<TypedFactoryFacility>();
 
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
+
         }
 
         TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)

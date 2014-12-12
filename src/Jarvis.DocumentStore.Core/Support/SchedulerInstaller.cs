@@ -46,7 +46,11 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<IShutdownActivity>()
                     .ImplementedBy<SchedulerShutdown>()
-                    .Named("SchedulerShoutdown")
+                    .Named("SchedulerShutdown"),
+                Component
+                    .For<IStartupActivity>()
+                    .ImplementedBy<SchedulerStartup>()
+                    .Named("SchedulerStartup")
             );
 
             var scheduler = container.Resolve<IScheduler>();

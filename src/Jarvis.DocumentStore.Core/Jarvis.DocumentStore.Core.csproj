@@ -336,6 +336,8 @@
     <Compile Include="Storage\IBlobStore.cs" />
     <Compile Include="Storage\IBlobDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
+    <Compile Include="Support\IStartupActivity.cs" />
+    <Compile Include="Support\SchedulerStartup.cs" />
     <Compile Include="Support\TenantCoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
     <Compile Include="Support\DocumentStoreConfiguration.cs" />
