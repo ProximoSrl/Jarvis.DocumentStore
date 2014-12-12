@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
+using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
@@ -29,6 +30,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
         public IHandleWriter Handles { get; set; }
 
+        public JobStats JobStats { get; set; }
+
         [HttpGet]
         [Route("{tenantId}/dashboard")]
         public IHttpActionResult GetStats(TenantId tenantId)
@@ -46,14 +49,19 @@ namespace Jarvis.DocumentStore.Host.Controllers
             long bytes = result != null ? result["bytes"].AsInt64 : 0;
             long files = totals != null ? totals.Files : 0;
 
+            var triggerStats = this.JobStats.GetTriggerStats();
 
             var stats = new
             {
                 Tenant = tenantId,
-                Documents = documents,
-                DocBytes = bytes,
-                Handles = Handles.Count(),
-                Files = files
+                Docs = new
+                {
+                    Documents = documents,
+                    DocBytes = bytes,
+                    Handles = Handles.Count(),
+                    Files = files
+                },
+                Triggers = triggerStats
             };
 
             return Ok(stats);

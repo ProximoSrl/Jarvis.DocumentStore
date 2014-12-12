@@ -15,10 +15,13 @@
             "files": 0,
             "jobs": 0
         };
+        vm.triggers = [];
 
         var update = function() {
-            dashboardData.getMeters().then(function(d) {
-                vm.meters = d;
+            dashboardData.getMeters().then(function (d) {
+                console.log('meters', d);
+                vm.meters = d.docs;
+                vm.triggers = d.triggers;
             });
         };
 

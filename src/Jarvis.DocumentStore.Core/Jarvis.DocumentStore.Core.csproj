@@ -272,6 +272,7 @@
     <Compile Include="Jobs\AbstractTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
+    <Compile Include="Jobs\JobStats.cs" />
     <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
     <Compile Include="Processing\Conversions\TikaNetAnalyzer.cs" />
     <Compile Include="Jobs\CleanupJob.cs" />

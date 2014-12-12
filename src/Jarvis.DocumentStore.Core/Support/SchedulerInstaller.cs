@@ -51,10 +51,17 @@ namespace Jarvis.DocumentStore.Core.Support
 
             var scheduler = container.Resolve<IScheduler>();
 
+            MongoDatabase quartzDb = GetSchedulerDb();
             scheduler.ListenerManager.AddJobListener(new JobsListener(
                 container.Resolve<IExtendedLogger>(),
-                GetSchedulerDb()
+                quartzDb
             ));
+
+            container.Register(
+                Component
+                    .For<JobStats>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(quartzDb))
+            );
 
             if (_autoStart)
                 scheduler.Start();
@@ -70,7 +77,7 @@ namespace Jarvis.DocumentStore.Core.Support
         IDictionary<string,string> CreateDefaultConfiguration()
         {
             var config = new Dictionary<string, string>();
-            config["quartz.scheduler.instanceName"] = "jarvis.documentstore";
+            config["quartz.scheduler.instanceName"] = QuartzMongoConfiguration.Name;
             config["quartz.scheduler.instanceId"] = Environment.MachineName + "-" + DateTime.Now.ToShortTimeString();
             config["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
             config["quartz.threadPool.threadCount"] = Environment.ProcessorCount.ToString();

@@ -42,7 +42,7 @@
         <div class="small-box bg-yellow">
             <div class="inner">
                 <h3>
-                   &nbsp; {{dashboard.meters.files}}
+                    &nbsp; {{dashboard.meters.files}}
                 </h3>
                 <p>
                     Files (documents  + formats)
@@ -75,4 +75,30 @@
             </a>
         </div>
     </div><!-- ./col -->
+</div><!-- /.row -->
+
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th colspan="2">Triggers</th>
+                </tr>
+                <tr>
+                    <th>
+                        Status
+                    </th>
+                    <th>
+                        Count
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="t in dashboard.triggers">
+                    <td>{{t.status}}</td>
+                    <td>{{t.count}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div><!-- /.row -->

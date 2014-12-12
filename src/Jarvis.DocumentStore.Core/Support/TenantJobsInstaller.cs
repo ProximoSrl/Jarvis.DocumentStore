@@ -1,4 +1,5 @@
 using System;
+using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
@@ -35,8 +36,15 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<CreateImageFromPdfTask>()
                     .LifestyleTransient()
                 );
-        
-            SetupCleanupJob(container.Resolve<IScheduler>());
+
+            try
+            {
+                SetupCleanupJob(container.Resolve<IScheduler>());
+            }
+            catch (Exception ex)
+            {
+                container.Resolve<ILogger>().ErrorFormat(ex, "SetupCleanupJob");
+            }
         }
 
         void SetupCleanupJob(IScheduler scheduler)
