@@ -17,11 +17,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
     {
         public sealed class TriggerStatInfo
         {
+            public string Group { get; private set; }
             public string Status { get; private set; }
             public long Count { get; private set; }
 
-            public TriggerStatInfo(string status, long count)
+            public TriggerStatInfo(string group, string status, long count)
             {
+                Group = group;
                 Status = status;
                 Count = count;
             }
@@ -34,7 +36,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             _aggregation = new AggregateArgs()
             {
-                Pipeline = new[] { BsonDocument.Parse("{$group : {_id :'$State', count : {$sum:1}}}") }
+                Pipeline = new[] { BsonDocument.Parse("{$group : {_id : { g : '$JobGroup', s:'$State'}, c : {$sum:1}}}") }
             };
             _collection = db.GetCollection(QuartzMongoConfiguration.Name + ".Triggers");
         }
@@ -42,10 +44,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public TriggerStatInfo[] GetTriggerStats()
         {
             return _collection.Aggregate(_aggregation).Select(x => new TriggerStatInfo(
-                x["_id"].AsString, 
-                x["count"].AsInt32
+                x["_id"]["g"].AsString, 
+                x["_id"]["s"].AsString, 
+                x["c"].AsInt32
                 )
-            ).ToArray();
+            ).OrderBy(x=>x.Group).ThenBy(x=>x.Status).ToArray();
         }
     }
 }

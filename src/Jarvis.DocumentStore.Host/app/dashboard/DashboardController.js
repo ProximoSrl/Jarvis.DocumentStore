@@ -16,12 +16,17 @@
             "jobs": 0
         };
         vm.triggers = [];
+        vm.totTriggers = 0;
 
         var update = function() {
             dashboardData.getMeters().then(function (d) {
                 console.log('meters', d);
                 vm.meters = d.docs;
                 vm.triggers = d.triggers;
+                vm.totTriggers = 0;
+                angular.forEach(d.triggers, function(t) {
+                    vm.totTriggers += t.count;
+                });
             });
         };
 

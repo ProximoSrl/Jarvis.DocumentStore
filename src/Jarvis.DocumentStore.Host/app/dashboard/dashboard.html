@@ -82,9 +82,12 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th colspan="2">Triggers</th>
+                    <th colspan="3">Triggers</th>
                 </tr>
                 <tr>
+                    <th>
+                        Group
+                    </th>
                     <th>
                         Status
                     </th>
@@ -95,10 +98,18 @@
             </thead>
             <tbody>
                 <tr ng-repeat="t in dashboard.triggers">
+                    <td>{{t.group}}</td>
                     <td>{{t.status}}</td>
                     <td>{{t.count}}</td>
                 </tr>
             </tbody>
+            <tfoot>
+                <tr>
+                    <th>Total </th>
+                    <td>&nbsp;</td>
+                    <th>{{dashboard.totTriggers}}</th>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div><!-- /.row -->
