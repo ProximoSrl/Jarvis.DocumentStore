@@ -28,8 +28,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                 text = TestConfig.ReadLangFile(text.Substring(1));
             }
 
-            var analyzer = new LanguageAnalyzer();
-            var lang = analyzer.GetLanguage(text);
+            var lang = LanguageDetector.GetLanguage(text);
 
             Assert.AreEqual(expectedLang, lang);
         }

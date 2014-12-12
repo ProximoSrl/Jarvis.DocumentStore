@@ -290,6 +290,8 @@
     <None Include="Docs\Architecture_files\css" />
     <None Include="Docs\Document_copy.pdf" />
     <None Include="Docs\Lorem ipsum.pdf" />
+    <None Include="Docs\Multilanguage.docx" />
+    <None Include="Docs\Multilanguage.pdf" />
     <None Include="Docs\Multipage Word.docx" />
     <None Include="Docs\Powerpoint show.ppsx" />
     <None Include="Docs\RTF Document.rtf" />

@@ -29,6 +29,16 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Document_Copy.pdf"); }
         }
 
+        public static string PathToMultilanguageDocx
+        {
+            get { return Path.Combine(DocumentsFolder, "Multilanguage.docx"); }
+        }
+
+        public static string PathToMultilanguagePdf
+        {
+            get { return Path.Combine(DocumentsFolder, "Multilanguage.pdf"); }
+        }
+
         public static string PathToEml
         {
             get { return Path.Combine(DocumentsFolder, "eml sample.eml"); }
@@ -117,10 +127,16 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }
 
-        public static string ReadLangFile(string expectedLang)
+        public static string PathToLangFile(string lang)
         {
-            var pathToFile = Path.Combine(DocumentsFolder, "lang", expectedLang + ".txt");
-            return File.ReadAllText(pathToFile);
+            var pathToFile = Path.Combine(DocumentsFolder, "lang", lang + ".txt");
+            return pathToFile;
+        }
+
+        public static string ReadLangFile(string lang)
+        {
+
+            return File.ReadAllText(PathToLangFile(lang));
         }
     }
 }

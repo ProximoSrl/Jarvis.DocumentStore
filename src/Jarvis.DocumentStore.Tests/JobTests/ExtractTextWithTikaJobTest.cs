@@ -42,12 +42,22 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         [Test]
         public void should_extract_html_from_doc()
         {
-            ConfigureFileDownload("doc", TestConfig.PathToMultipageWordDocument);
-            var stream = SetupCreateNew(new BlobId(DocumentFormats.Content,1));
+            var content = RunJob(TestConfig.PathToMultipageWordDocument);
+
+            Assert.NotNull(content);
+            Assert.AreEqual(1, content.Pages.Length);
+            Assert.IsTrue(content.Metadata.Any(x=>x.Name == DocumentContent.MetadataWithoutPageInfo));
+        }
+
+        private DocumentContent RunJob(string pathToFile)
+        {
+            ConfigureFileDownload("doc", pathToFile);
+            var stream = SetupCreateNew(new BlobId(DocumentFormats.Content, 1));
 
             var job = BuildTikaJob();
 
-            job.Execute(AbstractJobTest.BuildContext(job, new Dictionary<string, object>{
+            job.Execute(AbstractJobTest.BuildContext(job, new Dictionary<string, object>
+            {
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.BlobId, "doc"}
@@ -58,9 +68,40 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             // test documentcontent (skips UTF-8 BOM)
             var json = Encoding.UTF8.GetString(stream.ToArray().Skip(3).ToArray());
             var content = JsonConvert.DeserializeObject<DocumentContent>(json, PocoSerializationSettings.Default);
+            return content;
+        }
+
+        [Test]
+        public void document_should_be_italian()
+        {
+            var content = RunJob(TestConfig.PathToLangFile("it"));
+
             Assert.NotNull(content);
             Assert.AreEqual(1, content.Pages.Length);
-            Assert.IsTrue(content.Metadata.Any(x=>x.Name == DocumentContent.MetadataWithoutPageInfo));
+            var language = content.SafeGetMetadata(DocumentContent.MedatataLanguage);
+            Assert.AreEqual("ita", language);
+        }
+
+        [Test]
+        public void multipage_docx_language_should_be_italian()
+        {
+            var content = RunJob(TestConfig.PathToMultilanguageDocx);
+
+            Assert.NotNull(content);
+            Assert.AreEqual(1, content.Pages.Length);   // DOCX is single page content
+            var language = content.SafeGetMetadata(DocumentContent.MedatataLanguage);
+            Assert.AreEqual("ita", language);
+        }
+
+        [Test]
+        public void multipage_pdf_language_should_be_english()
+        {
+            var content = RunJob(TestConfig.PathToMultilanguagePdf);
+
+            Assert.NotNull(content);
+            Assert.AreEqual(2, content.Pages.Length);   // PDF has pages info
+            var language = content.SafeGetMetadata(DocumentContent.MedatataLanguage);
+            Assert.AreEqual("eng", language);
         }
 
         protected abstract AbstractTikaJob BuildTikaJob();

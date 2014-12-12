@@ -7,17 +7,17 @@ using IvanAkcheurov.NTextCat.Lib;
 
 namespace Jarvis.DocumentStore.Core.Processing.Analyzers
 {
-    public class LanguageAnalyzer
+    public class LanguageDetector
     {
         private static readonly RankedLanguageIdentifier _identifier;
 
-        static LanguageAnalyzer()
+        static LanguageDetector()
         {
             var factory = new RankedLanguageIdentifierFactory();
             _identifier = factory.Load("Core14.profile.xml");
         }
 
-        public string GetLanguage(string text)
+        public static string GetLanguage(string text)
         {
             var languages = _identifier.Identify(text);
             var mostCertainLanguage = languages.FirstOrDefault();

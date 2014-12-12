@@ -1,11 +1,14 @@
 using System.IO;
+using System.Linq;
 using System.Text;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
+using Jarvis.DocumentStore.Core.Processing.Analyzers;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Shared.Model;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
@@ -43,15 +46,32 @@ namespace Jarvis.DocumentStore.Core.Jobs
             if (!string.IsNullOrWhiteSpace(htmlSource))
             {
                 var documentContent = ContentFormatBuilder.CreateFromTikaPlain(htmlSource);
+                var pages = documentContent.Pages.Count();
+                string lang = null;
+                if (pages > 1)
+                {
+                    lang = LanguageDetector.GetLanguage(documentContent.Pages[1].Content);
+                }
+
+                if(lang == null && pages == 1)
+                {
+                    lang = LanguageDetector.GetLanguage(documentContent.Pages[0].Content);
+                }
+
+                if (lang != null)
+                {
+                    documentContent.AddMetadata(DocumentContent.MedatataLanguage, lang);
+                }
+
                 var contentId = BlobStore.Save(DocumentFormats.Content, documentContent);
-                Logger.DebugFormat("Content: {0} has {1} pages", InputDocumentId, documentContent.Pages);
+                Logger.DebugFormat("Content: {0} has {1} pages", InputDocumentId, pages);
 
                 CommandBus.Send(new AddFormatToDocument(
                     this.InputDocumentId,
                     DocumentFormats.Content,
                     contentId,
                     this.PipelineId
-                    ));
+                ));
             }
         }
     }
