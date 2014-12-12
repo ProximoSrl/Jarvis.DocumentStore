@@ -71,13 +71,6 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<INotifyCommitHandled>()
                     .ImplementedBy<NullNotifyCommitHandled>(),
-                Component
-                    .For<ConcurrentProjectionsEngine,ITriggerProjectionsUpdate>()
-                    .ImplementedBy<ConcurrentProjectionsEngine>()
-                    .LifestyleSingleton()
-                    .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
-                    .StartUsingMethod(x => x.StartWithManualPoll)
-                    .StopUsingMethod(x => x.Stop),
                 Classes
                     .FromAssemblyContaining<DocumentProjection>()
                     .BasedOn<IProjection>()
@@ -121,6 +114,19 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<IRecycleBin>()
                     .ImplementedBy<RecycleBin>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
+                );
+
+            //This registration made the entire ConcurrentProjectionEngine starts
+            //so it is better to register after all the other components are registered
+            //correctly.
+            container.Register(
+                Component
+                    .For<ConcurrentProjectionsEngine,ITriggerProjectionsUpdate>()
+                    .ImplementedBy<ConcurrentProjectionsEngine>()
+                    .LifestyleSingleton()
+                    .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
+                    .StartUsingMethod(x => x.StartWithManualPoll)
+                    .StopUsingMethod(x => x.Stop)
                 );
 
 #if DEBUG
