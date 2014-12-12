@@ -48,7 +48,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 x["_id"]["s"].AsString, 
                 x["c"].AsInt32
                 )
-            ).OrderBy(x=>x.Group).ThenBy(x=>x.Status).ToArray();
+            ).OrderBy(x=>x.Status).ThenBy(x=>x.Group).ToArray();
         }
     }
 }

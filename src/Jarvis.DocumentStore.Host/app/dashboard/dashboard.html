@@ -86,10 +86,10 @@
                 </tr>
                 <tr>
                     <th>
-                        Group
+                        Status
                     </th>
                     <th>
-                        Status
+                        Group
                     </th>
                     <th>
                         Count
@@ -98,8 +98,8 @@
             </thead>
             <tbody>
                 <tr ng-repeat="t in dashboard.triggers">
-                    <td>{{t.group}}</td>
                     <td>{{t.status}}</td>
+                    <td>{{t.group}}</td>
                     <td>{{t.count}}</td>
                 </tr>
             </tbody>
