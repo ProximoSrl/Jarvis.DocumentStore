@@ -24,6 +24,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Document.pdf"); }
         }
 
+        public static string PowerpointWithLinkedDocuments
+        {
+            get { return Path.Combine(DocumentsFolder, "KPC_QCI_Training_English_4_4_06.ppt"); }
+        }
+
         public static string PathToDocumentCopyPdf
         {
             get { return Path.Combine(DocumentsFolder, "Document_Copy.pdf"); }

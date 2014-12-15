@@ -255,6 +255,7 @@
     <Compile Include="DomainSpecs\HandleSpecs\HandleSpecification.cs" />
     <Compile Include="JobTests\AbstractJobTest.cs" />
     <Compile Include="JobTests\AnalyzeEmailJobTests.cs" />
+    <Compile Include="JobTests\LibreOfficeToPdfJobTests.cs" />
     <Compile Include="JobTests\JobHelperTests.cs" />
     <Compile Include="JobTests\SingleJobMultipleTriggersTest.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
@@ -291,6 +292,7 @@
     <None Include="app.config" />
     <None Include="Docs\Architecture_files\css" />
     <None Include="Docs\Document_copy.pdf" />
+    <None Include="Docs\KPC_QCI_Training_English_4_4_06.ppt" />
     <None Include="Docs\Lorem ipsum.pdf" />
     <None Include="Docs\Multilanguage.docx" />
     <None Include="Docs\Multilanguage.pdf" />
