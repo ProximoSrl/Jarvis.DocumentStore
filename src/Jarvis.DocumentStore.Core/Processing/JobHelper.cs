@@ -24,16 +24,31 @@ namespace Jarvis.DocumentStore.Core.Processing
 
         public void QueueThumbnail(PipelineId pipelineId, DocumentId documentId, BlobId blobId, string imageFormat)
         {
-            var job = GetBuilderForJob<CreateThumbnailFromPdfJob>()
+            var tenantId = TenantContext.CurrentTenantId;
+            var job = GetJobForSingleTask<CreateThumbnailFromPdfJob>();
+            var triggerBuilder = GetBuilderForTrigger(TimeSpan.Zero)
+                .UsingJobData(JobKeys.TenantId, tenantId)
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.BlobId, blobId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .UsingJobData(JobKeys.FileExtension, imageFormat)
-                .Build();
+                .UsingJobData(JobKeys.FileExtension, imageFormat);
+            if (job == null)
+            {
+                //No existing job, create one
+                job = CreateJobForSingleTask<CreateThumbnailFromPdfJob>();
+                var trigger = triggerBuilder.Build();
 
-            var trigger = CreateTrigger();
+                _scheduler.ScheduleJob(job, trigger);
+            }
+            else
+            {
+                //Job existing, simply add trigger.
+                var trigger = triggerBuilder
+                   .ForJob(job)
+                   .Build();
 
-            _scheduler.ScheduleJob(job, trigger);
+                _scheduler.ScheduleJob(trigger);
+            }
         }
 
         public void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
@@ -84,7 +99,7 @@ namespace Jarvis.DocumentStore.Core.Processing
             }
             else
             { 
-                //Job existing
+                //Job existing, simply add trigger.
                 var trigger = triggerBuilder
                    .ForJob(job)
                    .Build();
