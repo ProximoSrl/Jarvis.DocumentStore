@@ -8,18 +8,21 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using Newtonsoft.Json;
 using Quartz;
+using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class JobsListener : IJobListener
     {
         readonly IExtendedLogger _logger;
-        readonly MongoCollection<JobTracker> _trackerCollection;
+        readonly MongoCollection<JobTracker> _jobTrackerCollection;
+        readonly MongoCollection<TriggerTracker> _triggerTrackerCollection;
 
         public JobsListener(IExtendedLogger logger, MongoDatabase db)
         {
             _logger = logger;
-            _trackerCollection = db.GetCollection<JobTracker>("joblog");
+            _jobTrackerCollection = db.GetCollection<JobTracker>("joblog");
+            _triggerTrackerCollection = db.GetCollection<TriggerTracker>("triggerlog");
         }
 
         public void JobToBeExecuted(IJobExecutionContext context)
@@ -27,7 +30,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             if (context.MergedJobDataMap.ContainsKey(JobKeys.TenantId))
             {
                 TenantContext.Enter(new TenantId(context.MergedJobDataMap.GetString(JobKeys.TenantId)));
-            
+
             }
             else
             {
@@ -39,14 +42,14 @@ namespace Jarvis.DocumentStore.Core.Jobs
             {
                 var blobId = new BlobId(context.MergedJobDataMap.GetString(JobKeys.BlobId));
                 _logger.DebugFormat(
-                    "Starting job {0} on BlobId {1}", 
+                    "Starting job {0} on BlobId {1}",
                     context.JobDetail.JobType,
                     blobId
                 );
 
-                _trackerCollection.Save(new JobTracker(
-                    context.JobDetail.Key,
-                    blobId, 
+                _triggerTrackerCollection.Save(new TriggerTracker(
+                    context.Trigger.Key,
+                    blobId,
                     context.JobDetail.JobType.Name
                 ));
             }
@@ -68,16 +71,25 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public void JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException)
         {
             _logger.DebugFormat("Handling job post-execution {0}", context.JobDetail.JobType);
-            
+
             string message = jobException != null ? jobException.GetBaseException().Message : null;
 
-            _trackerCollection.Update(
-                Query.EQ("_id", context.JobDetail.Key.ToBsonDocument()),
-                Update<JobTracker>
+            _triggerTrackerCollection.Update(
+                Query.EQ("_id", context.Trigger.Key.ToBsonDocument()),
+                Update<TriggerTracker>
                     .Inc(x => x.Elapsed, DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond)
-                    .Set(x=>x.Message, message)
+                    .Set(x => x.Message, message)
             );
 
+            JobTracker tracker = new JobTracker(context.JobDetail.Key);
+            _jobTrackerCollection.Update(
+                Query.EQ("_id", context.JobDetail.Key.ToBsonDocument()),
+                Update<JobTracker>
+                    .SetOnInsert(j => j.RetryCount, 0)
+                    .Inc(x => x.CompletedCount, message == null ? 1 : 0)
+                    .Inc(x => x.FailureCount, message != null ? 1 : 0),
+                UpdateFlags.Upsert
+            );
             if (jobException != null)
             {
                 HandleErrors(context, jobException);
@@ -92,8 +104,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var retries = context.Trigger.JobDataMap.GetIntValue("_retrycount") + 1;
 
             _logger.ThreadProperties["job-data-map"] = context.MergedJobDataMap;
-            _logger.ErrorFormat(ex, "Job id: {0}.{1} refire count {2}", 
-                context.JobDetail.Key.Group, 
+            _logger.ErrorFormat(ex, "Job id: {0}.{1} refire count {2}",
+                context.JobDetail.Key.Group,
                 context.JobDetail.Key.Name,
                 retries
             );
@@ -111,6 +123,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
                             .UsingJobData("_retrycount", retries)
                             .StartAt(rescheduleAt)
                             .Build()
+                        );
+                    _jobTrackerCollection.Update(
+                        Query.EQ("_id", context.JobDetail.Key.ToBsonDocument()),
+                        Update<JobTracker>
+                            .Inc(x => x.RetryCount, 1)
                         );
                 }
                 else

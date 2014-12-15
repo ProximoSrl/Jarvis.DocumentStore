@@ -32,51 +32,34 @@ namespace Jarvis.DocumentStore.Core.Processing
                 .UsingJobData(JobKeys.BlobId, blobId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
                 .UsingJobData(JobKeys.FileExtension, imageFormat);
-            if (job == null)
-            {
-                //No existing job, create one
-                job = CreateJobForSingleTask<CreateThumbnailFromPdfJob>();
-                var trigger = triggerBuilder.Build();
-
-                _scheduler.ScheduleJob(job, trigger);
-            }
-            else
-            {
-                //Job existing, simply add trigger.
-                var trigger = triggerBuilder
-                   .ForJob(job)
-                   .Build();
-
-                _scheduler.ScheduleJob(trigger);
-            }
+            ScheduleSingleJobWithMultipleTrigger<CreateThumbnailFromPdfJob>(job, triggerBuilder);
         }
 
+       
         public void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
-            var job = GetBuilderForJob<AnalyzeEmailJob>()
+            var tenantId = TenantContext.CurrentTenantId;
+            var job = GetJobForSingleTask<AnalyzeEmailJob>();
+            var triggerBuilder = GetBuilderForTrigger(TimeSpan.Zero)
+                .UsingJobData(JobKeys.TenantId, tenantId)
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.BlobId, blobId)
-                .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .Build();
-
-            var trigger = CreateTrigger();
-
-            _scheduler.ScheduleJob(job, trigger);        
+                .UsingJobData(JobKeys.PipelineId, pipelineId);
+            ScheduleSingleJobWithMultipleTrigger<AnalyzeEmailJob>(job, triggerBuilder);      
         }
 
         public void QueueResize(PipelineId pipelineId, DocumentId documentId, BlobId blobId,string imageFormat)
         {
-            var job = GetBuilderForJob<ImageResizeJob>()
+            var tenantId = TenantContext.CurrentTenantId;
+            var job = GetJobForSingleTask<ImageResizeJob>();
+            var triggerBuilder = GetBuilderForTrigger(TimeSpan.Zero)
+                .UsingJobData(JobKeys.TenantId, tenantId)
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
                 .UsingJobData(JobKeys.BlobId, blobId)
                 .UsingJobData(JobKeys.FileExtension, imageFormat)
-                .UsingJobData(JobKeys.Sizes, String.Join("|", _config.GetDefaultSizes().Select(x => x.Name)))
-                .Build();
-
-            var trigger = CreateTrigger();
-
-            _scheduler.ScheduleJob(job, trigger);
+                .UsingJobData(JobKeys.Sizes, String.Join("|", _config.GetDefaultSizes().Select(x => x.Name)));
+            ScheduleSingleJobWithMultipleTrigger<ImageResizeJob>(job, triggerBuilder);
         }
 
      
@@ -89,55 +72,40 @@ namespace Jarvis.DocumentStore.Core.Processing
                    .UsingJobData(JobKeys.DocumentId, documentId)
                    .UsingJobData(JobKeys.PipelineId, pipelineId)
                    .UsingJobData(JobKeys.BlobId, blobId);
-            if (job == null)
-            {
-                //No existing job, create one
-                job = CreateJobForSingleTask<LibreOfficeToPdfJob>();
-                var trigger = triggerBuilder.Build();
-
-                _scheduler.ScheduleJob(job, trigger);
-            }
-            else
-            { 
-                //Job existing, simply add trigger.
-                var trigger = triggerBuilder
-                   .ForJob(job)
-                   .Build();
-
-                _scheduler.ScheduleJob(trigger);
-            }
+            job = ScheduleSingleJobWithMultipleTrigger<LibreOfficeToPdfJob>(job, triggerBuilder);
         }
 
         public void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
-            var job = GetBuilderForJob<HtmlToPdfJob>()
-                .UsingJobData(JobKeys.DocumentId, documentId)
+            var tenantId = TenantContext.CurrentTenantId;
+            var job = GetJobForSingleTask<HtmlToPdfJob>();
+            var triggerBuilder = GetBuilderForTrigger(TimeSpan.Zero)
+                   .UsingJobData(JobKeys.TenantId, tenantId)
+                    .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.BlobId, blobId)
-                .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .Build();
-
-            var trigger = CreateTrigger();
-
-            _scheduler.ScheduleJob(job, trigger);
+                .UsingJobData(JobKeys.PipelineId, pipelineId);
+            ScheduleSingleJobWithMultipleTrigger<HtmlToPdfJob>(job, triggerBuilder);
         }
 
         public void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
-            JobBuilder builder = null;
-            if(_config.UseEmbeddedTika)
-                builder = GetBuilderForJob<ExtractTextWithTikaNetJob>();
+            var tenantId = TenantContext.CurrentTenantId;
+            IJobDetail job;
+            if (_config.UseEmbeddedTika)
+                job = GetJobForSingleTask<ExtractTextWithTikaNetJob>();
             else
-                builder = GetBuilderForJob<ExtractTextWithTikaJob>();
+                job = GetJobForSingleTask<ExtractTextWithTikaJob>();
 
-            var job = builder
+            var triggerBuilder = GetBuilderForTrigger(TimeSpan.Zero)
+                .UsingJobData(JobKeys.TenantId, tenantId)
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .UsingJobData(JobKeys.BlobId, blobId)
-                .Build();
+                .UsingJobData(JobKeys.BlobId, blobId);
 
-            var trigger = CreateTrigger();
-
-            _scheduler.ScheduleJob(job, trigger);
+            if (_config.UseEmbeddedTika)
+                ScheduleSingleJobWithMultipleTrigger<ExtractTextWithTikaNetJob>(job, triggerBuilder);
+            else
+                ScheduleSingleJobWithMultipleTrigger<ExtractTextWithTikaJob>(job, triggerBuilder);
         }
 
         IJobDetail GetJobForSingleTask<T>() where T : IJob
@@ -201,5 +169,35 @@ namespace Jarvis.DocumentStore.Core.Processing
             return TriggerBuilder.Create()
                 .StartAt(DateTimeOffset.Now + delay);
         }
+
+        /// <summary>
+        /// Schedule the job with given trigger. If the job is null it will be created and scheduled for the first time.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="job"></param>
+        /// <param name="triggerBuilder"></param>
+        /// <returns></returns>
+        private IJobDetail ScheduleSingleJobWithMultipleTrigger<T>(IJobDetail job, TriggerBuilder triggerBuilder) where T : IJob
+        {
+            if (job == null)
+            {
+                //No existing job, create one
+                job = CreateJobForSingleTask<T>();
+                var trigger = triggerBuilder.Build();
+
+                _scheduler.ScheduleJob(job, trigger);
+            }
+            else
+            {
+                //Job existing, simply add trigger.
+                var trigger = triggerBuilder
+                   .ForJob(job)
+                   .Build();
+
+                _scheduler.ScheduleJob(trigger);
+            }
+            return job;
+        }
+
     }
 }
