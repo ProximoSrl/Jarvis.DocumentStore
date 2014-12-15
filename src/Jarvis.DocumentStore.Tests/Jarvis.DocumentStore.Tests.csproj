@@ -255,6 +255,7 @@
     <Compile Include="DomainSpecs\HandleSpecs\HandleSpecification.cs" />
     <Compile Include="JobTests\AbstractJobTest.cs" />
     <Compile Include="JobTests\AnalyzeEmailJobTests.cs" />
+    <Compile Include="JobTests\JobHelperTests.cs" />
     <Compile Include="JobTests\SingleJobMultipleTriggersTest.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
     <Compile Include="JobTests\ExtractTextWithTikaJobTest.cs" />

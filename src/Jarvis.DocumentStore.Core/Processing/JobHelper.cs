@@ -64,40 +64,37 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        JobBuilder GetBuilderForJob<T>() where T : IJob
-        {
-            var tenantId = TenantContext.CurrentTenantId;
-
-            return JobBuilder
-                .Create<T>()
-                .UsingJobData(JobKeys.TenantId, tenantId)
-                .WithIdentity(JobKey.Create(Guid.NewGuid().ToString(), typeof(T).Name))
-                .RequestRecovery(true)
-                .StoreDurably(true);
-        }
-
-        JobBuilder GetBuilderForJob(Type jobType) 
-        {
-            var tenantId = TenantContext.CurrentTenantId;
-
-            return JobBuilder
-                .Create(jobType)
-                .UsingJobData(JobKeys.TenantId, tenantId)
-                .RequestRecovery(true)
-                .StoreDurably(true);
-        }
-
+     
         public void QueueLibreOfficeToPdfConversion(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
         {
-            var job = GetBuilderForJob<LibreOfficeToPdfJob>()
-                .UsingJobData(JobKeys.DocumentId, documentId)
-                .UsingJobData(JobKeys.PipelineId, pipelineId)
-                .UsingJobData(JobKeys.BlobId, blobId)
-                .Build();
+            var tenantId = TenantContext.CurrentTenantId;
+            var job = GetJobForSingleTask<LibreOfficeToPdfJob>();
+            if (job == null)
+            {
+                //No existing job, create one
+                job = CreateJobForSingleTask<LibreOfficeToPdfJob>();
+                var trigger = GetBuilderForTrigger(TimeSpan.Zero)
+                   .UsingJobData(JobKeys.TenantId, tenantId)
+                   .UsingJobData(JobKeys.DocumentId, documentId)
+                   .UsingJobData(JobKeys.PipelineId, pipelineId)
+                   .UsingJobData(JobKeys.BlobId, blobId)
+                   .Build();
 
-            var trigger = CreateTrigger();
+                _scheduler.ScheduleJob(job, trigger);
+            }
+            else
+            { 
+                //Job existing
+                var trigger = GetBuilderForTrigger(TimeSpan.Zero)
+                   .UsingJobData(JobKeys.TenantId, tenantId)
+                   .UsingJobData(JobKeys.DocumentId, documentId)
+                   .UsingJobData(JobKeys.PipelineId, pipelineId)
+                   .UsingJobData(JobKeys.BlobId, blobId)
+                   .ForJob(job)
+                   .Build();
 
-            _scheduler.ScheduleJob(job, trigger);
+                _scheduler.ScheduleJob(trigger);
+            }
         }
 
         public void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
@@ -132,6 +129,49 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);
         }
 
+        IJobDetail GetJobForSingleTask<T>() where T : IJob
+        {
+            var jobKey = JobKey.Create(typeof(T).Name, typeof(T).Name);
+            var job = _scheduler.GetJobDetail(jobKey);
+            return job;
+        }
+
+        IJobDetail CreateJobForSingleTask<T>() where T : IJob
+        {
+            var jobKey = JobKey.Create(typeof(T).Name, typeof(T).Name);
+
+            return JobBuilder
+                .Create<T>()
+                .WithIdentity(jobKey)
+                .RequestRecovery(true)
+                .StoreDurably(true)
+                .Build();
+        }
+
+        JobBuilder GetBuilderForJob(Type jobType)
+        {
+            var tenantId = TenantContext.CurrentTenantId;
+
+            return JobBuilder
+                .Create(jobType)
+                .UsingJobData(JobKeys.TenantId, tenantId)
+                .RequestRecovery(true)
+                .StoreDurably(true);
+        }
+
+        JobBuilder GetBuilderForJob<T>() where T : IJob
+        {
+            var tenantId = TenantContext.CurrentTenantId;
+
+            return JobBuilder
+                .Create<T>()
+                .UsingJobData(JobKeys.TenantId, tenantId)
+                .WithIdentity(JobKey.Create(Guid.NewGuid().ToString(), typeof(T).Name))
+                .RequestRecovery(true)
+                .StoreDurably(true);
+        }
+
+
         ITrigger CreateTrigger()
         {
             return CreateTrigger(TimeSpan.Zero);
@@ -143,6 +183,12 @@ namespace Jarvis.DocumentStore.Core.Processing
                 .StartAt(DateTimeOffset.Now + delay)
                 .Build();
             return trigger;
+        }
+
+        TriggerBuilder GetBuilderForTrigger(TimeSpan delay)
+        {
+            return TriggerBuilder.Create()
+                .StartAt(DateTimeOffset.Now + delay);
         }
     }
 }

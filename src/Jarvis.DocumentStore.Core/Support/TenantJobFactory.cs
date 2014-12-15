@@ -56,7 +56,14 @@ namespace Jarvis.DocumentStore.Core.Support
         {
             var jobType = bundle.JobDetail.JobType.FullName;
             TenantId tenantId = null;
-            if (bundle.JobDetail.JobDataMap.ContainsKey(JobKeys.TenantId))
+            if (bundle.Trigger.JobDataMap.ContainsKey(JobKeys.TenantId))
+            {
+                tenantId = new TenantId(
+                    bundle.Trigger.JobDataMap.GetString(JobKeys.TenantId)
+                    );
+                Logger.DebugFormat("new job triggered {0} on tenant {1}", jobType, tenantId);
+            }
+            else if (bundle.JobDetail.JobDataMap.ContainsKey(JobKeys.TenantId))
             {
                 tenantId = new TenantId(
                     bundle.JobDetail.JobDataMap.GetString(JobKeys.TenantId)
