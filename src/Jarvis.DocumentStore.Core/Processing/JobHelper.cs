@@ -69,27 +69,23 @@ namespace Jarvis.DocumentStore.Core.Processing
         {
             var tenantId = TenantContext.CurrentTenantId;
             var job = GetJobForSingleTask<LibreOfficeToPdfJob>();
+            var triggerBuilder = GetBuilderForTrigger(TimeSpan.Zero)
+                   .UsingJobData(JobKeys.TenantId, tenantId)
+                   .UsingJobData(JobKeys.DocumentId, documentId)
+                   .UsingJobData(JobKeys.PipelineId, pipelineId)
+                   .UsingJobData(JobKeys.BlobId, blobId);
             if (job == null)
             {
                 //No existing job, create one
                 job = CreateJobForSingleTask<LibreOfficeToPdfJob>();
-                var trigger = GetBuilderForTrigger(TimeSpan.Zero)
-                   .UsingJobData(JobKeys.TenantId, tenantId)
-                   .UsingJobData(JobKeys.DocumentId, documentId)
-                   .UsingJobData(JobKeys.PipelineId, pipelineId)
-                   .UsingJobData(JobKeys.BlobId, blobId)
-                   .Build();
+                var trigger = triggerBuilder.Build();
 
                 _scheduler.ScheduleJob(job, trigger);
             }
             else
             { 
                 //Job existing
-                var trigger = GetBuilderForTrigger(TimeSpan.Zero)
-                   .UsingJobData(JobKeys.TenantId, tenantId)
-                   .UsingJobData(JobKeys.DocumentId, documentId)
-                   .UsingJobData(JobKeys.PipelineId, pipelineId)
-                   .UsingJobData(JobKeys.BlobId, blobId)
+                var trigger = triggerBuilder
                    .ForJob(job)
                    .Build();
 

@@ -1,4 +1,6 @@
-﻿using Jarvis.DocumentStore.Core.Domain.Document;
+﻿using CQRS.Kernel.MultitenantSupport;
+using CQRS.Shared.MultitenantSupport;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using NUnit.Framework;
@@ -29,12 +31,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         public void TearDown() 
         {
             _scheduler.Clear();
+            TenantContext.Exit();
         }
 
         [Test]
         public void verify_job_helper_is_capable_of_scheduling_two_times_the_job()
         {
             //Just verify that no exception is thrown shceduling two time the libre to office conversion
+            TenantContext.Enter(new TenantId("Tenant1"));
             sut.QueueLibreOfficeToPdfConversion(new PipelineId("test"), new DocumentId(1), new BlobId("TESTBlob1"));
             sut.QueueLibreOfficeToPdfConversion(new PipelineId("test"), new DocumentId(1), new BlobId("TESTBlob1"));
         }
