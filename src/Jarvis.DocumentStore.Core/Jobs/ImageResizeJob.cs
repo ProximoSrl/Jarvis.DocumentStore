@@ -14,7 +14,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
     {
         protected override void OnExecute(IJobExecutionContext context)
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
+            var jobDataMap = context.MergedJobDataMap;
             var fileExtension = jobDataMap.GetString(JobKeys.FileExtension);
             var sizesAsString = jobDataMap.GetString(JobKeys.Sizes);
             var sizes = sizesAsString.Split('|');

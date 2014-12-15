@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public ICommandHandler<T>  CommandHandler { get; set; }
         public void Execute(IJobExecutionContext context)
         {
-            var cmdString = context.JobDetail.JobDataMap.GetString(JobKeys.Command);
+            var cmdString = context.MergedJobDataMap.GetString(JobKeys.Command);
             var command = CommandSerializer.Deserialize<T>(cmdString);
             if (Logger.IsDebugEnabled)
             {

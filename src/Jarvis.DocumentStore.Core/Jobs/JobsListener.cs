@@ -24,9 +24,9 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void JobToBeExecuted(IJobExecutionContext context)
         {
-            if (context.JobDetail.JobDataMap.ContainsKey(JobKeys.TenantId))
+            if (context.MergedJobDataMap.ContainsKey(JobKeys.TenantId))
             {
-                TenantContext.Enter(new TenantId(context.JobDetail.JobDataMap.GetString(JobKeys.TenantId)));
+                TenantContext.Enter(new TenantId(context.MergedJobDataMap.GetString(JobKeys.TenantId)));
             
             }
             else
@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
             {
-                var blobId = new BlobId(context.JobDetail.JobDataMap.GetString(JobKeys.BlobId));
+                var blobId = new BlobId(context.MergedJobDataMap.GetString(JobKeys.BlobId));
                 _logger.DebugFormat(
                     "Starting job {0} on BlobId {1}", 
                     context.JobDetail.JobType,
@@ -56,7 +56,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
             {
-                var blobId = new BlobId(context.JobDetail.JobDataMap.GetString(JobKeys.BlobId));
+                var blobId = new BlobId(context.MergedJobDataMap.GetString(JobKeys.BlobId));
                 _logger.DebugFormat(
                     "Veto on job {0} on BlobId {1}",
                     context.JobDetail.JobType,
@@ -91,7 +91,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             var ex = jobException.GetBaseException();
             var retries = context.Trigger.JobDataMap.GetIntValue("_retrycount") + 1;
 
-            _logger.ThreadProperties["job-data-map"] = context.JobDetail.JobDataMap;
+            _logger.ThreadProperties["job-data-map"] = context.MergedJobDataMap;
             _logger.ErrorFormat(ex, "Job id: {0}.{1} refire count {2}", 
                 context.JobDetail.Key.Group, 
                 context.JobDetail.Key.Name,
@@ -117,7 +117,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 {
                     _logger.ErrorFormat("Too many errors on job {0} with data {1}",
                         context.JobDetail.JobType,
-                        JsonConvert.SerializeObject(context.JobDetail.JobDataMap)
+                        JsonConvert.SerializeObject(context.MergedJobDataMap)
                     );
                 }
             }

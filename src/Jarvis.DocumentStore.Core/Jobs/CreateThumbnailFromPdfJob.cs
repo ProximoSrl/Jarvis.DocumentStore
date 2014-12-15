@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         protected override void OnExecute(IJobExecutionContext context)
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
+            var jobDataMap = context.MergedJobDataMap;
             _format = jobDataMap.GetString(JobKeys.FileExtension);
 
             Logger.DebugFormat("Conversion of {0} ({1}) in format {2} starting", InputDocumentId, InputBlobId, _format);
