@@ -231,6 +231,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 {JobKeys.DocumentId, "Document_1"},
                 {JobKeys.BlobId, "original.1"},
                 {JobKeys.Format, "pdf"},
+                {JobKeys.FileExtension, "pdf"},
                 {JobKeys.PipelineId, "tika"},
             }));
             Thread.Sleep(500);
