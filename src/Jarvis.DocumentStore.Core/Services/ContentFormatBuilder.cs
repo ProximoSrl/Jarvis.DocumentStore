@@ -45,7 +45,11 @@ namespace Jarvis.DocumentStore.Core.Services
             if (pages.Length == 0)
             {
                 meta.Add(new DocumentContent.MetadataHeader(DocumentContent.MetadataWithoutPageInfo,"true"));
-                pagesList.Add(new DocumentContent.DocumentPage(1, doc.QuerySelector("body").TextContent));
+                var documentContent = doc.QuerySelector("body").TextContent;
+                if (!String.IsNullOrEmpty(documentContent))
+                {
+                    pagesList.Add(new DocumentContent.DocumentPage(1, documentContent));
+                }
             }
 
             return new DocumentContent(pagesList.ToArray(), meta.ToArray());

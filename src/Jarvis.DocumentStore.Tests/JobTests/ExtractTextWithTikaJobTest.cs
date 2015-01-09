@@ -109,6 +109,15 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             Assert.AreEqual("eng", language);
         }
 
+        [Test]
+        public void image_should_extract_not_null_content_without_text()
+        {
+            var content = RunJob(TestConfig.PathToMediumJpg);
+
+            Assert.NotNull(content);
+            Assert.AreEqual(0, content.Pages.Length);   //No paged
+        }
+
         protected abstract AbstractTikaJob BuildTikaJob();
     }
 
