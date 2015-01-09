@@ -112,7 +112,7 @@ namespace Jarvis.DocumentStore.Core.Processing
             _scheduler.ScheduleJob(job, trigger);
         }
 
-        public void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, BlobId blobId)
+        public void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, BlobId blobId, String fileExtension)
         {
             JobBuilder builder = null;
             if(_config.UseEmbeddedTika)
@@ -124,6 +124,7 @@ namespace Jarvis.DocumentStore.Core.Processing
                 .UsingJobData(JobKeys.DocumentId, documentId)
                 .UsingJobData(JobKeys.PipelineId, pipelineId)
                 .UsingJobData(JobKeys.BlobId, blobId)
+                .UsingJobData(JobKeys.FileExtension, fileExtension)
                 .Build();
 
             var trigger = CreateTrigger();

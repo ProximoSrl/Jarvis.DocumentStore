@@ -9,8 +9,11 @@ namespace Jarvis.DocumentStore.Shared.Model
         public const string MetadataProtocolNumber = "suggested-protocolNo";
         public const string MetadataWithoutPageInfo = "jarvis-without-page-info";
         public const string MedatataLanguage = "jarvis-language";
+        public const string MedatataEmpty = "jarvis-language";
 
-        public static readonly DocumentContent NullContent = new DocumentContent(new DocumentPage[0], new MetadataHeader[0]);
+        public static readonly DocumentContent NullContent = new DocumentContent(
+            new DocumentPage[0],
+            new [] { new MetadataHeader(MedatataEmpty, "true") });
 
         public DocumentContent(DocumentPage[] pages, MetadataHeader[] metadata)
         {

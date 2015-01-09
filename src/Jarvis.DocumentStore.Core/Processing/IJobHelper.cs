@@ -1,3 +1,4 @@
+using System;
 using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
@@ -10,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.Processing
         void QueueResize(PipelineId pipelineId, DocumentId documentId, BlobId blobId, string imageFormat);
         void QueueLibreOfficeToPdfConversion(PipelineId pipelineId, DocumentId documentId, BlobId blobId);
         void QueueHtmlToPdfConversion(PipelineId pipelineId, DocumentId documentId, BlobId blobId);
-        void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, BlobId blobId);
+        void QueueTikaAnalyzer(PipelineId pipelineId, DocumentId documentId, BlobId blobId, String fileExtension);
         void QueueEmailToHtml(PipelineId pipelineId, DocumentId documentId, BlobId blobId);
     }
 }

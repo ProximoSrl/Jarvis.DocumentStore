@@ -15,9 +15,32 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public abstract class AbstractTikaJob : AbstractFileJob
     {
+        readonly string[] _formats;
+
+        public AbstractTikaJob()
+        {
+            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp".Split('|');
+        }
+
         protected abstract ITikaAnalyzer BuildAnalyzer();
         protected override void OnExecute(IJobExecutionContext context)
         {
+            var jobDataMap = context.JobDetail.JobDataMap;
+            var fileExtension = new PipelineId(jobDataMap.GetString(JobKeys.FileExtension));
+            if (!_formats.Contains(fileExtension))
+            {
+                var contentId = BlobStore.Save(DocumentFormats.Content, DocumentContent.NullContent);
+                Logger.DebugFormat("Content: {0} has null content.", InputDocumentId);
+
+                CommandBus.Send(new AddFormatToDocument(
+                    this.InputDocumentId,
+                    DocumentFormats.Content,
+                    contentId,
+                    this.PipelineId
+                ));
+                return;
+            }
+            Logger.DebugFormat("Starting tika on content: {0}, file extension {1}", InputDocumentId, fileExtension);
             var analyzer = BuildAnalyzer();
 
             string pathToFile = DownloadFileToWorkingFolder(this.InputBlobId);
@@ -53,7 +76,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     lang = LanguageDetector.GetLanguage(documentContent.Pages[1].Content);
                 }
 
-                if(lang == null && pages == 1)
+                if (lang == null && pages == 1)
                 {
                     lang = LanguageDetector.GetLanguage(documentContent.Pages[0].Content);
                 }

@@ -8,23 +8,21 @@ namespace Jarvis.DocumentStore.Core.Processing.Pipeline
     public class TikaPipeline: AbstractPipeline
     {
         readonly IJobHelper _jobHelper;
-        readonly string[] _formats;
         public TikaPipeline(IJobHelper jobHelper) : base("tika")
         {
             _jobHelper = jobHelper;
-            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp".Split('|');
         }
 
         public override bool ShouldHandleFile(DocumentId documentId, IBlobDescriptor storeDescriptor, IPipeline fromPipeline)
         {
             if (fromPipeline != null && fromPipeline.Id == "office")
                 return false;
-            return _formats.Contains(storeDescriptor.FileNameWithExtension.Extension);
+            return true;
         }
 
         protected override void OnStart(DocumentId documentId, IBlobDescriptor storeDescriptor)
         {
-            _jobHelper.QueueTikaAnalyzer(Id, documentId, storeDescriptor.BlobId);
+            _jobHelper.QueueTikaAnalyzer(Id, documentId, storeDescriptor.BlobId, storeDescriptor.FileNameWithExtension.Extension);
         }
 
         protected override void OnFormatAvailable(DocumentId documentId, DocumentFormat format, IBlobDescriptor descriptor)
