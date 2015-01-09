@@ -33,7 +33,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             job.Execute(AbstractJobTest.BuildContext(job, new Dictionary<string, object>{
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.BlobId, "pdf"}
+                {JobKeys.BlobId, "pdf"},
+                {JobKeys.FileExtension, "pdf"},
             }));
 
             BlobStore.Received().Upload(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
@@ -50,9 +51,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             Assert.IsTrue(content.Metadata.Any(x=>x.Name == DocumentContent.MetadataWithoutPageInfo));
         }
 
-        private DocumentContent RunJob(string pathToFile)
+        private DocumentContent RunJob(string pathToFile, Boolean verifyUploadCalled = true)
         {
             ConfigureFileDownload("doc", pathToFile);
+            FileNameWithExtension file = new FileNameWithExtension(pathToFile);
             var stream = SetupCreateNew(new BlobId(DocumentFormats.Content, 1));
 
             var job = BuildTikaJob();
@@ -61,10 +63,11 @@ namespace Jarvis.DocumentStore.Tests.JobTests
             {
                 {JobKeys.TenantId, TestConfig.Tenant},
                 {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.BlobId, "doc"}
+                {JobKeys.BlobId, "doc"},
+                {JobKeys.FileExtension, file.Extension},
             }));
 
-            BlobStore.Received().Upload(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
+            if (verifyUploadCalled) BlobStore.Received().Upload(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
 
             // test documentcontent (skips UTF-8 BOM)
             var json = Encoding.UTF8.GetString(stream.ToArray().Skip(3).ToArray());
@@ -112,10 +115,11 @@ namespace Jarvis.DocumentStore.Tests.JobTests
         [Test]
         public void image_should_extract_not_null_content_without_text()
         {
-            var content = RunJob(TestConfig.PathToMediumJpg);
+            var content = RunJob(TestConfig.PathToMediumJpg, false);
 
             Assert.NotNull(content);
             Assert.AreEqual(0, content.Pages.Length);   //No paged
+            Assert.AreEqual("true", content.SafeGetMetadata(DocumentContent.MetadataEmpty));
         }
 
         protected abstract AbstractTikaJob BuildTikaJob();

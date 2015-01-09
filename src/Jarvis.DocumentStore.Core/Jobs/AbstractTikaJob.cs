@@ -19,14 +19,14 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public AbstractTikaJob()
         {
-            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp".Split('|');
+            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt".Split('|');
         }
 
         protected abstract ITikaAnalyzer BuildAnalyzer();
         protected override void OnExecute(IJobExecutionContext context)
         {
             var jobDataMap = context.JobDetail.JobDataMap;
-            var fileExtension = new PipelineId(jobDataMap.GetString(JobKeys.FileExtension));
+            var fileExtension = jobDataMap.GetString(JobKeys.FileExtension);
             if (!_formats.Contains(fileExtension))
             {
                 var contentId = BlobStore.Save(DocumentFormats.Content, DocumentContent.NullContent);
