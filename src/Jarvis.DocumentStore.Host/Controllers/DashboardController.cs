@@ -56,6 +56,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 Tenant = tenantId,
                 Docs = new
                 {
+                    Tenant = tenantId,
                     Documents = documents,
                     DocBytes = bytes,
                     Handles = Handles.Count(),

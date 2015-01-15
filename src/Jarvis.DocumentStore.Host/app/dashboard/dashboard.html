@@ -1,10 +1,13 @@
-﻿<div class="row">
+﻿<div class="row" ng-repeat="tenant in dashboard.tenants">
+    <div class="col-xs-12">
+        <h3>Tenant: {{tenant}}</h3>
+    </div>
     <div class="col-lg-3 col-xs-6">
         <!-- small box -->
         <div class="small-box bg-aqua">
             <div class="inner">
                 <h3>
-                    &nbsp; {{ dashboard.meters.documents }}
+                    &nbsp; {{ dashboard.stats[tenant].documents }}
                 </h3>
                 <p>
                     Documents
@@ -23,7 +26,7 @@
         <div class="small-box bg-green">
             <div class="inner">
                 <h3>
-                    &nbsp; {{dashboard.meters.handles}}
+                    &nbsp; {{dashboard.stats[tenant].handles}}
                 </h3>
                 <p>
                     Document handles
@@ -42,7 +45,7 @@
         <div class="small-box bg-yellow">
             <div class="inner">
                 <h3>
-                    &nbsp; {{dashboard.meters.files}}
+                    &nbsp; {{dashboard.stats[tenant].files}}
                 </h3>
                 <p>
                     Files (documents  + formats)
@@ -61,7 +64,7 @@
         <div class="small-box bg-red">
             <div class="inner">
                 <h3>
-                    &nbsp; {{dashboard.meters.docBytes | fileSize}}
+                    &nbsp; {{dashboard.stats[tenant].docBytes | fileSize}}
                 </h3>
                 <p>
                     Documents size
@@ -113,3 +116,4 @@
         </table>
     </div>
 </div><!-- /.row -->
+<pre>{{dashboard.stats |json }}</pre>

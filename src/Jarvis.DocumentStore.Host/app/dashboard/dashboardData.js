@@ -12,8 +12,8 @@
 
         return service;
 
-        function getMeters() {
-            return $http.get('/docs/dashboard').then(function(d) {
+        function getMeters(tenant) {
+            return $http.get('/'+tenant+'/dashboard').then(function(d) {
                 return d.data;
             });
         }
