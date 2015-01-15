@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Quartz;
+using Jarvis.DocumentStore.Core.Jobs;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -15,6 +16,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
     public class SchedulerController : ApiController
     {
         public IScheduler Scheduler { get; set; }
+        public JobStats JobStats { get; set; }
+
         
         [HttpPost]
         [Route("scheduler/start")]
@@ -42,6 +45,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return !Scheduler.InStandbyMode;
 
             return false;
+        }
+
+        [HttpGet]
+        [Route("scheduler/stats")]
+        public object Stats()
+        {
+            var triggerStats = this.JobStats.GetTriggerStats();
+
+            return triggerStats;
         }
     }
 }

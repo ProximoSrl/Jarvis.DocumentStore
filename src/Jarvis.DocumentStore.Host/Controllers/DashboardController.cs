@@ -20,17 +20,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
 {
     public class DashboardController : ApiController, ITenantController
     {
+        public IBlobStore BlobStore { get; set; }
+        public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
+        public IHandleWriter Handles { get; set; }
+
         public DashboardController(IBlobStore blobStore, IMongoDbReader<DocumentStats, string> docStats)
         {
             DocStats = docStats;
             BlobStore = blobStore;
         }
-
-        public IBlobStore BlobStore{ get; set; }
-        public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
-        public IHandleWriter Handles { get; set; }
-
-        public JobStats JobStats { get; set; }
 
         [HttpGet]
         [Route("{tenantId}/dashboard")]
@@ -49,20 +47,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             long bytes = result != null ? result["bytes"].AsInt64 : 0;
             long files = totals != null ? totals.Files : 0;
 
-            var triggerStats = this.JobStats.GetTriggerStats();
 
             var stats = new
             {
                 Tenant = tenantId,
-                Docs = new
-                {
-                    Tenant = tenantId,
-                    Documents = documents,
-                    DocBytes = bytes,
-                    Handles = Handles.Count(),
-                    Files = files
-                },
-                Triggers = triggerStats
+                Documents = documents,
+                DocBytes = bytes,
+                Handles = Handles.Count(),
+                Files = files
             };
 
             return Ok(stats);

@@ -3,10 +3,11 @@
 
     angular.module('admin.dashboard').controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['dashboardData', '$interval', '$scope', 'tenants'];
+    DashboardController.$inject = ['dashboardData', '$interval', '$scope', 'tenants','schedulerData'];
 
-    function DashboardController(dashboardData, $interval, $scope, tenants) {
+    function DashboardController(dashboardData, $interval, $scope, tenants, schedulerData) {
         console.log('tenants are ', tenants);
+        console.log('sched', schedulerData);
 
         var vm = this;
         vm.title = 'prova';
@@ -35,12 +36,15 @@
             angular.forEach(tenants, function (tname) {
                 console.log('getting data for tenant ', tname);
                 dashboardData.getMeters(tname).then(function (d) {
-                    vm.stats[tname] = d.docs;
-                    vm.triggers = d.triggers;
-                    vm.totTriggers = 0;
-                    angular.forEach(d.triggers, function (t) {
-                        vm.totTriggers += t.count;
-                    });
+                    vm.stats[tname] = d;
+                });
+            });
+
+            schedulerData.getStats().then(function (d) {
+                vm.triggers = d.data;
+                vm.totTriggers = 0;
+                angular.forEach(vm.triggers, function (t) {
+                    vm.totTriggers += t.count;
                 });
             });
         };

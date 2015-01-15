@@ -9,7 +9,8 @@
         var service = {
             isRunning: isRunning,
             start: start,
-            stop: stop
+            stop: stop,
+            getStats: getStats
         };
 
         return service;
@@ -28,6 +29,10 @@
         function stop() {
             debugger;
             $http.post('/scheduler/stop');
+        }
+
+        function getStats() {
+            return $http.get('/scheduler/stats');
         }
     }
 })(window, window.angular);
