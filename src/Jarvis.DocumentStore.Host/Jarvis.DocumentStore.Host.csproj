@@ -260,6 +260,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\JobHandlersRegistration.cs" />
+    <Compile Include="Controllers\ConfigController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\DocumentsController.cs" />
     <Compile Include="Controllers\ITenantController.cs" />
@@ -1460,6 +1461,7 @@
     <Content Include="app\scheduler\schedulerModule.js" />
     <Content Include="app\shared\fileSizeFilter.js" />
     <Content Include="app\shared\sharedModule.js" />
+    <Content Include="app\shared\configService.js" />
     <Content Include="app\shared\updateTitle.js" />
   </ItemGroup>
   <ItemGroup>

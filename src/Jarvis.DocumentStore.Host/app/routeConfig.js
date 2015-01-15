@@ -17,7 +17,13 @@
                 url: "/dashboard",
                 templateUrl: "dashboard/dashboard.html",
                 controller: "DashboardController as dashboard",
-                data : { pageTitle: 'Dashboard', description: 'metrics' }
+                data: { pageTitle: 'Dashboard', description: 'metrics' },
+                resolve: {
+                    configService : 'configService',
+                    tenants: function (configService) {
+                        return configService.getTenants();
+                    }
+                }
             })
             .state('logs', {
                 url: "/logs",

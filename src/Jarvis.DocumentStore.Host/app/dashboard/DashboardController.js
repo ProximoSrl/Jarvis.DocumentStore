@@ -3,9 +3,11 @@
 
     angular.module('admin.dashboard').controller('DashboardController', DashboardController);
 
-    DashboardController.$inject = ['dashboardData', '$interval', '$scope'];
+    DashboardController.$inject = ['dashboardData', '$interval', '$scope','tenants'];
 
-    function DashboardController(dashboardData, $interval, $scope) {
+    function DashboardController(dashboardData, $interval, $scope, tenants) {
+        console.log('tenants are ', tenants);
+
         var vm = this;
         vm.title = 'prova';
         vm.meters = {
