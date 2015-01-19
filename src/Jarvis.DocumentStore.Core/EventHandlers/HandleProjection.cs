@@ -28,6 +28,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer = writer;
         }
 
+        public override int Priority
+        {
+            get { return 10; }
+        }
+
         public override void Drop()
         {
             _writer.Drop();

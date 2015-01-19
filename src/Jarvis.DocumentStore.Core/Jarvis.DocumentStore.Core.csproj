@@ -268,6 +268,7 @@
     <Compile Include="EventHandlers\HandleProjection.cs" />
     <Compile Include="EventHandlers\RecycleBinProjection.cs" />
     <Compile Include="EventHandlers\StreamHelper.cs" />
+    <Compile Include="EventHandlers\StreamProjection.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
     <Compile Include="Jobs\AbstractTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
@@ -324,6 +325,7 @@
     <Compile Include="ReadModel\DocumentReadModel.cs" />
     <Compile Include="ReadModel\DocumentStats.cs" />
     <Compile Include="ReadModel\HandleReadModel.cs" />
+    <Compile Include="ReadModel\StreamReadModel.cs" />
     <Compile Include="Services\ConfigService.cs" />
     <Compile Include="Services\ContentFormatBuilder.cs" />
     <Compile Include="Storage\BlobStoreByFormat.cs" />
