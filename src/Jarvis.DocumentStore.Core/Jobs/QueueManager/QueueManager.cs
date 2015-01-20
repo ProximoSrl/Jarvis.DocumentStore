@@ -1,6 +1,8 @@
 ﻿using Castle.Core;
 using Castle.Core.Logging;
 using CQRS.Shared.MultitenantSupport;
+using CQRS.Shared.ReadModel;
+using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Support;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -14,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
+
     public class QueueManager : IStartable
     {
         private DocumentStoreConfiguration _configuration;
@@ -22,25 +25,27 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
 
-        private MongoCollection<StreamCheckpoint> _checkpointCollection;
+        private MongoCollection<QueueTenantInfo> _checkpointCollection;
 
-        private StreamCheckpoint[] _tenantsCheckpoints;
+        private QueueTenantInfo[] _queueTenantInfos;
 
         public ILogger Logger { get; set; }
 
         public QueueManager(
-            MongoDatabase mongoDatabase, 
+            MongoDatabase mongoDatabase,
             ITenantAccessor tenantAccessor,
             DocumentStoreConfiguration configuration)
         {
             _tenantAccessor = tenantAccessor;
             _configuration = configuration;
             _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("queue.checkpoints");
-           
-            _tenantsCheckpoints = tenantAccessor.Tenants
-                .Select(t => new StreamCheckpoint() {
+
+            _queueTenantInfos = tenantAccessor.Tenants
+                .Select(t => new QueueTenantInfo()
+                {
                     TenantId = t.Id,
                     Checkpoint = FindLastCheckpointForTenant(t.Id),
+                    StreamReader = t.Get<IReader<StreamReadModel, Int64>>(),
                 })
                 .ToArray();
             _commandList = new BlockingCollection<CommandData>();
@@ -119,10 +124,36 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         private void Poll()
         {
-            
+            //do a poll for every tenant.
+            Boolean hasNewData = false;
+            do
+            {
+                foreach (var info in _queueTenantInfos)
+                {
+                    var blockOfStreamData = info.StreamReader.AllSortedById
+                        .Where(s => s.Id > info.Checkpoint)
+                        .Take(50)
+                        .ToList();
+                    if (blockOfStreamData.Count > 0) 
+                    {
+                        hasNewData = true;
+                        foreach (var streamData in blockOfStreamData)
+                        {
+                            //create all queues.
+                        }
+                        info.Checkpoint = blockOfStreamData[blockOfStreamData.Count -1].Id;
+                        _checkpointCollection.Update(
+                                Query<StreamCheckpoint>.EQ(t => t.TenantId, info.TenantId),
+                                Update<StreamCheckpoint>
+                                    .Set(c => c.Checkpoint = info.Checkpoint),
+                                UpdateFlags.Upsert
+                            );
+                    }
+                }
+            } while (hasNewData);
         }
 
-        public void PollNow() 
+        public void PollNow()
         {
             _commandList.Add(CommandData.Poll());
         }

@@ -1,5 +1,8 @@
 ﻿using CQRS.Shared.MultitenantSupport;
+using CQRS.Shared.ReadModel;
+using Jarvis.DocumentStore.Core.ReadModel;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +17,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public TenantId TenantId { get; set; }
 
         public Int64 Checkpoint { get; set; }
+    }
+
+    public class QueueTenantInfo 
+    {
+        public TenantId TenantId { get; set; }
+
+        public Int64 Checkpoint { get; set; }
+
+        public IReader<StreamReadModel, Int64> StreamReader { get; set; }
     }
 }
