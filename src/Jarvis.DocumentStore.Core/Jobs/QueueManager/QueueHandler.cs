@@ -27,6 +27,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// If different from null it contains a filter that permits to queue jobs
         /// only if the <see cref="StreamReadModel" /> is generated from a specific
         /// pipeline.
+        /// Remember that negative match can be expressed by this one
+        /// ^(?!office$|tika$).* http://stackoverflow.com/questions/6830796/regex-to-match-anything-but-two-words
         /// </summary>
         public String Pipeline { get; private set; }
 

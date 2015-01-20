@@ -42,18 +42,18 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _collectionWrapper = Substitute.For<ICollectionWrapper<StreamReadModel, Int64>>();
             rmStream = new List<StreamReadModel>();
             rmDocuments = new List<DocumentReadModel>();
-            
+
             _collectionWrapper.When(r => r.Insert(
                 Arg.Any<DomainEvent>(),
                 Arg.Any<StreamReadModel>()))
-                .Do(cinfo => rmStream.Add((StreamReadModel) cinfo.Args()[1]));
+                .Do(cinfo => rmStream.Add((StreamReadModel)cinfo.Args()[1]));
             _collectionWrapper.All.Returns(rmStream.AsQueryable());
 
             _readerDocumentReadModel = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
             _readerDocumentReadModel.AllUnsorted.Returns(rmDocuments.AsQueryable());
             _readerDocumentReadModel.AllSortedById.Returns(rmDocuments.AsQueryable().OrderBy(r => r.Id));
             _readerDocumentReadModel.FindOneById(Arg.Any<DocumentId>())
-                .Returns(cinfo => rmDocuments.SingleOrDefault(d => d.Id == (DocumentId) cinfo.Args()[0]));
+                .Returns(cinfo => rmDocuments.SingleOrDefault(d => d.Id == (DocumentId)cinfo.Args()[0]));
 
             _handleWriter = Substitute.For<IHandleWriter>();
             _blobStore = Substitute.For<IBlobStore>();
@@ -61,7 +61,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
         private void CreateSut()
         {
-            _sut = new StreamProjection(_collectionWrapper, _handleWriter,_blobStore, _readerDocumentReadModel);
+            _sut = new StreamProjection(_collectionWrapper, _handleWriter, _blobStore, _readerDocumentReadModel);
             _sut.TenantId = new TenantId("test-tenant");
         }
 
@@ -90,9 +90,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             rmDocuments.Add(docRm);
             CreateSut();
             var evt = new HandleLinked(
-                new DocumentHandle("rev_1"), 
-                new DocumentId(1), 
-                new DocumentId(2), 
+                new DocumentHandle("rev_1"),
+                new DocumentId(1),
+                new DocumentId(2),
                 new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
@@ -146,12 +146,15 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                     new DocumentId(1),
                     new FileNameWithExtension("test.txt")
                 ));
+            IBlobDescriptor stub = Substitute.For<IBlobDescriptor>();
+            stub.FileNameWithExtension.Returns(new FileNameWithExtension("test.txt"));
+            _blobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(stub);
         }
 
         [Test]
         public void verify_id_is_sequential()
         {
-            rmStream.Add(new StreamReadModel() {Id = 41});
+            rmStream.Add(new StreamReadModel() { Id = 41 });
             CreateSut();
             var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("rev_1"));
             _sut.Handle(evt, false);
@@ -173,38 +176,36 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_handle_linked_to_document_with_formats()
         {
-            _handleWriter.FindOneById(Arg.Any<DocumentHandle>())
-               .Returns(cinfo => new HandleReadModel(
-                   ( DocumentHandle) cinfo.Args()[0],
-                   new DocumentId(1),
-                   new FileNameWithExtension(cinfo.Args()[0].ToString() + ".txt")
-               ));
+            IBlobDescriptor stub = Substitute.For<IBlobDescriptor>();
+            stub.FileNameWithExtension.Returns(new FileNameWithExtension("test.txt"));
+            _blobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(stub);
+
             var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
-            docRm.AddFormat(new PipelineId("tika"), new DocumentFormat("blah"), new BlobId("pdf") );
+            docRm.AddFormat(new PipelineId("tika"), new DocumentFormat("blah"), new BlobId("pdf"));
             docRm.AddFormat(new PipelineId("test"), new DocumentFormat("blah blah"), new BlobId("test"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt") );
-            
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+
             _sut.Handle(evt, false); //I'm expecting new format added to handle
             Assert.That(rmStream, Has.Count.EqualTo(3));
 
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[0].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("original"));
-            Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("rev_1"));
+            Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
 
             Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[1].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah"));
-            Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("rev_1"));
+            Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
 
             Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
             Assert.That(rmStream[2].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[2].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah blah"));
-            Assert.That(rmStream[2].Filename.FileName, Is.EqualTo("rev_1"));
+            Assert.That(rmStream[2].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[2].Filename.Extension, Is.EqualTo("txt"));
         }
 
