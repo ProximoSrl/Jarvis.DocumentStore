@@ -14,6 +14,7 @@ using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using MongoDB.Bson;
 using NEventStore;
+using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -21,10 +22,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
          IEventHandler<HandleInitialized>,
          IEventHandler<HandleDeleted>,
          IEventHandler<HandleLinked>,
-         IEventHandler<FormatAddedToDocument>
+         IEventHandler<FormatAddedToDocument>,
+         IEventHandler<HandleFileNameSet>
     {
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
         private readonly IReader<DocumentReadModel, DocumentId> _documentReadModel;
+        private readonly IHandleWriter _handleWriter;
 
         private Int64 _lastCheckpointValue = -1;
         private Int32 _sequential = 0;
@@ -32,10 +35,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public StreamProjection(
             ICollectionWrapper<StreamReadModel, Int64> streamReadModelCollection,
+            IHandleWriter handleWriter,
             IReader<DocumentReadModel, DocumentId> documentReadModel)
         {
             _streamReadModelCollection = streamReadModelCollection;
             _documentReadModel = documentReadModel;
+            _handleWriter = handleWriter;
             _streamReadModelCollection.Attach(this, false);
             if (_streamReadModelCollection.All.Any())
             {
@@ -78,6 +83,17 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             });
         }
 
+        public void On(HandleFileNameSet e)
+        {
+            _streamReadModelCollection.Insert(e, new StreamReadModel()
+            {
+                Id = GetNewId(),
+                TenantId = this.TenantId,
+                Handle = e.Handle,
+                EventType = HandleStreamEventTypes.HandleFileNameSet
+            });
+        }
+
         public void On(HandleDeleted e)
         {
             _streamReadModelCollection.Insert(e, new StreamReadModel()
@@ -92,6 +108,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(HandleLinked e)
         {
             var doc = _documentReadModel.FindOneById(e.DocumentId);
+            var handle = _handleWriter.FindOneById(e.Handle);
             foreach (var format in doc.Formats)   
             {
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
@@ -99,6 +116,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     Id = GetNewId(),
                     TenantId = this.TenantId,
                     Handle = e.Handle,
+                    Filename = handle.FileName,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = format.Value.BlobId,
@@ -117,13 +135,16 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(FormatAddedToDocument e)
         {
             var allHandles = _documentReadModel.FindOneById((DocumentId) e.AggregateId).Handles;
+      
             foreach (var handle in allHandles)
             {
+                var handlerm = _handleWriter.FindOneById(handle);
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
                     TenantId = this.TenantId,
                     Handle = handle,
+                    Filename = handlerm.FileName,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = e.BlobId,
@@ -134,5 +155,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 });
             }
         }
+
+      
     }
 }
