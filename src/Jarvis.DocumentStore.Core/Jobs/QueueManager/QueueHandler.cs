@@ -1,6 +1,8 @@
 ﻿using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.ReadModel;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     public interface IQueueHandler 
     {
         void Handle(StreamReadModel streamElement, TenantId tenantId);
+
+        QueuedJob GetNextJob();
     }
 
     public class QueueInfo 
@@ -83,7 +87,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public DateTime CompletionTimestamp { get; set; }
 
-        public DateTime ExecutionStartTime { get; set; }
+        public DateTime? ExecutionStartTime { get; set; }
+
+        public Boolean Executing { get; set; }
 
         public Boolean Finished { get; set; }
 
@@ -91,17 +97,22 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     }
 
     /// <summary>
-    /// This is a simple handler for queue.
+    /// This is a simple handler for queue that creates jobs in queues based on settings.
     /// </summary>
     public class QueueHandler : IQueueHandler
     {
         MongoCollection<QueuedJob> _collection;
         QueueInfo _info;
 
+        public String Name { get; private set; }
+
         public QueueHandler(QueueInfo info, MongoDatabase database)
         {
             _collection = database.GetCollection<QueuedJob>("queue." + info.Name);
+            _collection.CreateIndex(
+                IndexKeys<QueuedJob>.Ascending(x => x.Finished, x => x.Executing, x => x.StreamId));
             _info = info;
+            Name = info.Name;
         }
 
         public void Handle(StreamReadModel streamElement, TenantId tenantId)
@@ -110,7 +121,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 QueuedJob job = new QueuedJob();
                 job.Id = streamElement.Id + "_" + tenantId;
-                job.CreationDate = DateTime.Now;
+                job.CreationTimestamp = DateTime.Now;
                 job.StreamId = streamElement.Id;
                 job.TenantId = tenantId;
                 job.Parameters = new Dictionary<string, string>();
@@ -120,6 +131,28 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
                 _collection.Save(job);
             }
+        }
+
+        public QueuedJob GetNextJob()
+        {
+            var result = _collection.FindAndModify(new FindAndModifyArgs()
+            {
+                Query =  Query.And(
+                    Query<QueuedJob>.NE(j => j.Finished, true),
+                    Query<QueuedJob>.NE(j => j.Executing, true)
+                ),
+                SortBy = SortBy<QueuedJob>.Ascending(j => j.StreamId),
+                Update = Update<QueuedJob>
+                    .Set(j => j.Executing, true)
+                    .Set(j => j.ExecutionStartTime, DateTime.Now)
+                    .Set(j => j.ExecutionError, null)
+            });
+            if (result.Ok)
+            {
+                if (result.Response["value"] is BsonNull) return null;
+                return _collection.FindOneById(BsonValue.Create(result.Response["value"]["_id"]));
+            }
+            throw new ApplicationException("Error in Finding next job.");
         }
     }
 }

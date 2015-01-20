@@ -28,8 +28,10 @@ namespace Jarvis.DocumentStore.Core.Support
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             container.Register(
-                Component.For<QueueManager>()
-                .DependsOn(Dependency.OnValue<MongoDatabase>(GetQueueDb()))
+                Component
+                    .For<QueueManager, IQueueDispatcher>()
+                    .ImplementedBy<QueueManager>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(GetQueueDb()))
             );
         }
 

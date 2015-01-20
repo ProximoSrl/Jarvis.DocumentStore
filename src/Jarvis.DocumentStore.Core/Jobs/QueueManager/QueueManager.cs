@@ -16,11 +16,15 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
+    public interface IQueueDispatcher
+    {
+        QueuedJob GetNextJob(String queueName);
+    }
 
     /// <summary>
     /// Creates and maintain all configured queues.
     /// </summary>
-    public class QueueManager 
+    public class QueueManager : IQueueDispatcher
     {
         private DocumentStoreConfiguration _configuration;
         private ITenantAccessor _tenantAccessor;
@@ -32,7 +36,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         private QueueTenantInfo[] _queueTenantInfos;
 
-        private QueueHandler[] _queueHandlers;
+        private Dictionary<String, QueueHandler> _queueHandlers;
 
         public ILogger Logger { get; set; }
 
@@ -56,7 +60,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             _commandList = new BlockingCollection<CommandData>();
             _queueHandlers = _configuration.QueueInfoList
                 .Select(qil => new QueueHandler(qil, mongoDatabase))
-                .ToArray();
+                .ToDictionary(qh => qh.Name, qh => qh);
             Logger = NullLogger.Instance;
         }
 
@@ -151,7 +155,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                             {
                                 //In this version we are interested only in event for new formats
                                 if (streamData.EventType != HandleStreamEventTypes.HandleHasNewFormat) continue;
-                                qh.Handle(streamData, info.TenantId);
+                                qh.Value.Handle(streamData, info.TenantId);
                             }
                         }
                         info.Checkpoint = blockOfStreamData[blockOfStreamData.Count -1].Id;
@@ -172,5 +176,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             PollNow();
         }
 
+        public QueuedJob GetNextJob(String queueName)
+        {
+            if (!_queueHandlers.ContainsKey(queueName)) 
+            {
+                Logger.Error("Requested next job for queue name " + queueName + " but no Queue configured with that name");
+                return null;
+            }
+            var qh = _queueHandlers[queueName];
+            return qh.GetNextJob();
+        }
     }
 }
