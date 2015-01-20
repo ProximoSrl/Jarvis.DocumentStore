@@ -49,10 +49,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             foreach (dynamic queue in (IEnumerable)queueList)
             {
-                QueueInfo info = new QueueInfo();
-                info.Name = queue.name;
-                info.Extension = queue.extension;
-                info.Pipeline = queue.pipeline;
+                QueueInfo info = new QueueInfo(queue.name, queue.pipeline, queue.extension);
                 queueInfoList.Add(info);
             }
         }

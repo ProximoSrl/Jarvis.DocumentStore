@@ -77,7 +77,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                TenantId = this.TenantId,
+                //TenantId = this.TenantId,
                 Handle = e.Handle,
                 EventType = HandleStreamEventTypes.HandleInitialized
             });
@@ -88,7 +88,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                TenantId = this.TenantId,
+                //TenantId = this.TenantId,
                 Handle = e.Handle,
                 EventType = HandleStreamEventTypes.HandleFileNameSet
             });
@@ -99,7 +99,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                TenantId = this.TenantId,
+                //TenantId = this.TenantId,
                 Handle = e.Handle,
                 EventType = HandleStreamEventTypes.HandleDeleted
             });
@@ -114,7 +114,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
-                    TenantId = this.TenantId,
+                    //TenantId = this.TenantId,
                     Handle = e.Handle,
                     Filename = handle.FileName,
                     FormatInfo = new FormatInfo()
@@ -142,7 +142,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
-                    TenantId = this.TenantId,
+                    //TenantId = this.TenantId,
                     Handle = handle,
                     Filename = handlerm.FileName,
                     FormatInfo = new FormatInfo()

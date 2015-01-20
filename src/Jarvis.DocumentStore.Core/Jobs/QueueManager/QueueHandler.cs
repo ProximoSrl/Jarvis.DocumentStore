@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
     public interface IQueueHandler 
     {
-        void Handle(StreamReadModel streamElement);
+        void Handle(StreamReadModel streamElement, TenantId tenantId);
     }
 
     public class QueueInfo 
@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <summary>
         /// name of the queue
         /// </summary>
-        public String Name { get; set; }
+        public String Name { get; private set; }
 
         /// <summary>
         /// It is a .NET regex
@@ -27,19 +27,48 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// only if the <see cref="StreamReadModel" /> is generated from a specific
         /// pipeline.
         /// </summary>
-        public String Pipeline { get; set; }
+        public String Pipeline { get; private set; }
 
         /// <summary>
         /// It is a pipe separated list of desired extension.
         /// </summary>
-        public String Extension { get; set; }
+        public String Extension { get; private set; }
+
+        private String[] _splittedExtension;
+
+        public QueueInfo(
+                String name,
+                String pipeline,
+                String extension
+            )
+        {
+            Name = name;
+            Pipeline = pipeline;
+            Extension = extension;
+            if (!String.IsNullOrEmpty(Extension))
+                _splittedExtension = Extension.Split('|');
+            else
+                _splittedExtension = new string[] { };
+        }
+
+        internal bool ShouldCreateJob(StreamReadModel streamElement)
+        {
+            if (_splittedExtension.Length > 0 && !_splittedExtension.Contains(streamElement.Filename.Extension)) 
+                return false;
+
+            return true;
+        }
     }
 
     public class QueuedJob 
     {
-        public Int64 Id { get; set; }
+        public String Id { get; set; }
+
+        public Int64 StreamId { get; set; }
 
         public TenantId TenantId { get; set; }
+
+        public DateTime CreationDate { get; set; }
     }
 
     /// <summary>
@@ -56,9 +85,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             _info = info;
         }
 
-        public void Handle(StreamReadModel streamElement)
+        public void Handle(StreamReadModel streamElement, TenantId tenantId)
         {
-            
+            if (_info.ShouldCreateJob(streamElement)) 
+            {
+                QueuedJob job = new QueuedJob();
+                job.Id = streamElement.Id + "_" + tenantId;
+                job.CreationDate = DateTime.Now;
+                job.StreamId = streamElement.Id;
+                job.TenantId = tenantId;
+                _collection.Save(job);
+            }
         }
     }
 }

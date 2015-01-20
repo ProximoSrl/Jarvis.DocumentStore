@@ -14,7 +14,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 {
     public class StreamReadModel : AbstractReadModel<Int64>
     {
-        public TenantId TenantId { get; set; }
+        //public TenantId TenantId { get; set; }
 
         public String Handle { get; set; }
 

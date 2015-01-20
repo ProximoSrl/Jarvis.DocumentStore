@@ -92,15 +92,15 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
         }
 
-        [Test]
-        public void verify_stream_events_have_tenant()
-        {
-            CreateSut();
-            var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("rev_1"));
-            _sut.Handle(evt, false);
-            Assert.That(rmStream, Has.Count.EqualTo(1));
-            Assert.That(rmStream[0].TenantId.ToString(), Is.EqualTo("test-tenant"));
-        }
+        //[Test]
+        //public void verify_stream_events_have_tenant()
+        //{
+        //    CreateSut();
+        //    var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("rev_1"));
+        //    _sut.Handle(evt, false);
+        //    Assert.That(rmStream, Has.Count.EqualTo(1));
+        //    Assert.That(rmStream[0].TenantId.ToString(), Is.EqualTo("test-tenant"));
+        //}
 
         [Test]
         public void verify_stream_events_have_fileName()
