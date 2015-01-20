@@ -274,6 +274,7 @@
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
     <Compile Include="Jobs\JobStats.cs" />
+    <Compile Include="Jobs\QueueManager\QueueEntities.cs" />
     <Compile Include="Jobs\QueueManager\QueueManager.cs" />
     <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
     <Compile Include="Processing\Conversions\TikaNetAnalyzer.cs" />

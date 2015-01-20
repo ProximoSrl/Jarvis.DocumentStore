@@ -1,6 +1,7 @@
 ﻿using Castle.Core;
 using Castle.Core.Logging;
 using CQRS.Shared.MultitenantSupport;
+using Jarvis.DocumentStore.Core.Support;
 using MongoDB.Driver;
 using System;
 using System.Collections.Concurrent;
@@ -14,19 +15,28 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
     public class QueueManager : IStartable
     {
+        private DocumentStoreConfiguration _configuration;
         private ITenantAccessor _tenantAccessor;
         private Thread _pollerThread;
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
 
+        private MongoCollection _checkpointCollection;
+
+        private ITenant[] tenants;
+
         public ILogger Logger { get; set; }
 
         public QueueManager(
             MongoDatabase mongoDatabase, 
-            ITenantAccessor tenantAccessor)
+            ITenantAccessor tenantAccessor,
+            DocumentStoreConfiguration configuration)
         {
             _tenantAccessor = tenantAccessor;
+            tenants = tenantAccessor.Tenants;
             _commandList = new BlockingCollection<CommandData>();
+            _configuration = configuration;
+            _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("queue.checkpoints");
             Logger = NullLogger.Instance;
         }
 
@@ -51,7 +61,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             _pollerThread.IsBackground = true;
             _pollerThread.Start();
 
-            pollerTimer = new System.Timers.Timer(15 * 1000);
+            pollerTimer = new System.Timers.Timer(_configuration.QueueStreamPollTime);
             pollerTimer.Elapsed += TimerCallback;
             pollerTimer.Start();
         }
@@ -94,7 +104,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         private void Poll()
         {
-            throw new NotImplementedException();
+            
+        }
+
+        public void PollNow() 
+        {
+            _commandList.Add(CommandData.Poll());
         }
 
         private void TimerCallback(object sender, System.Timers.ElapsedEventArgs e)

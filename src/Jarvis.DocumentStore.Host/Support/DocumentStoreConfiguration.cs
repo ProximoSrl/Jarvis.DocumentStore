@@ -30,12 +30,20 @@ namespace Jarvis.DocumentStore.Host.Support
             IsWorker = GetBool("worker");
             IsReadmodelBuilder = GetBool("projections");
             IsQueueManager = GetBool("queueManager");
+
+            QueueStreamPollTime = GetInt32("queues.stream-poll-interval-ms", 1000);
+        }
+
+        Int32 GetInt32(string name, Int32 defaultValue)
+        {
+            var setting = ConfigurationServiceClient.Instance.GetSetting(name, defaultValue.ToString());
+            return Int32.Parse(setting);
         }
 
         bool GetBool(string name)
         {
             var setting = ConfigurationServiceClient.Instance.GetSetting("roles." + name, "false");
-            return  "true".Equals(setting, StringComparison.OrdinalIgnoreCase);
+            return "true".Equals(setting, StringComparison.OrdinalIgnoreCase);
         }
 
         private void BootstrapConfigurationServiceClient()
