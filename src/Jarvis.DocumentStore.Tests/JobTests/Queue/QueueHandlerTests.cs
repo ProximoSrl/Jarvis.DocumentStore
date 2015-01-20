@@ -48,12 +48,12 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             QueueHandler sut = new QueueHandler(info, _db);
             StreamReadModel rm = new StreamReadModel()
             {
-                Filename = new FileNameWithExtension("test.docx")
+                Filename = new FileNameWithExtension("test.docx"),
+                EventType = HandleStreamEventTypes.HandleHasNewFormat
             };
             sut.Handle(rm, new TenantId("test"));
-            var collection = _db.GetCollection<QueuedJob>("queue-test");
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1));
-
         }
 
         [Test]
@@ -64,13 +64,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
+                EventType = HandleStreamEventTypes.HandleHasNewFormat,
                 FormatInfo = new FormatInfo() 
                 {
                     PipelineId = new PipelineId("soffice")
                 }
             };
             sut.Handle(rm, new TenantId("test"));
-            var collection = _db.GetCollection<QueuedJob>("queue-test");
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0), "pipeline filter is not filtering out unwanted pipeline");
 
             rm = new StreamReadModel()

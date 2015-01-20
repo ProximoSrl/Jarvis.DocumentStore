@@ -20,6 +20,7 @@ using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using NSubstitute;
 using NUnit.Framework;
+using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
@@ -31,7 +32,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private ICollectionWrapper<StreamReadModel, Int64> _collectionWrapper;
         private IReader<DocumentReadModel, DocumentId> _readerDocumentReadModel;
         private IHandleWriter _handleWriter;
-
+        private IBlobStore _blobStore;
         private List<StreamReadModel> rmStream;
         private List<DocumentReadModel> rmDocuments;
 
@@ -55,11 +56,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                 .Returns(cinfo => rmDocuments.SingleOrDefault(d => d.Id == (DocumentId) cinfo.Args()[0]));
 
             _handleWriter = Substitute.For<IHandleWriter>();
+            _blobStore = Substitute.For<IBlobStore>();
         }
 
         private void CreateSut()
         {
-            _sut = new StreamProjection(_collectionWrapper, _handleWriter, _readerDocumentReadModel);
+            _sut = new StreamProjection(_collectionWrapper, _handleWriter,_blobStore, _readerDocumentReadModel);
             _sut.TenantId = new TenantId("test-tenant");
         }
 

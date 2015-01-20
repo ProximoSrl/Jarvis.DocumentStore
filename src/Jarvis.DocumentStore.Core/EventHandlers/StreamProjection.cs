@@ -15,6 +15,7 @@ using Jarvis.DocumentStore.Core.ReadModel;
 using MongoDB.Bson;
 using NEventStore;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -28,6 +29,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
         private readonly IReader<DocumentReadModel, DocumentId> _documentReadModel;
         private readonly IHandleWriter _handleWriter;
+        private readonly IBlobStore _blobStore;
 
         private Int64 _lastCheckpointValue = -1;
         private Int32 _sequential = 0;
@@ -36,11 +38,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public StreamProjection(
             ICollectionWrapper<StreamReadModel, Int64> streamReadModelCollection,
             IHandleWriter handleWriter,
+            IBlobStore blobStore,
             IReader<DocumentReadModel, DocumentId> documentReadModel)
         {
             _streamReadModelCollection = streamReadModelCollection;
             _documentReadModel = documentReadModel;
             _handleWriter = handleWriter;
+            _blobStore = blobStore;
             _streamReadModelCollection.Attach(this, false);
             if (_streamReadModelCollection.All.Any())
             {
@@ -108,15 +112,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(HandleLinked e)
         {
             var doc = _documentReadModel.FindOneById(e.DocumentId);
-            var handle = _handleWriter.FindOneById(e.Handle);
             foreach (var format in doc.Formats)   
             {
+                var descriptor = _blobStore.GetDescriptor(format.Value.BlobId);
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
                     //TenantId = this.TenantId,
                     Handle = e.Handle,
-                    Filename = handle.FileName,
+                    Filename = descriptor.FileNameWithExtension,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = format.Value.BlobId,
@@ -137,16 +141,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(FormatAddedToDocument e)
         {
             var allHandles = _documentReadModel.FindOneById((DocumentId) e.AggregateId).Handles;
-      
+            var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {
-                var handlerm = _handleWriter.FindOneById(handle);
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
                     //TenantId = this.TenantId,
                     Handle = handle,
-                    Filename = handlerm.FileName,
+                    Filename = descriptor.FileNameWithExtension,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = e.BlobId,
