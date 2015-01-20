@@ -25,15 +25,17 @@ namespace Jarvis.DocumentStore.Host.Support
             }
 
             QuartzConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-quartz");
+            QueueConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-queues");
             IsApiServer = GetBool("api");
             IsWorker = GetBool("worker");
             IsReadmodelBuilder = GetBool("projections");
+            IsQueueManager = GetBool("queueManager");
         }
 
         bool GetBool(string name)
         {
-            var setting = ConfigurationServiceClient.Instance.GetSetting("roles."+name, "false").ToLowerInvariant();
-            return  setting == "true";
+            var setting = ConfigurationServiceClient.Instance.GetSetting("roles." + name, "false");
+            return  "true".Equals(setting, StringComparison.OrdinalIgnoreCase);
         }
 
         private void BootstrapConfigurationServiceClient()

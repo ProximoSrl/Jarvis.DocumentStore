@@ -15,7 +15,9 @@ namespace Jarvis.DocumentStore.Core.Support
         public bool IsApiServer { get; protected set; }
         public bool IsWorker { get; protected set; }
         public bool IsReadmodelBuilder { get; protected set; }
+        public bool IsQueueManager { get; protected set; }
         public string QuartzConnectionString { get; protected set; }
+        public string QueueConnectionString { get; protected set; }
         public IList<TenantSettings> TenantSettings { get; private set; }
 
         public virtual void CreateLoggingFacility(LoggingFacility f)
