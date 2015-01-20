@@ -79,6 +79,25 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Id, Is.EqualTo(1));
         }
 
+        [Test]
+        public void verify_pipeline_id_is_original_when_pipeline_is_null()
+        {
+            SetHandleToReturn();
+            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            docRm.AddHandle(new DocumentHandle("rev_1"));
+            rmDocuments.Add(docRm);
+            CreateSut();
+            var evt = new HandleLinked(
+                new DocumentHandle("rev_1"), 
+                new DocumentId(1), 
+                new DocumentId(2), 
+                new FileNameWithExtension("test.txt"));
+            _sut.Handle(evt, false); //Handle is linked to document.
+            Assert.That(rmStream, Has.Count.EqualTo(1));
+            Assert.That(rmStream[0].FormatInfo.PipelineId, Is.EqualTo(new PipelineId("original")));
+
+        }
+
 
 
         [Test]

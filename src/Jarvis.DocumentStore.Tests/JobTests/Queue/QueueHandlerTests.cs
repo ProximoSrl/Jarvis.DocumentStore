@@ -56,5 +56,36 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1));
 
         }
+
+        [Test]
+        public void verify_pipeline_id_filter()
+        {
+            var info = new QueueInfo("test", "tika", "");
+            QueueHandler sut = new QueueHandler(info, _db);
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                FormatInfo = new FormatInfo() 
+                {
+                    PipelineId = new PipelineId("soffice")
+                }
+            };
+            sut.Handle(rm, new TenantId("test"));
+            var collection = _db.GetCollection<QueuedJob>("queue-test");
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0), "pipeline filter is not filtering out unwanted pipeline");
+
+            rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                FormatInfo = new FormatInfo()
+                {
+                    PipelineId = new PipelineId("tika")
+                }
+            };
+            sut.Handle(rm, new TenantId("test"));
+            
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1), "pipeline filter is not filtering in admitted pipeline");
+
+        }
     }
 }

@@ -121,7 +121,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     {
                         BlobId = format.Value.BlobId,
                         DocumentFormat = format.Key,
-                        PipelineId = format.Value.PipelineId,
+                        PipelineId = format.Value.PipelineId != PipelineId.Null 
+                            ? format.Value.PipelineId 
+                            : new PipelineId("original"),
                     },
                     EventType = HandleStreamEventTypes.HandleHasNewFormat
                 });
@@ -149,7 +151,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     {
                         BlobId = e.BlobId,
                         DocumentFormat = e.DocumentFormat,
-                        PipelineId = e.CreatedBy,
+                        PipelineId = e.CreatedBy != PipelineId.Null
+                            ? e.CreatedBy
+                            : new PipelineId("original"),
                     },
                     EventType = HandleStreamEventTypes.HandleHasNewFormat
                 });

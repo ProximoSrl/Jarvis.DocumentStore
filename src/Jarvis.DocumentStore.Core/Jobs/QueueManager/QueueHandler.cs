@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
@@ -54,6 +55,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         internal bool ShouldCreateJob(StreamReadModel streamElement)
         {
             if (_splittedExtension.Length > 0 && !_splittedExtension.Contains(streamElement.Filename.Extension)) 
+                return false;
+
+            if (!String.IsNullOrEmpty(Pipeline) &&
+                !Regex.IsMatch(streamElement.FormatInfo.PipelineId, Pipeline))
                 return false;
 
             return true;
