@@ -86,7 +86,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public QueueHandler(QueueInfo info, MongoDatabase database)
         {
-            _collection = database.GetCollection<QueuedJob>("queue-" + info.Name);
+            _collection = database.GetCollection<QueuedJob>("queue." + info.Name);
             _info = info;
         }
 

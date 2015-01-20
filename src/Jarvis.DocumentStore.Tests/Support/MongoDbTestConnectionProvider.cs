@@ -63,7 +63,8 @@ namespace Jarvis.DocumentStore.Tests.Support
             DropTenant("demo");
             Connect("log").Drop();
             Connect("ds.quartz").Drop();
-            
+            Connect("ds.queues").Drop();
+            Connect("ds.queues.host").Drop();
             Connect("ds.quartz.host").Drop();
             Connect("ds.log.host").Drop();
         }

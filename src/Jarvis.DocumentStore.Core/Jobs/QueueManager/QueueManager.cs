@@ -144,13 +144,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                         hasNewData = true;
                         foreach (var streamData in blockOfStreamData)
                         {
-                            //create all queues.
+                            foreach (var qh in _queueHandlers)
+                            {
+                                //In this version we are interested only in event for new formats
+                                if (streamData.EventType != HandleStreamEventTypes.HandleHasNewFormat) continue;
+                                qh.Handle(streamData, info.TenantId);
+                            }
                         }
                         info.Checkpoint = blockOfStreamData[blockOfStreamData.Count -1].Id;
                         _checkpointCollection.Update(
                                 Query<StreamCheckpoint>.EQ(t => t.TenantId, info.TenantId),
                                 Update<StreamCheckpoint>
-                                    .Set(c => c.Checkpoint, info.Checkpoint),
+                                    .Set(c => c.Checkpoint, info.Checkpoint)
+                                    .Set(c => c.TenantId, info.TenantId),
                                 UpdateFlags.Upsert
                             );
                     }

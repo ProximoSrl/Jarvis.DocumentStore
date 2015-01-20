@@ -16,7 +16,6 @@ using CQRS.Shared.MultitenantSupport;
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
     [TestFixture]
-    [Category("current")]
     public class QueueHandlerTests
     {
         MongoDatabase _db = MongoDbTestConnectionProvider.ReadModelDb;
