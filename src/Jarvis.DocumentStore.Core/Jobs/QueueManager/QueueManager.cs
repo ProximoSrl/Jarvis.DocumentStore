@@ -3,6 +3,7 @@ using Castle.Core.Logging;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Support;
 using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,9 +22,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
 
-        private MongoCollection _checkpointCollection;
+        private MongoCollection<StreamCheckpoint> _checkpointCollection;
 
-        private ITenant[] tenants;
+        private StreamCheckpoint[] _tenantsCheckpoints;
 
         public ILogger Logger { get; set; }
 
@@ -33,11 +34,25 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             DocumentStoreConfiguration configuration)
         {
             _tenantAccessor = tenantAccessor;
-            tenants = tenantAccessor.Tenants;
-            _commandList = new BlockingCollection<CommandData>();
             _configuration = configuration;
             _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("queue.checkpoints");
+           
+            _tenantsCheckpoints = tenantAccessor.Tenants
+                .Select(t => new StreamCheckpoint() {
+                    TenantId = t.Id,
+                    Checkpoint = FindLastCheckpointForTenant(t.Id),
+                })
+                .ToArray();
+            _commandList = new BlockingCollection<CommandData>();
             Logger = NullLogger.Instance;
+        }
+
+        private long FindLastCheckpointForTenant(TenantId tenantId)
+        {
+            var dbCheckpoint = _checkpointCollection.Find(
+                        Query<StreamCheckpoint>.EQ(t => t.TenantId, tenantId)
+                   ).SingleOrDefault();
+            return dbCheckpoint != null ? dbCheckpoint.Checkpoint : 0L;
         }
 
         private class CommandData
