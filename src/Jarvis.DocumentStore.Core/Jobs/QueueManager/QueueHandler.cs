@@ -71,7 +71,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public Int64 StreamId { get; set; }
 
-        public TenantId TenantId { get; set; }
+        public String TenantId { get; set; }
 
         public DateTime CreationDate { get; set; }
     }

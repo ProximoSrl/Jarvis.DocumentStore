@@ -152,13 +152,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                             }
                         }
                         info.Checkpoint = blockOfStreamData[blockOfStreamData.Count -1].Id;
-                        _checkpointCollection.Update(
-                                Query<StreamCheckpoint>.EQ(t => t.TenantId, info.TenantId),
-                                Update<StreamCheckpoint>
-                                    .Set(c => c.Checkpoint, info.Checkpoint)
-                                    .Set(c => c.TenantId, info.TenantId),
-                                UpdateFlags.Upsert
-                            );
+                        _checkpointCollection.Save(new StreamCheckpoint() {Checkpoint = info.Checkpoint, TenantId = info.TenantId});
                     }
                 }
             } while (hasNewData);
