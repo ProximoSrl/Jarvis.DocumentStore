@@ -121,6 +121,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     //TenantId = this.TenantId,
                     Handle = e.Handle,
                     Filename = descriptor.FileNameWithExtension,
+                    DocumentId = e.DocumentId,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = format.Value.BlobId,
@@ -150,6 +151,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     //TenantId = this.TenantId,
                     Handle = handle,
                     Filename = descriptor.FileNameWithExtension,
+                    DocumentId = (DocumentId) e.AggregateId,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = e.BlobId,

@@ -22,6 +22,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public String Pi { get; set; }
 
+        public DocumentId DocumentId { get; set; }
+
         public FileNameWithExtension Filename { get; set; }
 
         public HandleStreamEventTypes EventType { get; set; }

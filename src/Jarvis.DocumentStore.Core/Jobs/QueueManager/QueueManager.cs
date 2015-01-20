@@ -17,6 +17,9 @@ using System.Threading.Tasks;
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
 
+    /// <summary>
+    /// Creates and maintain all configured queues.
+    /// </summary>
     public class QueueManager 
     {
         private DocumentStoreConfiguration _configuration;
@@ -40,7 +43,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _tenantAccessor = tenantAccessor;
             _configuration = configuration;
-            _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("queue.checkpoints");
+            _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("stream.checkpoints");
 
             _queueTenantInfos = tenantAccessor.Tenants
                 .Select(t => new QueueTenantInfo()

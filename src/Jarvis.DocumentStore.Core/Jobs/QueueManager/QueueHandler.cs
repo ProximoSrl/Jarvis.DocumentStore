@@ -75,7 +75,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public String TenantId { get; set; }
 
-        public DateTime CreationDate { get; set; }
+        public DateTime CreationTimestamp { get; set; }
+
+        public Dictionary<String, String> Parameters { get; set; }
+
+        public String ExecutionError { get; set; }
+
+        public DateTime CompletionTimestamp { get; set; }
+
+        public DateTime ExecutionStartTime { get; set; }
+
+        public Boolean Finished { get; set; }
+
+
     }
 
     /// <summary>
@@ -101,6 +113,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 job.CreationDate = DateTime.Now;
                 job.StreamId = streamElement.Id;
                 job.TenantId = tenantId;
+                job.Parameters = new Dictionary<string, string>();
+                if (streamElement.FormatInfo != null && streamElement.FormatInfo.BlobId != null)
+                    job.Parameters.Add(JobKeys.BlobId, streamElement.FormatInfo.BlobId);
+                job.Parameters.Add(JobKeys.DocumentId, streamElement.DocumentId);
+
                 _collection.Save(job);
             }
         }

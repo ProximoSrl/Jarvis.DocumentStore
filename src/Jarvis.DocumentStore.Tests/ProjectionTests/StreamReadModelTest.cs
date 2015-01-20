@@ -138,6 +138,21 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
         }
 
+        [Test]
+        public void verify_stream_events_have_documentId()
+        {
+            SetHandleToReturn();
+            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("blob_test"));
+            docRm.AddHandle(new DocumentHandle("rev_1"));
+            rmDocuments.Add(docRm);
+            CreateSut();
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            _sut.Handle(evt, false); //Handle is linked to document.
+            Assert.That(rmStream, Has.Count.EqualTo(1));
+
+            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentId(1)));
+        }
+
         private void SetHandleToReturn()
         {
             _handleWriter.FindOneById(Arg.Any<DocumentHandle>())
@@ -223,6 +238,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var evtFormat = new FormatAddedToDocument(new DocumentFormat("blah"), new BlobId("test"),
                 new PipelineId("tika"));
             evtFormat.AggregateId = new DocumentId(1);
+            evtFormat.AggregateId = new DocumentId(1);
             _sut.Handle(evtFormat, false); //format is linked to document.
 
             Assert.That(rmStream, Has.Count.EqualTo(2));
@@ -232,6 +248,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("original"));
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
+            Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
+            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentId(1)));
 
             Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
@@ -240,6 +258,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[1].FormatInfo.PipelineId.ToString(), Is.EqualTo("tika"));
             Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
+            Assert.That(rmStream[1].FormatInfo.BlobId, Is.EqualTo(new BlobId("test")));
+            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentId(1)));
         }
     }
 }
