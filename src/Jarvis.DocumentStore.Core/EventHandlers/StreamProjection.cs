@@ -72,6 +72,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
+                TenantId = this.TenantId,
                 Handle = e.Handle,
                 EventType = HandleStreamEventTypes.HandleInitialized
             });
@@ -82,6 +83,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
+                TenantId = this.TenantId,
                 Handle = e.Handle,
                 EventType = HandleStreamEventTypes.HandleDeleted
             });
@@ -95,6 +97,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
+                    TenantId = this.TenantId,
                     Handle = e.Handle,
                     FormatInfo = new FormatInfo()
                     {
@@ -119,6 +122,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
+                    TenantId = this.TenantId,
                     Handle = handle,
                     FormatInfo = new FormatInfo()
                     {

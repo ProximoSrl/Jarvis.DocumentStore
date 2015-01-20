@@ -8,11 +8,14 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Bson.Serialization.Attributes;
+using CQRS.Shared.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
     public class StreamReadModel : AbstractReadModel<Int64>
     {
+        public TenantId TenantId { get; set; }
+
         public String Handle { get; set; }
 
         public FormatInfo FormatInfo { get; set; }
