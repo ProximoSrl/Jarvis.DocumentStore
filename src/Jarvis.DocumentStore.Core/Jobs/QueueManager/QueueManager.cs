@@ -19,6 +19,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     public interface IQueueDispatcher
     {
         QueuedJob GetNextJob(String queueName);
+
+        Boolean SetJobExecuted(String queueName, String jobId, String errorMessage);
     }
 
     /// <summary>
@@ -185,6 +187,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
             var qh = _queueHandlers[queueName];
             return qh.GetNextJob();
+        }
+
+        public   Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
+        {
+            if (!_queueHandlers.ContainsKey(queueName))
+            {
+                Logger.Error("Requested next job for queue name " + queueName + " but no Queue configured with that name");
+                return false;
+            }
+            var qh = _queueHandlers[queueName];
+            return qh.SetJobExecuted(jobId, errorMessage);
         }
     }
 }

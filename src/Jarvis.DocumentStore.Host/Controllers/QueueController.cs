@@ -17,11 +17,32 @@ namespace Jarvis.DocumentStore.Host.Controllers
     {
         public IQueueDispatcher QueueDispatcher { get; set; }
 
-        [HttpGet]
-        [Route("queues/getnext/{queueName}")]
-        public QueuedJob GetNextJob(String queueName)
+        [HttpPost]
+        [Route("queues/getnextjob")]
+        public QueuedJob GetNextJob(GetNextJobParameter parameter)
         {
-            return QueueDispatcher.GetNextJob(queueName);
+            return QueueDispatcher.GetNextJob(parameter.QueueName);
         }
+
+        [HttpPost]
+        [Route("queues/setjobcomplete")]
+        public Boolean SetComplete(FinishedJobParameter parameter)
+        {
+            return QueueDispatcher.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
+        }
+    }
+
+    public class GetNextJobParameter 
+    {
+        public String QueueName { get; set; }
+    }
+
+    public class FinishedJobParameter 
+    {
+        public String QueueName { get; set; }
+
+        public String ErrorMessage { get; set; }
+
+        public String JobId { get; set; }
     }
 }

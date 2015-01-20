@@ -12,12 +12,6 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
-    public interface IQueueHandler 
-    {
-        void Handle(StreamReadModel streamElement, TenantId tenantId);
-
-        QueuedJob GetNextJob();
-    }
 
     public class QueueInfo 
     {
@@ -85,7 +79,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public String ExecutionError { get; set; }
 
-        public DateTime CompletionTimestamp { get; set; }
+        public DateTime ExecutionEndTime { get; set; }
 
         public DateTime? ExecutionStartTime { get; set; }
 
@@ -99,7 +93,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// <summary>
     /// This is a simple handler for queue that creates jobs in queues based on settings.
     /// </summary>
-    public class QueueHandler : IQueueHandler
+    public class QueueHandler
     {
         MongoCollection<QueuedJob> _collection;
         QueueInfo _info;
@@ -153,6 +147,23 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 return _collection.FindOneById(BsonValue.Create(result.Response["value"]["_id"]));
             }
             throw new ApplicationException("Error in Finding next job.");
+        }
+
+        public Boolean SetJobExecuted(String jobId, String errorMessage) 
+        {
+            var result = _collection.FindAndModify(new FindAndModifyArgs()
+            {
+                Query = Query.And(
+                    Query<QueuedJob>.EQ(j => j.Id, jobId)
+                ),
+                SortBy = SortBy<QueuedJob>.Ascending(j => j.Id),
+                Update = Update<QueuedJob>
+                    .Set(j => j.Executing, false)
+                    .Set(j => j.ExecutionEndTime, DateTime.Now)
+                    .Set(j => j.ExecutionError, errorMessage)
+                    .Set(j => j.Finished, true)
+            });
+            return result.Ok && !(result.Response["value"] is BsonNull);
         }
     }
 }
