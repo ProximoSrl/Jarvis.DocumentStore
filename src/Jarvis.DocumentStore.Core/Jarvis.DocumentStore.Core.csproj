@@ -275,6 +275,7 @@
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
     <Compile Include="Jobs\JobStats.cs" />
     <Compile Include="Jobs\QueueManager\QueueEntities.cs" />
+    <Compile Include="Jobs\QueueManager\QueueHandler.cs" />
     <Compile Include="Jobs\QueueManager\QueueManager.cs" />
     <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
     <Compile Include="Processing\Conversions\TikaNetAnalyzer.cs" />
@@ -343,6 +344,7 @@
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\IStartupActivity.cs" />
     <Compile Include="Support\QueueManagerInstaller.cs" />
+    <Compile Include="Support\QueueManagerStartup.cs" />
     <Compile Include="Support\SchedulerStartup.cs" />
     <Compile Include="Support\TenantCoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />

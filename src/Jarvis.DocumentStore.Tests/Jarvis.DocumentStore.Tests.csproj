@@ -257,6 +257,7 @@
     <Compile Include="JobTests\AnalyzeEmailJobTests.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
     <Compile Include="JobTests\ExtractTextWithTikaJobTest.cs" />
+    <Compile Include="JobTests\Queue\QueueHandlerTests.cs" />
     <Compile Include="JobTests\ResizeImageJobTests.cs" />
     <Compile Include="DomainSpecs\ClassWithBlobId.cs" />
     <Compile Include="DomainSpecs\BlobIdJsonConverterTests.cs" />

@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Support;
+using System.Collections;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -32,6 +35,26 @@ namespace Jarvis.DocumentStore.Host.Support
             IsQueueManager = GetBool("queueManager");
 
             QueueStreamPollTime = GetInt32("queues.stream-poll-interval-ms", 1000);
+            List<QueueInfo> queueInfoList = new List<QueueInfo>();
+            if (IsQueueManager)
+            {
+                FillQueueList(queueInfoList);
+            }
+            QueueInfoList = queueInfoList.ToArray();
+        }
+
+        private static void FillQueueList(List<QueueInfo> queueInfoList)
+        {
+            dynamic queueList = ConfigurationServiceClient.Instance.GetStructuredSetting("queues.list");
+
+            foreach (dynamic queue in (IEnumerable)queueList)
+            {
+                QueueInfo info = new QueueInfo();
+                info.Name = queue.name;
+                info.Extension = queue.extension;
+                info.Pipeline = queue.pipeline;
+                queueInfoList.Add(info);
+            }
         }
 
         Int32 GetInt32(string name, Int32 defaultValue)
@@ -57,14 +80,15 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 if (isError)
                 {
-                    if (exception != null) { 
+                    if (exception != null)
+                    {
                         Console.WriteLine("ERROR: {0}\n{1}", message, exception.Message);
                     }
                     else
                     {
                         Console.WriteLine("ERROR: {0}", message);
                     }
-                    
+
                     Console.WriteLine("Press enter to continue");
                     Console.ReadLine();
                 }

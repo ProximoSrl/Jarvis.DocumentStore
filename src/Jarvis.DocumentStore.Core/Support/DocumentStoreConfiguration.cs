@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Castle.Facilities.Logging;
 using Castle.Services.Logging.Log4netIntegration;
 using CQRS.Kernel.MultitenantSupport;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -16,6 +17,7 @@ namespace Jarvis.DocumentStore.Core.Support
         public bool IsWorker { get; protected set; }
         public bool IsReadmodelBuilder { get; protected set; }
         public bool IsQueueManager { get; protected set; }
+        public QueueInfo[] QueueInfoList { get; protected set; }
         public string QuartzConnectionString { get; protected set; }
         public string QueueConnectionString { get; protected set; }
         public int QueueStreamPollTime { get; protected set; }

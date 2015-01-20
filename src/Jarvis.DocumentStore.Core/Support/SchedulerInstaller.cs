@@ -43,14 +43,14 @@ namespace Jarvis.DocumentStore.Core.Support
                     .FromAssemblyInThisApplication()
                     .BasedOn<IPipelineListener>()
                     .WithServiceFirstInterface(),
-                Component
-                    .For<IShutdownActivity>()
-                    .ImplementedBy<SchedulerShutdown>()
-                    .Named("SchedulerShutdown"),
-                Component
-                    .For<IStartupActivity>()
-                    .ImplementedBy<SchedulerStartup>()
-                    .Named("SchedulerStartup")
+                Classes
+                    .FromAssemblyInThisApplication()
+                    .BasedOn<IShutdownActivity>()
+                    .WithServiceFirstInterface(),
+                Classes
+                    .FromAssemblyInThisApplication()
+                    .BasedOn<IStartupActivity>()
+                    .WithServiceFirstInterface()
             );
 
             var scheduler = container.Resolve<IScheduler>();

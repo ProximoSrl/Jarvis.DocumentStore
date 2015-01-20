@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
 
-    public class QueueManager : IStartable
+    public class QueueManager 
     {
         private DocumentStoreConfiguration _configuration;
         private ITenantAccessor _tenantAccessor;
@@ -25,9 +25,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
 
-        private MongoCollection<QueueTenantInfo> _checkpointCollection;
+        private MongoCollection<StreamCheckpoint> _checkpointCollection;
 
         private QueueTenantInfo[] _queueTenantInfos;
+
+        private QueueHandler[] _queueHandlers;
 
         public ILogger Logger { get; set; }
 
@@ -45,10 +47,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 {
                     TenantId = t.Id,
                     Checkpoint = FindLastCheckpointForTenant(t.Id),
-                    StreamReader = t.Get<IReader<StreamReadModel, Int64>>(),
+                    StreamReader = t.Container.Resolve<IReader<StreamReadModel, Int64>>(),
                 })
                 .ToArray();
             _commandList = new BlockingCollection<CommandData>();
+            _queueHandlers = _configuration.QueueInfoList
+                .Select(qil => new QueueHandler(qil, mongoDatabase))
+                .ToArray();
             Logger = NullLogger.Instance;
         }
 
@@ -145,7 +150,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                         _checkpointCollection.Update(
                                 Query<StreamCheckpoint>.EQ(t => t.TenantId, info.TenantId),
                                 Update<StreamCheckpoint>
-                                    .Set(c => c.Checkpoint = info.Checkpoint),
+                                    .Set(c => c.Checkpoint, info.Checkpoint),
                                 UpdateFlags.Upsert
                             );
                     }
@@ -155,12 +160,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public void PollNow()
         {
-            _commandList.Add(CommandData.Poll());
+            if (!_commandList.Any(c => c.Command == QueueCommands.Poll))
+                _commandList.Add(CommandData.Poll());
         }
 
         private void TimerCallback(object sender, System.Timers.ElapsedEventArgs e)
         {
-            _commandList.Add(CommandData.Poll());
+            PollNow();
         }
 
     }
