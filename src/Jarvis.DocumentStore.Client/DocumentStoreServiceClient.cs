@@ -9,6 +9,7 @@ using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
+using Jarvis.DocumentStore.Shared;
 
 namespace Jarvis.DocumentStore.Client
 {
@@ -189,6 +190,50 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
+        public async Task<UploadedDocumentResponse> AddFormatToDocument(AddFormatToDocumentModel model, IDictionary<string, object> customData = null)
+        {
+            var fileInfo = new FileInfo(model.PathToFile);
+
+            using (var sourceStream = File.OpenRead(model.PathToFile))
+            {
+                using (var client = new HttpClient())
+                {
+                    using (
+                        var content =
+                            new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
+                    {
+                        content.Add(
+                            new StreamContent(sourceStream),
+                            "stream",
+                            fileInfo.Name
+                        );
+
+                        customData = customData ?? new Dictionary<String, Object>();
+                        customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
+                        customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
+                        customData.Add(AddFormatToDocumentParameters.DocumentId, model.DocumentId);
+                        customData.Add(AddFormatToDocumentParameters.Format, model.Format);
+                        customData.Add(AddFormatToDocumentParameters.PathToFile, model.PathToFile);
+
+                        var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
+                        content.Add(stringContent, "custom-data");
+
+                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + model.Format);
+
+                        using (var message = await client.PostAsync(endPoint, content))
+                        {
+                            var json = await message.Content.ReadAsStringAsync();
+                            message.EnsureSuccessStatusCode();
+                            return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
         /// <summary>
         /// Serialize custom data to json string
         /// </summary>
@@ -222,7 +267,7 @@ namespace Jarvis.DocumentStore.Client
                 var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@customdata");
 
                 var json = await client.GetStringAsync(endPoint);
-                return await FromJsonAsync < IDictionary<string, object>>(json);
+                return await FromJsonAsync<IDictionary<string, object>>(json);
             }
         }
 

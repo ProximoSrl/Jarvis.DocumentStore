@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\AddFormatToDocumentParameters.cs" />
     <Compile Include="Model\DocumentContent.cs" />
     <Compile Include="Model\StructuralExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

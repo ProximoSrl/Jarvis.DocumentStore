@@ -272,6 +272,7 @@
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
     <Compile Include="Logging\MongoDBAppender.cs" />
     <Compile Include="Logging\MongoLog.cs" />
+    <Compile Include="Model\AddFormatToDocument.cs" />
     <Compile Include="Model\UploadedDocumentResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

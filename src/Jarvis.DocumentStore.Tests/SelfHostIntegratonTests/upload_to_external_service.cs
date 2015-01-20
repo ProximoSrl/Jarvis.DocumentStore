@@ -5,6 +5,8 @@ using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System;
 
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
@@ -89,6 +91,30 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc")).Wait();
         }
 
+        [Test]
+        public void upload_text_with_metadata()
+        {
+            _docs.UploadAsync(TestConfig.PathToTextDocument, DocumentHandle.FromString("txt_test"),
+                new Dictionary<String, object>() 
+                { 
+                    {"param1" , "this is a test"},
+                    {"the answer", 42},
+                }).Wait();
+        }
+
+        [Test]
+        public void upload_doc_then_add_format_to_doc()
+        {
+            _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc_2")).Wait();
+            AddFormatToDocumentModel model = new AddFormatToDocumentModel();
+            model.CreatedById = "tika";
+            model.DocumentHandle = DocumentHandle.FromString("doc_2");
+            model.PathToFile = TestConfig.PathToTextDocument;
+            model.Format = new DocumentFormat(Jarvis.DocumentStore.Core.Processing.DocumentFormats.Tika);
+            _docs.AddFormatToDocument(model, null).Wait();
+        }
+
+        
         [Test]
         public void upload_same_doc_100_times_with_unique_handle()
         {

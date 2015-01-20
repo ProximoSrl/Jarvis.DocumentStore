@@ -28,6 +28,8 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Model;
 using Jarvis.DocumentStore.Host.Providers;
 using Newtonsoft.Json;
+using Jarvis.DocumentStore.Shared;
+using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -69,7 +71,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var documentId = _identityGenerator.New<DocumentId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
-            var errorMessage = await UploadFromHttpContent(Request.Content);
+            var errorMessage = await UploadFromHttpContent(Request.Content, new DocumentFormat(DocumentFormats.Original));
             Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage);
 
             if (errorMessage != null)
@@ -98,18 +100,53 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
+        [Route("{tenantId}/documents/addformat/{format}")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> AddFormatToDocument(TenantId tenantId, DocumentFormat format)
+        {
+            var errorMessage = await UploadFromHttpContent(Request.Content, format);
+            var docIdParameter = _customData[AddFormatToDocumentParameters.DocumentId] as String;
+            DocumentId documentId;
+            if (docIdParameter == null)
+            {
+                //user ask for handle, we need to grab the handle
+                var documentHandle = new DocumentHandle(_customData[AddFormatToDocumentParameters.DocumentHandle] as String);
+                var handle = _handleWriter.FindOneById(documentHandle);
+                documentId = handle.DocumentId;
+            }
+            else
+            {
+                documentId = new DocumentId(_customData[AddFormatToDocumentParameters.DocumentId] as String);
+            }
+
+            var documentFormat = new DocumentFormat(_customData[AddFormatToDocumentParameters.Format] as String);
+            var createdById = new PipelineId(_customData[AddFormatToDocumentParameters.CreatedBy] as String);
+            Logger.DebugFormat("Incoming new format for documentId {0}", documentId);
+
+            var command = new AddFormatToDocument(documentId, documentFormat, _blobId, createdById);
+            CommandBus.Send(command, "api");
+
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                new AddFormatToDocumentResponse
+                {
+                    Result = true,
+                }
+            );
+        }
+
         /// <summary>
         /// Upload a file sent in an http request
         /// </summary>
         /// <param name="httpContent">request's content</param>
         /// <returns>Error message or null</returns>
-        private async Task<string> UploadFromHttpContent(HttpContent httpContent)
+        private async Task<String> UploadFromHttpContent(HttpContent httpContent, DocumentFormat format)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
                 return "Attachment not found!";
 
             var provider = await httpContent.ReadAsMultipartAsync(
-                new FileStoreMultipartStreamProvider(_blobStore, _configService)
+                new FileStoreMultipartStreamProvider(_blobStore, _configService, format)
             );
 
             if (provider.Filename == null)
@@ -265,7 +302,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
             var descriptor = _blobStore.GetDescriptor(blobId);
             var createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
-//            createDocument.WithDiagnosticDescription("Created by rest api");
+            //            createDocument.WithDiagnosticDescription("Created by rest api");
             CommandBus.Send(createDocument, "api");
         }
 
@@ -278,4 +315,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return _documentReader.FindOneById(mapping.DocumentId);
         }
     }
+
+
 }
