@@ -8,61 +8,39 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using System.Collections.Generic;
 
-namespace Jarvis.DocumentStore.ClientJobs
+namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
-    public class AbstractPollerFileJob
+    public abstract class AbstractPollerFileJob : IPollerJob
     {
+
+        public String QueueName { get; protected set; }
+
+        public PipelineId PipelineId { get; protected set; }
+
         string _workingFolder;
-        protected DocumentId InputDocumentId { get; private set; }
-        protected DocumentFormat InputDocumentFormat { get; private set; }
-        protected BlobId InputBlobId { get; private set; }
-        protected PipelineId PipelineId { get; private set; }
-        public TenantId TenantId { get; set; }
 
         public ICommandBus CommandBus { get; set; }
         public ILogger Logger { get; set; }
         public IBlobStore BlobStore { get; set; }
         public ConfigService ConfigService { get; set; }
 
+        IQueueDispatcher QueueDispatcher { get; set; }
+
         public void Start() { }
 
-        protected virtual Int32 NumOfParallelWorkers
-        {
-            get { return 1; } //defaults to single worker.
-        }
+        //protected virtual Int32 NumOfParallelWorkers
+        //{
+        //    get { return 1; } //defaults to single worker.
+        //}
 
         private Timer pollingTimer;
 
         public void Start(Int32 pollingTimeInMs)
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
-            PipelineId = new PipelineId(jobDataMap.GetString(JobKeys.PipelineId));
-
-            InputDocumentId = new DocumentId(jobDataMap.GetString(JobKeys.DocumentId));
-            InputBlobId = new BlobId(jobDataMap.GetString(JobKeys.BlobId));
-            InputDocumentFormat = new DocumentFormat(jobDataMap.GetString(JobKeys.Format));
-
-            if (TenantId == null)
-                throw new Exception("tenant not set!");
-
-            _workingFolder = Path.Combine(
-                ConfigService.GetWorkingFolder(TenantId, InputBlobId),
-                GetType().Name
-            );
-
-            OnExecute(context);
-
-            try
-            {
-                if (Directory.Exists(_workingFolder))
-                    Directory.Delete(_workingFolder, true);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorFormat(ex, "Error deleting {0}", _workingFolder);
-            }
-
             pollingTimer = new Timer(pollingTimeInMs);
             pollingTimer.Elapsed += pollingTimer_Elapsed;
             pollingTimer.Start();
@@ -73,18 +51,45 @@ namespace Jarvis.DocumentStore.ClientJobs
             pollingTimer.Stop();
             try
             {
-
+                var nextJob = QueueDispatcher.GetNextJob(this.QueueName);
+                if (nextJob != null)
+                {
+                    PollerJobBaseParameters baseParameters = new PollerJobBaseParameters();
+                    baseParameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
+                    baseParameters.InputDocumentId = new DocumentId( nextJob.Parameters[JobKeys.DocumentId]);
+                    baseParameters.InputDocumentFormat = new DocumentFormat( nextJob.Parameters[JobKeys.Format]);
+                    baseParameters.InputBlobId = new BlobId( nextJob.Parameters[JobKeys.BlobId]);
+                    baseParameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
+                    OnPolling(baseParameters, nextJob.Parameters);
+                }
             }
+
             finally
             {
                 pollingTimer.Start();
             }
         }
 
+        protected abstract void OnPolling(PollerJobBaseParameters baseParameters, IDictionary<String, String> fullParameters);
 
+        protected string DownloadFileToWorkingFolder(BlobId id)
+        {
+            return BlobStore.Download(id, _workingFolder);
+        }
 
-        protected abstract void OnPolling();
+        protected string WorkingFolder
+        {
+            get { return _workingFolder; }
+        }
+    }
 
+    public class PollerJobBaseParameters 
+    {
+        public DocumentId InputDocumentId { get; set; }
+        public DocumentFormat InputDocumentFormat { get; set; }
+        public BlobId InputBlobId { get; set; }
+        public TenantId TenantId { get; set; }
 
+        public String FileExtension { get; set; }
     }
 }

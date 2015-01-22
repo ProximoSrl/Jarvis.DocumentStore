@@ -275,6 +275,7 @@
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
     <Compile Include="Jobs\JobStats.cs" />
     <Compile Include="Jobs\PollingJobs\AbstractPollerFileJob.cs" />
+    <Compile Include="Jobs\PollingJobs\ExtractTextWithTikaPollerJob.cs" />
     <Compile Include="Jobs\PollingJobs\InProcessPollerJobManager.cs" />
     <Compile Include="Jobs\PollingJobs\IPollerJob.cs" />
     <Compile Include="Jobs\QueueManager\QueueEntities.cs" />

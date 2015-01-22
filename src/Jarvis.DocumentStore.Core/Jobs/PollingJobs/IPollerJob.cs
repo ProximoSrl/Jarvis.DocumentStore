@@ -24,5 +24,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         Boolean Stop(String jobHandle);
     }
 
+    public interface IPollerJob 
+    {
+        String QueueName { get; }
+
+        void Start();
+    }
+
 
 }
