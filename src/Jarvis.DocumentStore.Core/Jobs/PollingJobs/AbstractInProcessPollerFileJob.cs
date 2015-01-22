@@ -16,8 +16,13 @@ using CQRS.Kernel.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
-    public abstract class AbstractPollerFileJob : IPollerJob
+    public abstract class AbstractInProcessPollerFileJob : IPollerJob
     {
+
+        public bool IsOutOfProcess
+        {
+            get { return false; }
+        }
 
         public String QueueName { get; protected set; }
 
@@ -41,12 +46,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         private String _identity;
 
-        public AbstractPollerFileJob()
+        public AbstractInProcessPollerFileJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
         }
 
-        public void Start()
+        public void Start(List<String> documentStoreAddressUrls)
         {
             if (Started) return;
             Start(DocumentStoreConfiguration.QueueStreamPollInterval);
@@ -134,15 +139,16 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             IDictionary<String, String> fullParameters, 
             IBlobStore currentTenantBlobStore,
             String workingFolder);
-    }
 
-    public class PollerJobBaseParameters
-    {
-        public DocumentId InputDocumentId { get; set; }
-        public DocumentFormat InputDocumentFormat { get; set; }
-        public BlobId InputBlobId { get; set; }
-        public TenantId TenantId { get; set; }
 
-        public String FileExtension { get; set; }
+        public class PollerJobBaseParameters
+        {
+            public DocumentId InputDocumentId { get; set; }
+            public DocumentFormat InputDocumentFormat { get; set; }
+            public BlobId InputBlobId { get; set; }
+            public TenantId TenantId { get; set; }
+
+            public String FileExtension { get; set; }
+        }
     }
 }

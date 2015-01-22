@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
-    public class CreateThumbnailFromPdfPollerJob : AbstractPollerFileJob
+    public class CreateThumbnailFromPdfPollerJob : AbstractInProcessPollerFileJob
     {
         public CreateThumbnailFromPdfPollerJob()
         {

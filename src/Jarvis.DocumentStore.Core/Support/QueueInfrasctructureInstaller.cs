@@ -36,9 +36,12 @@ namespace Jarvis.DocumentStore.Core.Support
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface(),
-                Component
+                //Component
+                //    .For<IPollerJobManager>()
+                //    .ImplementedBy<InProcessPollerJobManager>(),
+               Component
                     .For<IPollerJobManager>()
-                    .ImplementedBy<InProcessPollerJobManager>(),
+                    .ImplementedBy<OutOfProcessBaseJobManager>(),
                 Component
                     .For<PollerManager>()
                     .ImplementedBy<PollerManager>()

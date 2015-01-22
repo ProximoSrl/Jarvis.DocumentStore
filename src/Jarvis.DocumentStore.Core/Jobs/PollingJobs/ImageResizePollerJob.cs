@@ -11,7 +11,7 @@ using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
-    public class ImageResizePollerJob : AbstractPollerFileJob
+    public class ImageResizePollerJob : AbstractInProcessPollerFileJob
     {
         public ImageResizePollerJob()
         {

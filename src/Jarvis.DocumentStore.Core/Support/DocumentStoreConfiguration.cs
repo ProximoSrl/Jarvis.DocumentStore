@@ -4,6 +4,7 @@ using Castle.Services.Logging.Log4netIntegration;
 using CQRS.Kernel.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
+
 namespace Jarvis.DocumentStore.Core.Support
 {
     public abstract class DocumentStoreConfiguration
@@ -15,6 +16,8 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public bool IsApiServer { get; protected set; }
         public bool IsWorker { get; protected set; }
+
+        public System.Uri ServerAddress { get; set; }
 
         public JobModes JobMode { get; protected set; }
         
@@ -31,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public virtual void CreateLoggingFacility(LoggingFacility f)
         {
-            f.LogUsing(new ExtendedLog4netFactory("log4net"));
+            f.LogUsing(new ExtendedLog4netFactory("log4net.config"));
         }
     }
 

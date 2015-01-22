@@ -6,6 +6,7 @@ using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
 using Topshelf;
 using Jarvis.ConfigurationService.Client;
+using System.Threading;
 
 namespace Jarvis.DocumentStore.Host
 {
@@ -15,10 +16,27 @@ namespace Jarvis.DocumentStore.Host
 
         static int Main(string[] args)
         {
+            Int32 exitCode;
+            if (args.Length > 0)
+            {
+                //TEMP: Single process executor run
+                String dsBaseAddress = args[0];
+                String queueName = args[1];
+                exitCode = SingleJobStart(dsBaseAddress, queueName);
+            }
+            else
+            {
+                exitCode = (Int32)StandardDocumentStoreStart();
+            }
+            return (int)exitCode;
+        }
+
+        private static TopshelfExitCode StandardDocumentStoreStart()
+        {
             SetupColors();
 
             LoadConfiguration();
-            
+
             ConfigureRebuild();
 
             var exitCode = HostFactory.Run(host =>
@@ -33,7 +51,7 @@ namespace Jarvis.DocumentStore.Host
                 host.Service<DocumentStoreBootstrapper>(service =>
                 {
                     var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
-                    service.ConstructUsing(() => new DocumentStoreBootstrapper( uri ));
+                    service.ConstructUsing(() => new DocumentStoreBootstrapper());
                     service.WhenStarted(s => s.Start(_documentStoreConfiguration));
                     service.WhenStopped(s => s.Stop());
                 });
@@ -44,8 +62,48 @@ namespace Jarvis.DocumentStore.Host
                 host.SetDisplayName("Jarvis - Document Store");
                 host.SetServiceName("JarvisDocumentStore");
             });
+            return exitCode;
+        }
 
-            return (int)exitCode;
+        private static Int32 SingleJobStart(String dsBaseAddress, String queueName)
+        {
+            //Avoid all sub process to start at the same moment.
+            Thread.Sleep(new Random().Next(1000, 3000));
+            Console.WindowWidth = 140;
+            SetupColors();
+
+            LoadConfiguration();
+
+            try
+            {
+                var resourceDownload = ConfigurationServiceClient.Instance.DownloadResource("log4net.config", monitorForChange: true);
+                if (!resourceDownload)
+                {
+                    Console.Error.WriteLine("Unable to download log4net.config from configuration store");
+                }
+            }
+            catch (System.IO.IOException ex)
+            {
+                //If multiple prcesses starts, we cannot access log4net.config because it can be lcoked.
+            }
+       
+
+            var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
+            var bootstrapper = new DocumentStoreSingleQueueClientBootstrapper(uri, queueName);
+            var jobStarted = bootstrapper.Start(_documentStoreConfiguration);
+
+            if (jobStarted)
+            {
+                Console.Title = "Jarvis - Document Store Client for queue " + queueName;
+                Console.WriteLine("JOB STARTED: Press any key to stop the client");
+                Console.ReadKey(); 
+            }
+            else
+            {
+                Console.WriteLine("NO JOB STARTED!!!! CLOSING!!!!");
+                Thread.Sleep(3000);
+            }
+            return 0;
         }
 
         static void SetupColors()
@@ -119,6 +177,6 @@ namespace Jarvis.DocumentStore.Host
             Console.WriteLine("===================================================================");
             Console.WriteLine();
             Console.WriteLine();
-        }    
+        }
     }
 }

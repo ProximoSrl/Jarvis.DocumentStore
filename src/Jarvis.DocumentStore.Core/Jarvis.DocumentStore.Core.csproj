@@ -274,7 +274,10 @@
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
     <Compile Include="Jobs\JobStats.cs" />
-    <Compile Include="Jobs\PollingJobs\AbstractPollerFileJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\AbstractOutOfProcessPollerFileJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\AbstractTikaOutOfProcessJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\OutOfProcessBaseJobManager.cs" />
+    <Compile Include="Jobs\PollingJobs\AbstractInProcessPollerFileJob.cs" />
     <Compile Include="Jobs\PollingJobs\CreateThumbnailFromPdfPollerJob.cs" />
     <Compile Include="Jobs\PollingJobs\ExtractTextWithTikaPollerJob.cs" />
     <Compile Include="Jobs\PollingJobs\HtmlToPdfPollerJob.cs" />
@@ -365,6 +368,9 @@
     <Compile Include="Support\SizeInfoHelper.cs" />
     <Compile Include="Support\TenantJobFactory.cs" />
     <Compile Include="Support\TenantJobsInstaller.cs" />
+    <Compile Include="Support\WebClientEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

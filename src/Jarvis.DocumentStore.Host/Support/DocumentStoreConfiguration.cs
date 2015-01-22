@@ -9,6 +9,7 @@ using System.Collections;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -46,6 +47,9 @@ namespace Jarvis.DocumentStore.Host.Support
                 FillQueueList(queueInfoList);
             }
             QueueInfoList = queueInfoList.ToArray();
+
+            //App.config configuration
+            ServerAddress = new Uri(ConfigurationManager.AppSettings["endPoint"]);
         }
 
         private static void FillQueueList(List<QueueInfo> queueInfoList)
@@ -115,5 +119,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 }
             }
         }
+
+
     }
 }

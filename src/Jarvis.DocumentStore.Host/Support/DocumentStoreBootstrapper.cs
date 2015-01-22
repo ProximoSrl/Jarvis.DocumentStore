@@ -23,17 +23,13 @@ namespace Jarvis.DocumentStore.Host.Support
     public class DocumentStoreBootstrapper
     {
         IDisposable _webApplication;
-        readonly Uri _serverAddress;
+        Uri _serverAddress;
         IWindsorContainer _container;
         ILogger _logger;
 
-        public DocumentStoreBootstrapper(Uri serverAddress)
-        {
-            _serverAddress = serverAddress;
-        }
-
         public void Start(DocumentStoreConfiguration config)
         {
+            _serverAddress = config.ServerAddress;
             BuildContainer(config);
 
             _logger.DebugFormat(

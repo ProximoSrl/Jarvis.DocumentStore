@@ -30,10 +30,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         Boolean IsActive { get; }
 
-        void Start();
+        /// <summary>
+        /// Tells me if the job can execute only in process or is made to be executed
+        /// in out of process.
+        /// </summary>
+        Boolean IsOutOfProcess { get;  }
+
+        void Start(List<String> documentStoreAddressUrls);
 
         void Stop();
     }
-
-
 }

@@ -15,7 +15,7 @@ using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
-    public abstract class AbstractTikaPollerBaseJob : AbstractPollerFileJob
+    public abstract class AbstractTikaPollerBaseJob : AbstractInProcessPollerFileJob
     {
         readonly string[] _formats;
 

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
-    public class HtmlToPdfPollerJob : AbstractPollerFileJob
+    public class HtmlToPdfPollerJob : AbstractInProcessPollerFileJob
     {
         public HtmlToPdfPollerJob()
         {
