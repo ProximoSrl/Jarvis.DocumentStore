@@ -34,6 +34,9 @@ namespace Jarvis.DocumentStore.Host.Support
             IsReadmodelBuilder = GetBool("projections");
             IsQueueManager = GetBool("queueManager");
 
+            var jobMode = ConfigurationServiceClient.Instance.GetSetting("roles.jobMode", "Quartz");
+            JobMode = (JobModes) Enum.Parse(typeof(JobModes), jobMode, true);
+
             QueueStreamPollTime = GetInt32("queues.stream-poll-interval-ms", 1000);
             List<QueueInfo> queueInfoList = new List<QueueInfo>();
             if (IsQueueManager)

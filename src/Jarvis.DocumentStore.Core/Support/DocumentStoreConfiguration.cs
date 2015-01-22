@@ -15,6 +15,9 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public bool IsApiServer { get; protected set; }
         public bool IsWorker { get; protected set; }
+
+        public JobModes JobMode { get; protected set; }
+        
         public bool IsReadmodelBuilder { get; protected set; }
         public bool IsQueueManager { get; protected set; }
         public QueueInfo[] QueueInfoList { get; protected set; }
@@ -27,5 +30,12 @@ namespace Jarvis.DocumentStore.Core.Support
         {
             f.LogUsing(new ExtendedLog4netFactory("log4net"));
         }
+    }
+
+    public enum JobModes 
+    {
+        Unknown = 0,
+        Quartz = 1,
+        Queue = 2,
     }
 }
