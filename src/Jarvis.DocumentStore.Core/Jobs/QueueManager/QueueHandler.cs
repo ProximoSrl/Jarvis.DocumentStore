@@ -38,6 +38,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         private String[] _splittedExtension;
 
+        public Dictionary<String, String> Parameters { get; set; }
+
         public QueueInfo(
                 String name,
                 String pipeline,
@@ -95,9 +97,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 job.StreamId = streamElement.Id;
                 job.TenantId = tenantId;
                 job.Parameters = new Dictionary<string, string>();
-                if (streamElement.FormatInfo != null && streamElement.FormatInfo.BlobId != null)
-                    job.Parameters.Add(JobKeys.BlobId, streamElement.FormatInfo.BlobId);
+                job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
                 job.Parameters.Add(JobKeys.DocumentId, streamElement.DocumentId);
+                job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
+                job.Parameters.Add(JobKeys.BlobId, streamElement.FormatInfo.BlobId);
+                job.Parameters.Add(JobKeys.TenantId, tenantId);
+
+                if (_info.Parameters != null) 
+                {
+                    foreach (var parameter in _info.Parameters)
+                    {
+                        job.Parameters.Add(parameter.Key, parameter.Value);
+                    }
+                }
 
                 _collection.Save(job);
             }

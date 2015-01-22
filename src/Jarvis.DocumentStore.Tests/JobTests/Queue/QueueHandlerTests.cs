@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using MongoDB.Driver.Linq;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.DocumentStore.Core.Domain.Document;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -50,7 +51,13 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat
+                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                FormatInfo = new FormatInfo()
+                {
+                    PipelineId = new PipelineId("soffice"),
+                    DocumentFormat = new DocumentFormat("office"),
+                    BlobId = new BlobId("soffice.1")
+                }
             };
             sut.Handle(rm, new TenantId("test"));
             var collection = _db.GetCollection<QueuedJob>("queue.test");
@@ -80,12 +87,64 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 Filename = new FileNameWithExtension("test.docx"),
                 FormatInfo = new FormatInfo()
                 {
-                    PipelineId = new PipelineId("tika")
+                    PipelineId = new PipelineId("tika"),
+                    DocumentFormat = new DocumentFormat("tika"),
+                    BlobId = new BlobId("tika.1")
                 }
             };
             sut.Handle(rm, new TenantId("test"));
             
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1), "pipeline filter is not filtering in admitted pipeline");
+
+        }
+
+        [Test]
+        public void verify_get_next_job_not_give_executing_job()
+        {
+            var info = new QueueInfo("test", "tika", "");
+            QueueHandler sut = new QueueHandler(info, _db);
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                 FormatInfo = new FormatInfo()
+                {
+                    PipelineId = new PipelineId("tika"),
+                    DocumentFormat = new DocumentFormat("tika"),
+                    BlobId = new BlobId("tika.1")
+                }
+            };
+            sut.Handle(rm, new TenantId("test"));
+
+            var nextJob = sut.GetNextJob();
+            Assert.That(nextJob, Is.Not.Null);
+            nextJob = sut.GetNextJob();
+            Assert.That(nextJob, Is.Null);
+
+        }
+
+        [Test]
+        public void verify_job_is_generated_with_custom_parameters()
+        {
+            var info = new QueueInfo("test", "tika", "");
+            info.Parameters = new Dictionary<string, string>() { {"Custom", "CustomValue"} };
+            QueueHandler sut = new QueueHandler(info, _db);
+
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                FormatInfo = new FormatInfo()
+                {
+                    PipelineId = new PipelineId("tika"),
+                    DocumentFormat = new DocumentFormat("tika"),
+                    BlobId = new BlobId("tika.1")
+                },
+            };
+            sut.Handle(rm, new TenantId("test"));
+
+            var nextJob = sut.GetNextJob();
+            Assert.That(nextJob.Parameters["Custom"], Is.EqualTo("CustomValue"));
 
         }
     }

@@ -238,7 +238,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var evtFormat = new FormatAddedToDocument(new DocumentFormat("blah"), new BlobId("test"),
                 new PipelineId("tika"));
             evtFormat.AggregateId = new DocumentId(1);
-            evtFormat.AggregateId = new DocumentId(1);
             _sut.Handle(evtFormat, false); //format is linked to document.
 
             Assert.That(rmStream, Has.Count.EqualTo(2));
@@ -260,6 +259,54 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[1].FormatInfo.BlobId, Is.EqualTo(new BlobId("test")));
             Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentId(1)));
+        }
+
+        [Test]
+        public void verify_format_updated()
+        {
+            SetHandleToReturn();
+            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            docRm.AddHandle(new DocumentHandle("rev_1"));
+            rmDocuments.Add(docRm);
+            CreateSut();
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            _sut.Handle(evt, false); //Handle is linked to document.
+
+            var evtFormat = new FormatAddedToDocument(new DocumentFormat("blah"), new BlobId("test.1"), new PipelineId("tika"));
+            evtFormat.AggregateId = new DocumentId(1);
+             _sut.Handle(evtFormat, false); //format is linked to document.
+
+             var evtFormatUpdated = new DocumentFormatHasBeenUpdated(new DocumentFormat("blah"), new BlobId("test.2"), new PipelineId("tika"));
+             evtFormatUpdated.AggregateId = new DocumentId(1);
+             _sut.Handle(evtFormatUpdated, false); //format is linked to document.
+
+            Assert.That(rmStream, Has.Count.EqualTo(3));
+
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
+            Assert.That(rmStream[0].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("original"));
+            Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
+            Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
+            Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
+            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentId(1)));
+
+            Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
+            Assert.That(rmStream[1].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah"));
+            Assert.That(rmStream[1].FormatInfo.BlobId.ToString(), Is.EqualTo("test.1"));
+            Assert.That(rmStream[1].FormatInfo.PipelineId.ToString(), Is.EqualTo("tika"));
+            Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
+            Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
+            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentId(1)));
+
+            Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.HandleFormatUpdated));
+            Assert.That(rmStream[2].Handle, Is.EqualTo("rev_1"));
+            Assert.That(rmStream[2].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah"));
+            Assert.That(rmStream[2].FormatInfo.BlobId.ToString(), Is.EqualTo("test.2"));
+            Assert.That(rmStream[2].FormatInfo.PipelineId.ToString(), Is.EqualTo("tika"));
+            Assert.That(rmStream[2].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
+            Assert.That(rmStream[2].Filename.Extension, Is.EqualTo("txt"));
+            Assert.That(rmStream[2].DocumentId, Is.EqualTo(new DocumentId(1)));
         }
     }
 }

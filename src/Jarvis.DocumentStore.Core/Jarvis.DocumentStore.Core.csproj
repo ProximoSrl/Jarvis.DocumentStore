@@ -275,8 +275,13 @@
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
     <Compile Include="Jobs\JobStats.cs" />
     <Compile Include="Jobs\PollingJobs\AbstractPollerFileJob.cs" />
+    <Compile Include="Jobs\PollingJobs\CreateThumbnailFromPdfPollerJob.cs" />
     <Compile Include="Jobs\PollingJobs\ExtractTextWithTikaPollerJob.cs" />
-    <Compile Include="Jobs\PollingJobs\InProcessPollerJobManager.cs" />
+    <Compile Include="Jobs\PollingJobs\HtmlToPdfPollerJob.cs" />
+    <Compile Include="Jobs\PollingJobs\ImageResizePollerJob.cs" />
+    <Compile Include="Jobs\PollingJobs\InProcessPollerManager.cs" />
+    <Compile Include="Jobs\PollingJobs\LibreOfficeToPdfPollerJob.cs" />
+    <Compile Include="Jobs\PollingJobs\PollerManager.cs" />
     <Compile Include="Jobs\PollingJobs\IPollerJob.cs" />
     <Compile Include="Jobs\QueueManager\QueueEntities.cs" />
     <Compile Include="Jobs\QueueManager\QueueHandler.cs" />
@@ -347,7 +352,7 @@
     <Compile Include="Storage\IBlobDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\IStartupActivity.cs" />
-    <Compile Include="Support\QueueManagerInstaller.cs" />
+    <Compile Include="Support\QueueInfrasctructureInstaller.cs" />
     <Compile Include="Support\QueueManagerStartup.cs" />
     <Compile Include="Support\SchedulerStartup.cs" />
     <Compile Include="Support\TenantCoreInstaller.cs" />

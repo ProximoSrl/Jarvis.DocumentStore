@@ -11,6 +11,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
 using System.Collections.Generic;
 using System;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
@@ -27,12 +28,16 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         protected abstract ITikaAnalyzer BuildAnalyzer();
 
-        protected override void OnPolling(PollerJobBaseParameters baseParameters, IDictionary<String, String> fullParameters)
+        protected override void OnPolling(
+            PollerJobBaseParameters baseParameters, 
+            IDictionary<String, String> fullParameters,
+            IBlobStore currentTenantBlobStore,
+            String workingFolder)
         {
-
+            
             if (!_formats.Contains(baseParameters.FileExtension))
             {
-                var contentId = BlobStore.Save(DocumentFormats.Content, DocumentContent.NullContent);
+                var contentId = currentTenantBlobStore.Save(DocumentFormats.Content, DocumentContent.NullContent);
                 Logger.DebugFormat("Content: {0} has null content.", baseParameters.InputDocumentId);
 
                 CommandBus.Send(new AddFormatToDocument(
@@ -46,14 +51,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             Logger.DebugFormat("Starting tika on content: {0}, file extension {1}", baseParameters.InputDocumentId, baseParameters.FileExtension);
             var analyzer = BuildAnalyzer();
 
-            string pathToFile = DownloadFileToWorkingFolder(baseParameters.InputBlobId);
+            string pathToFile = currentTenantBlobStore.Download(baseParameters.InputBlobId, workingFolder);
             string content = analyzer.GetHtmlContent(pathToFile);
             var tikaFileName = new FileNameWithExtension(baseParameters.InputBlobId + ".tika.html");
             BlobId tikaBlobId;
             string htmlSource = null;
             using (var htmlReader = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             {
-                tikaBlobId = BlobStore.Upload(DocumentFormats.Tika, tikaFileName, htmlReader);
+                tikaBlobId = currentTenantBlobStore.Upload(DocumentFormats.Tika, tikaFileName, htmlReader);
                 htmlReader.Seek(0, SeekOrigin.Begin);
                 using (var sr = new StreamReader(htmlReader, Encoding.UTF8))
                 {
@@ -89,7 +94,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                     documentContent.AddMetadata(DocumentContent.MedatataLanguage, lang);
                 }
 
-                var contentId = BlobStore.Save(DocumentFormats.Content, documentContent);
+                var contentId = currentTenantBlobStore.Save(DocumentFormats.Content, documentContent);
                 Logger.DebugFormat("Content: {0} has {1} pages", baseParameters.InputDocumentId, pages);
 
                 CommandBus.Send(new AddFormatToDocument(
@@ -102,7 +107,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         }
     }
 
-    public class ExtractTextWithTikaPollerJob : AbstractTikaPollerBaseJob
+    public class ExtractTextWithTikaJob : AbstractTikaPollerBaseJob
     {
 
         protected override ITikaAnalyzer BuildAnalyzer()
@@ -112,6 +117,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                 Logger = this.Logger
             };
         }
+
+        public override bool IsActive
+        {
+            get { return !base.ConfigService.UseEmbeddedTika; }
+        }
     }
 
     public class ExtractTextWithTikaNetJob : AbstractTikaPollerBaseJob
@@ -119,6 +129,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         protected override ITikaAnalyzer BuildAnalyzer()
         {
             return new TikaNetAnalyzer();
+        }
+
+        public override bool IsActive
+        {
+            get { return base.ConfigService.UseEmbeddedTika; }
         }
     }
 }

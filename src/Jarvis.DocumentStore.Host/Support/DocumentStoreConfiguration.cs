@@ -8,6 +8,7 @@ using Jarvis.DocumentStore.Core.Support;
 using System.Collections;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -37,7 +38,8 @@ namespace Jarvis.DocumentStore.Host.Support
             var jobMode = ConfigurationServiceClient.Instance.GetSetting("roles.jobMode", "Quartz");
             JobMode = (JobModes) Enum.Parse(typeof(JobModes), jobMode, true);
 
-            QueueStreamPollTime = GetInt32("queues.stream-poll-interval-ms", 1000);
+            QueueStreamPollInterval = GetInt32("queues.stream-poll-interval-ms", 1000);
+            QueueJobsPollInterval = GetInt32("queues.jobs-poll-interval-ms", 1000);
             List<QueueInfo> queueInfoList = new List<QueueInfo>();
             if (IsQueueManager)
             {
@@ -56,6 +58,14 @@ namespace Jarvis.DocumentStore.Host.Support
                     (String) queue.name,
                     (String) queue.pipeline,
                     (String) queue.extension);
+                if (queue.parameters != null)
+                {
+                    info.Parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(queue.parameters.ToString());
+                }
+                else
+                {
+                    info.Parameters = new Dictionary<string, string>();
+                }
                 queueInfoList.Add(info);
             }
         }

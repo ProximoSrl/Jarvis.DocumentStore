@@ -31,6 +31,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     {
         private DocumentStoreConfiguration _configuration;
         private ITenantAccessor _tenantAccessor;
+        private MongoDatabase _mongoDatabase;
         private Thread _pollerThread;
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
@@ -50,20 +51,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _tenantAccessor = tenantAccessor;
             _configuration = configuration;
+            _mongoDatabase = mongoDatabase;
             _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("stream.checkpoints");
-
-            _queueTenantInfos = tenantAccessor.Tenants
-                .Select(t => new QueueTenantInfo()
-                {
-                    TenantId = t.Id,
-                    Checkpoint = FindLastCheckpointForTenant(t.Id),
-                    StreamReader = t.Container.Resolve<IReader<StreamReadModel, Int64>>(),
-                })
-                .ToArray();
-            _commandList = new BlockingCollection<CommandData>();
-            _queueHandlers = _configuration.QueueInfoList
-                .Select(qil => new QueueHandler(qil, mongoDatabase))
-                .ToDictionary(qh => qh.Name, qh => qh);
             Logger = NullLogger.Instance;
         }
 
@@ -92,11 +81,24 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public void Start()
         {
+            _queueTenantInfos = _tenantAccessor.Tenants
+               .Select(t => new QueueTenantInfo()
+               {
+                   TenantId = t.Id,
+                   Checkpoint = FindLastCheckpointForTenant(t.Id),
+                   StreamReader = t.Container.Resolve<IReader<StreamReadModel, Int64>>(),
+               })
+               .ToArray();
+            _commandList = new BlockingCollection<CommandData>();
+            _queueHandlers = _configuration.QueueInfoList
+                .Select(qil => new QueueHandler(qil, _mongoDatabase))
+                .ToDictionary(qh => qh.Name, qh => qh);
+
             _pollerThread = new Thread(PollerFunc);
             _pollerThread.IsBackground = true;
             _pollerThread.Start();
 
-            pollerTimer = new System.Timers.Timer(_configuration.QueueStreamPollTime);
+            pollerTimer = new System.Timers.Timer(_configuration.QueueStreamPollInterval);
             pollerTimer.Elapsed += TimerCallback;
             pollerTimer.Start();
         }
@@ -157,7 +159,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                             foreach (var qh in _queueHandlers)
                             {
                                 //In this version we are interested only in event for new formats
-                                if (streamData.EventType != HandleStreamEventTypes.HandleHasNewFormat) continue;
+                                if (streamData.EventType != HandleStreamEventTypes.HandleHasNewFormat &&
+                                    streamData.EventType != HandleStreamEventTypes.HandleFormatUpdated) continue;
                                 qh.Value.Handle(streamData, info.TenantId);
                             }
                         }

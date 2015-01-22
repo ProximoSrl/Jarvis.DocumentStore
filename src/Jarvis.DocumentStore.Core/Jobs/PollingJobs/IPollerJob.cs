@@ -28,7 +28,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
     {
         String QueueName { get; }
 
+        Boolean IsActive { get; }
+
         void Start();
+
+        void Stop();
     }
 
 

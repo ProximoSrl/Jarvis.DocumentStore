@@ -24,7 +24,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
          IEventHandler<HandleDeleted>,
          IEventHandler<HandleLinked>,
          IEventHandler<FormatAddedToDocument>,
-         IEventHandler<HandleFileNameSet>
+         IEventHandler<HandleFileNameSet>,
+         IEventHandler<DocumentFormatHasBeenUpdated>
     {
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
         private readonly IReader<DocumentReadModel, DocumentId> _documentReadModel;
@@ -165,6 +166,32 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             }
         }
 
-      
+
+
+        public void On(DocumentFormatHasBeenUpdated e)
+        {
+            var allHandles = _documentReadModel.FindOneById((DocumentId)e.AggregateId).Handles;
+            var descriptor = _blobStore.GetDescriptor(e.BlobId);
+            foreach (var handle in allHandles)
+            {
+                _streamReadModelCollection.Insert(e, new StreamReadModel()
+                {
+                    Id = GetNewId(),
+                    //TenantId = this.TenantId,
+                    Handle = handle,
+                    Filename = descriptor.FileNameWithExtension,
+                    DocumentId = (DocumentId)e.AggregateId,
+                    FormatInfo = new FormatInfo()
+                    {
+                        BlobId = e.BlobId,
+                        DocumentFormat = e.DocumentFormat,
+                        PipelineId = e.CreatedBy != PipelineId.Null
+                            ? e.CreatedBy
+                            : new PipelineId("original"),
+                    },
+                    EventType = HandleStreamEventTypes.HandleFormatUpdated
+                });
+            }
+        }
     }
 }

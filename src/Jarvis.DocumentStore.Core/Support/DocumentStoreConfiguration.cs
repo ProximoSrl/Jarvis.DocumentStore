@@ -23,7 +23,10 @@ namespace Jarvis.DocumentStore.Core.Support
         public QueueInfo[] QueueInfoList { get; protected set; }
         public string QuartzConnectionString { get; protected set; }
         public string QueueConnectionString { get; protected set; }
-        public int QueueStreamPollTime { get; protected set; }
+        public int QueueStreamPollInterval { get; protected set; }
+
+        public int QueueJobsPollInterval { get; protected set; }
+
         public IList<TenantSettings> TenantSettings { get; private set; }
 
         public virtual void CreateLoggingFacility(LoggingFacility f)

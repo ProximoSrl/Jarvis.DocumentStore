@@ -11,6 +11,8 @@ using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using System.Collections.Generic;
+using Jarvis.DocumentStore.Core.Support;
+using CQRS.Kernel.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
@@ -21,16 +23,41 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         public PipelineId PipelineId { get; protected set; }
 
-        string _workingFolder;
+        public virtual bool IsActive { get { return true; } }
 
         public ICommandBus CommandBus { get; set; }
+
+        public ITenantAccessor TenantAccessor { get; set; }
+
         public ILogger Logger { get; set; }
-        public IBlobStore BlobStore { get; set; }
+
         public ConfigService ConfigService { get; set; }
 
-        IQueueDispatcher QueueDispatcher { get; set; }
+        public DocumentStoreConfiguration DocumentStoreConfiguration { get; set; }
 
-        public void Start() { }
+        public IQueueDispatcher QueueDispatcher { get; set; }
+
+        public Boolean Started { get; private set; }
+
+        public AbstractPollerFileJob()
+        {
+
+        }
+
+        public void Start()
+        {
+            if (Started) return;
+            Start(DocumentStoreConfiguration.QueueStreamPollInterval);
+            Started = true;
+        }
+
+        public void Stop()
+        {
+            if (!Started) return;
+            Started = false;
+            pollingTimer.Dispose();
+            pollingTimer = null;
+        }
 
         //protected virtual Int32 NumOfParallelWorkers
         //{
@@ -39,7 +66,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         private Timer pollingTimer;
 
-        public void Start(Int32 pollingTimeInMs)
+        private void Start(Int32 pollingTimeInMs)
         {
             pollingTimer = new Timer(pollingTimeInMs);
             pollingTimer.Elapsed += pollingTimer_Elapsed;
@@ -49,41 +76,65 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             pollingTimer.Stop();
+            String workingFolder = null;
             try
             {
-                var nextJob = QueueDispatcher.GetNextJob(this.QueueName);
-                if (nextJob != null)
+                QueuedJob nextJob = null; 
+                while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName)) != null)
                 {
-                    PollerJobBaseParameters baseParameters = new PollerJobBaseParameters();
-                    baseParameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
-                    baseParameters.InputDocumentId = new DocumentId( nextJob.Parameters[JobKeys.DocumentId]);
-                    baseParameters.InputDocumentFormat = new DocumentFormat( nextJob.Parameters[JobKeys.Format]);
-                    baseParameters.InputBlobId = new BlobId( nextJob.Parameters[JobKeys.BlobId]);
-                    baseParameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
-                    OnPolling(baseParameters, nextJob.Parameters);
+                    try
+                    {
+                        PollerJobBaseParameters baseParameters = new PollerJobBaseParameters();
+                        baseParameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
+                        baseParameters.InputDocumentId = new DocumentId(nextJob.Parameters[JobKeys.DocumentId]);
+                        baseParameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
+                        baseParameters.InputBlobId = new BlobId(nextJob.Parameters[JobKeys.BlobId]);
+                        baseParameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
+                        //remember to enter the right tenant.
+                        TenantContext.Enter(new TenantId(baseParameters.TenantId));
+                        var blobStore = TenantAccessor.GetTenant(baseParameters.TenantId).Container.Resolve<IBlobStore>();
+                        workingFolder = Path.Combine(
+                               ConfigService.GetWorkingFolder(baseParameters.TenantId, baseParameters.InputBlobId),
+                               GetType().Name
+                           );
+                        OnPolling(baseParameters, nextJob.Parameters, blobStore, workingFolder);
+                        QueueDispatcher.SetJobExecuted(this.QueueName, nextJob.Id, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id, nextJob.Parameters[JobKeys.TenantId]);
+                        QueueDispatcher.SetJobExecuted(this.QueueName, nextJob.Id, ex.Message);
+                    }
                 }
             }
 
             finally
             {
-                pollingTimer.Start();
+                if (!String.IsNullOrEmpty(workingFolder)) 
+                {
+                    try
+                    {
+                        if (Directory.Exists(workingFolder))
+                            Directory.Delete(workingFolder, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorFormat(ex, "Error deleting {0}", workingFolder);
+                    }
+                }
+                if (Started && pollingTimer != null) pollingTimer.Start();
+                
             }
         }
 
-        protected abstract void OnPolling(PollerJobBaseParameters baseParameters, IDictionary<String, String> fullParameters);
-
-        protected string DownloadFileToWorkingFolder(BlobId id)
-        {
-            return BlobStore.Download(id, _workingFolder);
-        }
-
-        protected string WorkingFolder
-        {
-            get { return _workingFolder; }
-        }
+        protected abstract void OnPolling(
+            PollerJobBaseParameters baseParameters, 
+            IDictionary<String, String> fullParameters, 
+            IBlobStore currentTenantBlobStore,
+            String workingFolder);
     }
 
-    public class PollerJobBaseParameters 
+    public class PollerJobBaseParameters
     {
         public DocumentId InputDocumentId { get; set; }
         public DocumentFormat InputDocumentFormat { get; set; }

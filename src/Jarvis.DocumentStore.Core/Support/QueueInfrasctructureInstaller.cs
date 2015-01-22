@@ -13,14 +13,15 @@ using MongoDB.Driver;
 using Quartz;
 using Quartz.Impl.MongoDB;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
-    public class QueueManagerInstaller : IWindsorInstaller
+    public class QueueInfrasctructureInstaller : IWindsorInstaller
     {
         private String _queueStoreConnectionString;
 
-        public QueueManagerInstaller(string queueStoreConnectionString)
+        public QueueInfrasctructureInstaller(string queueStoreConnectionString)
         {
             _queueStoreConnectionString = queueStoreConnectionString;
         }
@@ -31,7 +32,16 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<QueueManager, IQueueDispatcher>()
                     .ImplementedBy<QueueManager>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(GetQueueDb()))
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(GetQueueDb())),
+                Classes.FromAssemblyInThisApplication()
+                    .BasedOn<IPollerJob>()
+                    .WithServiceFirstInterface(),
+                Component
+                    .For<IPollerJobManager>()
+                    .ImplementedBy<InProcessPollerJobManager>(),
+                Component
+                    .For<PollerManager>()
+                    .ImplementedBy<PollerManager>()
             );
         }
 
