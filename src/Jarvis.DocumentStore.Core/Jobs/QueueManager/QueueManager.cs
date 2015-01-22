@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
     public interface IQueueDispatcher
     {
-        QueuedJob GetNextJob(String queueName);
+        QueuedJob GetNextJob(String queueName, String identity);
 
         Boolean SetJobExecuted(String queueName, String jobId, String errorMessage);
     }
@@ -151,7 +151,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                         .Where(s => s.Id > info.Checkpoint)
                         .Take(50)
                         .ToList();
-                    if (blockOfStreamData.Count > 0) 
+                    if (blockOfStreamData.Count > 0)
                     {
                         hasNewData = true;
                         foreach (var streamData in blockOfStreamData)
@@ -164,8 +164,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                                 qh.Value.Handle(streamData, info.TenantId);
                             }
                         }
-                        info.Checkpoint = blockOfStreamData[blockOfStreamData.Count -1].Id;
-                        _checkpointCollection.Save(new StreamCheckpoint() {Checkpoint = info.Checkpoint, TenantId = info.TenantId});
+                        info.Checkpoint = blockOfStreamData[blockOfStreamData.Count - 1].Id;
+                        _checkpointCollection.Save(new StreamCheckpoint() { Checkpoint = info.Checkpoint, TenantId = info.TenantId });
                     }
                 }
             } while (hasNewData);
@@ -182,26 +182,28 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             PollNow();
         }
 
-        public QueuedJob GetNextJob(String queueName)
+        public QueuedJob GetNextJob(String queueName, String identity)
         {
-            if (!_queueHandlers.ContainsKey(queueName)) 
-            {
-                Logger.Error("Requested next job for queue name " + queueName + " but no Queue configured with that name");
-                return null;
-            }
-            var qh = _queueHandlers[queueName];
-            return qh.GetNextJob();
+            return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity)) as QueuedJob;
         }
 
-        public   Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
+        public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
+        {
+            return (Boolean) ExecuteWithQueueHandler("set job executed", queueName, qh => qh.SetJobExecuted(jobId, errorMessage));
+        }
+
+
+        private Object ExecuteWithQueueHandler(String operationName, String queueName, Func<QueueHandler, Object> executor) 
         {
             if (!_queueHandlers.ContainsKey(queueName))
             {
-                Logger.Error("Requested next job for queue name " + queueName + " but no Queue configured with that name");
-                return false;
+                Logger.ErrorFormat("Requested operation {0} for queue name {1} but no Queue configured with that name", operationName, queueName);
+                return null;
             }
             var qh = _queueHandlers[queueName];
-            return qh.SetJobExecuted(jobId, errorMessage);
+            return executor(qh);
         }
+
+
     }
 }

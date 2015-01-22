@@ -20,11 +20,15 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
         public String ExecutionError { get; set; }
 
+        public Int32 ErrorCount { get; set; }
+
         public DateTime ExecutionEndTime { get; set; }
 
         public DateTime? ExecutionStartTime { get; set; }
 
         public Boolean Executing { get; set; }
+
+        public String ExecutingIdentity { get; set; }
 
         public Boolean Finished { get; set; }
 

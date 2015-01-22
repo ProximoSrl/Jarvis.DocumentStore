@@ -58,6 +58,10 @@ namespace Jarvis.DocumentStore.Host.Support
                     (String) queue.name,
                     (String) queue.pipeline,
                     (String) queue.extension);
+                if (queue.maxNumberOfFailure != null) 
+                {
+                    info.MaxNumberOfFailure = (Int32)queue.maxNumberOfFailure;
+                }
                 if (queue.parameters != null)
                 {
                     info.Parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(queue.parameters.ToString());

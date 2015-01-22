@@ -40,6 +40,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public Dictionary<String, String> Parameters { get; set; }
 
+        public int MaxNumberOfFailure { get; set; }
+
         public QueueInfo(
                 String name,
                 String pipeline,
@@ -53,6 +55,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 _splittedExtension = Extension.Split('|');
             else
                 _splittedExtension = new string[] { };
+            MaxNumberOfFailure = 5;
         }
 
         internal bool ShouldCreateJob(StreamReadModel streamElement)
@@ -66,6 +69,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
             return true;
         }
+
+
     }
 
     /// <summary>
@@ -115,7 +120,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
-        public QueuedJob GetNextJob()
+        public QueuedJob GetNextJob(String identity)
         {
             var result = _collection.FindAndModify(new FindAndModifyArgs()
             {
@@ -127,6 +132,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 Update = Update<QueuedJob>
                     .Set(j => j.Executing, true)
                     .Set(j => j.ExecutionStartTime, DateTime.Now)
+                    .Set(j => j.ExecutingIdentity, identity)
                     .Set(j => j.ExecutionError, null)
             });
             if (result.Ok)
@@ -137,21 +143,22 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             throw new ApplicationException("Error in Finding next job.");
         }
 
+       
         public Boolean SetJobExecuted(String jobId, String errorMessage) 
         {
-            var result = _collection.FindAndModify(new FindAndModifyArgs()
+            var job = _collection.FindOneById(BsonValue.Create(jobId));
+
+            if (!String.IsNullOrEmpty(errorMessage)) 
             {
-                Query = Query.And(
-                    Query<QueuedJob>.EQ(j => j.Id, jobId)
-                ),
-                SortBy = SortBy<QueuedJob>.Ascending(j => j.Id),
-                Update = Update<QueuedJob>
-                    .Set(j => j.Executing, false)
-                    .Set(j => j.ExecutionEndTime, DateTime.Now)
-                    .Set(j => j.ExecutionError, errorMessage)
-                    .Set(j => j.Finished, true)
-            });
-            return result.Ok && !(result.Response["value"] is BsonNull);
+                job.ErrorCount += 1;
+                job.ExecutionError = errorMessage;
+                if (job.ErrorCount == _info.MaxNumberOfFailure)
+                    job.Finished = true; //no more retry.
+            }
+            job.Executing = false;
+            job.ExecutionEndTime = DateTime.Now;
+            _collection.Save(job);
+            return true;
         }
     }
 }

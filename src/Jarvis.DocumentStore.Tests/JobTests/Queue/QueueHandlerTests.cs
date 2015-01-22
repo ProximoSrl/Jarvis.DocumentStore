@@ -14,6 +14,7 @@ using MongoDB.Driver.Linq;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using MongoDB.Bson;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -99,37 +100,58 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
+        public void verify_get_next_job_set_identity()
+        {
+            QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
+            var nextJob = sut.GetNextJob("identity");
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
+            Assert.That(job.ExecutingIdentity, Is.EqualTo("identity"));
+        }
+
+
+        [Test]
         public void verify_get_next_job_not_give_executing_job()
         {
-            var info = new QueueInfo("test", "tika", "");
-            QueueHandler sut = new QueueHandler(info, _db);
-            StreamReadModel rm = new StreamReadModel()
-            {
-                Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
-                 FormatInfo = new FormatInfo()
-                {
-                    PipelineId = new PipelineId("tika"),
-                    DocumentFormat = new DocumentFormat("tika"),
-                    BlobId = new BlobId("tika.1")
-                }
-            };
-            sut.Handle(rm, new TenantId("test"));
-
-            var nextJob = sut.GetNextJob();
+            QueueHandler sut = CreateAGenericJob( new QueueInfo("test", "tika", ""));
+            var nextJob = sut.GetNextJob("");
             Assert.That(nextJob, Is.Not.Null);
-            nextJob = sut.GetNextJob();
+            nextJob = sut.GetNextJob("");
             Assert.That(nextJob, Is.Null);
+        }
 
+        [Test]
+        public void verify_max_number_of_falure()
+        {
+            var info = new QueueInfo("test", "tika", "");
+            info.MaxNumberOfFailure = 2;
+            QueueHandler sut = CreateAGenericJob(info);
+          
+            var nextJob = sut.GetNextJob("");
+            Assert.That(nextJob, Is.Not.Null);
+            sut.SetJobExecuted(nextJob.Id, "ERROR");
+            nextJob = sut.GetNextJob("");
+            Assert.That(nextJob, Is.Not.Null);
+            sut.SetJobExecuted(nextJob.Id, "ERROR");
+            nextJob = sut.GetNextJob("");
+            Assert.That(nextJob, Is.Null, "After two failure the job should not be returned anymore");
         }
 
         [Test]
         public void verify_job_is_generated_with_custom_parameters()
         {
             var info = new QueueInfo("test", "tika", "");
-            info.Parameters = new Dictionary<string, string>() { {"Custom", "CustomValue"} };
-            QueueHandler sut = new QueueHandler(info, _db);
+            info.Parameters = new Dictionary<string, string>() { { "Custom", "CustomValue" } };
+            QueueHandler sut = CreateAGenericJob(info);
 
+            var nextJob = sut.GetNextJob("");
+            Assert.That(nextJob.Parameters["Custom"], Is.EqualTo("CustomValue"));
+
+        }
+
+        private QueueHandler CreateAGenericJob(QueueInfo info)
+        {
+            QueueHandler sut = new QueueHandler(info, _db);
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
@@ -139,13 +161,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     PipelineId = new PipelineId("tika"),
                     DocumentFormat = new DocumentFormat("tika"),
                     BlobId = new BlobId("tika.1")
-                },
+                }
             };
             sut.Handle(rm, new TenantId("test"));
-
-            var nextJob = sut.GetNextJob();
-            Assert.That(nextJob.Parameters["Custom"], Is.EqualTo("CustomValue"));
-
+            return sut;
         }
     }
 }

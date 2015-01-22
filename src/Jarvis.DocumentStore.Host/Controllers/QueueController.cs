@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("queue/getnextjob")]
         public QueuedJob GetNextJob(GetNextJobParameter parameter)
         {
-            return QueueDispatcher.GetNextJob(parameter.QueueName);
+            return QueueDispatcher.GetNextJob(parameter.QueueName, parameter.Identity);
         }
 
         [HttpPost]
@@ -36,6 +36,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
     public class GetNextJobParameter 
     {
         public String QueueName { get; set; }
+
+        public String Identity { get; set; }
     }
 
     public class FinishedJobParameter 

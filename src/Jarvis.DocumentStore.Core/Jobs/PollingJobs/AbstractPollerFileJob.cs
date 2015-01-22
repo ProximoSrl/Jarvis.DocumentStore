@@ -39,9 +39,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         public Boolean Started { get; private set; }
 
+        private String _identity;
+
         public AbstractPollerFileJob()
         {
-
+            _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
         }
 
         public void Start()
@@ -79,8 +81,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             String workingFolder = null;
             try
             {
-                QueuedJob nextJob = null; 
-                while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName)) != null)
+                QueuedJob nextJob = null;
+                while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName, _identity)) != null)
                 {
                     try
                     {
