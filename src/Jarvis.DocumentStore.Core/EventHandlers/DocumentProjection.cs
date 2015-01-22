@@ -16,7 +16,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<FormatAddedToDocument>,
         IEventHandler<DocumentDeleted>,
         IEventHandler<DocumentHandleAttached>,
-        IEventHandler<DocumentHandleDetached>
+        IEventHandler<DocumentHandleDetached>,
+        IEventHandler<DocumentFormatHasBeenUpdated>
     {
         private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
         private IHandleWriter _handleWriter;
@@ -82,6 +83,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => d.Remove(e.Handle));
         }
 
-
+        public void On(DocumentFormatHasBeenUpdated e)
+        {
+            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
+            {
+                d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
+            });
+        }
     }
 }

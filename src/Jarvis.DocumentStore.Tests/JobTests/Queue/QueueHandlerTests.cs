@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Driver.Linq;
 using CQRS.Shared.MultitenantSupport;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {

@@ -22,6 +22,7 @@ using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
+using System;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -150,6 +151,86 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+        }
+
+        [Test]
+        public async void can_add_new_format_with_api()
+        {
+            //Upload original
+            var handle = new DocumentHandle("Add_Format_Test");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
+
+            // wait background projection polling
+            Thread.Sleep(500);
+
+            //now add format to document.
+            AddFormatToDocumentModel model = new AddFormatToDocumentModel();
+            model.DocumentHandle = handle;
+            model.PathToFile = TestConfig.PathToTextDocument;
+            model.CreatedById = "tika";
+            model.Format = new DocumentFormat("tika");
+            await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
+
+            // wait background projection polling
+            Thread.Sleep(500);
+            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            Assert.NotNull(formats);
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("tika")));
+            Assert.That(formats, Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        public async void adding_two_time_same_format_overwrite_older()
+        {
+            //Upload original
+            var handle = new DocumentHandle("Add_Format_Test");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
+
+            // wait background projection polling
+            Thread.Sleep(200);
+
+            //now add format to document.
+            AddFormatToDocumentModel model = new AddFormatToDocumentModel();
+            model.DocumentHandle = handle;
+            model.PathToFile = TestConfig.PathToTextDocument;
+            model.CreatedById = "tika";
+            model.Format = new DocumentFormat("tika");
+            await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
+
+            // wait background projection polling
+            Thread.Sleep(200);
+
+            //now add same format with different content.
+            model = new AddFormatToDocumentModel();
+            model.DocumentHandle = handle;
+            model.PathToFile = TestConfig.PathToHtml;
+            model.CreatedById = "tika";
+            model.Format = new DocumentFormat("tika");
+            await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
+
+            // wait background projection polling
+            Thread.Sleep(200);
+            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            Assert.NotNull(formats);
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("tika")));
+            Assert.That(formats, Has.Count.EqualTo(2));
+
+            using (var reader = _documentStoreClient.OpenRead(handle, new DocumentFormat("tika")))
+            {
+                using (var downloaded = new MemoryStream())
+                using (var uploaded = new MemoryStream())
+                {
+                    using (var fileStream = File.OpenRead(TestConfig.PathToHtml))
+                    {
+                        await fileStream.CopyToAsync(uploaded);
+                    }
+                    await (await reader.ReadStream).CopyToAsync(downloaded);
+
+                    Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded), "Downloaded format is not equal to last format uploaded");
+                }
+            }
         }
 
         [Test]

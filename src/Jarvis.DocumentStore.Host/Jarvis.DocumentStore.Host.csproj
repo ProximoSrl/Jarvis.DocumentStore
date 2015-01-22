@@ -276,6 +276,7 @@
     <Compile Include="Model\UploadedDocumentResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\FormatStoreMultipartStreamProvider.cs" />
     <Compile Include="Providers\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Support\ApiInstaller.cs" />
     <Compile Include="Support\TenantHandlersInstaller.cs" />

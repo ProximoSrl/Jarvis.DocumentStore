@@ -8,27 +8,26 @@ using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Host.Providers
 {
-    public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider
+    public class FormatStoreMultipartStreamProvider : MultipartFormDataStreamProvider
     {
         readonly IBlobStore _store;
-        readonly ConfigService _config;
-        public bool IsInvalidFile { get; private set; }
+
+        readonly Core.Domain.Document.DocumentFormat _format;
+
         public FileNameWithExtension Filename { get; private set; }
 
-        public BlobId BlobId
-        {
+        public BlobId BlobId{
             get { return _writer != null ? _writer.BlobId : null; }
         }
 
         IBlobWriter _writer;
-        public FileStoreMultipartStreamProvider(
-            IBlobStore store,
-            ConfigService config
-        )
-            : base(Path.GetTempPath())
+        public FormatStoreMultipartStreamProvider(
+            IBlobStore store, 
+            Core.Domain.Document.DocumentFormat format
+        ) : base(Path.GetTempPath())
         {
             _store = store;
-            _config = config;
+            _format = format;
         }
 
         public override Stream GetStream(HttpContent parent, HttpContentHeaders headers)
@@ -38,14 +37,7 @@ namespace Jarvis.DocumentStore.Host.Providers
                 return new MemoryStream();
 
             Filename = new FileNameWithExtension(fname);
-
-            if (!_config.IsFileAllowed(Filename))
-            {
-                IsInvalidFile = true;
-                return new MemoryStream();
-            }
-
-            _writer = _store.CreateNew(DocumentFormats.Original, Filename);
+            _writer = _store.CreateNew(_format, Filename);
 
             return _writer.WriteStream;
         }

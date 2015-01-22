@@ -1,5 +1,6 @@
 ﻿using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Shared.Jobs;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -63,31 +64,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
             return true;
         }
-    }
-
-    public class QueuedJob 
-    {
-        public String Id { get; set; }
-
-        public Int64 StreamId { get; set; }
-
-        public String TenantId { get; set; }
-
-        public DateTime CreationTimestamp { get; set; }
-
-        public Dictionary<String, String> Parameters { get; set; }
-
-        public String ExecutionError { get; set; }
-
-        public DateTime ExecutionEndTime { get; set; }
-
-        public DateTime? ExecutionStartTime { get; set; }
-
-        public Boolean Executing { get; set; }
-
-        public Boolean Finished { get; set; }
-
-
     }
 
     /// <summary>

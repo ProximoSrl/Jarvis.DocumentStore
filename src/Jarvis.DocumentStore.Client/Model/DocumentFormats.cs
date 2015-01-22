@@ -42,5 +42,10 @@ namespace Jarvis.DocumentStore.Client.Model
         {
             return _formats.ContainsKey(format);
         }
+
+        public Int32 Count
+        {
+            get { return _formats.Count; }
+        }
     }
 }

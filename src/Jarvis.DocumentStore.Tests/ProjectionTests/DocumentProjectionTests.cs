@@ -60,7 +60,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             BsonClassMapHelper.Clear();
         }
 
-        void CreateDocument(int id,string handle, string pathToFile)
+        void CreateDocument(int id, string handle, string pathToFile)
         {
             var fname = Path.GetFileName(pathToFile);
             var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
@@ -72,6 +72,21 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                 new FileNameWithExtension("a","file")
             ));
             Thread.Sleep(50);
+        }
+
+        BlobId AddFormatToDocument(int id, string handle, DocumentFormat format, PipelineId pipelineId, string pathToFile)
+        {
+            var fname = Path.GetFileName(pathToFile);
+            var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
+            var blobId = _filestore.Upload(format, pathToFile);
+            _bus.Send(new AddFormatToDocument(
+                new DocumentId(id),
+                format,
+                blobId,
+                pipelineId
+            ));
+            Thread.Sleep(50);
+            return blobId;
         }
 
         [Test]
@@ -172,6 +187,37 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);
             Assert.AreEqual(handle.DocumentId, new DocumentId(1));
+        }
+
+        [Test]
+        public async void should_add_format_to_document()
+        {
+            CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
+            var format = new DocumentFormat("tika");
+            var blobId = AddFormatToDocument(1, "handle", format, new PipelineId("tika"), TestConfig.PathToTextDocument);
+
+            await _projections.UpdateAndWait();
+
+            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentId(1));
+            Assert.That(document.Formats, Has.Count.EqualTo(2));
+            Assert.That(document.Formats[format], Is.Not.Null, "Document has not added format");
+            Assert.That(document.Formats[format].BlobId, Is.EqualTo(blobId), "Wrong BlobId");
+        }
+
+        [Test]
+        public async void adding_twice_same_format_overwrite_format()
+        {
+            CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
+            var format = new DocumentFormat("tika");
+            var blobId1 = AddFormatToDocument(1, "handle", format, new PipelineId("tika"), TestConfig.PathToTextDocument);
+            var blobId2 = AddFormatToDocument(1, "handle", format, new PipelineId("tika"), TestConfig.PathToHtml);
+
+            await _projections.UpdateAndWait();
+
+            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentId(1));
+            Assert.That(document.Formats, Has.Count.EqualTo(2));
+            Assert.That(document.Formats[format], Is.Not.Null, "Document has not added format");
+            Assert.That(document.Formats[format].BlobId, Is.EqualTo(blobId2), "Wrong BlobId");
         }
     }
 }

@@ -276,6 +276,7 @@
     <Compile Include="ProjectionTests\HandleProjectionTests.cs" />
     <Compile Include="ProjectionTests\StreamReadModelTest.cs" />
     <Compile Include="ProjectionTests\HandleWriterTests.cs" />
+    <Compile Include="SelfHostIntegratonTests\DocumentControllerPullModelTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServicesTests\EnhancedFileStoreTests.cs" />

@@ -71,7 +71,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var documentId = _identityGenerator.New<DocumentId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
-            var errorMessage = await UploadFromHttpContent(Request.Content, new DocumentFormat(DocumentFormats.Original));
+            var errorMessage = await UploadFromHttpContent(Request.Content);
             Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage);
 
             if (errorMessage != null)
@@ -104,7 +104,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> AddFormatToDocument(TenantId tenantId, DocumentFormat format)
         {
-            var errorMessage = await UploadFromHttpContent(Request.Content, format);
+            var errorMessage = await AddFormatFromHttpContent(Request.Content, format);
+            Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage);
+
+            if (errorMessage != null)
+            {
+                Logger.Error("Error Adding format To Document: " + errorMessage);
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    errorMessage
+                );
+            }
+
             var docIdParameter = _customData[AddFormatToDocumentParameters.DocumentId] as String;
             DocumentId documentId;
             if (docIdParameter == null)
@@ -140,13 +151,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// </summary>
         /// <param name="httpContent">request's content</param>
         /// <returns>Error message or null</returns>
-        private async Task<String> UploadFromHttpContent(HttpContent httpContent, DocumentFormat format)
+        private async Task<String> UploadFromHttpContent(HttpContent httpContent)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
                 return "Attachment not found!";
 
             var provider = await httpContent.ReadAsMultipartAsync(
-                new FileStoreMultipartStreamProvider(_blobStore, _configService, format)
+                new FileStoreMultipartStreamProvider(_blobStore, _configService)
             );
 
             if (provider.Filename == null)
@@ -154,6 +165,33 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (provider.IsInvalidFile)
                 return string.Format("Unsupported file {0}", provider.Filename);
+
+            if (provider.FormData["custom-data"] != null)
+            {
+                _customData = JsonConvert.DeserializeObject<HandleCustomData>(provider.FormData["custom-data"]);
+            }
+
+            _fileName = provider.Filename;
+            _blobId = provider.BlobId;
+            return null;
+        }
+
+        /// <summary>
+        /// Upload a file sent in an http request
+        /// </summary>
+        /// <param name="httpContent">request's content</param>
+        /// <returns>Error message or null</returns>
+        private async Task<String> AddFormatFromHttpContent(HttpContent httpContent, DocumentFormat format)
+        {
+            if (httpContent == null || !httpContent.IsMimeMultipartContent())
+                return "Attachment not found!";
+
+            var provider = await httpContent.ReadAsMultipartAsync(
+                new FormatStoreMultipartStreamProvider(_blobStore, format)
+            );
+
+            if (provider.Filename == null)
+                return "Attachment not found!";
 
             if (provider.FormData["custom-data"] != null)
             {

@@ -7,6 +7,7 @@ using System.Web.Http;
 using Quartz;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
