@@ -28,32 +28,28 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         protected abstract ITikaAnalyzer BuildAnalyzer();
 
-        protected override void OnPolling(
-            PollerJobBaseParameters baseParameters, 
-            IDictionary<String, String> fullParameters,
-            IBlobStore currentTenantBlobStore,
-            String workingFolder)
+        protected override void OnPolling(PollerJobParameters parameters, IBlobStore currentTenantBlobStore, string workingFolder)
         {
             
-            if (!_formats.Contains(baseParameters.FileExtension))
+            if (!_formats.Contains(parameters.FileExtension))
             {
                 var contentId = currentTenantBlobStore.Save(DocumentFormats.Content, DocumentContent.NullContent);
-                Logger.DebugFormat("Content: {0} has null content.", baseParameters.InputDocumentId);
+                Logger.DebugFormat("Content: {0} has null content.", parameters.InputDocumentId);
 
                 CommandBus.Send(new AddFormatToDocument(
-                    baseParameters.InputDocumentId,
+                    parameters.InputDocumentId,
                     DocumentFormats.Content,
                     contentId,
                     this.PipelineId
                 ));
                 return;
             }
-            Logger.DebugFormat("Starting tika on content: {0}, file extension {1}", baseParameters.InputDocumentId, baseParameters.FileExtension);
+            Logger.DebugFormat("Starting tika on content: {0}, file extension {1}", parameters.InputDocumentId, parameters.FileExtension);
             var analyzer = BuildAnalyzer();
 
-            string pathToFile = currentTenantBlobStore.Download(baseParameters.InputBlobId, workingFolder);
+            string pathToFile = currentTenantBlobStore.Download(parameters.InputBlobId, workingFolder);
             string content = analyzer.GetHtmlContent(pathToFile);
-            var tikaFileName = new FileNameWithExtension(baseParameters.InputBlobId + ".tika.html");
+            var tikaFileName = new FileNameWithExtension(parameters.InputBlobId + ".tika.html");
             BlobId tikaBlobId;
             string htmlSource = null;
             using (var htmlReader = new MemoryStream(Encoding.UTF8.GetBytes(content)))
@@ -66,9 +62,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                 }
             }
 
-            Logger.DebugFormat("Tika result: file {0} has {1} chars", baseParameters.InputBlobId, content.Length);
+            Logger.DebugFormat("Tika result: file {0} has {1} chars", parameters.InputBlobId, content.Length);
             CommandBus.Send(new AddFormatToDocument(
-                baseParameters.InputDocumentId,
+                parameters.InputDocumentId,
                 DocumentFormats.Tika,
                 tikaBlobId,
                 this.PipelineId
@@ -95,10 +91,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                 }
 
                 var contentId = currentTenantBlobStore.Save(DocumentFormats.Content, documentContent);
-                Logger.DebugFormat("Content: {0} has {1} pages", baseParameters.InputDocumentId, pages);
+                Logger.DebugFormat("Content: {0} has {1} pages", parameters.InputDocumentId, pages);
 
                 CommandBus.Send(new AddFormatToDocument(
-                    baseParameters.InputDocumentId,
+                    parameters.InputDocumentId,
                     DocumentFormats.Content,
                     contentId,
                     this.PipelineId

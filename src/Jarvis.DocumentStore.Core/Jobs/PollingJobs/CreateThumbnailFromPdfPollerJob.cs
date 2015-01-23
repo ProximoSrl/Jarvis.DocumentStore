@@ -21,29 +21,29 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             base.QueueName = "pdfThumb";
         }
 
-        protected override void OnPolling(PollerJobBaseParameters baseParameters, IDictionary<string, string> fullParameters, Storage.IBlobStore currentTenantBlobStore, string workingFolder)
+        protected override void OnPolling(PollerJobParameters parameters, IBlobStore currentTenantBlobStore, string workingFolder)
         {
-            String format = fullParameters[JobKeys.ThumbnailFormat];
+            String format = parameters.All[JobKeys.ThumbnailFormat];
 
-            Logger.DebugFormat("Conversion of {0} ({1}) in format {2} starting", baseParameters.InputDocumentId, baseParameters.InputBlobId, format);
+            Logger.DebugFormat("Conversion of {0} ({1}) in format {2} starting", parameters.InputDocumentId, parameters.InputBlobId, format);
 
             var task = new CreateImageFromPdfTask { Logger = Logger };
-            var descriptor = currentTenantBlobStore.GetDescriptor(baseParameters.InputBlobId);
+            var descriptor = currentTenantBlobStore.GetDescriptor(parameters.InputBlobId);
 
             using (var sourceStream = descriptor.OpenRead())
             {
                 var convertParams = new CreatePdfImageTaskParams()
                 {
-                    
-                    Dpi = fullParameters.GetIntOrDefault(JobKeys.Dpi, 150),
-                    FromPage = fullParameters.GetIntOrDefault(JobKeys.PagesFrom, 1),
-                    Pages = fullParameters.GetIntOrDefault(JobKeys.PagesCount, 1),
+
+                    Dpi = parameters.All.GetIntOrDefault(JobKeys.Dpi, 150),
+                    FromPage = parameters.All.GetIntOrDefault(JobKeys.PagesFrom, 1),
+                    Pages = parameters.All.GetIntOrDefault(JobKeys.PagesCount, 1),
                     Format = (CreatePdfImageTaskParams.ImageFormat)Enum.Parse(typeof(CreatePdfImageTaskParams.ImageFormat), format, true)
                 };
 
                 PageWriter pageWriter = new PageWriter()
                 {
-                    BaseParameters = baseParameters,
+                    Parameters = parameters,
                     BlobStore = currentTenantBlobStore,
                     CommandBus = this.CommandBus,
                     Format = format,
@@ -57,12 +57,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                 );
             }
 
-            Logger.DebugFormat("Conversion of {0} in format {1} done", baseParameters.InputBlobId, format);
+            Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.InputBlobId, format);
         }
 
         private class PageWriter 
         {
-            public PollerJobBaseParameters BaseParameters { get; set; }
+            public PollerJobParameters Parameters { get; set; }
 
             public IBlobStore BlobStore { get; set; }
 
@@ -74,11 +74,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
             public void Write(int pageIndex, Stream stream)
             {
-                var fileName = new FileNameWithExtension(BaseParameters.InputBlobId + ".page_" + pageIndex + "." + Format);
+                var fileName = new FileNameWithExtension(Parameters.InputBlobId + ".page_" + pageIndex + "." + Format);
                 var pageBlobId = BlobStore.Upload(DocumentFormats.RasterImage, fileName, stream);
 
                 CommandBus.Send(
-                    new AddFormatToDocument(BaseParameters.InputDocumentId, DocumentFormats.RasterImage, pageBlobId, PipelineId)
+                    new AddFormatToDocument(Parameters.InputDocumentId, DocumentFormats.RasterImage, pageBlobId, PipelineId)
                 );
             }
 

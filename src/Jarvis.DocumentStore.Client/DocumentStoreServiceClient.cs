@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Shared.Model;
@@ -190,10 +191,10 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        public async Task<UploadedDocumentResponse> AddFormatToDocument(AddFormatToDocumentModel model, IDictionary<string, object> customData = null)
+        public async Task<UploadedDocumentResponse> AddFormatToDocument(
+            AddFormatFromFileToDocumentModel model, 
+            IDictionary<string, object> customData = null)
         {
-            var fileInfo = new FileInfo(model.PathToFile);
-
             using (var sourceStream = File.OpenRead(model.PathToFile))
             {
                 using (var client = new HttpClient())
@@ -202,6 +203,8 @@ namespace Jarvis.DocumentStore.Client
                         var content =
                             new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
                     {
+
+                        var fileInfo = new FileInfo(model.PathToFile);
                         content.Add(
                             new StreamContent(sourceStream),
                             "stream",
@@ -213,7 +216,6 @@ namespace Jarvis.DocumentStore.Client
                         customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
                         customData.Add(AddFormatToDocumentParameters.DocumentId, model.DocumentId);
                         customData.Add(AddFormatToDocumentParameters.Format, model.Format);
-                        customData.Add(AddFormatToDocumentParameters.PathToFile, model.PathToFile);
 
                         var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
                         content.Add(stringContent, "custom-data");
@@ -231,6 +233,47 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
+        public async Task<UploadedDocumentResponse> AddFormatToDocument(
+            AddFormatFromObjectToDocumentModel model, 
+            IDictionary<string, object> customData = null)
+        {
+            using (var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes((model.StringContent))))
+            {
+
+                using (var client = new HttpClient())
+                {
+                    using (
+                        var content =
+                            new MultipartFormDataContent("Upload----" +
+                                                         DateTime.Now.ToString(CultureInfo.InvariantCulture)))
+                    {
+                        content.Add(
+                            new StreamContent(sourceStream),
+                            "stream",
+                            "objectContent"
+                        );
+
+                        customData = customData ?? new Dictionary<String, Object>();
+                        customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
+                        customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
+                        customData.Add(AddFormatToDocumentParameters.DocumentId, model.DocumentId);
+                        customData.Add(AddFormatToDocumentParameters.Format, model.Format);
+
+                        var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
+                        content.Add(stringContent, "custom-data");
+
+                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + model.Format);
+
+                        using (var message = await client.PostAsync(endPoint, content))
+                        {
+                            var json = await message.Content.ReadAsStringAsync();
+                            message.EnsureSuccessStatusCode();
+                            return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
+                        }
+                    }
+                }
+            }
+        }
 
 
 
@@ -285,6 +328,18 @@ namespace Jarvis.DocumentStore.Client
         }
 
         /// <summary>
+        /// Open a binary content, it is necessary for workers out of process that does not care
+        /// about <see cref="DocumentHandle" /> but have a reference to a blob id
+        /// </summary>
+        /// <param name="blobId">STring representation of the blob id client wants to read.</param>
+        /// <returns></returns>
+        public DocumentFormatReader OpenBlobIdForRead(String blobId)
+        {
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/blobs/" + blobId);
+            return new DocumentFormatReader(endPoint);
+        }
+
+        /// <summary>
         /// Delete a document from Document Store
         /// </summary>
         /// <param name="handle">Document handle</param>
@@ -328,5 +383,7 @@ namespace Jarvis.DocumentStore.Client
                 return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default);
             }
         }
+
+
     }
 }

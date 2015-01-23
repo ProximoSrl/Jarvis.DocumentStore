@@ -46,6 +46,7 @@ namespace Jarvis.DocumentStore.Host
                 {
                     Console.Error.WriteLine("Unable to download log4net.config from configuration store");
                 }
+
                 host.UseOldLog4Net("log4net.config");
 
                 host.Service<DocumentStoreBootstrapper>(service =>

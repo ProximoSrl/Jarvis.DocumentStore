@@ -12,6 +12,5 @@ namespace Jarvis.DocumentStore.Shared.Model
         public const string DocumentHandle = "model.documentHandle";
         public const string DocumentId = "model.documentId";
         public const string Format = "model.format";
-        public const string PathToFile = "model.pathToFile";
     }
 }

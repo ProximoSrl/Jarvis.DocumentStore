@@ -1,23 +1,29 @@
 ﻿using System;
-using System.IO;
-using Castle.Core.Logging;
-using CQRS.Shared.Commands;
-using CQRS.Shared.MultitenantSupport;
-using System.Timers;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Storage;
-using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Shared.Jobs;
-using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using System.Collections.Generic;
-using Jarvis.DocumentStore.Core.Support;
-using CQRS.Kernel.MultitenantSupport;
-using System.Net;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using System.Timers;
+using Castle.Core.Logging;
+using CQRS.Kernel.MultitenantSupport;
+using CQRS.Shared.MultitenantSupport;
+using ikvm.extensions;
+using Jarvis.DocumentStore.Client;
+using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Shared.Jobs;
+using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
+using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 
-namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
+namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
     public abstract class AbstractOutOfProcessPollerFileJob : IPollerJob
     {
@@ -42,22 +48,38 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         private String _identity;
 
-        private List<String> _documentStoreAddressUrls;
-
         public AbstractOutOfProcessPollerFileJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
         }
 
-        private List<String> _getNextJobUrlList;
+        private List<DsEndpoint> _dsEndpoints;
+
+        private class DsEndpoint
+        {
+            public DsEndpoint(string getNextJobUrl, string setJobCompleted, Uri baseUrl)
+            {
+                GetNextJobUrl = getNextJobUrl;
+                SetJobCompleted = setJobCompleted;
+                BaseUrl = baseUrl;
+            }
+
+            public String GetNextJobUrl { get; private set; }
+
+            public String SetJobCompleted { get; private set; }
+
+            public Uri BaseUrl { get; set; }
+        }
 
         public void Start(List<String> documentStoreAddressUrls)
         {
             if (Started) return;
-            _documentStoreAddressUrls = documentStoreAddressUrls;
-            if (_documentStoreAddressUrls.Count == 0) throw new ArgumentException("Component needs at least a document store url", "documentStoreAddressUrls");
-            _getNextJobUrlList = _documentStoreAddressUrls
-                .Select(addr => addr.TrimEnd('/') + "/queue/getnextjob")
+            if (documentStoreAddressUrls.Count == 0) throw new ArgumentException("Component needs at least a document store url", "documentStoreAddressUrls");
+            _dsEndpoints = documentStoreAddressUrls
+                .Select(addr => new DsEndpoint(
+                        addr.TrimEnd('/') + "/queue/getnextjob",
+                        addr.TrimEnd('/') + "queue/setjobcomplete",
+                        new Uri(addr)))
                 .ToList();
             Start(DocumentStoreConfiguration.QueueStreamPollInterval);
             Started = true;
@@ -67,75 +89,61 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         {
             if (!Started) return;
             Started = false;
-            pollingTimer.Dispose();
-            pollingTimer = null;
+            _pollingTimer.Dispose();
+            _pollingTimer = null;
         }
 
-        private Timer pollingTimer;
+        private Timer _pollingTimer;
 
         private void Start(Int32 pollingTimeInMs)
         {
-            pollingTimer = new Timer(pollingTimeInMs);
-            pollingTimer.Elapsed += pollingTimer_Elapsed;
-            pollingTimer.Start();
+            _pollingTimer = new Timer(pollingTimeInMs);
+            _pollingTimer.Elapsed += pollingTimer_Elapsed;
+            _pollingTimer.Start();
         }
 
         void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            pollingTimer.Stop();
+            _pollingTimer.Stop();
             String workingFolder = null;
             try
             {
-                String pollerResult;
-                using (WebClientEx client = new WebClientEx())
+                do
                 {
-                    //TODO: use round robin if a document store is down.
-                    var firstUrl = _getNextJobUrlList.First();
-                    var payload = JsonConvert.SerializeObject(new
+                    QueuedJob nextJob = DsGetNextJob();
+                    if (nextJob == null) return;
+
+                    var baseParameters = ExtractJobParameters(nextJob);
+                    //remember to enter the right tenant.
+                    TenantContext.Enter(new TenantId(baseParameters.TenantId));
+                    workingFolder = Path.Combine(
+                        ConfigService.GetWorkingFolder(baseParameters.TenantId, baseParameters.InputBlobId),
+                        GetType().Name
+                        );
+                    if (!Directory.Exists(workingFolder)) Directory.CreateDirectory(workingFolder);
+                    try
                     {
-                        QueueName = this.QueueName,
-                        Identity = this._identity
-                    });
-                    Logger.DebugFormat("Polling url: {0} with payload {1}", firstUrl, payload);
-                    client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                    pollerResult = client.UploadString(firstUrl, payload);
-                    Logger.DebugFormat("GetNextJobResult: {0}", pollerResult);
-                }
-                //QueuedJob nextJob = null;
-                //while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName, _identity)) != null)
-                //{
-                //    try
-                //    {
-                //        PollerJobBaseParameters baseParameters = new PollerJobBaseParameters();
-                //        baseParameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
-                //        baseParameters.InputDocumentId = new DocumentId(nextJob.Parameters[JobKeys.DocumentId]);
-                //        baseParameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
-                //        baseParameters.InputBlobId = new BlobId(nextJob.Parameters[JobKeys.BlobId]);
-                //        baseParameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
-                //        //remember to enter the right tenant.
-                //        TenantContext.Enter(new TenantId(baseParameters.TenantId));
-                //        var blobStore = TenantAccessor.GetTenant(baseParameters.TenantId).Container.Resolve<IBlobStore>();
-                //        workingFolder = Path.Combine(
-                //               ConfigService.GetWorkingFolder(baseParameters.TenantId, baseParameters.InputBlobId),
-                //               GetType().Name
-                //           );
-                //        OnPolling(baseParameters, nextJob.Parameters, blobStore, workingFolder);
-                //        QueueDispatcher.SetJobExecuted(this.QueueName, nextJob.Id, null);
-                //    }
-                //    catch (Exception ex)
-                //    {
-                //        Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id, nextJob.Parameters[JobKeys.TenantId]);
-                //        QueueDispatcher.SetJobExecuted(this.QueueName, nextJob.Id, ex.Message);
-                //    }
-                //}
+                        var task = OnPolling(baseParameters, workingFolder);
+                        Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, task.Result);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
+                            nextJob.Parameters[JobKeys.TenantId]);
+                        DsSetJobExecuted(QueueName, nextJob.Id, ex.Message);
+                    }
+
+
+                } while (true); //Exit is in the internal loop
+
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Logger.ErrorFormat(ex, "Poller error: {0}", ex.Message);
             }
             finally
             {
-                if (!String.IsNullOrEmpty(workingFolder)) 
+                if (!String.IsNullOrEmpty(workingFolder))
                 {
                     try
                     {
@@ -147,13 +155,131 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                         Logger.ErrorFormat(ex, "Error deleting {0}", workingFolder);
                     }
                 }
-                if (Started && pollingTimer != null) pollingTimer.Start();
+                if (Started && _pollingTimer != null) _pollingTimer.Start();
             }
         }
 
-        protected abstract void OnPolling(
-            IDictionary<String, String> fullParameters, 
-            IBlobStore currentTenantBlobStore,
+        private void DsSetJobExecuted(string queueName, string jobId, string message)
+        {
+            string pollerResult;
+            using (WebClientEx client = new WebClientEx())
+            {
+                //TODO: use round robin if a document store is down.
+                var firstUrl = _dsEndpoints.First();
+                var payload = JsonConvert.SerializeObject(new
+                {
+                    QueueName = queueName,
+                    JobId = jobId,
+                    ErrorMessage = message
+                });
+                Logger.DebugFormat("SetJobExecuted url: {0} with payload {1}", firstUrl, payload);
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                pollerResult = client.UploadString(firstUrl.SetJobCompleted, payload);
+                Logger.DebugFormat("GetNextJobResult: {0}", pollerResult);
+            }
+            
+        }
+
+        private static PollerJobParameters ExtractJobParameters(QueuedJob nextJob)
+        {
+            PollerJobParameters parameters = new PollerJobParameters();
+            parameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
+            parameters.InputDocumentId = new DocumentId(nextJob.Parameters[JobKeys.DocumentId]);
+            parameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
+            parameters.InputBlobId = new BlobId(nextJob.Parameters[JobKeys.BlobId]);
+            parameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
+            parameters.All = nextJob.Parameters;
+            return parameters;
+        }
+
+        private QueuedJob DsGetNextJob()
+        {
+            QueuedJob nextJob = null;
+            string pollerResult;
+            using (WebClientEx client = new WebClientEx())
+            {
+                //TODO: use round robin if a document store is down.
+                var firstUrl = _dsEndpoints.First();
+                var payload = JsonConvert.SerializeObject(new
+                {
+                    QueueName = this.QueueName,
+                    Identity = this._identity
+                });
+                Logger.DebugFormat("Polling url: {0} with payload {1}", firstUrl, payload);
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                pollerResult = client.UploadString(firstUrl.GetNextJobUrl, payload);
+                Logger.DebugFormat("GetNextJobResult: {0}", pollerResult);
+            }
+            if (!pollerResult.Equals("null", StringComparison.OrdinalIgnoreCase))
+            {
+                nextJob = JsonConvert.DeserializeObject<QueuedJob>(pollerResult);
+            }
+            return nextJob;
+        }
+
+        protected async Task<Boolean> AddFormatToDocumentFromFile(string tenantId, 
+            DocumentId documentId, 
+            Client.Model.DocumentFormat format, 
+            string pathToFile, 
+            IDictionary<string, object> customData)
+        {
+            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
+               _dsEndpoints.First().BaseUrl, tenantId);
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel
+            {
+                CreatedById = this.PipelineId,
+                DocumentId = documentId,
+                Format = format,
+                PathToFile = pathToFile
+            };
+           
+            var response = await client.AddFormatToDocument(model, customData);
+            return response != null;
+        }
+
+        protected async Task<Boolean> AddFormatToDocumentFromObject(string tenantId,
+              DocumentId documentId,
+              Client.Model.DocumentFormat format,
+              Object obj,
+              IDictionary<string, object> customData)
+        {
+            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
+               _dsEndpoints.First().BaseUrl, tenantId);
+            AddFormatFromObjectToDocumentModel model = new AddFormatFromObjectToDocumentModel
+            {
+                CreatedById = this.PipelineId,
+                DocumentId = documentId,
+                Format = format,
+                StringContent = JsonConvert.SerializeObject(obj),
+            };
+            var response = await client.AddFormatToDocument(model, customData);
+            return response != null;
+        }
+
+      
+
+        protected async Task<String> DownloadBlob(
+            TenantId tenantId,
+            BlobId blobId, 
+            String workingFolder)
+        {
+            String fileName = Path.Combine(workingFolder, blobId.toString() + ".blob");
+            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
+                _dsEndpoints.First().BaseUrl, tenantId);
+            using (var reader = client.OpenBlobIdForRead(blobId))
+            {
+                using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    var stream = await reader.ReadStream;
+                    stream.CopyTo(downloaded);
+                }
+            }
+            Logger.DebugFormat("Downloaded blob {0} for tenant {1} in local file {2}", blobId, tenantId, fileName);
+            return fileName;
+        }
+
+        protected abstract Task<Boolean> OnPolling(
+            PollerJobParameters parameters,
             String workingFolder);
     }
 

@@ -22,7 +22,20 @@ namespace Jarvis.DocumentStore.Client.Model
         public DocumentFormat Format { get; set; }
 
         public String CreatedById { get; set; }
+    }
 
+    public class AddFormatFromFileToDocumentModel : AddFormatToDocumentModel
+    {
         public String PathToFile { get; set; }
+    }
+
+    public class AddFormatFromObjectToDocumentModel : AddFormatToDocumentModel
+    {
+        /// <summary>
+        /// If content is some serialized in-memory object (json) I can simply send the
+        /// content as a simple string.
+        /// If this parameter is used <see cref="AddFormatFromFileToDocumentModel.PathToFile" /> is ignored.
+        /// </summary>
+        public String StringContent { get; set; }
     }
 }

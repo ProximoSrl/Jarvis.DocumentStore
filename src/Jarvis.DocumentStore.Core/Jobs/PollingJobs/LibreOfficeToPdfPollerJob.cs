@@ -5,6 +5,7 @@ using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
+using Jarvis.DocumentStore.Core.Storage;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
@@ -23,26 +24,22 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         }
 
 
-        protected override void OnPolling(
-            PollerJobBaseParameters baseParameters, 
-            System.Collections.Generic.IDictionary<string, string> fullParameters, 
-            Storage.IBlobStore currentTenantBlobStore, 
-            string workingFolder)
+        protected override void OnPolling(PollerJobParameters parameters, IBlobStore currentTenantBlobStore, string workingFolder)
         {
             Logger.DebugFormat(
                "Delegating conversion of file {0} to libreoffice",
-               baseParameters.InputBlobId
+               parameters.InputBlobId
            );
 
             //libreofficeconversion is registered per tenant.
             var _libreOfficeConversion = TenantAccessor.Current.Container.Resolve<ILibreOfficeConversion>();
-            var sourceFile = currentTenantBlobStore.Download(baseParameters.InputBlobId, workingFolder);
+            var sourceFile = currentTenantBlobStore.Download(parameters.InputBlobId, workingFolder);
             var outputFile = _libreOfficeConversion.Run(sourceFile, "pdf");
 
             var newBlobId = currentTenantBlobStore.Upload(DocumentFormats.Pdf, outputFile);
 
             CommandBus.Send(new AddFormatToDocument(
-                baseParameters.InputDocumentId,
+                parameters.InputDocumentId,
                 DocumentFormats.Pdf,
                 newBlobId,
                 this.PipelineId

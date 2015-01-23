@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using CQRS.Kernel.ProjectionEngine;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
 using CQRS.Tests.DomainTests;
@@ -14,15 +15,19 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Tests.JobTests;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using NUnit.Framework;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using System;
+using Newtonsoft.Json;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -32,6 +37,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
+        private MongoCollection<DocumentReadModel> _documents;
 
         [SetUp]
         public void SetUp()
@@ -43,9 +49,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _documentStoreService = new DocumentStoreBootstrapper();
             _documentStoreService.Start(config);
             _documentStoreClient = new DocumentStoreServiceClient(
-                TestConfig.ServerAddress, 
+                TestConfig.ServerAddress,
                 TestConfig.Tenant
             );
+            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
         }
 
         [TearDown]
@@ -145,13 +152,31 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void should_get_document_formats()
         {
             var handle = new DocumentHandle("Formats");
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf,handle);
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
 
             // wait background projection polling
             Thread.Sleep(500);
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+        }
+
+        [Test]
+        public async void should_get_blob_by_id()
+        {
+            var handle = new DocumentHandle("getbyid");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
+
+            // wait background projection polling
+            Thread.Sleep(500);
+            var document = _documents.AsQueryable()
+                .Single(d => d.Handles.Contains(new Core.Model.DocumentHandle("getbyid")));
+            var originalBlobId = document.Formats[new Core.Domain.Document.DocumentFormat("original")].BlobId;
+
+            using (var reader = _documentStoreClient.OpenBlobIdForRead(originalBlobId))
+            {
+                await CompareDownloadedStreamToFile(TestConfig.PathToDocumentPdf, reader);
+            }
         }
 
         [Test]
@@ -165,7 +190,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Thread.Sleep(500);
 
             //now add format to document.
-            AddFormatToDocumentModel model = new AddFormatToDocumentModel();
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
             model.DocumentHandle = handle;
             model.PathToFile = TestConfig.PathToTextDocument;
             model.CreatedById = "tika";
@@ -182,6 +207,43 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void can_add_new_format_with_api_from_object()
+        {
+            //Upload original
+            var handle = new DocumentHandle("Add_Format_Test");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
+
+            // wait background projection polling
+            Thread.Sleep(500);
+
+            DocumentContent content = new DocumentContent(new DocumentContent.DocumentPage[]
+            {
+                new DocumentContent.DocumentPage(1, "TEST"), 
+            }, new DocumentContent.MetadataHeader[] { });
+            //now add format to document.
+            AddFormatFromObjectToDocumentModel model = new AddFormatFromObjectToDocumentModel();
+            model.DocumentHandle = handle;
+            model.StringContent = JsonConvert.SerializeObject(content);
+            model.CreatedById = "tika";
+
+            model.Format = new DocumentFormat("content");
+            await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
+
+            // wait background projection polling
+            Thread.Sleep(500);
+            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            Assert.NotNull(formats);
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("content")));
+            Assert.That(formats, Has.Count.EqualTo(2));
+
+            await CompareDownloadedStreamToStringContent(
+                model.StringContent,
+                _documentStoreClient.OpenRead(handle, new DocumentFormat("content")));
+
+        }
+
+        [Test]
         public async void adding_two_time_same_format_overwrite_older()
         {
             //Upload original
@@ -192,7 +254,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Thread.Sleep(200);
 
             //now add format to document.
-            AddFormatToDocumentModel model = new AddFormatToDocumentModel();
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
             model.DocumentHandle = handle;
             model.PathToFile = TestConfig.PathToTextDocument;
             model.CreatedById = "tika";
@@ -203,7 +265,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Thread.Sleep(200);
 
             //now add same format with different content.
-            model = new AddFormatToDocumentModel();
+            model = new AddFormatFromFileToDocumentModel();
             model.DocumentHandle = handle;
             model.PathToFile = TestConfig.PathToHtml;
             model.CreatedById = "tika";
@@ -218,21 +280,43 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("tika")));
             Assert.That(formats, Has.Count.EqualTo(2));
 
-            using (var reader = _documentStoreClient.OpenRead(handle, new DocumentFormat("tika")))
+            await CompareDownloadedStreamToFile(TestConfig.PathToHtml, _documentStoreClient.OpenRead(handle, new DocumentFormat("tika")));
+        }
+
+        private async Task CompareDownloadedStreamToFile(string pathToFileToCompare, DocumentFormatReader documentFormatReader)
+        {
+            using (var reader = documentFormatReader)
             {
                 using (var downloaded = new MemoryStream())
                 using (var uploaded = new MemoryStream())
                 {
-                    using (var fileStream = File.OpenRead(TestConfig.PathToHtml))
+                    using (var fileStream = File.OpenRead(pathToFileToCompare))
                     {
                         await fileStream.CopyToAsync(uploaded);
                     }
                     await (await reader.ReadStream).CopyToAsync(downloaded);
 
-                    Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded), "Downloaded format is not equal to last format uploaded");
+                    Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded),
+                        "Downloaded format is not equal to last format uploaded");
                 }
             }
         }
+
+        private async Task CompareDownloadedStreamToStringContent(string contentToCompare, DocumentFormatReader documentFormatReader)
+        {
+            using (var reader = documentFormatReader)
+            {
+                using (var downloaded = new MemoryStream())
+                {
+
+                    await (await reader.ReadStream).CopyToAsync(downloaded);
+                    var downloadedString = System.Text.Encoding.UTF8.GetString(downloaded.ToArray());
+                    Assert.AreEqual(downloadedString, contentToCompare, "Downloaded stream is not identical");
+                }
+            }
+        }
+
+
 
         [Test]
         public async void should_upload_get_metadata_and_delete_a_document()
@@ -256,7 +340,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Thread.Sleep(1000);
 
-            var ex = Assert.Throws<HttpRequestException>(async() =>
+            var ex = Assert.Throws<HttpRequestException>(async () =>
             {
                 await _documentStoreClient.GetCustomDataAsync(handle);
             });
@@ -299,7 +383,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.PathToDocumentPdf,
                 handle
             );
-        
+
             Thread.Sleep(500);
 
             var accessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();

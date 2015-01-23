@@ -106,7 +106,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload_doc_then_add_format_to_doc()
         {
             _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc_2")).Wait();
-            AddFormatToDocumentModel model = new AddFormatToDocumentModel();
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
             model.CreatedById = "tika";
             model.DocumentHandle = DocumentHandle.FromString("doc_2");
             model.PathToFile = TestConfig.PathToTextDocument;

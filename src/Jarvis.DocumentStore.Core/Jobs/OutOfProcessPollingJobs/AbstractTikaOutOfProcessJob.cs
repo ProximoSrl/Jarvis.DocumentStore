@@ -1,7 +1,13 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using com.sun.corba.se.spi.orbutil.threadpool;
+using Jarvis.DocumentStore.Client;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Analyzers;
@@ -9,11 +15,10 @@ using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
-using System.Collections.Generic;
-using System;
-using Jarvis.DocumentStore.Core.Support;
+using System.Linq;
+using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
 
-namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
+namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
     public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
@@ -28,82 +33,68 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         protected abstract ITikaAnalyzer BuildAnalyzer();
 
-        protected override void OnPolling(
-            IDictionary<String, String> fullParameters,
-            IBlobStore currentTenantBlobStore,
+        protected async override Task<Boolean> OnPolling(
+            PollerJobParameters parameters,
             String workingFolder)
         {
-            Console.WriteLine("TIIIIKAAAAa");
-            //if (!_formats.Contains(baseParameters.FileExtension))
-            //{
-            //    var contentId = currentTenantBlobStore.Save(DocumentFormats.Content, DocumentContent.NullContent);
-            //    Logger.DebugFormat("Content: {0} has null content.", baseParameters.InputDocumentId);
+            Boolean result;
+            if (!_formats.Contains(parameters.FileExtension))
+            {
+                Logger.DebugFormat("Document Id {0} has an extension not supported, setting null content", parameters.InputDocumentId);
+                result = await AddFormatToDocumentFromObject(parameters.TenantId, parameters.InputDocumentId,
+                    new DocumentFormat(DocumentFormats.Content), DocumentContent.NullContent, new Dictionary<string, object>());
+                return result;
+            }
 
-            //    CommandBus.Send(new AddFormatToDocument(
-            //        baseParameters.InputDocumentId,
-            //        DocumentFormats.Content,
-            //        contentId,
-            //        this.PipelineId
-            //    ));
-            //    return;
-            //}
-            //Logger.DebugFormat("Starting tika on content: {0}, file extension {1}", baseParameters.InputDocumentId, baseParameters.FileExtension);
-            //var analyzer = BuildAnalyzer();
+            Logger.DebugFormat("Starting tika on content: {0}, file extension {1}", parameters.InputDocumentId, parameters.FileExtension);
+            var analyzer = BuildAnalyzer();
+            Logger.DebugFormat("Downloading blob id: {0}, on local path {1}", parameters.InputBlobId, workingFolder);
 
-            //string pathToFile = currentTenantBlobStore.Download(baseParameters.InputBlobId, workingFolder);
-            //string content = analyzer.GetHtmlContent(pathToFile);
-            //var tikaFileName = new FileNameWithExtension(baseParameters.InputBlobId + ".tika.html");
-            //BlobId tikaBlobId;
-            //string htmlSource = null;
-            //using (var htmlReader = new MemoryStream(Encoding.UTF8.GetBytes(content)))
-            //{
-            //    tikaBlobId = currentTenantBlobStore.Upload(DocumentFormats.Tika, tikaFileName, htmlReader);
-            //    htmlReader.Seek(0, SeekOrigin.Begin);
-            //    using (var sr = new StreamReader(htmlReader, Encoding.UTF8))
-            //    {
-            //        htmlSource = sr.ReadToEnd();
-            //    }
-            //}
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, workingFolder);
+            string content = analyzer.GetHtmlContent(pathToFile) ?? "";
+            Logger.DebugFormat("Finished tika on content: {0}, charsNum {1}", parameters.InputDocumentId, content.Count());
 
-            //Logger.DebugFormat("Tika result: file {0} has {1} chars", baseParameters.InputBlobId, content.Length);
-            //CommandBus.Send(new AddFormatToDocument(
-            //    baseParameters.InputDocumentId,
-            //    DocumentFormats.Tika,
-            //    tikaBlobId,
-            //    this.PipelineId
-            //    ));
+            var tikaFileName = Path.Combine(workingFolder, parameters.InputBlobId + ".tika.html");
+            File.WriteAllText(tikaFileName, content);
+            result =  await AddFormatToDocumentFromFile(
+                parameters.TenantId, 
+                parameters.InputDocumentId, 
+                new DocumentFormat(DocumentFormats.Tika), 
+                tikaFileName, 
+                new Dictionary<string, object>());
+            Logger.DebugFormat("Added format {0} to document {1}, result: {2}", DocumentFormats.Tika, parameters.InputDocumentId, result);
 
-            //if (!string.IsNullOrWhiteSpace(htmlSource))
-            //{
-            //    var documentContent = ContentFormatBuilder.CreateFromTikaPlain(htmlSource);
-            //    var pages = documentContent.Pages.Count();
-            //    string lang = null;
-            //    if (pages > 1)
-            //    {
-            //        lang = LanguageDetector.GetLanguage(documentContent.Pages[1].Content);
-            //    }
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                var documentContent = ContentFormatBuilder.CreateFromTikaPlain(content);
+                var pages = documentContent.Pages.Count();
+                string lang = null;
+                if (pages > 1)
+                {
+                    lang = LanguageDetector.GetLanguage(documentContent.Pages[1].Content);
+                }
 
-            //    if (lang == null && pages == 1)
-            //    {
-            //        lang = LanguageDetector.GetLanguage(documentContent.Pages[0].Content);
-            //    }
+                if (lang == null && pages == 1)
+                {
+                    lang = LanguageDetector.GetLanguage(documentContent.Pages[0].Content);
+                }
 
-            //    if (lang != null)
-            //    {
-            //        documentContent.AddMetadata(DocumentContent.MedatataLanguage, lang);
-            //    }
+                if (lang != null)
+                {
+                    documentContent.AddMetadata(DocumentContent.MedatataLanguage, lang);
+                }
 
-            //    var contentId = currentTenantBlobStore.Save(DocumentFormats.Content, documentContent);
-            //    Logger.DebugFormat("Content: {0} has {1} pages", baseParameters.InputDocumentId, pages);
-
-            //    CommandBus.Send(new AddFormatToDocument(
-            //        baseParameters.InputDocumentId,
-            //        DocumentFormats.Content,
-            //        contentId,
-            //        this.PipelineId
-            //    ));
-            //}
+                result = await AddFormatToDocumentFromObject(
+                      parameters.TenantId,
+                      parameters.InputDocumentId,
+                      new DocumentFormat(DocumentFormats.Content),
+                      documentContent,
+                      new Dictionary<string, object>());
+                Logger.DebugFormat("Added format {0} to document {1}, result: {2}", DocumentFormats.Content, parameters.InputDocumentId, result);
+            }
+            return true;
         }
+
     }
 
     public class OutOfProcessTikaJob : AbstractTikaOutOfProcessJob

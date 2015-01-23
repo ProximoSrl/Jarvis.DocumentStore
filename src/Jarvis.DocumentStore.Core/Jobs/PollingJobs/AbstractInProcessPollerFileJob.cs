@@ -91,20 +91,21 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                 {
                     try
                     {
-                        PollerJobBaseParameters baseParameters = new PollerJobBaseParameters();
-                        baseParameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
-                        baseParameters.InputDocumentId = new DocumentId(nextJob.Parameters[JobKeys.DocumentId]);
-                        baseParameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
-                        baseParameters.InputBlobId = new BlobId(nextJob.Parameters[JobKeys.BlobId]);
-                        baseParameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
+                        PollerJobParameters parameters = new PollerJobParameters();
+                        parameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
+                        parameters.InputDocumentId = new DocumentId(nextJob.Parameters[JobKeys.DocumentId]);
+                        parameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
+                        parameters.InputBlobId = new BlobId(nextJob.Parameters[JobKeys.BlobId]);
+                        parameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
+                        parameters.All = nextJob.Parameters;
                         //remember to enter the right tenant.
-                        TenantContext.Enter(new TenantId(baseParameters.TenantId));
-                        var blobStore = TenantAccessor.GetTenant(baseParameters.TenantId).Container.Resolve<IBlobStore>();
+                        TenantContext.Enter(new TenantId(parameters.TenantId));
+                        var blobStore = TenantAccessor.GetTenant(parameters.TenantId).Container.Resolve<IBlobStore>();
                         workingFolder = Path.Combine(
-                               ConfigService.GetWorkingFolder(baseParameters.TenantId, baseParameters.InputBlobId),
+                               ConfigService.GetWorkingFolder(parameters.TenantId, parameters.InputBlobId),
                                GetType().Name
                            );
-                        OnPolling(baseParameters, nextJob.Parameters, blobStore, workingFolder);
+                        OnPolling(parameters, blobStore, workingFolder);
                         QueueDispatcher.SetJobExecuted(this.QueueName, nextJob.Id, null);
                     }
                     catch (Exception ex)
@@ -134,21 +135,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             }
         }
 
-        protected abstract void OnPolling(
-            PollerJobBaseParameters baseParameters, 
-            IDictionary<String, String> fullParameters, 
-            IBlobStore currentTenantBlobStore,
-            String workingFolder);
-
-
-        public class PollerJobBaseParameters
-        {
-            public DocumentId InputDocumentId { get; set; }
-            public DocumentFormat InputDocumentFormat { get; set; }
-            public BlobId InputBlobId { get; set; }
-            public TenantId TenantId { get; set; }
-
-            public String FileExtension { get; set; }
-        }
+        protected abstract void OnPolling(PollerJobParameters parameters, IBlobStore currentTenantBlobStore, string workingFolder);
     }
 }

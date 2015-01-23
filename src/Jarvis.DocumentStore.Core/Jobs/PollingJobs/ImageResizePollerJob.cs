@@ -6,6 +6,7 @@ using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Tools;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Core.Storage;
 using Quartz;
 using Jarvis.DocumentStore.Core.Support;
 
@@ -19,19 +20,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             base.QueueName = "imgResize";
         }
 
-        protected override void OnPolling(
-            PollerJobBaseParameters baseParameters, 
-            System.Collections.Generic.IDictionary<string, string> fullParameters, 
-            Storage.IBlobStore currentTenantBlobStore, 
-            string workingFolder)
+        protected override void OnPolling(PollerJobParameters parameters, IBlobStore currentTenantBlobStore, string workingFolder)
         {
-            var fileExtension = fullParameters[JobKeys.ThumbnailFormat];
-            var sizesAsString = fullParameters[JobKeys.Sizes];
+            var fileExtension = parameters.All[JobKeys.ThumbnailFormat];
+            var sizesAsString = parameters.All[JobKeys.Sizes];
             var imageSizes = SizeInfoHelper.Deserialize(sizesAsString);
 
-            Logger.DebugFormat("Starting resize job for {0} - {1}", baseParameters.InputBlobId, sizesAsString);
+            Logger.DebugFormat("Starting resize job for {0} - {1}", parameters.InputBlobId, sizesAsString);
 
-            var descriptor = currentTenantBlobStore.GetDescriptor(baseParameters.InputBlobId);
+            var descriptor = currentTenantBlobStore.GetDescriptor(parameters.InputBlobId);
 
             using (var sourceStream = descriptor.OpenRead())
             {
@@ -44,15 +41,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                         pageStream.Seek(0, SeekOrigin.Begin);
                         var fileFormat = new DocumentFormat("thumb." + size.Name);
 
-                        var resizedImageFileName = new FileNameWithExtension(baseParameters.InputBlobId + "." + size.Name + "." + fileExtension);
+                        var resizedImageFileName = new FileNameWithExtension(parameters.InputBlobId + "." + size.Name + "." + fileExtension);
 
                         using (var writer = currentTenantBlobStore.CreateNew(fileFormat, resizedImageFileName))
                         {
-                            Logger.DebugFormat("Resizing {0} - {1}", baseParameters.InputBlobId, writer.BlobId);
+                            Logger.DebugFormat("Resizing {0} - {1}", parameters.InputBlobId, writer.BlobId);
                             ImageResizer.Shrink(pageStream, writer.WriteStream, size.Width, size.Height);
 
                             CommandBus.Send(new AddFormatToDocument(
-                                baseParameters.InputDocumentId,
+                                parameters.InputDocumentId,
                                 fileFormat,
                                 writer.BlobId,
                                 this.PipelineId
@@ -62,7 +59,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                 }
             }
 
-            Logger.DebugFormat("Ended resize job for {0} - {1}", baseParameters.InputBlobId, sizesAsString);
+            Logger.DebugFormat("Ended resize job for {0} - {1}", parameters.InputBlobId, sizesAsString);
         }
     }
 }

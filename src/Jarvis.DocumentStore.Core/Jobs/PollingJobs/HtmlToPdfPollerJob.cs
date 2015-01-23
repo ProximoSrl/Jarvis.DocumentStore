@@ -19,20 +19,16 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             base.PipelineId = new PipelineId("htmlzip");
             base.QueueName = "htmlzip";
         }
-        protected override void OnPolling(
-            PollerJobBaseParameters baseParameters, 
-            IDictionary<string, string> fullParameters, 
-            IBlobStore currentTenantBlobStore,
-            string workingFolder)
+        protected override void OnPolling(PollerJobParameters parameters, IBlobStore currentTenantBlobStore, string workingFolder)
         {
             var converter = new HtmlToPdfConverter(currentTenantBlobStore, ConfigService)
             {
                 Logger = Logger
             };
 
-            var pdfId = converter.Run(baseParameters.TenantId, baseParameters.InputBlobId);
+            var pdfId = converter.Run(parameters.TenantId, parameters.InputBlobId);
             CommandBus.Send(new AddFormatToDocument(
-                baseParameters.InputDocumentId,
+                parameters.InputDocumentId,
                 new DocumentFormat(DocumentFormats.Pdf),
                 pdfId,
                 this.PipelineId
