@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
 
             var converter = new HtmlToPdfConverterFile(pathToFile, ConfigService)
             {

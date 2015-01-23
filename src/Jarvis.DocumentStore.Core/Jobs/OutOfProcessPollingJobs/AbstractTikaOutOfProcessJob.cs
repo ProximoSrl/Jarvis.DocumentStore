@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             var analyzer = BuildAnalyzer();
             Logger.DebugFormat("Downloading blob id: {0}, on local path {1}", parameters.InputBlobId, workingFolder);
 
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
             string content = analyzer.GetHtmlContent(pathToFile) ?? "";
             Logger.DebugFormat("Finished tika on content: {0}, charsNum {1}", parameters.InputDocumentId, content.Count());
 

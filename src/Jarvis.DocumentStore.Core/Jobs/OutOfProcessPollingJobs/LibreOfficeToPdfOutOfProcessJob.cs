@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
@@ -32,8 +33,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             //libreofficeconversion is registered per tenant.
 
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, workingFolder);
-
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
+            
+            Logger.DebugFormat("Downloaded file {0} to be converted to pdf", pathToFile);
             var outputFile = _conversion.Run(pathToFile, "pdf");
 
             await AddFormatToDocumentFromFile(

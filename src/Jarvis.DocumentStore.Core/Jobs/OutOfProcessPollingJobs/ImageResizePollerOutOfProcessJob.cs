@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             Logger.DebugFormat("Starting resize job for {0} - {1}", parameters.InputBlobId, sizesAsString);
 
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
             
 
             using (var sourceStream = File.OpenRead(pathToFile))

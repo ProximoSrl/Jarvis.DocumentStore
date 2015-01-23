@@ -261,9 +261,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         protected async Task<String> DownloadBlob(
             TenantId tenantId,
             BlobId blobId, 
+            String extension,
             String workingFolder)
         {
-            String fileName = Path.Combine(workingFolder, blobId.toString() + ".blob");
+            String fileName = Path.Combine(workingFolder, blobId.toString() + "." + extension);
             DocumentStoreServiceClient client = new DocumentStoreServiceClient(
                 _dsEndpoints.First().BaseUrl, tenantId);
             using (var reader = client.OpenBlobIdForRead(blobId))
