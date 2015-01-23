@@ -278,6 +278,7 @@
     <Compile Include="Jobs\OutOfProcessPollingJobs\AbstractTikaOutOfProcessJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\HtmlToPdfOutOfProcessJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\ImageResizePollerOutOfProcessJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\LibreOfficeToPdfOutOfProcessJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\OutOfProcessBaseJobManager.cs" />
     <Compile Include="Jobs\PollingJobs\AbstractInProcessPollerFileJob.cs" />
     <Compile Include="Jobs\PollingJobs\CreateThumbnailFromPdfPollerJob.cs" />

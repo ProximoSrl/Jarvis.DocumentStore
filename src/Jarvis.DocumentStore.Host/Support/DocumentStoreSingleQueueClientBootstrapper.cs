@@ -14,6 +14,7 @@ using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Messages;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.ConfigurationService.Client;
+using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
 using Rebus.Logging;
@@ -81,6 +82,10 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.Register(
                 Component
                     .For<ConfigService>(),
+                Component
+                    .For<ILibreOfficeConversion>()
+                    .ImplementedBy<LibreOfficeUnoConversion>()
+                    .LifeStyle.Transient,
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface()
