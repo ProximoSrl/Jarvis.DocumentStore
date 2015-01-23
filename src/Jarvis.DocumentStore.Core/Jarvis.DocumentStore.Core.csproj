@@ -276,6 +276,8 @@
     <Compile Include="Jobs\JobStats.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\AbstractOutOfProcessPollerFileJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\AbstractTikaOutOfProcessJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\HtmlToPdfOutOfProcessJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\ImageResizePollerOutOfProcessJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\OutOfProcessBaseJobManager.cs" />
     <Compile Include="Jobs\PollingJobs\AbstractInProcessPollerFileJob.cs" />
     <Compile Include="Jobs\PollingJobs\CreateThumbnailFromPdfPollerJob.cs" />
@@ -291,6 +293,7 @@
     <Compile Include="Jobs\QueueManager\QueueHandler.cs" />
     <Compile Include="Jobs\QueueManager\QueueManager.cs" />
     <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
+    <Compile Include="Processing\Conversions\HtmlToPdfConverterFile.cs" />
     <Compile Include="Processing\Conversions\TikaNetAnalyzer.cs" />
     <Compile Include="Jobs\CleanupJob.cs" />
     <Compile Include="Jobs\CommandRunnerJob.cs" />
