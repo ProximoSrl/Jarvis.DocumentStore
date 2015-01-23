@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                         pageStream.Seek(0, SeekOrigin.Begin);
                         var fileFormat = new Client.Model.DocumentFormat("thumb." + size.Name);
 
-                        string resizeImagePath = Path.Combine(workingFolder, size.Name, "." + fileExtension);
+                        string resizeImagePath = Path.Combine(workingFolder, size.Name + "." + fileExtension);
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
                             Logger.DebugFormat("Resizing {0}}", parameters.InputBlobId);
