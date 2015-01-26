@@ -6,6 +6,15 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Shared.Jobs
 {
+    public enum QueuedJobExecutionStatus
+    {
+        Idle = 0,
+        Executing = 1,
+        Failed = 2,
+        Succeeded = 3,
+        ReQueued = 4, //failed but it can be retried
+    }
+
     public class QueuedJob
     {
         public String Id { get; set; }
@@ -26,11 +35,9 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
         public DateTime? ExecutionStartTime { get; set; }
 
-        public Boolean Executing { get; set; }
+        public QueuedJobExecutionStatus Status { get; set; }
 
         public String ExecutingIdentity { get; set; }
-
-        public Boolean Finished { get; set; }
 
 
     }

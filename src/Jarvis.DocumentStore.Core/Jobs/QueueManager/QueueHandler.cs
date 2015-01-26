@@ -87,7 +87,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _collection = database.GetCollection<QueuedJob>("queue." + info.Name);
             _collection.CreateIndex(
-                IndexKeys<QueuedJob>.Ascending(x => x.Finished, x => x.Executing, x => x.StreamId));
+                IndexKeys<QueuedJob>.Ascending(x => x.Status, x => x.StreamId));
             _info = info;
             Name = info.Name;
         }
@@ -123,13 +123,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             var result = _collection.FindAndModify(new FindAndModifyArgs()
             {
-                Query =  Query.And(
-                    Query<QueuedJob>.NE(j => j.Finished, true),
-                    Query<QueuedJob>.NE(j => j.Executing, true)
+                Query =  Query.Or(
+                    Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Idle),
+                    Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.ReQueued)
                 ),
                 SortBy = SortBy<QueuedJob>.Ascending(j => j.StreamId),
                 Update = Update<QueuedJob>
-                    .Set(j => j.Executing, true)
+                    .Set(j => j.Status, QueuedJobExecutionStatus.Executing)
                     .Set(j => j.ExecutionStartTime, DateTime.Now)
                     .Set(j => j.ExecutingIdentity, identity)
                     .Set(j => j.ExecutionError, null)
@@ -151,10 +151,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 job.ErrorCount += 1;
                 job.ExecutionError = errorMessage;
-                if (job.ErrorCount == _info.MaxNumberOfFailure)
-                    job.Finished = true; //no more retry.
+                if (job.ErrorCount >= _info.MaxNumberOfFailure)
+                {
+                    job.Status = QueuedJobExecutionStatus.Failed;
+                }
+                else
+                {
+                    job.Status = QueuedJobExecutionStatus.ReQueued;
+                }
             }
-            job.Executing = false;
+            else
+            {
+                job.Status = QueuedJobExecutionStatus.Succeeded;
+            }
             job.ExecutionEndTime = DateTime.Now;
             _collection.Save(job);
             return true;
