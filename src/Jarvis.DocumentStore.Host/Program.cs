@@ -20,13 +20,20 @@ namespace Jarvis.DocumentStore.Host
             if (args.Length > 0)
             {
                 //TEMP: Single process executor run
-                String dsBaseAddress = args[0];
-                String queueName = args[1];
+                String dsBaseAddress = FindArgument(args, "/dsuris:");
+                String queueName = FindArgument(args, "/queue:");
+                if (String.IsNullOrEmpty(dsBaseAddress) || String.IsNullOrEmpty(queueName))
+                {
+                    Console.WriteLine("Error in parameters: dsuris={0} queue={1}", dsBaseAddress, queueName);
+                    Console.ReadKey();
+                    return -1;
+                }
+                  
                 exitCode = SingleJobStart(dsBaseAddress, queueName);
             }
             else
             {
-                exitCode = (Int32)StandardDocumentStoreStart();
+                exitCode = (Int32) StandardDocumentStoreStart();
             }
             return (int)exitCode;
         }
@@ -88,7 +95,6 @@ namespace Jarvis.DocumentStore.Host
                 //If multiple prcesses starts, we cannot access log4net.config because it can be lcoked.
             }
        
-
             var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
             var bootstrapper = new DocumentStoreSingleQueueClientBootstrapper(uri, queueName);
             var jobStarted = bootstrapper.Start(_documentStoreConfiguration);
@@ -103,6 +109,7 @@ namespace Jarvis.DocumentStore.Host
             {
                 Console.WriteLine("NO JOB STARTED!!!! CLOSING!!!!");
                 Thread.Sleep(3000);
+                return -1; //code to signal that queue is not supported.
             }
             return 0;
         }
@@ -162,6 +169,13 @@ namespace Jarvis.DocumentStore.Host
                     RebuildSettings.DisableRebuild();
                 }
             }
+        }
+
+        private static string FindArgument(string[] args, string prefix)
+        {
+            var arg = args.FirstOrDefault(a => a.StartsWith(prefix));
+            if (String.IsNullOrEmpty(arg)) return String.Empty;
+            return arg.Substring(prefix.Length);
         }
 
         private static void Banner()

@@ -22,6 +22,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("queue/getnextjob")]
         public QueuedJob GetNextJob(GetNextJobParameter parameter)
         {
+            if (QueueDispatcher == null) return null;
             return QueueDispatcher.GetNextJob(parameter.QueueName, parameter.Identity);
         }
 

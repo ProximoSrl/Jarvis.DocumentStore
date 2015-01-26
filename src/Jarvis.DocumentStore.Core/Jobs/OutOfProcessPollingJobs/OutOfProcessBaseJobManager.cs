@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+using Castle.Core.Logging;
+using Castle.Core;
+using System.Management;
+using System.Text;
+using System.IO;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
@@ -13,62 +18,150 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
     /// </summary>
     public class OutOfProcessBaseJobManager : IPollerJobManager
     {
-        //[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
-        //[return: MarshalAs(UnmanagedType.Bool)]
-        //public static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        //public void SendText(IntPtr hwnd, string keys)
-        //{
-        //    if (hwnd != IntPtr.Zero)
-        //    {
-        //        if (SetForegroundWindow(hwnd))
-        //        {
-        //            System.Windows.Forms.SendKeys.SendWait(keys);
-        //        }
-        //    }
-        //}
+        private class ProcessInfo 
+        {
+            public Process Process { get; set; }
 
-        Dictionary<String, Process> activeProcesses;
+            public String QueueId { get; set; }
+
+            public List<String> DocStoreAddresses { get; set; }
+        }
+
+        Dictionary<String, ProcessInfo> activeProcesses;
+
+        public ILogger Logger { get; set; }
 
         public OutOfProcessBaseJobManager()
         {
-            activeProcesses = new Dictionary<string, Process>();
+            activeProcesses = new Dictionary<string, ProcessInfo>();
+            Logger = NullLogger.Instance;
         }
 
         public string Start(string queueId, List<string> docStoreAddresses)
+        {
+            String processHandle = Guid.NewGuid().ToString();
+            InnerStart(queueId, docStoreAddresses, processHandle);
+            return processHandle;
+        }
+
+        private void InnerStart(string queueId, List<string> docStoreAddresses, String processHandle)
         {
             var thisFileName = Environment.CommandLine.Split(' ')[0]
                 .Trim('/', '"')
                 .Replace(".vshost.exe", ".exe");
 
-            System.Diagnostics.Process process =new System.Diagnostics.Process();
-            process.StartInfo.FileName = thisFileName;
-            process.StartInfo.Arguments = docStoreAddresses.Aggregate((s1, s2) => s1 + " " + s2) + " " + queueId;
-            process.StartInfo.CreateNoWindow = false;
-            process.StartInfo.UseShellExecute = true;
-            process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
-            process.StartInfo.RedirectStandardOutput = false;
-            process.EnableRaisingEvents = true;
+            Process process = GetLocalProcessForQueue(queueId, thisFileName);
+            if (process == null)
+            {
+                process = new System.Diagnostics.Process();
+                process.StartInfo.FileName = thisFileName;
+                process.StartInfo.Arguments = "/dsuris:" + docStoreAddresses.Aggregate((s1, s2) => s1 + "|" + s2) +
+                    " /queue:" + queueId +
+                    " /handle:" + processHandle;
+                process.StartInfo.CreateNoWindow = false;
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                process.StartInfo.RedirectStandardOutput = false;
+                process.EnableRaisingEvents = true;
+                Boolean started = process.Start();
+                Logger.DebugFormat("Started process for queue {0} with ProcessId {1}.", queueId, process.Id);
+            }
+            else
+            {
+                Logger.DebugFormat("Reattached process for queue {0} with ProcessId {1}.", queueId, process.Id);
+            }
             process.Exited += process_Exited;
 
-            Boolean started = process.Start();
-            if (!started) return "";
-            //process is started, 
-         
-            String processId = Environment.MachineName + ":" + process.Id;
-            activeProcesses.Add(processId, process);
-            return processId;
+            var info = new ProcessInfo()
+            {
+                Process = process,
+                QueueId = queueId,
+                DocStoreAddresses = docStoreAddresses,
+            };
+            activeProcesses[processHandle] = info;
+            Logger.InfoFormat("Started worker: ProcessHandle {0} for queue {1}", processHandle, queueId);
+        }
+
+        private string GetJobHandleFromProcess(Process process)
+        {
+            return activeProcesses
+                .Where(info => info.Value.Process.Id == process.Id && info.Value.Process.MachineName == process.MachineName)
+                .Select(info => info.Key)
+                .SingleOrDefault();
+        }
+
+        private Process GetLocalProcessForQueue(String queueId, String executableName) 
+        {
+            var processFileName = Path.GetFileNameWithoutExtension(executableName);
+            var processes = Process.GetProcessesByName(processFileName, Environment.MachineName);
+   
+            foreach (Process process in processes)
+            {
+               
+                var cmdLine = GetCommandLine(process);
+                if (cmdLine.Contains("/queue:" + queueId)) return process;
+            }
+            return null;
+        }
+
+        private static string GetCommandLine(Process process)
+        {
+            //TODO: Need to find faster and better way to find process info
+            try
+            {
+                var commandLine = new StringBuilder();
+
+                using (var searcher = new ManagementObjectSearcher("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " + process.Id))
+                {
+                    foreach (var @object in searcher.Get())
+                    {
+                        commandLine.Append(@object["CommandLine"] + " ");
+                    }
+                }
+
+                return commandLine.ToString();
+            }
+            catch (Exception ex)
+            {
+                return "";
+            }
         }
 
         void process_Exited(object sender, EventArgs e)
         {
+            //process is exited, it should be restarted if it is a crash.
+            Process process = (Process) sender;
+            String handle = GetJobHandleFromProcess(process);
+            if (String.IsNullOrEmpty(handle)) 
+            {
+                Logger.ErrorFormat("Process with unknown handle exited. Process Id {0} Machine Name {1}", process.Id, process.MachineName);
+                return;
+            }
+            if (activeProcesses.ContainsKey(handle)) 
+            {
+                var processInfo = activeProcesses[handle];
+                var retValue = process.ExitCode;
+                if (retValue == -1) 
+                {
+                    Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because queue is not supported.", process.Id, processInfo.QueueId);
+                    activeProcesses.Remove(handle); 
+                    return; 
+                }
 
+                //process is ended, restart the process, it will have new id.
+                Logger.WarnFormat("Job terminated unexpectedly, job handle {0} for queue {1}. Restarting!!", handle, processInfo.QueueId);
+                InnerStart(processInfo.QueueId, processInfo.DocStoreAddresses, handle);
+
+            }
         }
 
         public bool Stop(string jobHandle)
         {
-            var process = activeProcesses[jobHandle];
-            if (process == null) return false;
+            if (!activeProcesses.ContainsKey(jobHandle)) return false;
+
+            var info = activeProcesses[jobHandle];
+            var process = info.Process;
             
             //SendText(process.MainWindowHandle, "x");
             //var exited = process.WaitForExit(5000);
@@ -78,6 +171,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             process.Kill();
             activeProcesses.Remove(jobHandle);
             return true;
+        }
+
+        public void Stop()
+        {
+            foreach (var jobHandle in activeProcesses.Keys.ToList())
+            {
+                Stop(jobHandle);
+            }
         }
     }
 }
