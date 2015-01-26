@@ -21,19 +21,23 @@ namespace Jarvis.DocumentStore.Core.Support
     public class QueueInfrasctructureInstaller : IWindsorInstaller
     {
         private String _queueStoreConnectionString;
+        private IEnumerable<QueueInfo> _queuesInfo;
 
-        public QueueInfrasctructureInstaller(string queueStoreConnectionString)
+        public QueueInfrasctructureInstaller(string queueStoreConnectionString, IEnumerable<QueueInfo> queuesInfo)
         {
             _queueStoreConnectionString = queueStoreConnectionString;
+            _queuesInfo = queuesInfo;
         }
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            var queueDb = GetQueueDb();
             container.Register(
                 Component
                     .For<QueueManager, IQueueDispatcher>()
                     .ImplementedBy<QueueManager>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(GetQueueDb())),
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(queueDb))
+                    .LifeStyle.Singleton,
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface(),
@@ -47,6 +51,16 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<PollerManager>()
                     .ImplementedBy<PollerManager>()
             );
+
+            //now register all handlers
+            foreach (var queueInfo in _queuesInfo)
+            {
+                container.Register(Component.For<QueueHandler>()
+                    .ImplementedBy<QueueHandler>()
+                    .DependsOn(Dependency.OnValue<QueueInfo>(queueInfo))
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(queueDb))
+                    .Named("QueueHandler-" + queueInfo.Name));
+            }
         }
 
         MongoDatabase GetQueueDb()

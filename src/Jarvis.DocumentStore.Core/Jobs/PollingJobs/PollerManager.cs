@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 {
-    public class PollerManager : IStartable 
+    public class PollerManager  
     {
         readonly IPollerJobManager _pollerJobManager;
         private DocumentStoreConfiguration _configuration;

@@ -33,7 +33,8 @@ namespace Jarvis.DocumentStore.Host
             }
             else
             {
-                exitCode = (Int32) StandardDocumentStoreStart();
+                var executionExitCode = StandardDocumentStoreStart();
+                exitCode = (Int32) executionExitCode;
             }
             return (int)exitCode;
         }

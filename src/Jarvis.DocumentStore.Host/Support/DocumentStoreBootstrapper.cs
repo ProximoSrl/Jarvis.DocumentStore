@@ -17,6 +17,7 @@ using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
 using Rebus.Logging;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -46,7 +47,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 new CoreInstaller(config),
                 new EventStoreInstaller(manager),
                 new SchedulerInstaller(config.QuartzConnectionString, false),
-                new QueueInfrasctructureInstaller(config.QueueConnectionString),
+                new QueueInfrasctructureInstaller(config.QueueConnectionString, config.QueueInfoList),
             };
 
             _logger.Debug("Configured Scheduler");
@@ -79,7 +80,6 @@ namespace Jarvis.DocumentStore.Host.Support
                 
                 tenant.Container.Install(tenantInstallers.ToArray());
             }
-
             foreach (var act in _container.ResolveAll<IStartupActivity>())
             {
                 _logger.DebugFormat("Starting activity: {0}", act.GetType().FullName);
@@ -133,14 +133,12 @@ namespace Jarvis.DocumentStore.Host.Support
             return manager;
         }
 
+        private Boolean isStopped = false;
         public void Stop()
         {
-            if (_webApplication != null)
-            {
-                _webApplication.Dispose();
-            }
-
-            foreach (var act in _container.ResolveAll<IShutdownActivity>())
+            if (isStopped) return;
+            var allShutDownActivities = _container.ResolveAll<IShutdownActivity>();
+            foreach (var act in allShutDownActivities)
             {
                 _logger.DebugFormat("Shutting down activity: {0}", act.GetType().FullName);
                 try
@@ -153,7 +151,15 @@ namespace Jarvis.DocumentStore.Host.Support
                 }
             }
 
-            _container.Dispose();
+            //IMPORTANT: web application dispose WindsorContainer when disposed, so call 
+            //to _webApplication.Dispose() should be done in the last call to stop.
+            //IMPORTANT: disposing web application calls in DocumentBootstrapper for a second time.
+            //need to check if the component was already stopped.
+            isStopped = true;
+            if (_webApplication != null)
+            {
+                _webApplication.Dispose();
+            }
         }
     }
 

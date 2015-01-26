@@ -22,6 +22,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         QueuedJob GetNextJob(String queueName, String identity);
 
         Boolean SetJobExecuted(String queueName, String jobId, String errorMessage);
+
+        void Start();
+
+        void Stop();
     }
 
     /// <summary>
@@ -47,11 +51,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public QueueManager(
             MongoDatabase mongoDatabase,
             ITenantAccessor tenantAccessor,
+            QueueHandler[] queueHandlers,
             DocumentStoreConfiguration configuration)
         {
             _tenantAccessor = tenantAccessor;
             _configuration = configuration;
             _mongoDatabase = mongoDatabase;
+            _queueHandlers = queueHandlers
+                .ToDictionary(qh => qh.Name, qh => qh);
             _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("stream.checkpoints");
             Logger = NullLogger.Instance;
         }
@@ -79,6 +86,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             Poll = 0
         }
 
+        private Boolean _isStarted = false;
+
         public void Start()
         {
             _queueTenantInfos = _tenantAccessor.Tenants
@@ -90,9 +99,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                })
                .ToArray();
             _commandList = new BlockingCollection<CommandData>();
-            _queueHandlers = _configuration.QueueInfoList
-                .Select(qil => new QueueHandler(qil, _mongoDatabase))
-                .ToDictionary(qh => qh.Name, qh => qh);
 
             _pollerThread = new Thread(PollerFunc);
             _pollerThread.IsBackground = true;
@@ -101,12 +107,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             pollerTimer = new System.Timers.Timer(_configuration.QueueStreamPollInterval);
             pollerTimer.Elapsed += TimerCallback;
             pollerTimer.Start();
+            _isStarted = true;
         }
 
         public void Stop()
         {
+            _isStarted = false;
             _commandList.CompleteAdding();
             _commandList.Dispose();
+            _commandList = null;
         }
 
         private void PollerFunc(object obj)
@@ -174,6 +183,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public void PollNow()
         {
+            if (!_isStarted) return;
             if (!_commandList.Any(c => c.Command == QueueCommands.Poll))
                 _commandList.Add(CommandData.Poll());
         }
@@ -196,7 +206,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         private Object ExecuteWithQueueHandler(String operationName, String queueName, Func<QueueHandler, Object> executor) 
         {
-            if (!_queueHandlers.ContainsKey(queueName))
+            if (_queueHandlers == null || !_queueHandlers.ContainsKey(queueName))
             {
                 Logger.ErrorFormat("Requested operation {0} for queue name {1} but no Queue configured with that name", operationName, queueName);
                 return null;

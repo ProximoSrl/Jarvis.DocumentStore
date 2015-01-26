@@ -272,6 +272,7 @@
     <Compile Include="EventHandlers\StreamProjection.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
     <Compile Include="Jobs\AbstractTikaJob.cs" />
+    <Compile Include="Jobs\QueuedJobQuartzMonitor.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
     <Compile Include="Jobs\JobStats.cs" />
@@ -363,7 +364,7 @@
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\IStartupActivity.cs" />
     <Compile Include="Support\QueueInfrasctructureInstaller.cs" />
-    <Compile Include="Support\QueueManagerStartup.cs" />
+    <Compile Include="Support\QueueManagerActivities.cs" />
     <Compile Include="Support\SchedulerStartup.cs" />
     <Compile Include="Support\TenantCoreInstaller.cs" />
     <Compile Include="Support\CustomQuartzFacility.cs" />
