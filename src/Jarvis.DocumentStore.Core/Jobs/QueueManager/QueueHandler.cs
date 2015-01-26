@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Linq;
 using MongoDB.Driver.Linq;
+using Castle.Core.Logging;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -84,8 +85,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         readonly QueueInfo _info;
         readonly BsonDocument _statsAggregationQuery;
         private readonly AggregateArgs _aggregation;
-       
 
+        public ILogger Logger { get; set; }
         public String Name { get; private set; }
 
         public QueueHandler(QueueInfo info, MongoDatabase database)
@@ -108,6 +109,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 Pipeline = new[] { _statsAggregationQuery }
             };
+            Logger = NullLogger.Instance;
         }
 
         public void Handle(StreamReadModel streamElement, TenantId tenantId)
@@ -173,7 +175,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public Boolean SetJobExecuted(String jobId, String errorMessage) 
         {
             var job = _collection.FindOneById(BsonValue.Create(jobId));
-
+            if (job == null) 
+            {
+                Logger.ErrorFormat("Request SetJobExecuted for unexisting job id {0}", jobId);
+                return false;
+            }
             if (!String.IsNullOrEmpty(errorMessage)) 
             {
                 job.ErrorCount += 1;
