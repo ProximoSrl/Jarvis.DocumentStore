@@ -79,11 +79,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 return new CommandData() { Command = QueueCommands.Poll };
             }
+
+            internal static CommandData Exit()
+            {
+                return new CommandData() { Command = QueueCommands.Exit };
+            }
         }
 
         private enum QueueCommands
         {
-            Poll = 0
+            Poll = 0,
+            Exit = 1,
         }
 
         private Boolean _isStarted = false;
@@ -114,8 +120,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             if (!_isStarted) return;
             _isStarted = false;
+            _commandList.Add(CommandData.Exit());
             _commandList.CompleteAdding();
-            _commandList.Dispose();
             _commandList = null;
         }
 
@@ -131,6 +137,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                             pollerTimer.Stop(); //no need to add more polling if we are already polling
                             Poll();
                             break;
+
+                        case QueueCommands.Exit:
+                            return;
 
                         default:
                             Logger.ErrorFormat("Unknown command {0}", command.Command);
@@ -201,11 +210,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
         {
-            return (Boolean) ExecuteWithQueueHandler("set job executed", queueName, qh => qh.SetJobExecuted(jobId, errorMessage));
+            return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.SetJobExecuted(jobId, errorMessage));
         }
 
 
-        private Object ExecuteWithQueueHandler(String operationName, String queueName, Func<QueueHandler, Object> executor) 
+        private Object ExecuteWithQueueHandler(String operationName, String queueName, Func<QueueHandler, Object> executor)
         {
             if (_queueHandlers == null || !_queueHandlers.ContainsKey(queueName))
             {
