@@ -161,6 +161,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                                 //In this version we are interested only in event for new formats
                                 if (streamData.EventType != HandleStreamEventTypes.HandleHasNewFormat &&
                                     streamData.EventType != HandleStreamEventTypes.HandleFormatUpdated) continue;
+
                                 qh.Value.Handle(streamData, info.TenantId);
                             }
                         }

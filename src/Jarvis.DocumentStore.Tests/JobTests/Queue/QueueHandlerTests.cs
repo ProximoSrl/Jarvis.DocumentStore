@@ -102,13 +102,43 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         [Test]
         public void verify_get_next_job_set_identity()
         {
+            var info = new QueueInfo("test", "", "pdf|docx");
+            QueueHandler sut = new QueueHandler(info, _db);
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Id = 1L,
+                Handle = "FirstHandle", 
+                Filename = new FileNameWithExtension("test.docx"),
+                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                FormatInfo = new FormatInfo()
+                {
+                    PipelineId = new PipelineId("soffice"),
+                    DocumentFormat = new DocumentFormat("office"),
+                    BlobId = new BlobId("soffice.1")
+                },
+                DocumentId = new DocumentId(1),
+            };
+
+            sut.Handle(rm, new TenantId("test"));
+            rm.Handle = "SecondHandle";
+            rm.Id = 2L;
+            //This is typical situation when handle is de-duplicated, because
+            //and handle is assigned to another document, but the underling blob id is the same.
+            sut.Handle(rm, new TenantId("test"));
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            //no need to schedule another job
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void verify_not_duplicate_jobs_on_same_blob_id()
+        {
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
             var nextJob = sut.GetNextJob("identity");
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
             Assert.That(job.ExecutingIdentity, Is.EqualTo("identity"));
         }
-
 
         [Test]
         public void verify_get_next_job_not_give_executing_job()

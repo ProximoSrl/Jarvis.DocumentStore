@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Linq;
+using MongoDB.Driver.Linq;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -96,8 +98,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             if (_info.ShouldCreateJob(streamElement)) 
             {
+                var id = streamElement.FormatInfo.BlobId + "_" + tenantId;
+                //look for already existing job with the same blobid, there is no need to re-queue again
+                //because if a job with the same blobid was already fired for this queue there is no need
+                //to re-issue
+                var existing = _collection.Find(Query<QueuedJob>.EQ(j => j.Id, id)).Count() > 0;
+                if (existing) return;
+
                 QueuedJob job = new QueuedJob();
-                job.Id = streamElement.Id + "_" + tenantId;
+                job.Id = id;
                 job.CreationTimestamp = DateTime.Now;
                 job.StreamId = streamElement.Id;
                 job.TenantId = tenantId;
