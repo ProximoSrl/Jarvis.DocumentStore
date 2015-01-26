@@ -116,25 +116,34 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
                         Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id, nextJob.Parameters[JobKeys.TenantId]);
                         QueueDispatcher.SetJobExecuted(this.QueueName, nextJob.Id, ex.Message);
                     }
+                    finally 
+                    {
+                        DeleteWorkingFolder(workingFolder);
+                    }
                 }
             }
 
             finally
             {
-                if (!String.IsNullOrEmpty(workingFolder)) 
-                {
-                    try
-                    {
-                        if (Directory.Exists(workingFolder))
-                            Directory.Delete(workingFolder, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorFormat(ex, "Error deleting {0}", workingFolder);
-                    }
-                }
+               
                 if (Started && pollingTimer != null) pollingTimer.Start();
                 
+            }
+        }
+
+        private void DeleteWorkingFolder(String workingFolder)
+        {
+            if (!String.IsNullOrEmpty(workingFolder))
+            {
+                try
+                {
+                    if (Directory.Exists(workingFolder))
+                        Directory.Delete(workingFolder, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat(ex, "Error deleting {0}", workingFolder);
+                }
             }
         }
 

@@ -272,6 +272,7 @@
     <Compile Include="EventHandlers\StreamProjection.cs" />
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
     <Compile Include="Jobs\AbstractTikaJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\AnalyzeEmailOutOfProcessJob.cs" />
     <Compile Include="Jobs\QueuedJobQuartzMonitor.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />

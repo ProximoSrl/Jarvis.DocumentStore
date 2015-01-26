@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void TestFixtureSetUp()
         {
             _config = new DocumentStoreTestConfigurationForPollQueue();
-            MongoDbTestConnectionProvider.DropAll();
+            MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
             _config.ServerAddress = TestConfig.ServerAddress;
             _documentStoreService = new DocumentStoreBootstrapper();
             _documentStoreService.Start(_config);

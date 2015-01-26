@@ -53,6 +53,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             Connect(tenant + ".system").Drop();
             Connect(tenant + ".events").Drop();
             Connect(tenant + ".readmodel").Drop();
+            Connect("ds.queue").Drop();
         }
 
 

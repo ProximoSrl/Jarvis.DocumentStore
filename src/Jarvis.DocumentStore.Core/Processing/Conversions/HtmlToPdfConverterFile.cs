@@ -14,14 +14,14 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
     /// <summary>
     /// Version that does not need blob store.
     /// </summary>
-    public class HtmlToPdfConverterFile
+    public class HtmlToPdfConverterFromDiskFile
     {
         const bool ProduceOutline = false;
         private String _inputFileName;
         public ILogger Logger { get; set; }
         readonly ConfigService _config;
 
-        public HtmlToPdfConverterFile(String inputFileName, ConfigService config)
+        public HtmlToPdfConverterFromDiskFile(String inputFileName, ConfigService config)
         {
             _inputFileName = inputFileName;
             _config = config;
@@ -81,8 +81,6 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
         string DownloadLocalCopy(TenantId tenantId, BlobId blobId)
         {
             var folder = _config.GetWorkingFolder(tenantId, blobId);
-            if(Directory.Exists(folder))
-                Directory.Delete(folder,true);
 
             Logger.DebugFormat("Downloaded {0}", _inputFileName);
 

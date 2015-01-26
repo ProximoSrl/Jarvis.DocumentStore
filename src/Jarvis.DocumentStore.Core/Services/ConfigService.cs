@@ -86,6 +86,13 @@ namespace Jarvis.DocumentStore.Core.Services
             return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), tenantId, blobId));
         }
 
+        public string GetWorkingFolderForQueue(string tenantId, string queueName)
+        {
+            if (tenantId == null) throw new ArgumentNullException("tenantId");
+            if (queueName == null) throw new ArgumentNullException("queueName");
+            return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), tenantId, queueName));
+        }
+
         string GetConfigValue(string key, string defaultValue = null)
         {
             return  ConfigurationManager.AppSettings[key] ??

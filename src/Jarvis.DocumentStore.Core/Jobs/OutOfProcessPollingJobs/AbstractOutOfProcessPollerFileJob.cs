@@ -120,10 +120,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     //remember to enter the right tenant.
                     TenantContext.Enter(new TenantId(baseParameters.TenantId));
                     workingFolder = Path.Combine(
-                        ConfigService.GetWorkingFolder(baseParameters.TenantId, baseParameters.InputBlobId),
-                        GetType().Name
+                            ConfigService.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
+                            baseParameters.InputBlobId
                         );
-                    if (!Directory.Exists(workingFolder)) Directory.CreateDirectory(workingFolder);
+                    if (Directory.Exists(workingFolder)) Directory.Delete(workingFolder, true);
+                    Directory.CreateDirectory(workingFolder);
                     try
                     {
                         var task = OnPolling(baseParameters, workingFolder);
@@ -136,6 +137,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                             nextJob.Parameters[JobKeys.TenantId]);
                         DsSetJobExecuted(QueueName, nextJob.Id, ex.Message);
                     }
+                    finally
+                    {
+                        DeleteWorkingFolder(workingFolder);
+                    }
 
 
                 } while (true); //Exit is in the internal loop
@@ -147,18 +152,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             }
             finally
             {
-                if (!String.IsNullOrEmpty(workingFolder))
-                {
-                    try
-                    {
-                        if (Directory.Exists(workingFolder))
-                            Directory.Delete(workingFolder, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorFormat(ex, "Error deleting {0}", workingFolder);
-                    }
-                }
                 if (Started && _pollingTimer != null) _pollingTimer.Start();
             }
         }
@@ -181,7 +174,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 pollerResult = client.UploadString(firstUrl.SetJobCompleted, payload);
                 Logger.DebugFormat("SetJobExecuted Result: {0}", pollerResult);
             }
-            
+
         }
 
         private static PollerJobParameters ExtractJobParameters(QueuedJob nextJob)
@@ -222,10 +215,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             return nextJob;
         }
 
-        protected async Task<Boolean> AddFormatToDocumentFromFile(string tenantId, 
-            DocumentId documentId, 
-            Client.Model.DocumentFormat format, 
-            string pathToFile, 
+        protected async Task<Boolean> AddFormatToDocumentFromFile(string tenantId,
+            DocumentId documentId,
+            Client.Model.DocumentFormat format,
+            string pathToFile,
             IDictionary<string, object> customData)
         {
             DocumentStoreServiceClient client = new DocumentStoreServiceClient(
@@ -237,7 +230,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 Format = format,
                 PathToFile = pathToFile
             };
-           
+
             var response = await client.AddFormatToDocument(model, customData);
             return response != null;
         }
@@ -261,11 +254,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             return response != null;
         }
 
-      
+
 
         protected async Task<String> DownloadBlob(
             TenantId tenantId,
-            BlobId blobId, 
+            BlobId blobId,
             String extension,
             String workingFolder)
         {
@@ -283,6 +276,23 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             Logger.DebugFormat("Downloaded blob {0} for tenant {1} in local file {2}", blobId, tenantId, fileName);
             return fileName;
         }
+
+        private void DeleteWorkingFolder(String workingFolder)
+        {
+            if (!String.IsNullOrEmpty(workingFolder))
+            {
+                try
+                {
+                    if (Directory.Exists(workingFolder))
+                        Directory.Delete(workingFolder, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat(ex, "Error deleting {0}", workingFolder);
+                }
+            }
+        }
+
 
         protected abstract Task<Boolean> OnPolling(
             PollerJobParameters parameters,

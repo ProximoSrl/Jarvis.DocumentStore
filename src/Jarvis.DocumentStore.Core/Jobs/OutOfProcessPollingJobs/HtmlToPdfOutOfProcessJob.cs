@@ -14,6 +14,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Support;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
+using System;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
@@ -28,8 +29,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
-
-            var converter = new HtmlToPdfConverterFile(pathToFile, ConfigService)
+            String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
+            Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
+            if (File.Exists(fileName)) File.Delete(fileName);
+            File.Copy(pathToFile, fileName);
+            var converter = new HtmlToPdfConverterFromDiskFile(fileName, ConfigService)
             {
                 Logger = Logger
             };
