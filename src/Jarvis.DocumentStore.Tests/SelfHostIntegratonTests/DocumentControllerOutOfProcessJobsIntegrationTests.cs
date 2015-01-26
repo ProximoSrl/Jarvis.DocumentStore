@@ -38,9 +38,10 @@ using Jarvis.DocumentStore.Core.Support;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     /// <summary>
-    /// test of controller when it works with pull model test.
+    /// Test of jobs executed out of process.
     /// </summary>
     [TestFixture]
+    //[Explicit("This integration test is slow because it wait for polling")]
     public class DocumentControllerOutOfProcessJobsIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
@@ -106,7 +107,45 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Tika document not found");
         }
 
+        [Test]
+        public async void verify_tika_set_content()
+        {
+            OutOfProcessTikaNetJob sut = new OutOfProcessTikaNetJob();
+            sut.DocumentStoreConfiguration = _config;
+            sut.Logger = new TestLogger(LoggerLevel.Debug);
+            sut.ConfigService = new ConfigService();
+            sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri });
+            var handle = DocumentHandle.FromString("verify_tika_job");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToWordDocument,
+               handle,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
 
+            DateTime startWait = DateTime.Now;
+            DocumentReadModel document;
+            do
+            {
+                Thread.Sleep(300);
+                document = _documents.AsQueryable()
+                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
+                if (document != null &&
+                    document.Formats.ContainsKey(new Core.Domain.Document.DocumentFormat("content")))
+                {
+                    //now we want to verify if content is set correctly
+                    var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+                    var content = await client.GetContentAsync(handle);
+                    Assert.That(content.Pages.Length, Is.EqualTo(1));
+                    Assert.That(content.Pages[0].Content, Contains.Substring("word document").IgnoreCase);
+                    return;
+                }
+    
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+
+            Assert.Fail("Tika document not found");
+        }
 
 
     }
