@@ -112,6 +112,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public void Stop()
         {
+            if (!_isStarted) return;
             _isStarted = false;
             _commandList.CompleteAdding();
             _commandList.Dispose();

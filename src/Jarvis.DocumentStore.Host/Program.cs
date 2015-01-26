@@ -7,6 +7,7 @@ using Jarvis.DocumentStore.Host.Support;
 using Topshelf;
 using Jarvis.ConfigurationService.Client;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Jarvis.DocumentStore.Host
 {
@@ -103,7 +104,8 @@ namespace Jarvis.DocumentStore.Host
 
             if (jobStarted)
             {
-                Console.Title = "Jarvis - Document Store Client for queue " + queueName;
+                Console.Title = String.Format("Pid {0} - Jarvis - Document Store Client for queue {1}",
+                    Process.GetCurrentProcess().Id, queueName);
                 Console.WriteLine("JOB STARTED: Press any key to stop the client");
                 Console.ReadKey(); 
             }

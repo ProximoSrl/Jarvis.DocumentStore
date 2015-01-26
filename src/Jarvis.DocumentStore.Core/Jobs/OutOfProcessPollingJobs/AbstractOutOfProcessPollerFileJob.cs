@@ -81,7 +81,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             _dsEndpoints = documentStoreAddressUrls
                 .Select(addr => new DsEndpoint(
                         addr.TrimEnd('/') + "/queue/getnextjob",
-                        addr.TrimEnd('/') + "queue/setjobcomplete",
+                        addr.TrimEnd('/') + "/queue/setjobcomplete",
                         new Uri(addr)))
                 .ToList();
             Start(DocumentStoreConfiguration.QueueStreamPollInterval);
@@ -128,6 +128,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     {
                         var task = OnPolling(baseParameters, workingFolder);
                         Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, task.Result);
+                        DsSetJobExecuted(QueueName, nextJob.Id, "");
                     }
                     catch (Exception ex)
                     {
@@ -175,10 +176,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     JobId = jobId,
                     ErrorMessage = message
                 });
-                Logger.DebugFormat("SetJobExecuted url: {0} with payload {1}", firstUrl, payload);
+                Logger.DebugFormat("SetJobExecuted url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 pollerResult = client.UploadString(firstUrl.SetJobCompleted, payload);
-                Logger.DebugFormat("GetNextJobResult: {0}", pollerResult);
+                Logger.DebugFormat("SetJobExecuted Result: {0}", pollerResult);
             }
             
         }
