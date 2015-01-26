@@ -22,6 +22,7 @@ namespace Jarvis.DocumentStore.Core.Support
     {
         private String _queueStoreConnectionString;
         private IEnumerable<QueueInfo> _queuesInfo;
+        private ILogger _logger;
 
         public QueueInfrasctructureInstaller(string queueStoreConnectionString, IEnumerable<QueueInfo> queuesInfo)
         {
@@ -31,6 +32,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            _logger = container.Resolve<ILoggerFactory>().Create(typeof(QueueInfrasctructureInstaller));
             var queueDb = GetQueueDb();
             container.Register(
                 Component
@@ -41,7 +43,8 @@ namespace Jarvis.DocumentStore.Core.Support
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface(),
-                //Component
+                Component.For<QueuedJobQuartzMonitor>(),
+                    //Component
                 //    .For<IPollerJobManager>()
                 //    .ImplementedBy<InProcessPollerJobManager>(),
                Component
@@ -61,6 +64,40 @@ namespace Jarvis.DocumentStore.Core.Support
                     .DependsOn(Dependency.OnValue<MongoDatabase>(queueDb))
                     .Named("QueueHandler-" + queueInfo.Name));
             }
+
+                        try
+            {
+                SetupTimeoutJob(container.Resolve<IScheduler>());
+            }
+            catch (Exception ex)
+            {
+                container.Resolve<ILogger>().ErrorFormat(ex, "SetupCleanupJob");
+            }
+        }
+
+        void SetupTimeoutJob(IScheduler scheduler)
+        {
+            JobKey jobKey = JobKey.Create("queuedMonitorForTimeout", "sys.cleanup");
+            scheduler.DeleteJob(jobKey);
+
+            var job = JobBuilder
+                .Create<QueuedJobQuartzMonitor>()
+                .WithIdentity(jobKey)
+                .Build();
+
+            var trigger = TriggerBuilder.Create()
+#if DEBUG
+.StartAt(DateTimeOffset.Now.AddSeconds(5))
+                .WithSimpleSchedule(b => b.RepeatForever().WithIntervalInSeconds(10))
+#else
+                .StartAt(DateTimeOffset.Now.AddMinutes(2))
+                .WithSimpleSchedule(b=>b.RepeatForever().WithIntervalInMinutes(2))
+#endif
+.WithPriority(1)
+                .Build();
+
+            var nextExcution = scheduler.ScheduleJob(job, trigger);
+            _logger.InfoFormat("Scheduled QueuedJobQuartzMonitor: first execution at {0}.", nextExcution);
         }
 
         MongoDatabase GetQueueDb()

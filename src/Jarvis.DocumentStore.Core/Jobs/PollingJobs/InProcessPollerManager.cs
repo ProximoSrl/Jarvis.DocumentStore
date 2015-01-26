@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         {
             if (!_allPollerJobs.ContainsKey(queueId)) return ""; //Job not started
 
-            _allPollerJobs[queueId].Start(new List<String>()); //in process poller does not need address.
+            _allPollerJobs[queueId].Start(new List<String>(), queueId); //in process poller does not need address.
             return queueId; //the id is the name of the job itself.
         }
 

@@ -48,6 +48,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         private String _identity;
 
+        private String _handle;
+
         public AbstractOutOfProcessPollerFileJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
@@ -71,9 +73,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             public Uri BaseUrl { get; set; }
         }
 
-        public void Start(List<String> documentStoreAddressUrls)
+        public void Start(List<String> documentStoreAddressUrls, String handle)
         {
             if (Started) return;
+            _handle = handle;
             if (documentStoreAddressUrls.Count == 0) throw new ArgumentException("Component needs at least a document store url", "documentStoreAddressUrls");
             _dsEndpoints = documentStoreAddressUrls
                 .Select(addr => new DsEndpoint(
@@ -203,7 +206,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 var payload = JsonConvert.SerializeObject(new
                 {
                     QueueName = this.QueueName,
-                    Identity = this._identity
+                    Identity = this._identity,
+                    Handle = this._handle,
                 });
                 Logger.DebugFormat("Polling url: {0} with payload {1}", firstUrl, payload);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";

@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
     public interface IQueueDispatcher
     {
-        QueuedJob GetNextJob(String queueName, String identity);
+        QueuedJob GetNextJob(String queueName, String identity, String handle);
 
         Boolean SetJobExecuted(String queueName, String jobId, String errorMessage);
 
@@ -193,9 +193,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             PollNow();
         }
 
-        public QueuedJob GetNextJob(String queueName, String identity)
+        public QueuedJob GetNextJob(String queueName, String identity, String handle)
         {
-            return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity)) as QueuedJob;
+            return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity, handle)) as QueuedJob;
         }
 
         public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)

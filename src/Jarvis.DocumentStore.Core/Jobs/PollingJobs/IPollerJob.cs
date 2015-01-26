@@ -36,7 +36,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         /// </summary>
         Boolean IsOutOfProcess { get;  }
 
-        void Start(List<String> documentStoreAddressUrls);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="documentStoreAddressUrls">List of document store addressess</param>
+        /// <param name="handle">The handle used to specify the identity of the worker.</param>
+        void Start(List<String> documentStoreAddressUrls, String handle);
 
         void Stop();
     }

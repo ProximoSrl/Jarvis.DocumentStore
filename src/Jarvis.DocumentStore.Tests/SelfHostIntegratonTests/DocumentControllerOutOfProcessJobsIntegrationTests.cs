@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             sut.DocumentStoreConfiguration = _config;
             sut.Logger = new TestLogger(LoggerLevel.Debug);
             sut.ConfigService = new ConfigService();
-            sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri });
+            sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, "TESTHANDLE");
 
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
@@ -114,7 +114,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             sut.DocumentStoreConfiguration = _config;
             sut.Logger = new TestLogger(LoggerLevel.Debug);
             sut.ConfigService = new ConfigService();
-            sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri });
+            sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, "TESTHANDLE");
             var handle = DocumentHandle.FromString("verify_tika_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,

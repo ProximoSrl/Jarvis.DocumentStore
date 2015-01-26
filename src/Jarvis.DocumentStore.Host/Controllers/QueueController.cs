@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public QueuedJob GetNextJob(GetNextJobParameter parameter)
         {
             if (QueueDispatcher == null) return null;
-            return QueueDispatcher.GetNextJob(parameter.QueueName, parameter.Identity);
+            return QueueDispatcher.GetNextJob(parameter.QueueName, parameter.Identity, parameter.Handle);
         }
 
         [HttpPost]
@@ -39,6 +39,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public String QueueName { get; set; }
 
         public String Identity { get; set; }
+
+        public String Handle { get; set; }
     }
 
     public class FinishedJobParameter 

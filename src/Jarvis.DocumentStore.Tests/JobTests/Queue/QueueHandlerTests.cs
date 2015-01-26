@@ -134,7 +134,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         public void verify_not_duplicate_jobs_on_same_blob_id()
         {
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
-            var nextJob = sut.GetNextJob("identity");
+            var nextJob = sut.GetNextJob("identity", "handle");
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
             Assert.That(job.ExecutingIdentity, Is.EqualTo("identity"));
@@ -144,9 +144,9 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         public void verify_get_next_job_not_give_executing_job()
         {
             QueueHandler sut = CreateAGenericJob( new QueueInfo("test", "tika", ""));
-            var nextJob = sut.GetNextJob("");
+            var nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Not.Null);
-            nextJob = sut.GetNextJob("");
+            nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Null);
         }
 
@@ -156,14 +156,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var info = new QueueInfo("test", "tika", "");
             info.MaxNumberOfFailure = 2;
             QueueHandler sut = CreateAGenericJob(info);
-          
-            var nextJob = sut.GetNextJob("");
+
+            var nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Not.Null);
             sut.SetJobExecuted(nextJob.Id, "ERROR");
-            nextJob = sut.GetNextJob("");
+            nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Not.Null);
             sut.SetJobExecuted(nextJob.Id, "ERROR");
-            nextJob = sut.GetNextJob("");
+            nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Null, "After two failure the job should not be returned anymore");
         }
 
@@ -174,7 +174,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             info.Parameters = new Dictionary<string, string>() { { "Custom", "CustomValue" } };
             QueueHandler sut = CreateAGenericJob(info);
 
-            var nextJob = sut.GetNextJob("");
+            var nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob.Parameters["Custom"], Is.EqualTo("CustomValue"));
 
         }

@@ -39,6 +39,7 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
         public String ExecutingIdentity { get; set; }
 
+        public String ExecutingHandle { get; set; }
 
     }
 }

@@ -27,14 +27,16 @@ namespace Jarvis.DocumentStore.Host.Support
     {
         IDisposable _webApplication;
         readonly Uri _serverAddress;
+        readonly String _handle;
         readonly String _queueName;
         IWindsorContainer _container;
         ILogger _logger;
 
-        public DocumentStoreSingleQueueClientBootstrapper(Uri serverAddress, String queueName)
+        public DocumentStoreSingleQueueClientBootstrapper(Uri serverAddress, String queueName, String handle)
         {
             _serverAddress = serverAddress;
             _queueName = queueName;
+            _handle = handle;
         }
 
         public Boolean Start(DocumentStoreConfiguration config)
@@ -60,7 +62,7 @@ namespace Jarvis.DocumentStore.Host.Support
             else
             {
                 _logger.InfoFormat("Start poller for queue {0} implemented by {1}", _queueName, queuePoller.GetType().Name);
-                queuePoller.Start(new List<String>() { _serverAddress.AbsoluteUri});
+                queuePoller.Start(new List<String>() { _serverAddress.AbsoluteUri}, _handle);
             }
             return true;
         }

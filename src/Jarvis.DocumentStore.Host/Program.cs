@@ -22,14 +22,15 @@ namespace Jarvis.DocumentStore.Host
                 //TEMP: Single process executor run
                 String dsBaseAddress = FindArgument(args, "/dsuris:");
                 String queueName = FindArgument(args, "/queue:");
+                String handle = FindArgument(args, "/handle:");
                 if (String.IsNullOrEmpty(dsBaseAddress) || String.IsNullOrEmpty(queueName))
                 {
                     Console.WriteLine("Error in parameters: dsuris={0} queue={1}", dsBaseAddress, queueName);
                     Console.ReadKey();
                     return -1;
                 }
-                  
-                exitCode = SingleJobStart(dsBaseAddress, queueName);
+
+                exitCode = SingleJobStart(dsBaseAddress, queueName, handle);
             }
             else
             {
@@ -74,7 +75,7 @@ namespace Jarvis.DocumentStore.Host
             return exitCode;
         }
 
-        private static Int32 SingleJobStart(String dsBaseAddress, String queueName)
+        private static Int32 SingleJobStart(String dsBaseAddress, String queueName, String handle)
         {
             //Avoid all sub process to start at the same moment.
             Thread.Sleep(new Random().Next(1000, 3000));
@@ -97,7 +98,7 @@ namespace Jarvis.DocumentStore.Host
             }
        
             var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
-            var bootstrapper = new DocumentStoreSingleQueueClientBootstrapper(uri, queueName);
+            var bootstrapper = new DocumentStoreSingleQueueClientBootstrapper(uri, queueName, handle);
             var jobStarted = bootstrapper.Start(_documentStoreConfiguration);
 
             if (jobStarted)

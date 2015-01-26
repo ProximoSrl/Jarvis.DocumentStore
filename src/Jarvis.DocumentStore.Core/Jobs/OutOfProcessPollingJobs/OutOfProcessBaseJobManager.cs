@@ -18,8 +18,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
     /// </summary>
     public class OutOfProcessBaseJobManager : IPollerJobManager
     {
+        private Boolean _started = false;
 
-        private class ProcessInfo 
+        private class ProcessInfo
         {
             public Process Process { get; set; }
 
@@ -40,8 +41,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public string Start(string queueId, List<string> docStoreAddresses)
         {
-            String processHandle = Guid.NewGuid().ToString();
+            String processHandle = Guid.NewGuid().ToString() + "-" + Environment.MachineName;
             InnerStart(queueId, docStoreAddresses, processHandle);
+            _started = true;
             return processHandle;
         }
 
@@ -91,14 +93,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 .SingleOrDefault();
         }
 
-        private Process GetLocalProcessForQueue(String queueId, String executableName) 
+        private Process GetLocalProcessForQueue(String queueId, String executableName)
         {
             var processFileName = Path.GetFileNameWithoutExtension(executableName);
             var processes = Process.GetProcessesByName(processFileName, Environment.MachineName);
-   
+
             foreach (Process process in processes)
             {
-               
+
                 var cmdLine = GetCommandLine(process);
                 if (cmdLine.Contains("/queue:" + queueId)) return process;
             }
@@ -130,23 +132,25 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         void process_Exited(object sender, EventArgs e)
         {
+            if (!_started) return;
+            
             //process is exited, it should be restarted if it is a crash.
-            Process process = (Process) sender;
+            Process process = (Process)sender;
             String handle = GetJobHandleFromProcess(process);
-            if (String.IsNullOrEmpty(handle)) 
+            if (String.IsNullOrEmpty(handle))
             {
                 Logger.ErrorFormat("Process with unknown handle exited. Process Id {0} Machine Name {1}", process.Id, process.MachineName);
                 return;
             }
-            if (activeProcesses.ContainsKey(handle)) 
+            if (activeProcesses.ContainsKey(handle))
             {
                 var processInfo = activeProcesses[handle];
                 var retValue = process.ExitCode;
-                if (retValue == -1) 
+                if (retValue == -1)
                 {
                     Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because queue is not supported.", process.Id, processInfo.QueueId);
-                    activeProcesses.Remove(handle); 
-                    return; 
+                    activeProcesses.Remove(handle);
+                    return;
                 }
 
                 //process is ended, restart the process, it will have new id.
@@ -158,11 +162,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public bool Stop(string jobHandle)
         {
+            _started = false;
             if (!activeProcesses.ContainsKey(jobHandle)) return false;
 
             var info = activeProcesses[jobHandle];
             var process = info.Process;
-            
+
             //SendText(process.MainWindowHandle, "x");
             //var exited = process.WaitForExit(5000);
             //if (exited == false) process.Kill();

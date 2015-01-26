@@ -46,14 +46,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
 
         private String _identity;
 
+        private String _handle;
+
         public AbstractInProcessPollerFileJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
         }
 
-        public void Start(List<String> documentStoreAddressUrls)
+        public void Start(List<String> documentStoreAddressUrls, String handle)
         {
             if (Started) return;
+            _handle = handle;
             Start(DocumentStoreConfiguration.QueueStreamPollInterval);
             Started = true;
         }
@@ -87,7 +90,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             try
             {
                 QueuedJob nextJob = null;
-                while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName, _identity)) != null)
+                while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName, _identity, _handle)) != null)
                 {
                     try
                     {

@@ -128,7 +128,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
-        public QueuedJob GetNextJob(String identity)
+        public QueuedJob GetNextJob(String identity, String handle)
         {
             var result = _collection.FindAndModify(new FindAndModifyArgs()
             {
@@ -141,6 +141,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     .Set(j => j.Status, QueuedJobExecutionStatus.Executing)
                     .Set(j => j.ExecutionStartTime, DateTime.Now)
                     .Set(j => j.ExecutingIdentity, identity)
+                    .Set(j => j.ExecutingHandle, handle)
                     .Set(j => j.ExecutionError, null)
             });
             if (result.Ok)
@@ -176,6 +177,24 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             job.ExecutionEndTime = DateTime.Now;
             _collection.Save(job);
             return true;
+        }
+
+        /// <summary>
+        /// Return the list of all jobs that are blocked, a job is blocked if it is in
+        /// Executing state more than a certain amount of time.
+        /// </summary>
+        /// <param name="timeoutInMilliseconds"></param>
+        /// <returns>List of jobs that are blocked.</returns>
+        internal List<QueuedJob> GetBlockedJobs(int timeoutInMilliseconds)
+        {
+            var limit = DateTime.Now.AddMilliseconds(-timeoutInMilliseconds);
+            var existing = _collection.Find(
+                Query.And(
+                    Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Executing),
+                    Query<QueuedJob>.LT(j => j.ExecutionStartTime, limit)
+                )).ToList();
+
+            return existing;
         }
     }
 }
