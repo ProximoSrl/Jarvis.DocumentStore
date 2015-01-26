@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             Logger.DebugFormat("Starting resize job for {0} - {1}", parameters.InputBlobId, sizesAsString);
 
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
-            
+
 
             using (var sourceStream = File.OpenRead(pathToFile))
             {
@@ -45,12 +45,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                         string resizeImagePath = Path.Combine(workingFolder, size.Name + "." + fileExtension);
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
-                            Logger.DebugFormat("Resizing {0}}", parameters.InputBlobId);
+                            Logger.DebugFormat("Resizing {0}", parameters.InputBlobId);
                             ImageResizer.Shrink(pageStream, outStream, size.Width, size.Height);
                         }
-                       await AddFormatToDocumentFromFile(parameters.TenantId, parameters.InputDocumentId, fileFormat,
-                            resizeImagePath, new Dictionary<string, object>());
-                       
+                        await AddFormatToDocumentFromFile(parameters.TenantId, parameters.InputDocumentId, fileFormat,
+                             resizeImagePath, new Dictionary<string, object>());
                     }
                 }
             }

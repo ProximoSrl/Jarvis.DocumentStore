@@ -40,9 +40,14 @@ namespace Jarvis.DocumentStore.Tests.Support
             QueueJobsPollInterval = 50; //poll each 50 milliseconds.
             QueueStreamPollInterval = 50;
 
+            var imgResizeQueue = new QueueInfo("imgResize", "^(?!img$).*", "png|jpg|gif|jpeg");
+            imgResizeQueue.Parameters = new System.Collections.Generic.Dictionary<string, string>();
+            imgResizeQueue.Parameters.Add("thumb_format", "png");
+            imgResizeQueue.Parameters.Add("sizes", "small:200x200|large:800x800");
             QueueInfoList = new QueueInfo[]
             {
                 new QueueInfo("tika", "original", ""), 
+                imgResizeQueue,
             };
         }
 
