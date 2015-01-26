@@ -41,6 +41,7 @@
             });
 
             schedulerData.getStats().then(function (d) {
+
                 vm.triggers = d.data;
                 vm.totTriggers = 0;
                 angular.forEach(vm.triggers, function (t) {

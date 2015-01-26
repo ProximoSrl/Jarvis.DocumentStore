@@ -43,6 +43,7 @@ namespace Jarvis.DocumentStore.Core.Support
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface(),
+                Component.For<QueuedJobStatus>(),
                 Component.For<QueuedJobQuartzMonitor>(),
                     //Component
                 //    .For<IPollerJobManager>()

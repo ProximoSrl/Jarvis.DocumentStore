@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Quartz;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -18,6 +19,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public IScheduler Scheduler { get; set; }
         public JobStats JobStats { get; set; }
 
+        public QueuedJobStatus QueuedJobStats { get; set; }
+
+        public DocumentStoreConfiguration Config { get; set; }
         
         [HttpPost]
         [Route("scheduler/start")]
@@ -51,9 +55,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("scheduler/stats")]
         public object Stats()
         {
-            var triggerStats = this.JobStats.GetTriggerStats();
+            if (Config.JobMode == JobModes.Quartz)
+            {
+                var triggerStats = this.JobStats.GetTriggerStats();
 
-            return triggerStats;
+                return triggerStats;
+            }
+            else
+            {
+                var queueStats = this.QueuedJobStats.GetQueuesStatus();
+                return queueStats;
+            }
+
         }
     }
 }

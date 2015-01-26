@@ -80,8 +80,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// </summary>
     public class QueueHandler
     {
-        MongoCollection<QueuedJob> _collection;
-        QueueInfo _info;
+        readonly MongoCollection<QueuedJob> _collection;
+        readonly QueueInfo _info;
+        readonly BsonDocument _statsAggregationQuery;
+        private readonly AggregateArgs _aggregation;
+       
 
         public String Name { get; private set; }
 
@@ -92,6 +95,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 IndexKeys<QueuedJob>.Ascending(x => x.Status, x => x.StreamId));
             _info = info;
             Name = info.Name;
+
+            _statsAggregationQuery = BsonDocument.Parse(@"
+{   $group : 
+       { 
+          _id : '$Status',
+          c : {$sum:1}
+       }
+}");
+
+            _aggregation = new AggregateArgs()
+            {
+                Pipeline = new[] { _statsAggregationQuery }
+            };
         }
 
         public void Handle(StreamReadModel streamElement, TenantId tenantId)
@@ -195,6 +211,28 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 )).ToList();
 
             return existing;
+        }
+
+        internal IEnumerable<QueueStatInfo> GetStatus()
+        {
+            return _collection.Aggregate(_aggregation)
+                .Select(x => new QueueStatInfo(
+                    (QueuedJobExecutionStatus)x["_id"].AsInt32,
+                     x["c"].AsInt32)
+            ).OrderBy(x => x.Status);
+        }
+    }
+
+    public sealed class QueueStatInfo
+    {
+        public QueuedJobExecutionStatus Status { get; private set; }
+
+        public long Count { get; private set; }
+
+        public QueueStatInfo(QueuedJobExecutionStatus status, long count)
+        {
+            Status = status;
+            Count = count;
         }
     }
 }
