@@ -92,6 +92,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             if (!Started) return;
             Started = false;
+            _pollingTimer.Stop();
             _pollingTimer.Dispose();
             _pollingTimer = null;
         }

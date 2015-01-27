@@ -57,6 +57,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected MongoCollection<DocumentReadModel> _documents;
         protected DocumentStoreTestConfigurationForPollQueue _config;
         protected IBlobStore _blobStore;
+        protected AbstractOutOfProcessPollerFileJob _sutBase;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -78,27 +79,40 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected abstract QueueInfo[] OnGetQueueInfo();
 
+        protected void PrepareJob(String handle = "TESTHANDLE", AbstractOutOfProcessPollerFileJob testJob = null)
+        {
+            var job = testJob ?? _sutBase;
+            job.DocumentStoreConfiguration = _config;
+            job.Logger = new TestLogger(LoggerLevel.Error);
+            job.ConfigService = new ConfigService();
+            job.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, handle);
+        }
 
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
             _documentStoreService.Stop();
             BsonClassMapHelper.Clear();
+            OnStop();
+        }
+
+        protected virtual void OnStop()
+        {
+            _sutBase.Stop();
         }
     }
 
     public class integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        OutOfProcessTikaNetJob sut;
 
         [Test]
         public async void verify_tika_job()
         {
-            OutOfProcessTikaNetJob sut = new OutOfProcessTikaNetJob();
-            sut.DocumentStoreConfiguration = _config;
-            sut.Logger = new TestLogger(LoggerLevel.Error);
-            sut.ConfigService = new ConfigService();
-            sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, "TESTHANDLE");
+            _sutBase = sut = new OutOfProcessTikaNetJob();
+            PrepareJob();
 
+            var handle = DocumentHandle.FromString("verify_tika_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
                DocumentHandle.FromString("verify_tika_job"),
@@ -129,11 +143,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void verify_tika_set_content()
         {
-            OutOfProcessTikaNetJob sut = new OutOfProcessTikaNetJob();
-            sut.DocumentStoreConfiguration = _config;
-            sut.Logger = new TestLogger(LoggerLevel.Error);
-            sut.ConfigService = new ConfigService();
-            sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, "TESTHANDLE");
+            _sutBase = sut = new OutOfProcessTikaNetJob();
+            PrepareJob();
+
             var handle = DocumentHandle.FromString("verify_tika_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
@@ -241,6 +253,104 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             return new QueueInfo[]
             {
                 imgResizeQueue,
+            };
+        }
+    }
+
+    public class integration_out_of_process_eml : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        AnalyzeEmailOutOfProcessJob sut;
+
+        [Test]
+        public async void verify_chain_for_email()
+        {
+             _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
+             PrepareJob();
+
+            DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_email");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToEml,
+               handle,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentReadModel document;
+            var emailFormat = new Core.Domain.Document.DocumentFormat("email");
+            do
+            {
+                Thread.Sleep(300);
+                document = _documents.AsQueryable()
+                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
+                if (document != null &&
+                    document.Formats.ContainsKey(emailFormat))
+                {
+                   
+                    return; //test is good
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+
+            Assert.Fail("expected formats not found");
+        }
+
+        HtmlToPdfOutOfProcessJob htmlSut;
+
+        [Test]
+        public async void verify_full_chain_for_email_and_html_zip()
+        {
+            _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
+            PrepareJob();
+
+            HtmlToPdfOutOfProcessJob htmlSut = new HtmlToPdfOutOfProcessJob();
+            PrepareJob(testJob : htmlSut);
+
+            DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_email");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToEml,
+               handle,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentReadModel document;
+            var emailFormat = new Core.Domain.Document.DocumentFormat("email");
+            var pdfFormat = new Core.Domain.Document.DocumentFormat("Pdf");
+            do
+            {
+                Thread.Sleep(300);
+                document = _documents.AsQueryable()
+                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
+                if (document != null &&
+                    document.Formats.ContainsKey(emailFormat) &&
+                    document.Formats.ContainsKey(pdfFormat))
+                {
+
+                    return; //test is good
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+
+            Assert.Fail("expected formats not found");
+        }
+
+    
+
+        protected override void OnStop()
+        {
+            base.OnStop();
+            htmlSut.Stop();
+        }
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("htmlzip", "", "htmlzip|ezip"),
+                new QueueInfo("email", "", "eml|msg"),
             };
         }
     }
