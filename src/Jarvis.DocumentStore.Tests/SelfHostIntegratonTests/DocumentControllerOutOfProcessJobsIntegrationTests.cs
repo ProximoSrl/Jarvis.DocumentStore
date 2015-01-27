@@ -102,6 +102,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
+    [TestFixture]
+    [Category("integration_full")]
     public class integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         OutOfProcessTikaNetJob sut;
@@ -187,6 +189,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
+    [TestFixture]
+    [Category("integration_full")]
     public class integration_out_of_process_image  : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         [Test]
@@ -257,6 +261,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
+    [TestFixture]
+    [Category("integration_full")]
     public class integration_out_of_process_eml : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         AnalyzeEmailOutOfProcessJob sut;

@@ -9,7 +9,6 @@
 	    "worker": true,
 	    "projections": true,
 		"queueManager" : true,
-		"pollers" : true,
 		"jobMode" : "queue"
 	}
 }
@@ -17,10 +16,9 @@
 
 
 - Api: api controller is started.
-- worker: all worker (jobs) starts.
+- worker: all worker (jobs) starts (if jobMode is poller it starts out of process pollers)
 - projection: projection engine active.
 - queueManager: new job management with custom queue enabled.
-- poller: if jobMode is queue and poller is true, it starts job poller. 
 - jobMode: queue or quartz to choose witch job engine to use.
 
 ###Another section is dedicated to queue configuration

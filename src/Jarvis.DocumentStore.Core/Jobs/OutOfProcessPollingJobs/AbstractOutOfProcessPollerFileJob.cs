@@ -57,6 +57,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         private List<DsEndpoint> _dsEndpoints;
 
+        protected virtual Int32 ThreadNumber 
+        {
+            get { return 1; }
+        }
+
         private class DsEndpoint
         {
             public DsEndpoint(string getNextJobUrl, string setJobCompleted, Uri baseUrl)
@@ -109,43 +114,31 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _pollingTimer.Stop();
-            String workingFolder = null;
+
             try
             {
-                do
+                if (this.ThreadNumber == 1)
                 {
-                    QueuedJob nextJob = DsGetNextJob();
-                    if (nextJob == null) return;
-
-                    var baseParameters = ExtractJobParameters(nextJob);
-                    //remember to enter the right tenant.
-                    TenantContext.Enter(new TenantId(baseParameters.TenantId));
-                    workingFolder = Path.Combine(
-                            ConfigService.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
-                            baseParameters.InputBlobId
-                        );
-                    if (Directory.Exists(workingFolder)) Directory.Delete(workingFolder, true);
-                    Directory.CreateDirectory(workingFolder);
-                    try
+                    ExecuteJobCore();
+                }
+                else
+                {
+                    List<Task> taskList = new List<Task>();
+                    for (int i = 0; i < ThreadNumber; i++)
                     {
-                        var task = OnPolling(baseParameters, workingFolder);
-                        Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, task.Result);
-                        DsSetJobExecuted(QueueName, nextJob.Id, "");
+                        var task = Task.Factory.StartNew(ExecuteJobCore);
+                        taskList.Add(task);
                     }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
-                            nextJob.Parameters[JobKeys.TenantId]);
-                        DsSetJobExecuted(QueueName, nextJob.Id, ex.Message);
-                    }
-                    finally
-                    {
-                        DeleteWorkingFolder(workingFolder);
-                    }
-
-
-                } while (true); //Exit is in the internal loop
-
+                    Task.WaitAll(taskList.ToArray());
+                }
+            }
+            catch (AggregateException aex)
+            {
+                Logger.ErrorFormat(aex, "Poller error on {0} threads launched {1} exceptions", ThreadNumber, aex.InnerExceptions.Count);
+                foreach (var ex in aex.InnerExceptions)
+                {
+                    Logger.ErrorFormat(ex, "Poller error: {0}", ex.Message);
+                }
             }
             catch (Exception ex)
             {
@@ -155,6 +148,42 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             {
                 if (Started && _pollingTimer != null) _pollingTimer.Start();
             }
+        }
+
+        private void ExecuteJobCore()
+        {
+            do
+            {
+                String workingFolder = null;
+                QueuedJob nextJob = DsGetNextJob();
+                if (nextJob == null) return;
+
+                var baseParameters = ExtractJobParameters(nextJob);
+                //remember to enter the right tenant.
+                TenantContext.Enter(new TenantId(baseParameters.TenantId));
+                workingFolder = Path.Combine(
+                        ConfigService.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
+                        baseParameters.InputBlobId
+                    );
+                if (Directory.Exists(workingFolder)) Directory.Delete(workingFolder, true);
+                Directory.CreateDirectory(workingFolder);
+                try
+                {
+                    var task = OnPolling(baseParameters, workingFolder);
+                    Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, task.Result);
+                    DsSetJobExecuted(QueueName, nextJob.Id, "");
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
+                        nextJob.Parameters[JobKeys.TenantId]);
+                    DsSetJobExecuted(QueueName, nextJob.Id, ex.Message);
+                }
+                finally
+                {
+                    DeleteWorkingFolder(workingFolder);
+                }
+            } while (true); //Exit is in the internal loop
         }
 
         private void DsSetJobExecuted(string queueName, string jobId, string message)

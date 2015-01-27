@@ -33,6 +33,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         protected abstract ITikaAnalyzer BuildAnalyzer();
 
+        protected override int ThreadNumber
+        {
+            get
+            {
+                return 6;
+            }
+        }
+
         protected async override Task<Boolean> OnPolling(
             PollerJobParameters parameters,
             String workingFolder)

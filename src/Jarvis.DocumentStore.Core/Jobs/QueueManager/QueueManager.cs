@@ -161,9 +161,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         private void Poll()
         {
             //do a poll for every tenant.
-            Boolean hasNewData = false;
+            Boolean hasNewData;
             do
             {
+                hasNewData = false;
                 foreach (var info in _queueTenantInfos)
                 {
                     var blockOfStreamData = info.StreamReader.AllSortedById
@@ -172,6 +173,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                         .ToList();
                     if (blockOfStreamData.Count > 0)
                     {
+                        Logger.DebugFormat("Get a block of {0} stream records to process for tenant {1}.", blockOfStreamData.Count, info.TenantId);
                         hasNewData = true;
                         foreach (var streamData in blockOfStreamData)
                         {
