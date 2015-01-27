@@ -3,5 +3,7 @@
 Jarvis.DocumentStore
 ===================
 
-Jarvis Image Service 
+### External readme
+
+[Configuration Readme](/assets/Configs/readme.md)
 
