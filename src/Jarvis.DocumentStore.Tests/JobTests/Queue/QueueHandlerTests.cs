@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
     [TestFixture]
     public class QueueHandlerTests
     {
-        MongoDatabase _db = MongoDbTestConnectionProvider.ReadModelDb;
+        MongoDatabase _db = MongoDbTestConnectionProvider.QueueDb;
 
         [SetUp]
         public void SetUp() 
@@ -159,12 +159,20 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 
             var nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Not.Null);
-            sut.SetJobExecuted(nextJob.Id, "ERROR");
+            var jobId = nextJob.Id;
+
+            sut.SetJobExecuted(nextJob.Id, "Error 42");
             nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Not.Null);
-            sut.SetJobExecuted(nextJob.Id, "ERROR");
+            sut.SetJobExecuted(nextJob.Id, "Error 42");
             nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob, Is.Null, "After two failure the job should not be returned anymore");
+
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            var job = collection.FindOneById(BsonValue.Create(jobId));
+            Assert.That(job.ExecutionError, Is.EqualTo("Error 42"));
+            Assert.That(job.ErrorCount, Is.EqualTo(2));
+            Assert.That(job.Status, Is.EqualTo(QueuedJobExecutionStatus.Failed));
         }
 
         [Test]
@@ -177,6 +185,21 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var nextJob = sut.GetNextJob("", "handle");
             Assert.That(nextJob.Parameters["Custom"], Is.EqualTo("CustomValue"));
 
+        }
+
+        [Test]
+        public void verify_set_error_status()
+        {
+            var info = new QueueInfo("test", "tika", "");
+            info.MaxNumberOfFailure = 2;
+            QueueHandler sut = CreateAGenericJob(info);
+            var nextJob = sut.GetNextJob("", "handle");
+            sut.SetJobExecuted(nextJob.Id, "Error 42");
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
+            Assert.That(job.ExecutionError, Is.EqualTo("Error 42"));
+            Assert.That(job.ErrorCount, Is.EqualTo(1));
+            Assert.That(job.Status, Is.EqualTo(QueuedJobExecutionStatus.ReQueued));
         }
 
         private QueueHandler CreateAGenericJob(QueueInfo info)

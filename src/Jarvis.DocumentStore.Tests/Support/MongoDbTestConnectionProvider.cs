@@ -15,6 +15,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             SystemDb = Connect("tests.system");
             EventsDb = Connect("tests.events");
             ReadModelDb = Connect("tests.readmodel");
+            QueueDb = Connect("ds.queue");
         }
 
         static MongoDatabase Connect(string connectionStringName)
@@ -36,6 +37,7 @@ namespace Jarvis.DocumentStore.Tests.Support
         public static MongoDatabase SystemDb { get; private set; }
         public static MongoDatabase EventsDb { get; private set; }
         public static MongoDatabase ReadModelDb { get; private set; }
+        public static MongoDatabase QueueDb { get; private set; }
 
         public static void DropTestsTenant()
         {
@@ -44,6 +46,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             SystemDb.Drop();
             EventsDb.Drop();
             ReadModelDb.Drop();
+            QueueDb.Drop();
         }
 
         public static void DropTenant(string tenant)
