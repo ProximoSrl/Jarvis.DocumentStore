@@ -36,27 +36,32 @@ using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Core.Storage;
 using CQRS.Kernel.MultitenantSupport;
 using System.Drawing;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     /// <summary>
-    /// Test of jobs executed out of process.
+    /// Test of jobs executed out of process. This tests execute a full 
+    /// 1) reset
+    /// 2) upload document and wait for specific queue to process the docs
+    /// 3) verify the outcome.
     /// </summary>
     [TestFixture]
+    [Category("integration_full")]
     //[Explicit("This integration test is slow because it wait for polling")]
-    public class DocumentControllerOutOfProcessJobsIntegrationTests
+    public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        DocumentStoreBootstrapper _documentStoreService;
-        private DocumentStoreServiceClient _documentStoreClient;
-        private MongoCollection<DocumentReadModel> _documents;
-        private DocumentStoreTestConfigurationForPollQueue _config;
-        private IBlobStore _blobStore;
+        protected DocumentStoreBootstrapper _documentStoreService;
+        protected DocumentStoreServiceClient _documentStoreClient;
+        protected MongoCollection<DocumentReadModel> _documents;
+        protected DocumentStoreTestConfigurationForPollQueue _config;
+        protected IBlobStore _blobStore;
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            _config = new DocumentStoreTestConfigurationForPollQueue();
+            _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo());
             MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
             _config.ServerAddress = TestConfig.ServerAddress;
             _documentStoreService = new DocumentStoreBootstrapper();
@@ -71,12 +76,19 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _blobStore = tenant.Container.Resolve<IBlobStore>();
         }
 
+        protected abstract QueueInfo[] OnGetQueueInfo();
+
+
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
             _documentStoreService.Stop();
             BsonClassMapHelper.Clear();
         }
+    }
+
+    public class integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
 
         [Test]
         public async void verify_tika_job()
@@ -154,6 +166,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Tika document not found");
         }
 
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""), 
+            };
+        }
+    }
+
+    public class integration_out_of_process_image  : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
         [Test]
         public async void verify_image_resizer_job()
         {
@@ -209,6 +232,16 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Thumb small not found");
         }
 
-       
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            var imgResizeQueue = new QueueInfo("imgResize", "^(?!img$).*", "png|jpg|gif|jpeg");
+            imgResizeQueue.Parameters = new System.Collections.Generic.Dictionary<string, string>();
+            imgResizeQueue.Parameters.Add("thumb_format", "png");
+            imgResizeQueue.Parameters.Add("sizes", "small:200x200|large:800x800");
+            return new QueueInfo[]
+            {
+                imgResizeQueue,
+            };
+        }
     }
 }
