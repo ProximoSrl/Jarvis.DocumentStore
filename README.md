@@ -5,5 +5,5 @@ Jarvis.DocumentStore
 
 ### External readme
 
-[Configuration Readme](/assets/Configs/readme.md)
+[Configuration Readme](/assets/Configs/README.md)
 

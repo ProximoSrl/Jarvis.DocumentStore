@@ -5,14 +5,14 @@ A section of the configuration is dedicated to roles
 
 ```javascript
 {
-"roles": {
-    "api": true,
-    "worker": true,
-    "projections": true,
-	"queueManager" : true,
-	"pollers" : true,
-	"jobMode" : "queue",
-}
+	"roles": {
+	    "api": true,
+	    "worker": true,
+	    "projections": true,
+		"queueManager" : true,
+		"pollers" : true,
+		"jobMode" : "queue"
+	}
 }
 ```
 
