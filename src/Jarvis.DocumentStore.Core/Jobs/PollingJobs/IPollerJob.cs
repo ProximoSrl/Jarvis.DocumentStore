@@ -22,6 +22,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         /// <param name="jobId"></param>
         /// <returns></returns>
         Boolean Stop(String jobHandle);
+
+        /// <summary>
+        /// If for some reason a job is blocked (es a job is in executing state for more than 
+        /// a certain amount of time) this method is used to reset and restart the job.
+        /// </summary>
+        /// <param name="jobHandle"></param>
+        /// <returns></returns>
+        Boolean Restart(String jobHandle);
     }
 
     public interface IPollerJob 
@@ -31,8 +39,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         Boolean IsActive { get; }
 
         /// <summary>
-        /// Tells me if the job can execute only in process or is made to be executed
-        /// in out of process.
+        /// Tells me if the job can execute in process or is made to be executed
+        /// in out of process. In the long run InProcess jobs will disappear over
+        /// out of process jobs only, this will make this property obsolete and to remove.
         /// </summary>
         Boolean IsOutOfProcess { get;  }
 

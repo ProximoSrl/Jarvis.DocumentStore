@@ -51,14 +51,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 var blockedJobs = qh.GetBlockedJobs(10 * 60 * 1000);
                 Logger.DebugFormat("Queue {0} has {1} blocked jobs!", qh.Name, blockedJobs.Count);
                 //if we have blocked jobs, probably the worker is blocked.
-                var allBlockedJobIdentities = blockedJobs
+                var allBlockedHandles = blockedJobs
                     .Select(j => j.ExecutingHandle)
                     .Distinct();
-                foreach (var blockedIdentity in allBlockedJobIdentities)
+                foreach (var blockedHandle in allBlockedHandles)
 	            {
-                    Logger.WarnFormat("Unblock jobs for queue {0} and handle {1}", qh.Name, blockedIdentity);
-                    _pollerJobManager.Stop(blockedIdentity);
-                    _pollerJobManager.Start(qh.Name, docStoreAddresses); 
+                    Logger.WarnFormat("Unblock jobs for queue {0} and handle {1}", qh.Name, blockedHandle);
+                    _pollerJobManager.Restart(blockedHandle);
 	            }
                 foreach (var job in blockedJobs)
                 {

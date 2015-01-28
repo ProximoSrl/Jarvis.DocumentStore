@@ -162,7 +162,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public bool Stop(string jobHandle)
         {
-            _started = false;
             if (!activeProcesses.ContainsKey(jobHandle)) return false;
 
             var info = activeProcesses[jobHandle];
@@ -178,12 +177,30 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             return true;
         }
 
+        public bool Restart(string jobHandle)
+        {
+            if (!activeProcesses.ContainsKey(jobHandle)) return false;
+
+            var activeProcess = activeProcesses[jobHandle];
+            if (!Stop(jobHandle)) 
+            {
+                Logger.ErrorFormat("Unable to stop job with handle {0}", jobHandle);
+                return false;
+            }
+            //Restart the same job with the same handle.
+            InnerStart(activeProcess.QueueId, activeProcess.DocStoreAddresses, jobHandle);
+            return true;
+        }
+
         public void Stop()
         {
+            _started = false;
             foreach (var jobHandle in activeProcesses.Keys.ToList())
             {
                 Stop(jobHandle);
             }
         }
+
+
     }
 }
