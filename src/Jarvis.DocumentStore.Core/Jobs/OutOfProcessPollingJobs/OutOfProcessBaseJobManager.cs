@@ -170,6 +170,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             //SendText(process.MainWindowHandle, "x");
             //var exited = process.WaitForExit(5000);
             //if (exited == false) process.Kill();
+            process.Exited -= process_Exited; //remove handler 
             if (process.HasExited) return true; //already closed.
 
             process.Kill();
