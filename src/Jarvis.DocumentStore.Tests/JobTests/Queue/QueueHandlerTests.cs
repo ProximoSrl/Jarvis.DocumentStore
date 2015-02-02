@@ -245,10 +245,33 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             HandleStreamToCreateJob(sut, bar);
             var nextJob = sut.GetNextJob("identity", "handle",none , null);
             Assert.That(nextJob, Is.Null);
-            nextJob = sut.GetNextJob("identity", "handle", foo, null);
-            Assert.That(nextJob.TenantId, Is.EqualTo(foo.ToString()));
             nextJob = sut.GetNextJob("identity", "handle", bar, null);
             Assert.That(nextJob.TenantId, Is.EqualTo(bar.ToString()));
+            nextJob = sut.GetNextJob("identity", "handle", foo, null);
+            Assert.That(nextJob.TenantId, Is.EqualTo(foo.ToString()));
+        }
+
+        [Test]
+        public void verify_job_filter_by_custom_properties()
+        {
+            QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""), 
+                customData : new Dictionary<String, Object>() 
+                {
+                    {"foo" , 6},
+                    {"bar" , "test"},
+                });
+            HandleStreamToCreateJob(sut,  
+                customData : new Dictionary<String, Object>() 
+                {
+                    {"foo" , 42},
+                    {"bar" , "the ultimate answer"},
+                });
+            var nextJob = sut.GetNextJob("identity", "handle", null, new Dictionary<string, Object>() { { "notexisting", 11 } });
+            Assert.That(nextJob, Is.Null);
+            nextJob = sut.GetNextJob("identity", "handle", null, new Dictionary<string, Object>() { { "foo", 42 } });
+            Assert.That(nextJob.HandleCustomData["bar"], Is.EqualTo("the ultimate answer"));
+            nextJob = sut.GetNextJob("identity", "handle", null, new Dictionary<string, Object>() { { "foo", 6 } });
+            Assert.That(nextJob.HandleCustomData["bar"], Is.EqualTo("test"));
         }
 
         private QueueHandler GetSut(QueueInfo info)
@@ -262,8 +285,11 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             HandleStreamToCreateJob(sut, tenant, customData);
             return sut;
         }
-
-        private static void HandleStreamToCreateJob(QueueHandler sut, String tenant = "test", Dictionary<String, Object> customData = null)
+        private static Int32 lastBlobId = 1;
+        private static void HandleStreamToCreateJob(
+            QueueHandler sut, 
+            String tenant = "test", 
+            Dictionary<String, Object> customData = null)
         {
             StreamReadModel rm = new StreamReadModel()
             {
@@ -273,7 +299,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 {
                     PipelineId = new PipelineId("tika"),
                     DocumentFormat = new DocumentFormat("tika"),
-                    BlobId = new BlobId("tika.1")
+                    BlobId = new BlobId("tika." + lastBlobId++)
                 },
                 HandleCustomData = new HandleCustomData(customData ?? new Dictionary<String,Object>()),
             };

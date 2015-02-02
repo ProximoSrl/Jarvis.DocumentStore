@@ -148,7 +148,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
-        public QueuedJob GetNextJob(String identity, String handle, TenantId tenantId, Dictionary<String, String> customData)
+        public QueuedJob GetNextJob(String identity, String handle, TenantId tenantId, Dictionary<String, Object> customData)
         {
             IMongoQuery query = Query.Or(
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Idle),
@@ -157,6 +157,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             if (tenantId != null) 
             {
                 query = Query.And(query, Query<QueuedJob>.EQ(j => j.TenantId, tenantId));
+            }
+            if (customData != null && customData.Count > 0) 
+            {
+                foreach (var filter in customData)
+                {
+                    query = Query.And(query, Query.EQ("HandleCustomData." + filter.Key, BsonValue.Create( filter.Value)));
+                }
             }
             var result = _collection.FindAndModify(new FindAndModifyArgs()
             {

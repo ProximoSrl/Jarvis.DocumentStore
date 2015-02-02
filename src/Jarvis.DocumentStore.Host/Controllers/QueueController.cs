@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public String TenantId { get; set; }
 
-        public Dictionary<String, String> CustomData { get; set; }
+        public Dictionary<String, Object> CustomData { get; set; }
     }
 
     public class FinishedJobParameter 
