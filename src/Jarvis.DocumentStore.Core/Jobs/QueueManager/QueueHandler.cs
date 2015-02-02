@@ -135,6 +135,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 job.Parameters.Add(JobKeys.BlobId, streamElement.FormatInfo.BlobId);
                 job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
                 job.Parameters.Add(JobKeys.TenantId, tenantId);
+                job.HandleCustomData = streamElement.HandleCustomData;
                 if (_info.Parameters != null) 
                 {
                     foreach (var parameter in _info.Parameters)

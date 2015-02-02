@@ -41,5 +41,7 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
         public String ExecutingHandle { get; set; }
 
+        public Dictionary<String, Object> HandleCustomData { get; set; }
+
     }
 }

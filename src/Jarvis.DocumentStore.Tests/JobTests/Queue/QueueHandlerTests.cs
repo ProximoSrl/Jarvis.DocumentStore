@@ -131,6 +131,38 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
+        public void verify_job_created_with_handle_metadata()
+        {
+            var info = new QueueInfo("test", "", "pdf|docx");
+            QueueHandler sut = new QueueHandler(info, _db);
+            var customData = new Core.Domain.Handle.HandleCustomData() 
+                {
+                    {"test" , "value"},
+                    {"complex" , 42},
+                };
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Id = 1L,
+                Handle = "FirstHandle",
+                Filename = new FileNameWithExtension("test.docx"),
+                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                FormatInfo = new FormatInfo()
+                {
+                    PipelineId = new PipelineId("soffice"),
+                    DocumentFormat = new DocumentFormat("office"),
+                    BlobId = new BlobId("soffice.1")
+                },
+                DocumentId = new DocumentId(1),
+                HandleCustomData = customData,
+            };
+
+            sut.Handle(rm, new TenantId("test"));
+           
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            Assert.That(collection.AsQueryable().Single().HandleCustomData, Is.EquivalentTo(customData));
+        }
+
+        [Test]
         public void verify_not_duplicate_jobs_on_same_blob_id()
         {
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
