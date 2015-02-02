@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Host.Logging
     public class Log4NetExceptionLogger : ExceptionLogger
     {
         private readonly ILoggerFactory _loggerFactory;
-
+        
         public Log4NetExceptionLogger(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;

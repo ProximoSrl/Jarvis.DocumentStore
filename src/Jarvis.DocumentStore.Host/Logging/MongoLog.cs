@@ -6,6 +6,7 @@ using log4net.Util;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
+using CQRS.Kernel.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Host.Logging
 {
@@ -97,6 +98,8 @@ namespace Jarvis.DocumentStore.Host.Logging
             toReturn[FieldNames.Loggername] = loggingEvent.LoggerName ?? String.Empty;
             toReturn[FieldNames.Domain] = loggingEvent.Domain ?? String.Empty;
             toReturn[FieldNames.Machinename] = MachineName ?? String.Empty;
+            if (TenantContext.CurrentTenantId != null)
+                toReturn[FieldNames.Tenant] =TenantContext.CurrentTenantId.ToString();
 
             // location information, if available
             if (loggingEvent.LocationInformation != null)

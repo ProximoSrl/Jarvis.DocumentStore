@@ -19,5 +19,6 @@ namespace Jarvis.DocumentStore.Host.Logging
         public const string Source = "sr";
         public const string Stacktrace = "st";
         public const string Innerexception = "ie";
+        public const string Tenant = "te";
     }
 }
