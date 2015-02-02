@@ -90,7 +90,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             try
             {
                 QueuedJob nextJob = null;
-                while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName, _identity, _handle)) != null)
+                while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName, _identity, _handle, null, null)) != null)
                 {
                     try
                     {

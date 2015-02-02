@@ -5,6 +5,17 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
 {
     public class HandleCustomData : Dictionary<string, object>
     {
+        public HandleCustomData()
+        {
+
+        }
+
+        public HandleCustomData(Dictionary<string, object> original)
+            : base(original)
+        {
+
+        }
+
         public static bool IsEquals(HandleCustomData dic1, HandleCustomData dic2)
         {
             if (dic1 == null && dic2 == null)

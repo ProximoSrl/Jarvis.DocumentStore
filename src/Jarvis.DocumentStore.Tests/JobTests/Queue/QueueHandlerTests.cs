@@ -15,6 +15,7 @@ using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using MongoDB.Bson;
+using Jarvis.DocumentStore.Core.Domain.Handle;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -24,7 +25,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         MongoDatabase _db = MongoDbTestConnectionProvider.QueueDb;
 
         [SetUp]
-        public void SetUp() 
+        public void SetUp()
         {
             _db.Drop();
         }
@@ -32,7 +33,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         [Test]
         public void verify_file_extension_on_handler_filter_exact_extension()
         {
-            var info = new QueueInfo("test", "", "pdf|doc" ) ;
+            var info = new QueueInfo("test", "", "pdf|doc");
             QueueHandler sut = new QueueHandler(info, _db);
             StreamReadModel rm = new StreamReadModel()
             {
@@ -74,7 +75,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             {
                 Filename = new FileNameWithExtension("test.docx"),
                 EventType = HandleStreamEventTypes.HandleHasNewFormat,
-                FormatInfo = new FormatInfo() 
+                FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice")
                 }
@@ -94,7 +95,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 }
             };
             sut.Handle(rm, new TenantId("test"));
-            
+
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1), "pipeline filter is not filtering in admitted pipeline");
 
         }
@@ -107,7 +108,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Id = 1L,
-                Handle = "FirstHandle", 
+                Handle = "FirstHandle",
                 Filename = new FileNameWithExtension("test.docx"),
                 EventType = HandleStreamEventTypes.HandleHasNewFormat,
                 FormatInfo = new FormatInfo()
@@ -157,7 +158,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             };
 
             sut.Handle(rm, new TenantId("test"));
-           
+
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             Assert.That(collection.AsQueryable().Single().HandleCustomData, Is.EquivalentTo(customData));
         }
@@ -166,7 +167,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         public void verify_not_duplicate_jobs_on_same_blob_id()
         {
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
-            var nextJob = sut.GetNextJob("identity", "handle");
+            var nextJob = sut.GetNextJob("identity", "handle", null, null);
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
             Assert.That(job.ExecutingIdentity, Is.EqualTo("identity"));
@@ -175,10 +176,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         [Test]
         public void verify_get_next_job_not_give_executing_job()
         {
-            QueueHandler sut = CreateAGenericJob( new QueueInfo("test", "tika", ""));
-            var nextJob = sut.GetNextJob("", "handle");
+            QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
+            var nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob, Is.Not.Null);
-            nextJob = sut.GetNextJob("", "handle");
+            nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob, Is.Null);
         }
 
@@ -189,15 +190,15 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             info.MaxNumberOfFailure = 2;
             QueueHandler sut = CreateAGenericJob(info);
 
-            var nextJob = sut.GetNextJob("", "handle");
+            var nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob, Is.Not.Null);
             var jobId = nextJob.Id;
 
             sut.SetJobExecuted(nextJob.Id, "Error 42");
-            nextJob = sut.GetNextJob("", "handle");
+            nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob, Is.Not.Null);
             sut.SetJobExecuted(nextJob.Id, "Error 42");
-            nextJob = sut.GetNextJob("", "handle");
+            nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob, Is.Null, "After two failure the job should not be returned anymore");
 
             var collection = _db.GetCollection<QueuedJob>("queue.test");
@@ -214,7 +215,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             info.Parameters = new Dictionary<string, string>() { { "Custom", "CustomValue" } };
             QueueHandler sut = CreateAGenericJob(info);
 
-            var nextJob = sut.GetNextJob("", "handle");
+            var nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob.Parameters["Custom"], Is.EqualTo("CustomValue"));
 
         }
@@ -225,7 +226,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var info = new QueueInfo("test", "tika", "");
             info.MaxNumberOfFailure = 2;
             QueueHandler sut = CreateAGenericJob(info);
-            var nextJob = sut.GetNextJob("", "handle");
+            var nextJob = sut.GetNextJob("", "handle", null, null);
             sut.SetJobExecuted(nextJob.Id, "Error 42");
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
@@ -234,9 +235,36 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(job.Status, Is.EqualTo(QueuedJobExecutionStatus.ReQueued));
         }
 
-        private QueueHandler CreateAGenericJob(QueueInfo info)
+        [Test]
+        public void verify_job_filter_by_tenant_id()
         {
-            QueueHandler sut = new QueueHandler(info, _db);
+            var none = new TenantId("tenant_none");
+            var foo = new TenantId("tenant_foo");
+            var bar = new TenantId("tenant_bar");
+            QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""), tenant: foo);
+            HandleStreamToCreateJob(sut, bar);
+            var nextJob = sut.GetNextJob("identity", "handle",none , null);
+            Assert.That(nextJob, Is.Null);
+            nextJob = sut.GetNextJob("identity", "handle", foo, null);
+            Assert.That(nextJob.TenantId, Is.EqualTo(foo.ToString()));
+            nextJob = sut.GetNextJob("identity", "handle", bar, null);
+            Assert.That(nextJob.TenantId, Is.EqualTo(bar.ToString()));
+        }
+
+        private QueueHandler GetSut(QueueInfo info)
+        {
+            return new QueueHandler(info, _db);
+        }
+
+        private QueueHandler CreateAGenericJob(QueueInfo info, String tenant = "test", Dictionary<String, Object> customData = null)
+        {
+            QueueHandler sut = GetSut(info);
+            HandleStreamToCreateJob(sut, tenant, customData);
+            return sut;
+        }
+
+        private static void HandleStreamToCreateJob(QueueHandler sut, String tenant = "test", Dictionary<String, Object> customData = null)
+        {
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
@@ -246,10 +274,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     PipelineId = new PipelineId("tika"),
                     DocumentFormat = new DocumentFormat("tika"),
                     BlobId = new BlobId("tika.1")
-                }
+                },
+                HandleCustomData = new HandleCustomData(customData ?? new Dictionary<String,Object>()),
             };
-            sut.Handle(rm, new TenantId("test"));
-            return sut;
+            sut.Handle(rm, new TenantId(tenant));
         }
     }
 }

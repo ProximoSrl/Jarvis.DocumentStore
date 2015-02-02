@@ -148,14 +148,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
-        public QueuedJob GetNextJob(String identity, String handle)
+        public QueuedJob GetNextJob(String identity, String handle, TenantId tenantId, Dictionary<String, String> customData)
         {
-            var result = _collection.FindAndModify(new FindAndModifyArgs()
-            {
-                Query =  Query.Or(
+            IMongoQuery query = Query.Or(
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Idle),
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.ReQueued)
-                ),
+                );
+            if (tenantId != null) 
+            {
+                query = Query.And(query, Query<QueuedJob>.EQ(j => j.TenantId, tenantId));
+            }
+            var result = _collection.FindAndModify(new FindAndModifyArgs()
+            {
+                Query = query,
                 SortBy = SortBy<QueuedJob>.Ascending(j => j.StreamId),
                 Update = Update<QueuedJob>
                     .Set(j => j.Status, QueuedJobExecutionStatus.Executing)
