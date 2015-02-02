@@ -27,16 +27,22 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public HandleCustomData CustomData { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
 
-        public HandleReadModel(DocumentHandle handle)
+        public HandleReadModel(DocumentHandle handle) : this(handle, null, null, null)
         {
-            Handle = handle;
+
         }
 
         public HandleReadModel(DocumentHandle handle, DocumentId documentid, FileNameWithExtension fileName)
+            : this(handle, documentid, fileName, null)
+        {
+        }
+
+        public HandleReadModel(DocumentHandle handle, DocumentId documentid, FileNameWithExtension fileName, HandleCustomData customData)
         {
             Handle = handle;
             DocumentId = documentid;
             FileName = fileName;
+            CustomData = customData;
         }
 
         public bool IsPending()

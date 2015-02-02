@@ -274,7 +274,7 @@
     <Compile Include="PipelineTests\TikaNetHtmlExtractionTest.cs" />
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
     <Compile Include="ProjectionTests\HandleProjectionTests.cs" />
-    <Compile Include="ProjectionTests\StreamReadModelTest.cs" />
+    <Compile Include="ProjectionTests\StreamProjectionTest.cs" />
     <Compile Include="ProjectionTests\HandleWriterTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerOutOfProcessJobsIntegrationTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />

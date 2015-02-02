@@ -92,6 +92,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_doc_with_metadata()
+        {
+            _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc"),
+                new Dictionary<String, object>() 
+                { 
+                    {"param1" , "this is a test"},
+                    {"the answer", 42},
+                }).Wait();
+        }
+
+        [Test]
         public void upload_text_with_metadata()
         {
             _docs.UploadAsync(TestConfig.PathToTextDocument, DocumentHandle.FromString("txt_test"),

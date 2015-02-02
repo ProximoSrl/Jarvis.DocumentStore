@@ -27,6 +27,10 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public FileNameWithExtension Filename { get; set; }
 
         public HandleStreamEventTypes EventType { get; set; }
+
+        public HandleCustomData HandleCustomData { get; set; }
+
+
     }
 
     public class FormatInfo

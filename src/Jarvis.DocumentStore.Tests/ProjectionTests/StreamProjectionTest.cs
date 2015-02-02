@@ -25,7 +25,7 @@ using Jarvis.DocumentStore.Core.Storage;
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
     [TestFixture]
-    public class StreamReadModelTest
+    public class StreamProjectionTest
     {
         private DocumentStoreBootstrapper _documentStoreService;
         private StreamProjection _sut;
@@ -35,6 +35,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private IBlobStore _blobStore;
         private List<StreamReadModel> rmStream;
         private List<DocumentReadModel> rmDocuments;
+        private HandleReadModel handle;
 
         [SetUp]
         public void SetUp()
@@ -82,6 +83,16 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
+        public void verify_customData_when_empty_projection()
+        {
+            CreateSut();
+            var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("Rev_1"));
+            _sut.Handle(evt, false);
+            Assert.That(rmStream, Has.Count.EqualTo(1));
+            Assert.That(rmStream[0].HandleCustomData, Is.EqualTo(handle.CustomData));
+        }
+
+        [Test]
         public void verify_pipeline_id_is_original_when_pipeline_is_null()
         {
             SetHandleToReturn();
@@ -97,10 +108,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].FormatInfo.PipelineId, Is.EqualTo(new PipelineId("original")));
-
         }
-
-
 
         [Test]
         public void verify_handle_initialized()
@@ -139,6 +147,21 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
+        public void verify_stream_events_have_custom_handle_data()
+        {
+            SetHandleToReturn();
+            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            docRm.AddHandle(new DocumentHandle("rev_1"));
+            rmDocuments.Add(docRm);
+            CreateSut();
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            _sut.Handle(evt, false); //Handle is linked to document.
+            Assert.That(rmStream, Has.Count.EqualTo(1));
+            Assert.That(rmStream[0].HandleCustomData, Is.EqualTo(handle.CustomData));
+    
+        }
+
+        [Test]
         public void verify_stream_events_have_documentId()
         {
             SetHandleToReturn();
@@ -155,12 +178,21 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
         private void SetHandleToReturn()
         {
-            _handleWriter.FindOneById(Arg.Any<DocumentHandle>())
-                .Returns(new HandleReadModel(
+            var customData = new HandleCustomData() 
+            {
+                {"handle1" , "test"},
+                {"handle2" , new { isComplex = true, theTruth = 42} },
+            };
+            handle = new HandleReadModel(
                     new DocumentHandle("rev_1"),
                     new DocumentId(1),
-                    new FileNameWithExtension("test.txt")
-                ));
+                    new FileNameWithExtension("test.txt"),
+                    customData
+                );
+            
+            _handleWriter
+                .FindOneById(Arg.Any<DocumentHandle>())
+                .Returns(handle);
             IBlobDescriptor stub = Substitute.For<IBlobDescriptor>();
             stub.FileNameWithExtension.Returns(new FileNameWithExtension("test.txt"));
             _blobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(stub);
@@ -191,6 +223,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_handle_linked_to_document_with_formats()
         {
+            SetHandleToReturn();
             IBlobDescriptor stub = Substitute.For<IBlobDescriptor>();
             stub.FileNameWithExtension.Returns(new FileNameWithExtension("test.txt"));
             _blobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(stub);

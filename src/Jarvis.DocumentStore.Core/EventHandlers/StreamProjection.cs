@@ -79,33 +79,39 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(HandleInitialized e)
         {
+            var handle = _handleWriter.FindOneById(e.Handle);
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
                 //TenantId = this.TenantId,
                 Handle = e.Handle,
-                EventType = HandleStreamEventTypes.HandleInitialized
+                HandleCustomData = handle.CustomData,
+                EventType = HandleStreamEventTypes.HandleInitialized,
             });
         }
 
         public void On(HandleFileNameSet e)
         {
+            var handle = _handleWriter.FindOneById(e.Handle);
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
                 //TenantId = this.TenantId,
                 Handle = e.Handle,
+                HandleCustomData = handle.CustomData,
                 EventType = HandleStreamEventTypes.HandleFileNameSet
             });
         }
 
         public void On(HandleDeleted e)
         {
+            var handle = _handleWriter.FindOneById(e.Handle);
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
                 //TenantId = this.TenantId,
                 Handle = e.Handle,
+                HandleCustomData = handle.CustomData,
                 EventType = HandleStreamEventTypes.HandleDeleted
             });
         }
@@ -113,6 +119,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(HandleLinked e)
         {
             var doc = _documentReadModel.FindOneById(e.DocumentId);
+            var handle = _handleWriter.FindOneById(e.Handle);
             foreach (var format in doc.Formats)   
             {
                 var descriptor = _blobStore.GetDescriptor(format.Value.BlobId);
@@ -131,7 +138,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             ? format.Value.PipelineId 
                             : new PipelineId("original"),
                     },
-                    EventType = HandleStreamEventTypes.HandleHasNewFormat
+                    EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                    HandleCustomData = handle.CustomData,
                 });
             }
         }
@@ -146,6 +154,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {
+                var handleReadMode = _handleWriter.FindOneById(handle);
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
@@ -161,7 +170,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             ? e.CreatedBy
                             : new PipelineId("original"),
                     },
-                    EventType = HandleStreamEventTypes.HandleHasNewFormat
+                    EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                    HandleCustomData = handleReadMode.CustomData,
                 });
             }
         }
@@ -174,6 +184,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {
+                var handleReadMode = _handleWriter.FindOneById(handle);
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
@@ -189,7 +200,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             ? e.CreatedBy
                             : new PipelineId("original"),
                     },
-                    EventType = HandleStreamEventTypes.HandleFormatUpdated
+                    EventType = HandleStreamEventTypes.HandleFormatUpdated,
+                    HandleCustomData = handleReadMode.CustomData,
                 });
             }
         }
