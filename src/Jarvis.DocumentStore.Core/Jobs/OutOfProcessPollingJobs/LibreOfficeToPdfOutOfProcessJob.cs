@@ -17,11 +17,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
     public class LibreOfficeToPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
         private ILibreOfficeConversion _conversion;
+
         public LibreOfficeToPdfOutOfProcessJob(ILibreOfficeConversion conversion)
         {
             base.PipelineId = new PipelineId("office");
             base.QueueName = "office";
             _conversion = conversion;
+            _conversion.Initialize();
         }
 
         protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)

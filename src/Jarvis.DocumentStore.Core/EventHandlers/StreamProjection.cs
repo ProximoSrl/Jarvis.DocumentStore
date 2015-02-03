@@ -79,13 +79,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(HandleInitialized e)
         {
-            var handle = _handleWriter.FindOneById(e.Handle);
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
                 //TenantId = this.TenantId,
                 Handle = e.Handle,
-                HandleCustomData = handle.CustomData,
                 EventType = HandleStreamEventTypes.HandleInitialized,
             });
         }
@@ -105,13 +103,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(HandleDeleted e)
         {
-            var handle = _handleWriter.FindOneById(e.Handle);
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
                 //TenantId = this.TenantId,
                 Handle = e.Handle,
-                HandleCustomData = handle.CustomData,
                 EventType = HandleStreamEventTypes.HandleDeleted
             });
         }

@@ -56,5 +56,11 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
 
             return outputFile;
         }
+
+
+        public void Initialize()
+        {
+            
+        }
     }
 }

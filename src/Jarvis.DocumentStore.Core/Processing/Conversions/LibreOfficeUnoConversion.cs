@@ -47,6 +47,11 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             return outputFile;
         }
 
+        public void Initialize()
+        {
+            CloseOpenOffice();
+        }
+
         public void ConvertToPdf(string inputFile, string outputFile)
         {
             if (ConvertExtensionToFilterType(Path.GetExtension(inputFile)) == null)
@@ -191,5 +196,8 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
                     return null;
             }
         }
+
+
+
     }
 }

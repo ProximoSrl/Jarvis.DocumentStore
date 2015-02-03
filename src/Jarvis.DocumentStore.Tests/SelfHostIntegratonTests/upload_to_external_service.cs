@@ -43,6 +43,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_ppt_with_link()
+        {
+            //the file for this test is in trello card https://trello.com/c/SKGrSdAQ/156-libreoffice-dialog
+            _docs.UploadAsync("c:\\temp\\KPC_QCI_Training_English_4_4_06.ppt", DocumentHandle.FromString("Rev_1")).Wait();
+
+        }
+
+        [Test]
         public void upload_lorem_ipsum()
         {
             _docs.UploadAsync(TestConfig.PathToLoremIpsumPdf, DocumentHandle.FromString("lorem")).Wait();

@@ -66,6 +66,10 @@ namespace Jarvis.DocumentStore.Host.Support
                 {
                     info.MaxNumberOfFailure = (Int32)queue.maxNumberOfFailure;
                 }
+                if (queue.jobLockTimeout != null)
+                {
+                    info.JobLockTimeout = (Int32)queue.jobLockTimeout;
+                }
                 if (queue.parameters != null)
                 {
                     info.Parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(queue.parameters.ToString());

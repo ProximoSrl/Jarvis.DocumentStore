@@ -82,15 +82,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Id, Is.EqualTo(1));
         }
 
-        [Test]
-        public void verify_customData_when_empty_projection()
-        {
-            CreateSut();
-            var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("Rev_1"));
-            _sut.Handle(evt, false);
-            Assert.That(rmStream, Has.Count.EqualTo(1));
-            Assert.That(rmStream[0].HandleCustomData, Is.EqualTo(handle.CustomData));
-        }
+
 
         [Test]
         public void verify_pipeline_id_is_original_when_pipeline_is_null()

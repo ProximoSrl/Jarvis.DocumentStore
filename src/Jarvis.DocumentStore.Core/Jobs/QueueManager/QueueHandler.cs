@@ -45,6 +45,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public int MaxNumberOfFailure { get; set; }
 
+        /// <summary>
+        /// When a job is in <see cref="QueuedJobExecutionStatus.Executing "/> status for more
+        /// minutes than this value, it will be killed and rescheduled.
+        /// </summary>
+        public int JobLockTimeout { get; set; }
+
         public QueueInfo(
                 String name,
                 String pipeline,
@@ -59,6 +65,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             else
                 _splittedExtension = new string[] { };
             MaxNumberOfFailure = 5;
+            JobLockTimeout = 5;
         }
 
         internal bool ShouldCreateJob(StreamReadModel streamElement)
@@ -154,7 +161,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Idle),
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.ReQueued)
                 );
-            if (tenantId != null) 
+            if (tenantId != null && tenantId.IsValid()) 
             {
                 query = Query.And(query, Query<QueuedJob>.EQ(j => j.TenantId, tenantId));
             }
