@@ -132,7 +132,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
                 QueuedJob job = new QueuedJob();
                 job.Id = id;
-                job.CreationTimestamp = DateTime.Now;
+                job.SchedulingTimestamp = DateTime.Now;
                 job.StreamId = streamElement.Id;
                 job.TenantId = tenantId;
                 job.Parameters = new Dictionary<string, string>();
@@ -175,7 +175,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             var result = _collection.FindAndModify(new FindAndModifyArgs()
             {
                 Query = query,
-                SortBy = SortBy<QueuedJob>.Ascending(j => j.StreamId),
+                SortBy = SortBy<QueuedJob>.Ascending(j => j.SchedulingTimestamp),
                 Update = Update<QueuedJob>
                     .Set(j => j.Status, QueuedJobExecutionStatus.Executing)
                     .Set(j => j.ExecutionStartTime, DateTime.Now)
@@ -212,6 +212,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 {
                     job.Status = QueuedJobExecutionStatus.ReQueued;
                 }
+                job.SchedulingTimestamp = DateTime.Now; //this will move failing job to the end of the queue.
             }
             else
             {
@@ -226,11 +227,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// Return the list of all jobs that are blocked, a job is blocked if it is in
         /// Executing state more than a certain amount of time.
         /// </summary>
-        /// <param name="timeoutInMilliseconds"></param>
         /// <returns>List of jobs that are blocked.</returns>
-        internal List<QueuedJob> GetBlockedJobs(int timeoutInMilliseconds)
+        internal List<QueuedJob> GetBlockedJobs()
         {
-            var limit = DateTime.Now.AddMilliseconds(-timeoutInMilliseconds);
+            var limit = DateTime.Now.AddMinutes(-_info.JobLockTimeout);
             var existing = _collection.Find(
                 Query.And(
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Executing),

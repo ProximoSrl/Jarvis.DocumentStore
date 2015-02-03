@@ -8,6 +8,7 @@ using CQRS.Kernel.ProjectionEngine.RecycleBin;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Shared.Jobs;
 using NEventStore;
 using Quartz;
 using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
@@ -26,7 +27,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
         readonly IPollerJobManager _pollerJobManager;
         readonly QueueHandler[] _queueHandlers;
         readonly DocumentStoreConfiguration _config;
-        private List<String> docStoreAddresses;
         public ILogger Logger { get; set; }
 
         public QueuedJobQuartzMonitor(
@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             _pollerJobManager = pollerJobManager;
             _queueHandlers = queueHandlers;
             _config = config;
-            docStoreAddresses = new List<String>() 
+            new List<String>() 
             {
                 config.ServerAddress.AbsoluteUri
             };
@@ -48,7 +48,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             foreach (var qh in _queueHandlers)
             {
-                var blockedJobs = qh.GetBlockedJobs(10 * 60 * 1000);
+                var blockedJobs = qh.GetBlockedJobs();
                 Logger.DebugFormat("Queue {0} has {1} blocked jobs!", qh.Name, blockedJobs.Count);
                 //if we have blocked jobs, probably the worker is blocked.
                 var allBlockedHandles = blockedJobs

@@ -23,7 +23,10 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
         public String TenantId { get; set; }
 
-        public DateTime CreationTimestamp { get; set; }
+        /// <summary>
+        /// This is the field used to determine job order execution
+        /// </summary>
+        public DateTime SchedulingTimestamp { get; set; }
 
         public Dictionary<String, String> Parameters { get; set; }
 
@@ -31,7 +34,7 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
         public Int32 ErrorCount { get; set; }
 
-        public DateTime ExecutionEndTime { get; set; }
+        public DateTime? ExecutionEndTime { get; set; }
 
         public DateTime? ExecutionStartTime { get; set; }
 
