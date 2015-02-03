@@ -408,6 +408,9 @@
   <ItemGroup>
     <Folder Include="Storage\Stats\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Jobs\PollingJobs\FolderReadme.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
