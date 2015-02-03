@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
+namespace Jarvis.DocumentStore.Core.Jobs
 {
+    /// <summary>
+    /// Manage start and stop of jobs based on poller queue.
+    /// </summary>
     public interface IPollerJobManager
     {
         /// <summary>
@@ -19,7 +19,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         /// <summary>
         /// Stops poller job, 
         /// </summary>
-        /// <param name="jobId"></param>
+        /// <param name="jobHandle">Handle of the job to stop. This is the handle returned from
+        /// a call to the <see cref="Start" /> method</param>
         /// <returns></returns>
         Boolean Stop(String jobHandle);
 
@@ -27,11 +28,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         /// If for some reason a job is blocked (es a job is in executing state for more than 
         /// a certain amount of time) this method is used to reset and restart the job.
         /// </summary>
-        /// <param name="jobHandle"></param>
+        /// <param name="jobHandle">Handle of the job to stop. This is the handle returned from
+        /// a call to the <see cref="Start" /> method</param>
         /// <returns></returns>
         Boolean Restart(String jobHandle);
     }
 
+    /// <summary>
+    /// Interface of a single job that uses poller queue for jobs scheduling.
+    /// </summary>
     public interface IPollerJob 
     {
         String QueueName { get; }
@@ -49,9 +54,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         /// 
         /// </summary>
         /// <param name="documentStoreAddressUrls">List of document store addressess</param>
-        /// <param name="handle">The handle used to specify the identity of the worker.</param>
+        /// <param name="handle">The handle used to specify the identity of the worker returned from 
+        /// a call to <see cref="IPollerJobManager.Start"/> </param>
         void Start(List<String> documentStoreAddressUrls, String handle);
 
+        /// <summary>
+        /// Stops the job.
+        /// </summary>
         void Stop();
     }
 }

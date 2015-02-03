@@ -293,7 +293,7 @@
     <Compile Include="Jobs\PollingJobs\LibreOfficeToPdfPollerJob.cs" />
     <Compile Include="Jobs\PollingJobs\PollerJobParameters.cs" />
     <Compile Include="Jobs\PollingJobs\PollerManager.cs" />
-    <Compile Include="Jobs\PollingJobs\IPollerJob.cs" />
+    <Compile Include="Jobs\IPollerJob.cs" />
     <Compile Include="Jobs\QueueManager\QueuedJobStats.cs" />
     <Compile Include="Jobs\QueueManager\QueueEntities.cs" />
     <Compile Include="Jobs\QueueManager\QueueHandler.cs" />
