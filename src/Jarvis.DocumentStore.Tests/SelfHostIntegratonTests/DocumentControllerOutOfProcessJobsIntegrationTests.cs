@@ -100,7 +100,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected virtual void OnStop()
         {
-            _sutBase.Stop();
+            if (_sutBase != null) _sutBase.Stop();
         }
     }
 
