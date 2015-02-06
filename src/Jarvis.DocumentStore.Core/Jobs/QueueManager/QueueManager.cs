@@ -23,6 +23,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         Boolean SetJobExecuted(String queueName, String jobId, String errorMessage);
 
+        /// <summary>
+        /// Internally used to grab a job reference from its id.
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <returns></returns>
+        QueuedJob GetJob(String queueName, String jobId);
+
         void Start();
 
         void Stop();
@@ -210,6 +217,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity, handle, tenant, customData)) as QueuedJob;
         }
 
+        public QueuedJob GetJob(String queueName, string jobId)
+        {
+            return ExecuteWithQueueHandler("get job", queueName, qh => qh.GetJob(jobId)) as QueuedJob;
+
+        }
+
         public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
         {
             return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.SetJobExecuted(jobId, errorMessage));
@@ -227,6 +240,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return executor(qh);
         }
 
+        
 
     }
 }

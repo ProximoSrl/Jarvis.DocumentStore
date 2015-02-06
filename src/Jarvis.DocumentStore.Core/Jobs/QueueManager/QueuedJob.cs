@@ -1,10 +1,14 @@
-﻿using System;
+﻿using CQRS.Shared.MultitenantSupport;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Shared.Jobs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jarvis.DocumentStore.Shared.Jobs
+namespace Jarvis.DocumentStore.Core.Jobs
 {
     public enum QueuedJobExecutionStatus
     {
@@ -17,11 +21,15 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
     public class QueuedJob
     {
-        public String Id { get; set; }
+        public QueuedJobId Id { get; set; }
+
+        public BlobId BlobId { get; set; }
 
         public Int64 StreamId { get; set; }
 
-        public String TenantId { get; set; }
+        public TenantId TenantId { get; set; }
+
+        public DocumentId DocumentId { get; set; }
 
         /// <summary>
         /// This is the field used to determine job order execution
@@ -45,6 +53,17 @@ namespace Jarvis.DocumentStore.Shared.Jobs
         public String ExecutingHandle { get; set; }
 
         public Dictionary<String, Object> HandleCustomData { get; set; }
+
+        public static implicit operator QueuedJobDto(QueuedJob original) 
+        {
+            if (original == null) return null;
+            return new QueuedJobDto()
+            {
+                Id = original.Id,
+                Parameters = original.Parameters,
+                HandleCustomData = original.HandleCustomData,
+            };
+        }
 
     }
 }

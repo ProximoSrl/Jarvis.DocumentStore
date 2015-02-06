@@ -277,14 +277,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return StreamFile(formatBlobId);
         }
 
-        [Route("{tenantId}/documents/blobs/{blobId}")]
+        [Route("{tenantId}/documents/blobs/{jobId}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetBlob(
+        public async Task<HttpResponseMessage> GetBlobForJob(
             TenantId tenantId,
-            BlobId blobId
+            String jobId
         )
         {
-            return StreamFile(blobId);
+            //return StreamFile(blobId);
+            return null;
         }
 
         HttpResponseMessage DocumentNotFound(DocumentHandle handle)

@@ -16,6 +16,12 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using MongoDB.Bson;
 using Jarvis.DocumentStore.Core.Domain.Handle;
+using Jarvis.DocumentStore.Core.Jobs;
+using CQRS.Shared.IdentitySupport;
+using CQRS.Shared.IdentitySupport.Serialization;
+using CQRS.Shared.Domain.Serialization;
+using MongoDB.Bson.Serialization;
+using CQRS.Shared.Events;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -24,10 +30,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
     {
         MongoDatabase _db = MongoDbTestConnectionProvider.QueueDb;
 
+
         [SetUp]
         public void SetUp()
         {
             _db.Drop();
+
+
+
         }
 
         [Test]
@@ -42,8 +52,40 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             sut.Handle(rm, new TenantId("test"));
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0));
-
         }
+
+        /// <summary>
+        /// Pristine version of queue used blob id and tenant id as id of the job
+        /// this is not permitted because the id should be completely opaque.
+        /// </summary>
+        [Test]
+        public void verify_id_is_opaque_and_not_contains_blob_id()
+        {
+            var info = new QueueInfo("test", "", "");
+            QueueHandler sut = new QueueHandler(info, _db);
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                FormatInfo = new FormatInfo()
+                {
+                    DocumentFormat = new DocumentFormat("thumb.small"),
+                    BlobId = new BlobId("blob.1"),
+                    PipelineId = new PipelineId("thumbnail"),
+                },
+                DocumentId = new DocumentId("Document_1"),
+            };
+            sut.Handle(rm, new TenantId("test_tenant"));
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1));
+            var job = collection.AsQueryable().Single();
+            Assert.That(job.BlobId, Is.EqualTo(new BlobId("blob.1")));
+            Assert.That(job.TenantId, Is.EqualTo(new TenantId("test_tenant")));
+            Assert.That(job.DocumentId, Is.EqualTo(new DocumentId("Document_1")));
+            Assert.That(job.Id.ToString(), Is.Not.Contains("blob.1"), "Id should not contains internal concempts like blob id");
+            Assert.That(job.Id.ToString(), Is.Not.Contains("tenant"), "Id should not contains internal concempts like tenant id");
+            Assert.That(job.Parameters.Keys, Is.Not.Contains(JobKeys.BlobId));
+            Assert.That(job.Parameters.Keys, Is.Not.Contains(JobKeys.DocumentId));
+        }   
 
         [Test]
         public void verify_filtering_on_blob_format()
@@ -63,7 +105,6 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             sut.Handle(rm, new TenantId("test"));
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0));
-
         }
 
         [Test]
@@ -267,9 +308,9 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var nextJob = sut.GetNextJob("identity", "handle",none , null);
             Assert.That(nextJob, Is.Null);
             nextJob = sut.GetNextJob("identity", "handle", bar, null);
-            Assert.That(nextJob.TenantId, Is.EqualTo(bar.ToString()));
+            Assert.That(nextJob.TenantId, Is.EqualTo(bar));
             nextJob = sut.GetNextJob("identity", "handle", foo, null);
-            Assert.That(nextJob.TenantId, Is.EqualTo(foo.ToString()));
+            Assert.That(nextJob.TenantId, Is.EqualTo(foo));
         }
 
         [Test]

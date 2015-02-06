@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using MongoDB.Driver.Linq;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -121,7 +122,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _collection = database.GetCollection<QueuedJob>("queue." + info.Name);
             _collection.CreateIndex(
-                IndexKeys<QueuedJob>.Ascending(x => x.Status, x => x.StreamId));
+                IndexKeys<QueuedJob>.Ascending(x => x.Status, x => x.StreamId, x => x.SchedulingTimestamp),
+                IndexOptions.SetName("ForGetNextJobQuery"));
+            _collection.CreateIndex(
+               IndexKeys<QueuedJob>.Ascending(x => x.TenantId, x => x.BlobId),
+               IndexOptions.SetName("UniqueTenantAndBlob").SetUnique(true));
             _info = info;
             Name = info.Name;
 
@@ -144,23 +149,29 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             if (_info.ShouldCreateJob(streamElement)) 
             {
-                var id = streamElement.FormatInfo.BlobId + "_" + tenantId;
+
                 //look for already existing job with the same blobid, there is no need to re-queue again
                 //because if a job with the same blobid was already fired for this queue there is no need
                 //to re-issue
-                var existing = _collection.Find(Query<QueuedJob>.EQ(j => j.Id, id)).Count() > 0;
+                var existing = _collection.Find(
+                    Query.And(
+                        Query<QueuedJob>.EQ(j => j.BlobId, streamElement.FormatInfo.BlobId),
+                        Query<QueuedJob>.EQ(j => j.TenantId, tenantId)
+                    )
+                ).Count() > 0;
                 if (existing) return;
 
                 QueuedJob job = new QueuedJob();
+                var id = new QueuedJobId(Guid.NewGuid().ToString());
                 job.Id = id;
                 job.SchedulingTimestamp = DateTime.Now;
                 job.StreamId = streamElement.Id;
                 job.TenantId = tenantId;
+                job.DocumentId = streamElement.DocumentId;
+                job.BlobId = streamElement.FormatInfo.BlobId;
                 job.Parameters = new Dictionary<string, string>();
                 job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
-                job.Parameters.Add(JobKeys.DocumentId, streamElement.DocumentId);
                 job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
-                job.Parameters.Add(JobKeys.BlobId, streamElement.FormatInfo.BlobId);
                 job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
                 job.Parameters.Add(JobKeys.TenantId, tenantId);
                 job.HandleCustomData = streamElement.HandleCustomData;
@@ -268,6 +279,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     (QueuedJobExecutionStatus)x["_id"].AsInt32,
                      x["c"].AsInt32)
             ).OrderBy(x => x.Status);
+        }
+
+        internal QueuedJob GetJob(string jobId)
+        {
+            return _collection.FindOneById(jobId);
         }
     }
 

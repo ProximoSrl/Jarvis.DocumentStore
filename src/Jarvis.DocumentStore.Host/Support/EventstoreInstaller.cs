@@ -50,14 +50,14 @@ namespace Jarvis.DocumentStore.Host.Support
 
             EnableFlatIdMapping(identityManager);
 
-            MessagesRegistration.RegisterAssembly(typeof (Document).Assembly);
-            SnapshotRegistration.AutomapAggregateState(typeof (DocumentState).Assembly);
+            MessagesRegistration.RegisterAssembly(typeof(Document).Assembly);
+            SnapshotRegistration.AutomapAggregateState(typeof(DocumentState).Assembly);
 
-            identityManager.RegisterIdentitiesFromAssembly(typeof (DocumentId).Assembly);
-            IdentitiesRegistration.RegisterFromAssembly(typeof (DocumentId).Assembly);
+            identityManager.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
+            IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentId).Assembly);
 
-            BsonClassMap.LookupClassMap(typeof (BlobId));
-            BsonClassMap.LookupClassMap(typeof (DocumentHandle));
+            BsonClassMap.LookupClassMap(typeof(BlobId));
+            BsonClassMap.LookupClassMap(typeof(DocumentHandle));
 
             BsonClassMap.RegisterClassMap<FileNameWithExtension>(m =>
             {
@@ -73,7 +73,7 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 ITenant tenant1 = tenant;
 
-                var esComponentName = tenant.Id+ "-es";
+                var esComponentName = tenant.Id + "-es";
 
                 tenant1.Container.Register(
                     Classes
@@ -87,7 +87,7 @@ namespace Jarvis.DocumentStore.Host.Support
                         {
                             var hooks = tenant1.Container.ResolveAll<IPipelineHook>();
                             return f.BuildEventStore(
-                                tenant1.GetConnectionString("events"), 
+                                tenant1.GetConnectionString("events"),
                                 hooks
                             );
                         })
@@ -95,7 +95,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     Component
                         .For<ICQRSRepository, CQRSRepository>()
                         .ImplementedBy<CQRSRepository>()
-                        .Named(tenant.Id+".repository")
+                        .Named(tenant.Id + ".repository")
                         .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
                         .LifestyleTransient()
                     );
@@ -141,8 +141,15 @@ namespace Jarvis.DocumentStore.Host.Support
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
             EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
             StringValueCustomBsonTypeMapper.Register<BlobId>();
+            StringValueCustomBsonTypeMapper.Register<TenantId>();
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
             StringValueCustomBsonTypeMapper.Register<FileHash>();
+
+            //needed because we are trying to limit dependencies from mongo, and not want to use Serialization Attributes.
+            BsonSerializer.RegisterSerializer(
+                 typeof(TenantId),
+                 new StringValueBsonSerializer()
+            );
         }
     }
 }

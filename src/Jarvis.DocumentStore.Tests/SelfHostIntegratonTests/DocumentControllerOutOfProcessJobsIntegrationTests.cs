@@ -302,7 +302,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("expected formats not found");
         }
 
-        HtmlToPdfOutOfProcessJob htmlSut;
+        HtmlToPdfOutOfProcessJob _htmlSut;
 
         [Test]
         public async void verify_full_chain_for_email_and_html_zip()
@@ -349,7 +349,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected override void OnStop()
         {
             base.OnStop();
-            htmlSut.Stop();
+            if (_htmlSut != null) _htmlSut.Stop();
         }
         protected override QueueInfo[] OnGetQueueInfo()
         {

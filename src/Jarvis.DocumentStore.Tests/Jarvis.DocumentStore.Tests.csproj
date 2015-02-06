@@ -253,6 +253,7 @@
     <Compile Include="DomainSpecs\DocumentSpecs\when_document_format_has_been_deleted.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_trying_to_delete_with_a_wrong_handle.cs" />
     <Compile Include="DomainSpecs\HandleSpecs\HandleSpecification.cs" />
+    <Compile Include="GlobalSetupFixture.cs" />
     <Compile Include="JobTests\AbstractJobTest.cs" />
     <Compile Include="JobTests\AnalyzeEmailJobTests.cs" />
     <Compile Include="JobTests\CreateThumbnailFromPdfJobTests.cs" />
