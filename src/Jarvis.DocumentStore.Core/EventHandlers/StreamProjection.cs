@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using com.sun.tools.javac.comp;
+
 using CQRS.Kernel.Events;
 using CQRS.Kernel.ProjectionEngine;
 using CQRS.Shared.Events;

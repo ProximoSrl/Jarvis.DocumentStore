@@ -7,7 +7,6 @@ using CQRS.Kernel.Commands;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.Commands;
 using CQRS.Shared.Factories;
-using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
 using MongoDB.Driver;
 

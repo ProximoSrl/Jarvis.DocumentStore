@@ -5,8 +5,6 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Jobs;
-using Jarvis.DocumentStore.Core.Processing.Conversions;
-using Jarvis.DocumentStore.Core.Processing.Pdf;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Support
@@ -27,13 +25,6 @@ namespace Jarvis.DocumentStore.Core.Support
                     .FromAssemblyInThisApplication()
                     .BasedOn<ITenantJob>()
                     .WithServiceSelf()
-                    .LifestyleTransient(),
-                Component
-                    .For<ILibreOfficeConversion>()
-                    .ImplementedBy<LibreOfficeUnoConversion>()
-                    .LifeStyle.Transient,
-                Component
-                    .For<CreateImageFromPdfTask>()
                     .LifestyleTransient()
                 );
 

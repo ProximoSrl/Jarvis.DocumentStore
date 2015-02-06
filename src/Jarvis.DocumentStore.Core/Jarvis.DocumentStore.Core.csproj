@@ -53,115 +53,8 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="cli_basetypes, Version=1.0.19.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\libreoffice_sdk\cli_basetypes.dll</HintPath>
-    </Reference>
-    <Reference Include="cli_cppuhelper, Version=1.0.22.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\libreoffice_sdk\cli_cppuhelper.dll</HintPath>
-    </Reference>
-    <Reference Include="cli_oootypes, Version=1.0.8.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\libreoffice_sdk\cli_oootypes.dll</HintPath>
-    </Reference>
-    <Reference Include="cli_ure, Version=1.0.22.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\libreoffice_sdk\cli_ure.dll</HintPath>
-    </Reference>
-    <Reference Include="cli_uretypes, Version=1.0.8.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\libreoffice_sdk\cli_uretypes.dll</HintPath>
-    </Reference>
     <Reference Include="Common.Logging">
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
-    </Reference>
-    <Reference Include="GraphicsMagick.NET-x86">
-      <HintPath>..\packages\GraphicsMagick.NET-Q8-x86.1.3.20.2\lib\net40-client\GraphicsMagick.NET-x86.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.AWT.WinForms">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.AWT.WinForms.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Beans">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Beans.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Charsets">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Charsets.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Corba">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Corba.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Core">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Jdbc">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Jdbc.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Management">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Management.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Media">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Media.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Misc">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Misc.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Naming">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Naming.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Remoting">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Remoting.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Security">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Security.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.SwingAWT">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.SwingAWT.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Text">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Tools">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Tools.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.Util">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Util.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.API">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.API.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Bind">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Bind.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Crypto">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Crypto.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Parse">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Parse.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Transform">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Transform.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.WebServices">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.WebServices.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.XPath">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.XPath.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.Runtime">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="IKVM.Runtime.JNI">
-      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
-    </Reference>
-    <Reference Include="IvanAkcheurov.Commons">
-      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.Commons.dll</HintPath>
-    </Reference>
-    <Reference Include="IvanAkcheurov.NClassify">
-      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NClassify.dll</HintPath>
-    </Reference>
-    <Reference Include="IvanAkcheurov.NTextCat.Lib">
-      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NTextCat.Lib.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
@@ -171,9 +64,6 @@
     </Reference>
     <Reference Include="MongoDB.Driver">
       <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Driver.dll</HintPath>
-    </Reference>
-    <Reference Include="MsgReader">
-      <HintPath>..\packages\MSGReader.1.7.4\lib\MsgReader.dll</HintPath>
     </Reference>
     <Reference Include="NEventStore">
       <HintPath>..\packages\NEventStore.5.1.0\lib\net40\NEventStore.dll</HintPath>
@@ -191,7 +81,6 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
@@ -209,15 +98,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="tika-app">
-      <HintPath>..\packages\TikaOnDotNet.1.6.3\lib\net35\tika-app.dll</HintPath>
-    </Reference>
-    <Reference Include="TikaOnDotNet">
-      <HintPath>..\packages\TikaOnDotNet.1.6.3\lib\net35\TikaOnDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="TuesPechkin">
-      <HintPath>..\packages\TuesPechkin.1.0.3.0\lib\net20\TuesPechkin.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandHandlers\DocumentHandlers\AddFormatToDocumentCommandHandler.cs" />
@@ -284,9 +164,6 @@
     <Compile Include="Jobs\QueueManager\QueueHandler.cs" />
     <Compile Include="Jobs\QueueManager\QueueManager.cs" />
     <Compile Include="Model\QueuedJobId.cs" />
-    <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
-    <Compile Include="Processing\Conversions\HtmlToPdfConverterFile.cs" />
-    <Compile Include="Processing\Conversions\TikaNetAnalyzer.cs" />
     <Compile Include="Jobs\CleanupJob.cs" />
     <Compile Include="Jobs\CommandRunnerJob.cs" />
     <Compile Include="Jobs\ISystemJob.cs" />
@@ -302,16 +179,7 @@
     <Compile Include="Model\ImageSizeInfo.cs" />
     <Compile Include="Model\PipelineId.cs" />
     <Compile Include="Processing\CommandSerializer.cs" />
-    <Compile Include="Processing\Conversions\HtmlToPdfConverter.cs" />
-    <Compile Include="Processing\Conversions\ILibreOfficeConversion.cs" />
-    <Compile Include="Processing\Conversions\LibreOfficeUnoConversion.cs" />
-    <Compile Include="Processing\Conversions\LibreOfficeConversion.cs" />
-    <Compile Include="Processing\Conversions\MailMessageToHtmlConverterTask.cs" />
-    <Compile Include="Processing\Conversions\TikaAnalyzer.cs" />
     <Compile Include="Processing\DocumentFormats.cs" />
-    <Compile Include="Processing\Pdf\CreateImageFromPdfTask.cs" />
-    <Compile Include="Processing\Pdf\CreatePdfImageTaskParams.cs" />
-    <Compile Include="Processing\Tools\ImageResizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadModel\DocumentReadModel.cs" />
     <Compile Include="ReadModel\DocumentStats.cs" />

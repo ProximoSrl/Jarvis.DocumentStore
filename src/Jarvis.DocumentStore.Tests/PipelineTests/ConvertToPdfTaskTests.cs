@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Jobs.Processing.Conversions;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 

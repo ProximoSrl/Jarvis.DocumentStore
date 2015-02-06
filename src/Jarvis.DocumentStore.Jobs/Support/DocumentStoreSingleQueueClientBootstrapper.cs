@@ -9,9 +9,10 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Jobs;
-using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Jobs.Processing.Conversions;
+using Jarvis.DocumentStore.Jobs.Processing.Pdf;
 
 namespace Jarvis.DocumentStore.Jobs.Support
 {
@@ -82,7 +83,10 @@ namespace Jarvis.DocumentStore.Jobs.Support
                     .LifeStyle.Transient,
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
-                    .WithServiceFirstInterface()
+                    .WithServiceFirstInterface() ,
+                Component
+                    .For<CreateImageFromPdfTask>()
+                    .LifestyleTransient()
             );
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
 

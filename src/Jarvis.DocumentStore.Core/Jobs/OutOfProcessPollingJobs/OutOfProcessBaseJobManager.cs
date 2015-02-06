@@ -49,15 +49,16 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         private void InnerStart(string queueId, List<string> docStoreAddresses, String processHandle)
         {
-            var thisFileName = Environment.CommandLine.Split(' ')[0]
-                .Trim('/', '"')
-                .Replace(".vshost.exe", ".exe");
+            //var thisFileName = Environment.CommandLine.Split(' ')[0]
+            //    .Trim('/', '"')
+            //    .Replace(".vshost.exe", ".exe");
+            var jobsLauncherFileExe = @"JobsRunner\Jarvis.DocumentStore.Jobs.exe";
 
-            Process process = GetLocalProcessForQueue(queueId, thisFileName);
+            Process process = GetLocalProcessForQueue(queueId, jobsLauncherFileExe);
             if (process == null)
             {
                 process = new System.Diagnostics.Process();
-                process.StartInfo.FileName = thisFileName;
+                process.StartInfo.FileName = jobsLauncherFileExe;
                 process.StartInfo.Arguments = "/dsuris:" + docStoreAddresses.Aggregate((s1, s2) => s1 + "|" + s2) +
                     " /queue:" + queueId +
                     " /handle:" + processHandle;

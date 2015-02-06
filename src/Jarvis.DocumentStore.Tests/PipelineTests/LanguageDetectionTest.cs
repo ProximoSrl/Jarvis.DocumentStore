@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Processing.Analyzers;
+using Jarvis.DocumentStore.Jobs.Processing.Analyzers;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests

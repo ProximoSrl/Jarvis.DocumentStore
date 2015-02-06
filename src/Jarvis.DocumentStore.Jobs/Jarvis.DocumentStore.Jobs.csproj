@@ -48,6 +48,30 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
+    <Reference Include="cli_basetypes, Version=1.0.19.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libs\libreoffice_sdk\cli_basetypes.dll</HintPath>
+    </Reference>
+    <Reference Include="cli_cppuhelper, Version=1.0.22.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libs\libreoffice_sdk\cli_cppuhelper.dll</HintPath>
+    </Reference>
+    <Reference Include="cli_oootypes, Version=1.0.8.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libs\libreoffice_sdk\cli_oootypes.dll</HintPath>
+    </Reference>
+    <Reference Include="cli_ure, Version=1.0.22.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libs\libreoffice_sdk\cli_ure.dll</HintPath>
+    </Reference>
+    <Reference Include="cli_uretypes, Version=1.0.8.0, Culture=neutral, PublicKeyToken=ce2cb7e279207b9e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libs\libreoffice_sdk\cli_uretypes.dll</HintPath>
+    </Reference>
+    <Reference Include="GraphicsMagick.NET-x86, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ee2094eb40f5ea47, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GraphicsMagick.NET-Q8-x86.1.3.20.2\lib\net40-client\GraphicsMagick.NET-x86.dll</HintPath>
+    </Reference>
     <Reference Include="IKVM.AWT.WinForms, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.AWT.WinForms.dll</HintPath>
@@ -142,12 +166,28 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
     </Reference>
+    <Reference Include="IvanAkcheurov.Commons, Version=0.2.1.1, Culture=neutral, PublicKeyToken=a61413de1d13f8fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.Commons.dll</HintPath>
+    </Reference>
+    <Reference Include="IvanAkcheurov.NClassify, Version=0.2.1.1, Culture=neutral, PublicKeyToken=a61413de1d13f8fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NClassify.dll</HintPath>
+    </Reference>
+    <Reference Include="IvanAkcheurov.NTextCat.Lib, Version=0.2.1.1, Culture=neutral, PublicKeyToken=a61413de1d13f8fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NTextCat.Lib.dll</HintPath>
+    </Reference>
     <Reference Include="Jarvis.ConfigurationService.Client">
       <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.1.94\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgReader, Version=1.7.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MSGReader.1.7.4\lib\MsgReader.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -156,6 +196,9 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -169,6 +212,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\TikaOnDotNet.1.6.3\lib\net35\TikaOnDotNet.dll</HintPath>
     </Reference>
+    <Reference Include="TuesPechkin, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\TuesPechkin.1.0.3.0\lib\net20\TuesPechkin.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Jobs\AbstractTikaOutOfProcessJob.cs" />
@@ -177,6 +224,18 @@
     <Compile Include="Jobs\HtmlToPdfOutOfProcessJob.cs" />
     <Compile Include="Jobs\ImageResizePollerOutOfProcessJob.cs" />
     <Compile Include="Jobs\LibreOfficeToPdfOutOfProcessJob.cs" />
+    <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
+    <Compile Include="Processing\Conversions\HtmlToPdfConverter.cs" />
+    <Compile Include="Processing\Conversions\HtmlToPdfConverterFile.cs" />
+    <Compile Include="Processing\Conversions\ILibreOfficeConversion.cs" />
+    <Compile Include="Processing\Conversions\LibreOfficeConversion.cs" />
+    <Compile Include="Processing\Conversions\LibreOfficeUnoConversion.cs" />
+    <Compile Include="Processing\Conversions\MailMessageToHtmlConverterTask.cs" />
+    <Compile Include="Processing\Conversions\TikaAnalyzer.cs" />
+    <Compile Include="Processing\Conversions\TikaNetAnalyzer.cs" />
+    <Compile Include="Processing\Pdf\CreateImageFromPdfTask.cs" />
+    <Compile Include="Processing\Pdf\CreatePdfImageTaskParams.cs" />
+    <Compile Include="Processing\Tools\ImageResizer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\ContainerAccessor.cs" />
@@ -224,6 +283,9 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetDir)*.*" $(SolutionDir)Jarvis.DocumentStore.Host\$(OutDir)JobsRunner\ /E /Y</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

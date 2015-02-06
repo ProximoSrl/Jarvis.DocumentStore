@@ -9,7 +9,7 @@ using System.Timers;
 using Castle.Core.Logging;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Shared.MultitenantSupport;
-using ikvm.extensions;
+
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;

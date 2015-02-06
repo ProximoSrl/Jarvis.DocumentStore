@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Core", "Jarvis.DocumentStore.Core\Jarvis.DocumentStore.Core.csproj", "{A03810AE-2905-4CEE-A5D9-5E25C9A6309A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Tests", "Jarvis.DocumentStore.Tests\Jarvis.DocumentStore.Tests.csproj", "{C22E8635-694B-4799-93A2-E10B33E0B04D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Host", "Jarvis.DocumentStore.Host\Jarvis.DocumentStore.Host.csproj", "{26EE5189-77AD-4D18-BD4E-313E024E8941}"
+	ProjectSection(ProjectDependencies) = postProject
+		{65411E15-6EC3-455F-A5E4-34446A808474} = {65411E15-6EC3-455F-A5E4-34446A808474}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Client", "Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj", "{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}"
 EndProject

@@ -3,8 +3,8 @@ using System.IO;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing.Tools;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Jobs.Processing.Tools;
 
 namespace Jarvis.DocumentStore.Jobs.Jobs
 {
