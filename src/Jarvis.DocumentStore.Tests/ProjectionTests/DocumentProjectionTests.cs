@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CQRS.Kernel.Commands;
 using CQRS.Kernel.MultitenantSupport;
 using CQRS.Kernel.ProjectionEngine;
+using CQRS.Kernel.Store;
 using CQRS.Shared.Commands;
 using CQRS.Shared.MultitenantSupport;
 using CQRS.Shared.ReadModel;
@@ -20,6 +21,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
+using NEventStore.Dispatcher;
 using NUnit.Framework;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 
