@@ -13,7 +13,7 @@ using ikvm.extensions;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Support;
@@ -22,6 +22,9 @@ using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
+using CQRS.Shared.Domain.Serialization;
+using System.Runtime.Serialization.Formatters;
+using CQRS.Shared.Messages;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
@@ -50,9 +53,21 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         private String _handle;
 
+        JsonSerializerSettings _settings;
+
         public AbstractOutOfProcessPollerFileJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
+            _settings = new JsonSerializerSettings()
+            {
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+                Converters = new JsonConverter[]
+                {
+                    new StringValueJsonConverter()
+                },
+                ContractResolver = new MessagesContractResolver(),
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+            };
         }
 
         private List<DsEndpoint> _dsEndpoints;
@@ -155,7 +170,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             do
             {
                 String workingFolder = null;
-                QueuedJob nextJob = DsGetNextJob();
+                QueuedJobDto nextJob = DsGetNextJob();
                 if (nextJob == null) return;
 
                 var baseParameters = ExtractJobParameters(nextJob);
@@ -163,7 +178,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 TenantContext.Enter(new TenantId(baseParameters.TenantId));
                 workingFolder = Path.Combine(
                         ConfigService.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
-                        baseParameters.InputBlobId
+                        baseParameters.JobId.ToString()
                     );
                 if (Directory.Exists(workingFolder)) Directory.Delete(workingFolder, true);
                 Directory.CreateDirectory(workingFolder);
@@ -207,21 +222,20 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         }
 
-        private static PollerJobParameters ExtractJobParameters(QueuedJob nextJob)
+        private static PollerJobParameters ExtractJobParameters(QueuedJobDto nextJob)
         {
             PollerJobParameters parameters = new PollerJobParameters();
             parameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
-            parameters.InputDocumentId = new DocumentId(nextJob.Parameters[JobKeys.DocumentId]);
             parameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
-            parameters.InputBlobId = new BlobId(nextJob.Parameters[JobKeys.BlobId]);
+            parameters.JobId = new QueuedJobId(nextJob.Id);
             parameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
             parameters.All = nextJob.Parameters;
             return parameters;
         }
 
-        private QueuedJob DsGetNextJob()
+        private QueuedJobDto DsGetNextJob()
         {
-            QueuedJob nextJob = null;
+            QueuedJobDto nextJob = null;
             string pollerResult;
             using (WebClientEx client = new WebClientEx())
             {
@@ -240,13 +254,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             }
             if (!pollerResult.Equals("null", StringComparison.OrdinalIgnoreCase))
             {
-                nextJob = JsonConvert.DeserializeObject<QueuedJob>(pollerResult);
+                nextJob = JsonConvert.DeserializeObject<QueuedJobDto>(pollerResult, _settings);
             }
             return nextJob;
         }
 
-        protected async Task<Boolean> AddFormatToDocumentFromFile(string tenantId,
-            DocumentId documentId,
+        protected async Task<Boolean> AddFormatToDocumentFromFile(
+            string tenantId,
+            QueuedJobId jobId,
             Client.Model.DocumentFormat format,
             string pathToFile,
             IDictionary<string, object> customData)
@@ -256,7 +271,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel
             {
                 CreatedById = this.PipelineId,
-                DocumentId = documentId,
+                JobId = jobId,
+                QueueName = this.QueueName,
                 Format = format,
                 PathToFile = pathToFile
             };
@@ -266,7 +282,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         }
 
         protected async Task<Boolean> AddFormatToDocumentFromObject(string tenantId,
-              DocumentId documentId,
+              String queueName,
+              String jobId,
               Client.Model.DocumentFormat format,
               Object obj,
               IDictionary<string, object> customData)
@@ -276,7 +293,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             AddFormatFromObjectToDocumentModel model = new AddFormatFromObjectToDocumentModel
             {
                 CreatedById = this.PipelineId,
-                DocumentId = documentId,
+                JobId = jobId,
+                QueueName = queueName,
                 Format = format,
                 StringContent = JsonConvert.SerializeObject(obj),
             };
@@ -288,14 +306,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         protected async Task<String> DownloadBlob(
             TenantId tenantId,
-            BlobId blobId,
+            QueuedJobId jobId,
             String extension,
             String workingFolder)
         {
-            String fileName = Path.Combine(workingFolder, blobId.toString() + "." + extension);
+            String fileName = Path.Combine(workingFolder, "blob." + extension);
             DocumentStoreServiceClient client = new DocumentStoreServiceClient(
                 _dsEndpoints.First().BaseUrl, tenantId);
-            using (var reader = client.OpenBlobIdForRead(blobId))
+            using (var reader = client.OpenBlobIdForRead(this.QueueName, jobId))
             {
                 using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
@@ -303,7 +321,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     stream.CopyTo(downloaded);
                 }
             }
-            Logger.DebugFormat("Downloaded blob {0} for tenant {1} in local file {2}", blobId, tenantId, fileName);
+            Logger.DebugFormat("Downloaded blob for job {0} for tenant {1} in local file {2}", jobId, tenantId, fileName);
             return fileName;
         }
 

@@ -22,9 +22,20 @@ namespace Jarvis.DocumentStore.Tests
         [SetUp]
         public void This_is_run_before_ANY_tests()
         {
+            ////needed because we are trying to limit dependencies from mongo, and not want to use Serialization Attributes.
+            //var actualSerialzier = BsonSerializer.LookupSerializer(typeof(TenantId));
+            //if (!(actualSerialzier is StringValueBsonSerializer))
+            //{
+            //    BsonSerializer.RegisterSerializer(
+            //        typeof(TenantId),
+            //        new StringValueBsonSerializer()
+            //   );
+            //}
+
             var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
             mngr.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
             mngr.RegisterIdentitiesFromAssembly(typeof(TenantId).Assembly);
+            mngr.RegisterIdentitiesFromAssembly(typeof(QueuedJobId).Assembly);
 
             EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
             StringValueCustomBsonTypeMapper.Register<BlobId>();
@@ -33,11 +44,6 @@ namespace Jarvis.DocumentStore.Tests
             StringValueCustomBsonTypeMapper.Register<FileHash>();
             StringValueCustomBsonTypeMapper.Register<QueuedJobId>();
 
-            //needed because we are trying to limit dependencies from mongo, and not want to use Serialization Attributes.
-            BsonSerializer.RegisterSerializer(
-                 typeof(TenantId),
-                 new StringValueBsonSerializer()
-            );
 
         }
     }

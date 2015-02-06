@@ -31,12 +31,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
         /// Elaborate
         /// </summary>
         /// <param name="tenantId"></param>
-        /// <param name="blobId"></param>
+        /// <param name="jobId"></param>
         /// <returns></returns>
-        public String Run(TenantId tenantId, BlobId blobId)
+        public String Run(TenantId tenantId, QueuedJobId jobId)
         {
-            Logger.DebugFormat("Converting {0} to pdf", blobId);
-            var localFileName = DownloadLocalCopy(tenantId, blobId);
+            Logger.DebugFormat("Converting {0} to pdf", jobId);
+            var localFileName = DownloadLocalCopy(tenantId, jobId);
             var outputFileName = localFileName + ".pdf";
             var uri = new Uri(localFileName);
             
@@ -73,14 +73,14 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
 
             Logger.DebugFormat("Deleting {0}", localFileName);
             File.Delete(localFileName);
-            Logger.DebugFormat("Conversion of {0} to pdf done!", blobId);
+            Logger.DebugFormat("Conversion of {0} to pdf done!", jobId);
 
             return outputFileName;
         }
 
-        string DownloadLocalCopy(TenantId tenantId, BlobId blobId)
+        string DownloadLocalCopy(TenantId tenantId, QueuedJobId jobId)
         {
-            var folder = _config.GetWorkingFolder(tenantId, blobId);
+            var folder = _config.GetWorkingFolder(tenantId, jobId);
 
             Logger.DebugFormat("Downloaded {0}", _inputFileName);
 
@@ -102,7 +102,7 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
                 return htmlFile;
             }
 
-            var msg = string.Format("Html file not found for {0}!", blobId);
+            var msg = string.Format("Html file not found for {0}!", jobId);
             Logger.Error(msg);
             throw new Exception(msg);
         }

@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         }
 
 
-        protected async override Task<bool> OnPolling(PollingJobs.PollerJobParameters parameters, string workingFolder)
+        protected async override Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             var task = new MailMessageToHtmlConverterTask()
             {
@@ -29,15 +29,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             string localFile = await DownloadBlob(
                 parameters.TenantId, 
-                parameters.InputBlobId, 
+                parameters.JobId, 
                 parameters.FileExtension,
                 workingFolder);
 
-            var zipFile = task.Convert(parameters.InputBlobId, localFile, workingFolder);
+            var zipFile = task.Convert(parameters.JobId, localFile, workingFolder);
 
             await AddFormatToDocumentFromFile(
               parameters.TenantId,
-              parameters.InputDocumentId,
+              parameters.JobId,
               new DocumentFormat(DocumentFormats.Email),
               zipFile,
               new Dictionary<string, object>());

@@ -10,7 +10,8 @@ namespace Jarvis.DocumentStore.Shared.Model
     {
         public const string CreatedBy = "model.createdById";
         public const string DocumentHandle = "model.documentHandle";
-        public const string DocumentId = "model.documentId";
+        public const string JobId = "model.jobId";
+        public const string QueueName = "model.queueName";
         public const string Format = "model.format";
     }
 }

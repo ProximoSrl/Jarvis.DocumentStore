@@ -5,7 +5,7 @@ using CQRS.Kernel.ProjectionEngine.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
             String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
             Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
             if (File.Exists(fileName)) File.Delete(fileName);
@@ -38,10 +38,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 Logger = Logger
             };
 
-            var pdfConvertedFileName = converter.Run(parameters.TenantId, parameters.InputBlobId);
+            var pdfConvertedFileName = converter.Run(parameters.TenantId, parameters.JobId);
             await AddFormatToDocumentFromFile(
                 parameters.TenantId,
-                parameters.InputDocumentId, 
+                parameters.JobId,
                 new  DocumentFormat(DocumentFormats.Pdf), 
                 pdfConvertedFileName, 
                 new Dictionary<string, object>());

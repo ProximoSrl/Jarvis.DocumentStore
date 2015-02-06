@@ -14,7 +14,7 @@ using MongoDB.Driver;
 using Quartz;
 using Quartz.Impl.MongoDB;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 
 namespace Jarvis.DocumentStore.Core.Support
 {

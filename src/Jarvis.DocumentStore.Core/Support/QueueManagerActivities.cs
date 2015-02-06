@@ -1,4 +1,5 @@
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
+using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Quartz;
 

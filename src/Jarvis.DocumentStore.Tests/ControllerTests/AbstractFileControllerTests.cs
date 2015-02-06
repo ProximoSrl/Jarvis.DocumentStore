@@ -16,6 +16,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Controllers;
 using NSubstitute;
 using NUnit.Framework;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 namespace Jarvis.DocumentStore.Tests.ControllerTests
 {
@@ -27,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
         IHandleWriter _handleWriter;
-
+        protected IQueueDispatcher QueueDispatcher;
         [SetUp]
         public void SetUp()
         {
@@ -35,9 +36,17 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
             _handleWriter = Substitute.For<IHandleWriter>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
+            QueueDispatcher= Substitute.For<IQueueDispatcher>();
             var bus = Substitute.For<IInProcessCommandBus>();
 
-            Controller = new DocumentsController(BlobStore, new ConfigService(), IdentityGenerator, DocumentReader, bus, _handleWriter)
+            Controller = new DocumentsController(
+                BlobStore, 
+                new ConfigService(), 
+                IdentityGenerator, 
+                DocumentReader, 
+                bus, 
+                _handleWriter,
+                QueueDispatcher)
             {
                 Request = new HttpRequestMessage
                 {

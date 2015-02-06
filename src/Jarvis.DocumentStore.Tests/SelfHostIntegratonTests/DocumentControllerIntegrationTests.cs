@@ -28,6 +28,7 @@ using Quartz.Spi;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using System;
 using Newtonsoft.Json;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -159,24 +160,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
-        }
-
-        [Test]
-        public async void should_get_blob_by_id()
-        {
-            var handle = new DocumentHandle("getbyid");
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
-
-            // wait background projection polling
-            Thread.Sleep(500);
-            var document = _documents.AsQueryable()
-                .Single(d => d.Handles.Contains(new Core.Model.DocumentHandle("getbyid")));
-            var originalBlobId = document.Formats[new Core.Domain.Document.DocumentFormat("original")].BlobId;
-
-            using (var reader = _documentStoreClient.OpenBlobIdForRead(originalBlobId))
-            {
-                await CompareDownloadedStreamToFile(TestConfig.PathToDocumentPdf, reader);
-            }
         }
 
         [Test]

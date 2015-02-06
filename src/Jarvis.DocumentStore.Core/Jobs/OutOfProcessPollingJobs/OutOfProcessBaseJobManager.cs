@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 using Castle.Core.Logging;
 using Castle.Core;
 using System.Management;

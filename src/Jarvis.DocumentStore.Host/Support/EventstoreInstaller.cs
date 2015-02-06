@@ -145,11 +145,16 @@ namespace Jarvis.DocumentStore.Host.Support
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
             StringValueCustomBsonTypeMapper.Register<FileHash>();
 
-            //needed because we are trying to limit dependencies from mongo, and not want to use Serialization Attributes.
-            BsonSerializer.RegisterSerializer(
-                 typeof(TenantId),
-                 new StringValueBsonSerializer()
-            );
+            //This fails because we need to be super secure that mongo driver never serialized TenantId before
+            //specifying serialization with code.
+            ////needed because we are trying to limit dependencies from mongo, and not want to use Serialization Attributes.
+            //if (!(BsonSerializer.LookupSerializer(typeof(TenantId)) is StringValueBsonSerializer))
+            //{
+            //    BsonSerializer.RegisterSerializer(
+            //        typeof(TenantId),
+            //        new StringValueBsonSerializer()
+            //   );
+            //}
         }
     }
 }

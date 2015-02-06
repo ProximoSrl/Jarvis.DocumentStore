@@ -37,6 +37,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using CQRS.Kernel.MultitenantSupport;
 using System.Drawing;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Castle.Windsor;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -63,6 +64,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void TestFixtureSetUp()
         {
             _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo());
+
             MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
             _config.ServerAddress = TestConfig.ServerAddress;
             _documentStoreService = new DocumentStoreBootstrapper();

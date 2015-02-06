@@ -10,9 +10,15 @@ namespace Jarvis.DocumentStore.Client.Model
     public class AddFormatToDocumentModel
     {
         /// <summary>
-        /// this is used from the various workers, when they want to add a format to a specific document.
+        /// this is used from the various workers it is the id of the job that produces other content
+        /// for DocumentId associated to that job
         /// </summary>
-        public String DocumentId { get; set; }
+        public String JobId { get; set; }
+
+        /// <summary>
+        /// This is used to specify the queue <see cref="JobId" /> belongs to.
+        /// </summary>
+        public String QueueName { get; set; }
 
         /// <summary>
         /// this is used if the caller want to add a format to a given handle.

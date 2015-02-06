@@ -89,23 +89,22 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
             String workingFolder = null;
             try
             {
-                QueuedJob nextJob = null;
+                QueuedJobDto nextJob = null;
                 while ((nextJob = QueueDispatcher.GetNextJob(this.QueueName, _identity, _handle, null, null)) != null)
                 {
                     try
                     {
                         PollerJobParameters parameters = new PollerJobParameters();
                         parameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
-                        parameters.InputDocumentId = new DocumentId(nextJob.Parameters[JobKeys.DocumentId]);
+                        parameters.JobId = new QueuedJobId(nextJob.Id);
                         parameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
-                        parameters.InputBlobId = new BlobId(nextJob.Parameters[JobKeys.BlobId]);
                         parameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
                         parameters.All = nextJob.Parameters;
                         //remember to enter the right tenant.
                         TenantContext.Enter(new TenantId(parameters.TenantId));
                         var blobStore = TenantAccessor.GetTenant(parameters.TenantId).Container.Resolve<IBlobStore>();
                         workingFolder = Path.Combine(
-                               ConfigService.GetWorkingFolder(parameters.TenantId, parameters.InputBlobId),
+                               ConfigService.GetWorkingFolder(parameters.TenantId, parameters.JobId),
                                GetType().Name
                            );
                         OnPolling(parameters, blobStore, workingFolder);

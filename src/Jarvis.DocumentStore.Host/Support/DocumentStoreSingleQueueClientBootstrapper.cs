@@ -19,7 +19,6 @@ using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Support;
 using Microsoft.Owin.Hosting;
 using Rebus.Logging;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
 using Jarvis.DocumentStore.Core.Services;
 
 namespace Jarvis.DocumentStore.Host.Support

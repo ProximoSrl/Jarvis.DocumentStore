@@ -30,6 +30,7 @@ using Jarvis.DocumentStore.Host.Providers;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -39,6 +40,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
+        readonly IQueueDispatcher _queueDispatcher;
+
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
         readonly IHandleWriter _handleWriter;
@@ -53,15 +56,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IIdentityGenerator identityGenerator,
             IReader<DocumentReadModel, DocumentId> documentReader,
             IInProcessCommandBus commandBus,
-            IHandleWriter handleWriter
+            IHandleWriter handleWriter,
+            IQueueDispatcher queueDispatcher
         )
         {
             _blobStore = blobStore;
             _configService = configService;
             _identityGenerator = identityGenerator;
             _documentReader = documentReader;
-            CommandBus = commandBus;
             _handleWriter = handleWriter;
+            _queueDispatcher = queueDispatcher;
+
+            CommandBus = commandBus;
         }
 
         [Route("{tenantId}/documents/{handle}")]
@@ -116,18 +122,30 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            var docIdParameter = _customData[AddFormatToDocumentParameters.DocumentId] as String;
+            String queueName = _customData[AddFormatToDocumentParameters.QueueName] as String;
+            String jobId = _customData[AddFormatToDocumentParameters.JobId] as String;
             DocumentId documentId;
-            if (docIdParameter == null)
+            if (String.IsNullOrEmpty(queueName))
             {
                 //user ask for handle, we need to grab the handle
+                
                 var documentHandle = new DocumentHandle(_customData[AddFormatToDocumentParameters.DocumentHandle] as String);
                 var handle = _handleWriter.FindOneById(documentHandle);
                 documentId = handle.DocumentId;
+                Logger.DebugFormat("Add format {0} to handle {1} and document id {2}", format, handle, documentId);
             }
             else
             {
-                documentId = new DocumentId(_customData[AddFormatToDocumentParameters.DocumentId] as String);
+                 var job = _queueDispatcher.GetJob(queueName, jobId);
+
+                if (job == null) {
+                    Logger.WarnFormat("Job id {0} not found in queue {1}", jobId, queueName);
+                    return Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        String.Format("Job id {0} not found in queue {1}", jobId, queueName));
+                }
+                documentId = job.DocumentId;
+                Logger.DebugFormat("Add format {0} to job id {1} and document id {2}", format, job.Id, documentId);
             }
 
             var documentFormat = new DocumentFormat(_customData[AddFormatToDocumentParameters.Format] as String);
@@ -277,15 +295,29 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return StreamFile(formatBlobId);
         }
 
-        [Route("{tenantId}/documents/blobs/{jobId}")]
+        /// <summary>
+        /// Gets a blob given job id
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="jobId"></param>
+        /// <param name="queueName">Name of the queue</param>
+        /// <returns></returns>
+        [Route("{tenantId}/documents/jobs/blob/{queueName}/{jobId}")]
         [HttpGet]
         public async Task<HttpResponseMessage> GetBlobForJob(
             TenantId tenantId,
+            String queueName,
             String jobId
         )
         {
-            //return StreamFile(blobId);
-            return null;
+            var job = _queueDispatcher.GetJob(queueName, jobId);
+            if (job == null) 
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("Job {0} not found", jobId)
+                    ); ;
+
+            return StreamFile(job.BlobId);
         }
 
         HttpResponseMessage DocumentNotFound(DocumentHandle handle)

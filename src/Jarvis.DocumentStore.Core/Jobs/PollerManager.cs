@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
+namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class PollerManager  
     {

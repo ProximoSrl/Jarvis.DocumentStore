@@ -214,7 +214,8 @@ namespace Jarvis.DocumentStore.Client
                         customData = customData ?? new Dictionary<String, Object>();
                         customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
                         customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
-                        customData.Add(AddFormatToDocumentParameters.DocumentId, model.DocumentId);
+                        customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
+                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName); 
                         customData.Add(AddFormatToDocumentParameters.Format, model.Format);
 
                         var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
@@ -256,7 +257,8 @@ namespace Jarvis.DocumentStore.Client
                         customData = customData ?? new Dictionary<String, Object>();
                         customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
                         customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
-                        customData.Add(AddFormatToDocumentParameters.DocumentId, model.DocumentId);
+                        customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
+                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName); 
                         customData.Add(AddFormatToDocumentParameters.Format, model.Format);
 
                         var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
@@ -329,13 +331,13 @@ namespace Jarvis.DocumentStore.Client
 
         /// <summary>
         /// Open a binary content, it is necessary for workers out of process that does not care
-        /// about <see cref="DocumentHandle" /> but have a reference to a blob id
+        /// about <see cref="DocumentHandle" /> but have a reference to a job id related to a blob
         /// </summary>
-        /// <param name="blobId">STring representation of the blob id client wants to read.</param>
+        /// <param name="blobId">STring representation of the job id wants to read.</param>
         /// <returns></returns>
-        public DocumentFormatReader OpenBlobIdForRead(String blobId)
+        public DocumentFormatReader OpenBlobIdForRead(String queueName, String jobId)
         {
-            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/blobs/" + blobId);
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/blob/" + queueName + "/" + jobId);
             return new DocumentFormatReader(endPoint);
         }
 

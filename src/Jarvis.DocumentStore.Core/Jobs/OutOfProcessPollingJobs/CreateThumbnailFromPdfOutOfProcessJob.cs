@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Pdf;
 using Jarvis.DocumentStore.Core.Storage;
@@ -25,10 +25,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             String format = parameters.All[JobKeys.ThumbnailFormat];
 
-            Logger.DebugFormat("Conversion of {0} ({1}) in format {2} starting", parameters.InputDocumentId, parameters.InputBlobId, format);
+            Logger.DebugFormat("Conversion for jobId {0} in format {1} starting", parameters.JobId, format);
 
             var task = new CreateImageFromPdfTask { Logger = Logger };
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
 
             using (var sourceStream = File.OpenRead(pathToFile))
             {
@@ -48,21 +48,21 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 );
             }
 
-            Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.InputBlobId, format);
+            Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.JobId, format);
             return true;
         }
 
-        public async Task<Boolean> Write(PollerJobParameters paramters, String format, int pageIndex, Stream stream)
+        public async Task<Boolean> Write(PollerJobParameters parameters, String format, int pageIndex, Stream stream)
         {
-            var fileName = new FileNameWithExtension(paramters.InputBlobId + ".page_" + pageIndex + "." + format);
+            var fileName = new FileNameWithExtension(parameters.JobId + ".page_" + pageIndex + "." + format);
             using (var outStream = File.OpenWrite(fileName))
             {
                 stream.CopyTo(outStream);
             }
 
             await AddFormatToDocumentFromFile(
-                 paramters.TenantId,
-                 paramters.InputDocumentId,
+                 parameters.TenantId,
+                 parameters.JobId,
                  new DocumentFormat(DocumentFormats.RasterImage),
                  fileName,
                 new Dictionary<string, object>());

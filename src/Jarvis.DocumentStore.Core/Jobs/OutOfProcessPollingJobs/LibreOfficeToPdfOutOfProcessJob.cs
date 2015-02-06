@@ -2,7 +2,7 @@
 using System.IO;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Storage;
@@ -30,19 +30,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             Logger.DebugFormat(
                "Delegating conversion of file {0} to libreoffice",
-               parameters.InputBlobId
+               parameters.JobId
            );
 
             //libreofficeconversion is registered per tenant.
 
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
             
             Logger.DebugFormat("Downloaded file {0} to be converted to pdf", pathToFile);
             var outputFile = _conversion.Run(pathToFile, "pdf");
 
             await AddFormatToDocumentFromFile(
                 parameters.TenantId,
-                parameters.InputDocumentId,
+                parameters.JobId,
                 new DocumentFormat(DocumentFormats.Pdf),
                 outputFile,
                 new Dictionary<string, object>());

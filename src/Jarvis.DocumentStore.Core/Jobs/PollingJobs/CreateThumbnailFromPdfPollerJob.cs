@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.PollingJobs
         {
             String format = parameters.All[JobKeys.ThumbnailFormat];
 
-            Logger.DebugFormat("Conversion of {0} ({1}) in format {2} starting", parameters.InputDocumentId, parameters.InputBlobId, format);
+            Logger.DebugFormat("Conversion of {0} in format {1} starting", parameters.JobId, format);
 
             var task = new CreateImageFromPdfTask { Logger = Logger };
             var descriptor = currentTenantBlobStore.GetDescriptor(parameters.InputBlobId);

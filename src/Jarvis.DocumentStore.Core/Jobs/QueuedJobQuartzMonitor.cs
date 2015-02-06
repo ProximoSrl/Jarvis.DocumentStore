@@ -11,7 +11,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Jobs;
 using NEventStore;
 using Quartz;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Support;
 

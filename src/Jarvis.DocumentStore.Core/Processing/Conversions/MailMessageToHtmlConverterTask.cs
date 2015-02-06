@@ -4,6 +4,7 @@ using System.Linq;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using MsgReader;
+using System;
 
 namespace Jarvis.DocumentStore.Core.Processing.Conversions
 {
@@ -20,12 +21,12 @@ namespace Jarvis.DocumentStore.Core.Processing.Conversions
             set { _logger = value; }
         }
 
-        public string Convert(BlobId blobId, string pathToEml, string workingFolder)
+        public string Convert(String jobId, string pathToEml, string workingFolder)
         {
             Logger.DebugFormat("Coverting {0} in working folder {1}", pathToEml, workingFolder);
 
             var reader = new Reader();
-            var outFolder = Path.Combine(workingFolder, blobId);
+            var outFolder = Path.Combine(workingFolder, jobId);
 
             Logger.DebugFormat("Creating message working folder is {0}", outFolder);
 

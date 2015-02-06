@@ -273,6 +273,8 @@
     <Compile Include="Jobs\AnalyzeEmailJob.cs" />
     <Compile Include="Jobs\AbstractTikaJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\AnalyzeEmailOutOfProcessJob.cs" />
+    <Compile Include="Jobs\PollerJobParameters.cs" />
+    <Compile Include="Jobs\PollerManager.cs" />
     <Compile Include="Jobs\QueuedJobQuartzMonitor.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaJob.cs" />
     <Compile Include="Jobs\ExtractTextWithTikaNetJob.cs" />
@@ -284,15 +286,6 @@
     <Compile Include="Jobs\OutOfProcessPollingJobs\ImageResizePollerOutOfProcessJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\LibreOfficeToPdfOutOfProcessJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\OutOfProcessBaseJobManager.cs" />
-    <Compile Include="Jobs\PollingJobs\AbstractInProcessPollerFileJob.cs" />
-    <Compile Include="Jobs\PollingJobs\CreateThumbnailFromPdfPollerJob.cs" />
-    <Compile Include="Jobs\PollingJobs\ExtractTextWithTikaPollerJob.cs" />
-    <Compile Include="Jobs\PollingJobs\HtmlToPdfPollerJob.cs" />
-    <Compile Include="Jobs\PollingJobs\ImageResizePollerJob.cs" />
-    <Compile Include="Jobs\PollingJobs\InProcessPollerManager.cs" />
-    <Compile Include="Jobs\PollingJobs\LibreOfficeToPdfPollerJob.cs" />
-    <Compile Include="Jobs\PollingJobs\PollerJobParameters.cs" />
-    <Compile Include="Jobs\PollingJobs\PollerManager.cs" />
     <Compile Include="Jobs\IPollerJob.cs" />
     <Compile Include="Jobs\QueueManager\QueuedJob.cs" />
     <Compile Include="Jobs\QueueManager\QueuedJobStats.cs" />
@@ -409,9 +402,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Storage\Stats\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Jobs\PollingJobs\FolderReadme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

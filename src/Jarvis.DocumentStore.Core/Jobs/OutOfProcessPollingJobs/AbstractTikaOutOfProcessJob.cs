@@ -7,7 +7,7 @@ using com.sun.corba.se.spi.orbutil.threadpool;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-using Jarvis.DocumentStore.Core.Jobs.PollingJobs;
+
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Analyzers;
@@ -48,29 +48,31 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             Boolean result;
             if (!_formats.Contains(parameters.FileExtension))
             {
-                Logger.DebugFormat("Document Id {0} has an extension not supported, setting null content", parameters.InputDocumentId);
-                result = await AddFormatToDocumentFromObject(parameters.TenantId, parameters.InputDocumentId,
+                Logger.DebugFormat("Document for job Id {0} has an extension not supported, setting null content", parameters.JobId);
+                result = await AddFormatToDocumentFromObject(parameters.TenantId,
+                    this.QueueName,
+                    parameters.JobId,
                     new DocumentFormat(DocumentFormats.Content), DocumentContent.NullContent, new Dictionary<string, object>());
                 return result;
             }
 
-            Logger.DebugFormat("Starting tika on content: {0}, file extension {1}", parameters.InputDocumentId, parameters.FileExtension);
+            Logger.DebugFormat("Starting tika on job: {0}, file extension {1}", parameters.JobId, parameters.FileExtension);
             var analyzer = BuildAnalyzer();
-            Logger.DebugFormat("Downloading blob id: {0}, on local path {1}", parameters.InputBlobId, workingFolder);
+            Logger.DebugFormat("Downloading blob for job: {0}, on local path {1}", parameters.JobId, workingFolder);
 
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.InputBlobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
             string content = analyzer.GetHtmlContent(pathToFile) ?? "";
-            Logger.DebugFormat("Finished tika on content: {0}, charsNum {1}", parameters.InputDocumentId, content.Count());
+            Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
 
-            var tikaFileName = Path.Combine(workingFolder, parameters.InputBlobId + ".tika.html");
+            var tikaFileName = Path.Combine(workingFolder, parameters.JobId + ".tika.html");
             File.WriteAllText(tikaFileName, content);
             result =  await AddFormatToDocumentFromFile(
-                parameters.TenantId, 
-                parameters.InputDocumentId, 
+                parameters.TenantId,
+                parameters.JobId,
                 new DocumentFormat(DocumentFormats.Tika), 
                 tikaFileName, 
                 new Dictionary<string, object>());
-            Logger.DebugFormat("Added format {0} to document {1}, result: {2}", DocumentFormats.Tika, parameters.InputDocumentId, result);
+            Logger.DebugFormat("Added format {0} to jobId {1}, result: {2}", DocumentFormats.Tika, parameters.JobId, result);
 
             if (!string.IsNullOrWhiteSpace(content))
             {
@@ -94,11 +96,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
                 result = await AddFormatToDocumentFromObject(
                       parameters.TenantId,
-                      parameters.InputDocumentId,
+                      this.QueueName,
+                      parameters.JobId,
                       new DocumentFormat(DocumentFormats.Content),
                       documentContent,
                       new Dictionary<string, object>());
-                Logger.DebugFormat("Added format {0} to document {1}, result: {2}", DocumentFormats.Content, parameters.InputDocumentId, result);
+                Logger.DebugFormat("Added format {0} to jobId {1}, result: {2}", DocumentFormats.Content, parameters.JobId, result);
             }
             return true;
         }
