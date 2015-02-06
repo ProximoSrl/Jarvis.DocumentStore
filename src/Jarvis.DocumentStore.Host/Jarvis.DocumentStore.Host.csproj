@@ -281,6 +281,7 @@
     <Compile Include="Providers\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Support\ApiInstaller.cs" />
     <Compile Include="Support\DocumentStoreSingleQueueClientBootstrapper.cs" />
+    <Compile Include="Support\MongoFlatMapper.cs" />
     <Compile Include="Support\TenantHandlersInstaller.cs" />
     <Compile Include="Support\ContainerAccessor.cs" />
     <Compile Include="Support\DocumentStoreBootstrapper.cs" />

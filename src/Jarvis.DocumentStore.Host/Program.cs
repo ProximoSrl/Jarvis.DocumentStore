@@ -18,6 +18,7 @@ namespace Jarvis.DocumentStore.Host
         static int Main(string[] args)
         {
             Int32 exitCode;
+            MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
             if (args.Length > 0)
             {
                 //TEMP: Single process executor run

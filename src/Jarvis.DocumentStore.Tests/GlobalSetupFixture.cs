@@ -4,6 +4,7 @@ using CQRS.Shared.IdentitySupport.Serialization;
 using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.Support;
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
@@ -38,13 +39,7 @@ namespace Jarvis.DocumentStore.Tests
             mngr.RegisterIdentitiesFromAssembly(typeof(QueuedJobId).Assembly);
 
             EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
-            StringValueCustomBsonTypeMapper.Register<BlobId>();
-            StringValueCustomBsonTypeMapper.Register<TenantId>();
-            StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
-            StringValueCustomBsonTypeMapper.Register<FileHash>();
-            StringValueCustomBsonTypeMapper.Register<QueuedJobId>();
-
-
+            MongoFlatMapper.EnableFlatMapping();
         }
     }
 }

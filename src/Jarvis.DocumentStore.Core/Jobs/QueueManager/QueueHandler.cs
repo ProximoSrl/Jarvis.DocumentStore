@@ -162,7 +162,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 if (existing) return;
 
                 QueuedJob job = new QueuedJob();
-                var id = new QueuedJobId(Guid.NewGuid().ToString());
+                var id = new QueuedJobId(Guid.NewGuid().ToString() + "_" + streamElement.Filename);
                 job.Id = id;
                 job.SchedulingTimestamp = DateTime.Now;
                 job.StreamId = streamElement.Id;

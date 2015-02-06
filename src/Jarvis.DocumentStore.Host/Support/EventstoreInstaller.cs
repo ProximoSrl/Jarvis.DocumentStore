@@ -133,28 +133,7 @@ namespace Jarvis.DocumentStore.Host.Support
         static void EnableFlatIdMapping(IdentityManager converter)
         {
             EventStoreIdentityBsonSerializer.IdentityConverter = converter;
-            BsonClassMap.RegisterClassMap<DomainEvent>(map =>
-            {
-                map.AutoMap();
-                map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
-            });
-            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
-            EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
-            StringValueCustomBsonTypeMapper.Register<BlobId>();
-            StringValueCustomBsonTypeMapper.Register<TenantId>();
-            StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
-            StringValueCustomBsonTypeMapper.Register<FileHash>();
-
-            //This fails because we need to be super secure that mongo driver never serialized TenantId before
-            //specifying serialization with code.
-            ////needed because we are trying to limit dependencies from mongo, and not want to use Serialization Attributes.
-            //if (!(BsonSerializer.LookupSerializer(typeof(TenantId)) is StringValueBsonSerializer))
-            //{
-            //    BsonSerializer.RegisterSerializer(
-            //        typeof(TenantId),
-            //        new StringValueBsonSerializer()
-            //   );
-            //}
+           
         }
     }
 }
