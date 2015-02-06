@@ -40,7 +40,28 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 Filename = new FileNameWithExtension("test.docx")
             };
             sut.Handle(rm, new TenantId("test"));
-            var collection = _db.GetCollection<QueuedJob>("queue-test");
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0));
+
+        }
+
+        [Test]
+        public void verify_filtering_on_blob_format()
+        {
+            var info = new QueueInfo("test", "", "", "rasterimage");
+            QueueHandler sut = new QueueHandler(info, _db);
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                FormatInfo = new FormatInfo() 
+                {
+                    DocumentFormat = new DocumentFormat("thumb.small"),
+                    BlobId = new BlobId("blob.1"),
+                    PipelineId = new PipelineId("thumbnail")
+                }
+            };
+            sut.Handle(rm, new TenantId("test"));
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0));
 
         }

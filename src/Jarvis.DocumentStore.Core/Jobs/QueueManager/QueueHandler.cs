@@ -25,6 +25,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public String Name { get; private set; }
 
         /// <summary>
+        /// Reason to exists: if you want to implement a series of operation
+        /// where you create a series of pipeline and setup exact sequence with names.
+        /// 
         /// It is a .NET regex
         /// If different from null it contains a filter that permits to queue jobs
         /// only if the <see cref="StreamReadModel" /> is generated from a specific
@@ -39,7 +42,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// </summary>
         public String Extension { get; private set; }
 
-        private String[] _splittedExtension;
+        /// <summary>
+        /// It is a pipe separated list of all the formats the pipeline is interested to
+        /// </summary>
+        public String Formats { get; set; }
+
+        private String[] _splittedExtensions;
+
+        private String[] _splittedFormats;
 
         public Dictionary<String, String> Parameters { get; set; }
 
@@ -53,26 +63,37 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public QueueInfo(
                 String name,
-                String pipeline,
-                String extension
+                String pipeline = null,
+                String extensions = null,
+                String formats = null
             )
         {
             Name = name;
             Pipeline = pipeline;
-            Extension = extension;
+            Extension = extensions;
+            Formats = formats;
             if (!String.IsNullOrEmpty(Extension))
-                _splittedExtension = Extension.Split('|');
+                _splittedExtensions = Extension.Split('|');
             else
-                _splittedExtension = new string[] { };
+                _splittedExtensions = new string[] { };
+
+            if (!String.IsNullOrEmpty(Formats))
+                _splittedFormats = Formats.Split('|');
+            else
+                _splittedFormats = new string[] { };
+
             MaxNumberOfFailure = 5;
             JobLockTimeout = 5;
         }
 
         internal bool ShouldCreateJob(StreamReadModel streamElement)
         {
-            if (_splittedExtension.Length > 0 && !_splittedExtension.Contains(streamElement.Filename.Extension)) 
+            if (_splittedExtensions.Length > 0 && !_splittedExtensions.Contains(streamElement.Filename.Extension)) 
                 return false;
 
+            if (_splittedFormats.Length > 0 && !_splittedFormats.Contains(streamElement.FormatInfo.DocumentFormat.ToString()))
+
+                return false;
             if (!String.IsNullOrEmpty(Pipeline) &&
                 !Regex.IsMatch(streamElement.FormatInfo.PipelineId, Pipeline))
                 return false;
