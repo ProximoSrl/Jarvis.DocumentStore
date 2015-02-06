@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using Castle.Core.Configuration;
 using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Processing;
-using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using MongoDB.Driver;
 using Quartz;
-using Quartz.Impl.MongoDB;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 

@@ -33,36 +33,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
             {
                 TenantContext.Exit();
             }
-
-
-            if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
-            {
-                var blobId = new BlobId(context.JobDetail.JobDataMap.GetString(JobKeys.BlobId));
-                _logger.DebugFormat(
-                    "Starting job {0} on BlobId {1}", 
-                    context.JobDetail.JobType,
-                    blobId
-                );
-
-                _trackerCollection.Save(new JobTracker(
-                    context.JobDetail.Key,
-                    blobId, 
-                    context.JobDetail.JobType.Name
-                ));
-            }
         }
 
         public void JobExecutionVetoed(IJobExecutionContext context)
         {
-            if (typeof(AbstractFileJob).IsAssignableFrom(context.JobDetail.JobType))
-            {
-                var blobId = new BlobId(context.JobDetail.JobDataMap.GetString(JobKeys.BlobId));
-                _logger.DebugFormat(
-                    "Veto on job {0} on BlobId {1}",
-                    context.JobDetail.JobType,
-                    blobId
-                );
-            }
+           
         }
 
         public void JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException)

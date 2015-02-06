@@ -17,29 +17,10 @@ namespace Jarvis.DocumentStore.Host
 
         static int Main(string[] args)
         {
-            Int32 exitCode;
+            if (args.Length > 0) return -1;
             MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
-            if (args.Length > 0)
-            {
-                //TEMP: Single process executor run
-                String dsBaseAddress = FindArgument(args, "/dsuris:");
-                String queueName = FindArgument(args, "/queue:");
-                String handle = FindArgument(args, "/handle:");
-                if (String.IsNullOrEmpty(dsBaseAddress) || String.IsNullOrEmpty(queueName))
-                {
-                    Console.WriteLine("Error in parameters: dsuris={0} queue={1}", dsBaseAddress, queueName);
-                    Console.ReadKey();
-                    return -1;
-                }
-
-                exitCode = SingleJobStart(dsBaseAddress, queueName, handle);
-            }
-            else
-            {
-                var executionExitCode = StandardDocumentStoreStart();
-                exitCode = (Int32) executionExitCode;
-            }
-            return (int)exitCode;
+            var executionExitCode = StandardDocumentStoreStart();
+            return (Int32)executionExitCode;
         }
 
         private static TopshelfExitCode StandardDocumentStoreStart()
@@ -75,48 +56,6 @@ namespace Jarvis.DocumentStore.Host
                 host.SetServiceName("JarvisDocumentStore");
             });
             return exitCode;
-        }
-
-        private static Int32 SingleJobStart(String dsBaseAddress, String queueName, String handle)
-        {
-            //Avoid all sub process to start at the same moment.
-            Thread.Sleep(new Random().Next(1000, 3000));
-            Console.WindowWidth = 140;
-            SetupColors();
-
-            LoadConfiguration();
-
-            try
-            {
-                var resourceDownload = ConfigurationServiceClient.Instance.DownloadResource("log4net.config", monitorForChange: true);
-                if (!resourceDownload)
-                {
-                    Console.Error.WriteLine("Unable to download log4net.config from configuration store");
-                }
-            }
-            catch (System.IO.IOException ex)
-            {
-                //If multiple prcesses starts, we cannot access log4net.config because it can be lcoked.
-            }
-       
-            var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
-            var bootstrapper = new DocumentStoreSingleQueueClientBootstrapper(uri, queueName, handle);
-            var jobStarted = bootstrapper.Start(_documentStoreConfiguration);
-
-            if (jobStarted)
-            {
-                Console.Title = String.Format("Pid {0} - Queue {1} Job Poller Started",
-                    Process.GetCurrentProcess().Id, queueName);
-                Console.WriteLine("JOB STARTED: Press any key to stop the client");
-                Console.ReadKey(); 
-            }
-            else
-            {
-                Console.WriteLine("NO JOB STARTED!!!! CLOSING!!!!");
-                Thread.Sleep(3000);
-                return -1; //code to signal that queue is not supported.
-            }
-            return 0;
         }
 
         static void SetupColors()

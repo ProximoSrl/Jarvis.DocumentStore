@@ -357,37 +357,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Debug.WriteLine("Done");
         }
 
-        [Test]
-        public async void should_create_and_download_content_format()
-        {
-            var handle = DocumentHandle.FromString("Pdf_3");
-
-            await _documentStoreClient.UploadAsync(
-                TestConfig.PathToDocumentPdf,
-                handle
-            );
-
-            Thread.Sleep(500);
-
-            var accessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
-            var tenantId = new TenantId(TestConfig.Tenant);
-            var tenant = accessor.GetTenant(tenantId);
-            var job = tenant.Container.Resolve<ExtractTextWithTikaJob>();
-            job.TenantId = tenantId;
-
-            job.Execute(TestJobHelper.BuildContext(job, new Dictionary<string, object>{
-                {JobKeys.TenantId, TestConfig.Tenant},
-                {JobKeys.DocumentId, "Document_1"},
-                {JobKeys.BlobId, "original.1"},
-                {JobKeys.Format, "pdf"},
-                {JobKeys.FileExtension, "pdf"},
-                {JobKeys.PipelineId, "tika"},
-            }));
-            Thread.Sleep(500);
-
-            var content = await _documentStoreClient.GetContentAsync(handle);
-            Assert.NotNull(content);
-            Assert.AreEqual(1, content.Pages.Length);
-        }
+      
     }
 }

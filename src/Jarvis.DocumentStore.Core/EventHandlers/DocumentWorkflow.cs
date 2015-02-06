@@ -6,7 +6,6 @@ using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
 using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing.Pipeline;
 using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
@@ -22,14 +21,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         private readonly ICommandBus _commandBus;
         private readonly IBlobStore _blobStore;
         private readonly DeduplicationHelper _deduplicationHelper;
-        readonly IPipelineManager _pipelineManager;
 
-        public DocumentWorkflow(ICommandBus commandBus, IBlobStore blobStore, DeduplicationHelper deduplicationHelper, IPipelineManager pipelineManager)
+        public DocumentWorkflow(ICommandBus commandBus, IBlobStore blobStore, DeduplicationHelper deduplicationHelper)
         {
             _commandBus = commandBus;
             _blobStore = blobStore;
             _deduplicationHelper = deduplicationHelper;
-            _pipelineManager = pipelineManager;
         }
 
         public override void Drop()
@@ -50,7 +47,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             );
 
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
-            _pipelineManager.Start((DocumentId)e.AggregateId, descriptor, null);
         }
 
         public void On(DocumentHasBeenDeduplicated e)
@@ -74,12 +70,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             Logger.DebugFormat("Next conversion step for document {0} {1}", e.BlobId, descriptor.FileNameWithExtension);
-            _pipelineManager.FormatAvailable(
-                e.CreatedBy,
-                (DocumentId)e.AggregateId,
-                e.DocumentFormat,
-                descriptor
-                );
         }
 
         public void On(DocumentCreated e)
