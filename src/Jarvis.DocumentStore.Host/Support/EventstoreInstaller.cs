@@ -106,6 +106,9 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             container.Register(
                 Component
+                    .For<IDispatchCommits>()
+                    .ImplementedBy<NullDispatcher>(),
+                Component
                     .For<ICQRSConstructAggregates>()
                     .ImplementedBy<AggregateFactory>(),
                 Component
