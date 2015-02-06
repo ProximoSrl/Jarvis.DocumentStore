@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
@@ -8,20 +7,13 @@ using Castle.Facilities.Startable;
 using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
-using Castle.Services.Logging.Log4netIntegration;
 using Castle.Windsor;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.Messages;
-using CQRS.Shared.MultitenantSupport;
-using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
-using Jarvis.DocumentStore.Core.Support;
-using Microsoft.Owin.Hosting;
-using Rebus.Logging;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.Core.Support;
 
-namespace Jarvis.DocumentStore.Host.Support
+namespace Jarvis.DocumentStore.Jobs.Support
 {
     public class DocumentStoreSingleQueueClientBootstrapper
     {

@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-
+using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Pdf;
-using Jarvis.DocumentStore.Core.Storage;
 using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
 
-namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
+namespace Jarvis.DocumentStore.Jobs.Jobs
 {
     public class CreateThumbnailFromPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
@@ -35,9 +33,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 var convertParams = new CreatePdfImageTaskParams()
                 {
 
-                    Dpi = parameters.All.GetIntOrDefault(JobKeys.Dpi, 150),
-                    FromPage = parameters.All.GetIntOrDefault(JobKeys.PagesFrom, 1),
-                    Pages = parameters.All.GetIntOrDefault(JobKeys.PagesCount, 1),
+                    Dpi = parameters.GetIntOrDefault(JobKeys.Dpi, 150),
+                    FromPage = parameters.GetIntOrDefault(JobKeys.PagesFrom, 1),
+                    Pages = parameters.GetIntOrDefault(JobKeys.PagesCount, 1),
                     Format = (CreatePdfImageTaskParams.ImageFormat)Enum.Parse(typeof(CreatePdfImageTaskParams.ImageFormat), format, true)
                 };
 

@@ -1,15 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Castle.MicroKernel.Registration;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-
+using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Tools;
-using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Support;
 
-namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
+namespace Jarvis.DocumentStore.Jobs.Jobs
 {
     public class ImageResizePollerOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {

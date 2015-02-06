@@ -1,24 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
-using com.sun.corba.se.spi.orbutil.threadpool;
-using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-
+using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Processing.Analyzers;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
-using System.Linq;
 using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
 
-namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
+namespace Jarvis.DocumentStore.Jobs.Jobs
 {
     public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
@@ -41,7 +36,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             }
         }
 
-        protected async override Task<Boolean> OnPolling(
+        protected async override Task<bool> OnPolling(
             PollerJobParameters parameters,
             String workingFolder)
         {

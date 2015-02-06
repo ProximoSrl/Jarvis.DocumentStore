@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-
+using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing.Conversions;
-using Jarvis.DocumentStore.Core.Storage;
 using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
 
-namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
+namespace Jarvis.DocumentStore.Jobs.Jobs
 {
     /// <summary>
     /// Converts a file to pdf using headless libreoffice

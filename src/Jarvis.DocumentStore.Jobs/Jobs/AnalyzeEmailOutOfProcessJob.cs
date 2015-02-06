@@ -1,15 +1,13 @@
-﻿using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing;
-using Jarvis.DocumentStore.Core.Processing.Conversions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Processing.Conversions;
 using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
 
-namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
+namespace Jarvis.DocumentStore.Jobs.Jobs
 {
     public class AnalyzeEmailOutOfProcessJob: AbstractOutOfProcessPollerFileJob
     {
