@@ -1,3 +1,3 @@
 .\.nuget\nuget restore -NonInteractive
-cd .\cqrs
+cd .\Jarvis.Framework
 call restore_packages.cmd
