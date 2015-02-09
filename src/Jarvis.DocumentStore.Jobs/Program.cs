@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,40 +19,48 @@ namespace Jarvis.DocumentStore.Jobs
 
         static int Main(string[] args)
         {
-            Int32 exitCode;
-            if (args.Length > 0)
+            try
             {
-                //TEMP: Single process executor run
-                String dsBaseAddress = FindArgument(args, "/dsuris:");
-                String queueName = FindArgument(args, "/queue:");
-                String handle = FindArgument(args, "/handle:", "Default");
-                if (String.IsNullOrEmpty(dsBaseAddress) || String.IsNullOrEmpty(queueName))
+                Int32 exitCode;
+                if (args.Length > 0)
                 {
-                    Console.WriteLine("Error in parameters: dsuris={0} queue={1}", dsBaseAddress, queueName);
-                    Console.ReadKey();
-                    return -1;
+                    //TEMP: Single process executor run
+                    String dsBaseAddress = FindArgument(args, "/dsuris:");
+                    String queueName = FindArgument(args, "/queue:");
+                    String handle = FindArgument(args, "/handle:", "Default");
+                    if (String.IsNullOrEmpty(dsBaseAddress) || String.IsNullOrEmpty(queueName))
+                    {
+                        Console.WriteLine("Error in parameters: dsuris={0} queue={1}", dsBaseAddress, queueName);
+                        Console.ReadKey();
+                        return -1;
+                    }
+
+                    exitCode = SingleJobStart(dsBaseAddress, queueName, handle);
+                    return exitCode;
                 }
 
-                exitCode = SingleJobStart(dsBaseAddress, queueName, handle);
-                return exitCode;
+                Console.WriteLine("Wrong command line. This utilities expetcs following parameters:");
+                Console.WriteLine("/dsuris:http://localhost:5123 - List of addresses (comma separated) of document store uris.");
+                Console.WriteLine("/queue:tika - Name of the queue");
+                Console.WriteLine("/handle:xxxxx - Optional, a string that identify this worker");
+
+                Console.ReadKey();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_lastError.txt");
+                File.WriteAllText(fileName, ex.ToString());
+                throw;
             }
            
-               Console.WriteLine("Wrong command line. This utilities expetcs following parameters:");
-               Console.WriteLine("/dsuris:http://localhost:5123 - List of addresses (comma separated) of document store uris.");
-               Console.WriteLine("/queue:tika - Name of the queue");
-               Console.WriteLine("/handle:xxxxx - Optional, a string that identify this worker");
-
-            Console.ReadKey();
-            return 0;
         }
 
         private static Int32 SingleJobStart(String dsBaseAddress, String queueName, String handle)
         {
             //Avoid all sub process to start at the same moment.
             Thread.Sleep(new Random().Next(1000, 3000));
-            Console.WindowWidth = 140;
             SetupColors();
-
             LoadConfiguration();
 
             try
@@ -91,6 +100,7 @@ namespace Jarvis.DocumentStore.Jobs
         {
             if (!Environment.UserInteractive)
                 return;
+            Console.WindowWidth = 140;
             Console.Title = "JARVIS :: Document Store Service";
             Console.BackgroundColor = ConsoleColor.DarkBlue;
             Console.Clear();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
@@ -17,10 +18,19 @@ namespace Jarvis.DocumentStore.Host
 
         static int Main(string[] args)
         {
-            if (args.Length > 0) return -1;
-            MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
-            var executionExitCode = StandardDocumentStoreStart();
-            return (Int32)executionExitCode;
+            try
+            {
+                MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
+                var executionExitCode = StandardDocumentStoreStart();
+                return (Int32)executionExitCode;
+            }
+            catch (Exception ex)
+            {
+                var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_lastError.txt");
+                File.WriteAllText(fileName, ex.ToString());
+                throw;
+            }
+          
         }
 
         private static TopshelfExitCode StandardDocumentStoreStart()
@@ -43,7 +53,6 @@ namespace Jarvis.DocumentStore.Host
 
                 host.Service<DocumentStoreBootstrapper>(service =>
                 {
-                    var uri = new Uri(ConfigurationManager.AppSettings["endPoint"]);
                     service.ConstructUsing(() => new DocumentStoreBootstrapper());
                     service.WhenStarted(s => s.Start(_documentStoreConfiguration));
                     service.WhenStopped(s => s.Stop());

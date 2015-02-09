@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Castle.Facilities.Logging;
 using Castle.Services.Logging.Log4netIntegration;
@@ -36,6 +37,13 @@ namespace Jarvis.DocumentStore.Core.Support
         {
             f.LogUsing(new ExtendedLog4netFactory("log4net.config"));
         }
+
+        public JobsManagementConfiguration JobsManagement { get; set; }
+    }
+
+    public class JobsManagementConfiguration
+    {
+        public Boolean WindowVisible { get; set; }
     }
 
     public enum JobModes 

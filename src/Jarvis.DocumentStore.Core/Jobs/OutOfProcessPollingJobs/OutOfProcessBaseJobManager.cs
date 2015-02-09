@@ -8,6 +8,7 @@ using Castle.Core;
 using System.Management;
 using System.Text;
 using System.IO;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
@@ -19,6 +20,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
     public class OutOfProcessBaseJobManager : IPollerJobManager
     {
         private Boolean _started = false;
+
+        private DocumentStoreConfiguration _configuration;
 
         private class ProcessInfo
         {
@@ -33,8 +36,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public ILogger Logger { get; set; }
 
-        public OutOfProcessBaseJobManager()
+        public OutOfProcessBaseJobManager(DocumentStoreConfiguration configuration)
         {
+            _configuration = configuration;
             activeProcesses = new Dictionary<string, ProcessInfo>();
             Logger = NullLogger.Instance;
         }
@@ -62,9 +66,18 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 process.StartInfo.Arguments = "/dsuris:" + docStoreAddresses.Aggregate((s1, s2) => s1 + "|" + s2) +
                     " /queue:" + queueId +
                     " /handle:" + processHandle;
-                process.StartInfo.CreateNoWindow = false;
+
                 process.StartInfo.UseShellExecute = true;
-                process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                if (_configuration.JobsManagement.WindowVisible && Environment.UserInteractive)
+                {
+                    process.StartInfo.CreateNoWindow = false;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                }
+                else
+                {
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                }
                 process.StartInfo.RedirectStandardOutput = false;
                 process.EnableRaisingEvents = true;
                 Boolean started = process.Start();
