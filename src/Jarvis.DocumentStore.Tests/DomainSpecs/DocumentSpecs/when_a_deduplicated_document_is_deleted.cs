@@ -1,4 +1,3 @@
-using CQRS.TestHelpers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;

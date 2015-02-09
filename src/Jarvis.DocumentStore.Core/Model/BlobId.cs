@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using CQRS.Shared.Domain;
-using CQRS.Shared.Domain.Serialization;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.Framework.Shared.Domain;
+using Jarvis.Framework.Shared.Domain.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 

@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CQRS.Kernel.Events;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.Framework.Kernel.Events;
 using NEventStore;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers

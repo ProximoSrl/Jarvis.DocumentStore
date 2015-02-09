@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Shared.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {

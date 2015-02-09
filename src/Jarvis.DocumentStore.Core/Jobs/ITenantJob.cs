@@ -1,4 +1,4 @@
-using CQRS.Shared.MultitenantSupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs

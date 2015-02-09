@@ -3,8 +3,8 @@ using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Support

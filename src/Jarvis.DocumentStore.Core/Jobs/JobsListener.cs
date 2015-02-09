@@ -1,8 +1,8 @@
 ﻿using System;
 using Castle.Core.Logging;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;

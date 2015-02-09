@@ -3,7 +3,6 @@ using Castle.Core.Logging;
 using Castle.Facilities.QuartzIntegration;
 using Castle.MicroKernel.Facilities;
 using Castle.MicroKernel.Registration;
-using CQRS.Kernel.MultitenantSupport;
 using Quartz;
 using Quartz.Job;
 using Quartz.Spi;

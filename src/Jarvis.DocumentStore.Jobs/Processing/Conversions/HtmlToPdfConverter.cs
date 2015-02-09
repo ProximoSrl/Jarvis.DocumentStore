@@ -2,11 +2,11 @@
 using System.Drawing.Printing;
 using System.IO;
 using Castle.Core.Logging;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using TuesPechkin;
 using System.IO.Compression;
 

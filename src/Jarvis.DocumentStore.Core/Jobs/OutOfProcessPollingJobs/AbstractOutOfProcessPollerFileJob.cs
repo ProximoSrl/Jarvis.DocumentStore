@@ -7,9 +7,6 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
 using Castle.Core.Logging;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.MultitenantSupport;
-
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
@@ -18,13 +15,15 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.Domain.Serialization;
+using Jarvis.Framework.Shared.Messages;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
-using CQRS.Shared.Domain.Serialization;
 using System.Runtime.Serialization.Formatters;
-using CQRS.Shared.Messages;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {

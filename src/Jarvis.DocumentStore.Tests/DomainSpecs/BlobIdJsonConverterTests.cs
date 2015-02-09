@@ -1,6 +1,6 @@
-using CQRS.Shared.Domain.Serialization;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Tests.Misc;
+using Jarvis.Framework.Shared.Domain.Serialization;
 using Newtonsoft.Json;
 using NUnit.Framework;
 

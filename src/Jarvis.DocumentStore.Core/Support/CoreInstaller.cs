@@ -3,11 +3,9 @@ using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using CQRS.Kernel.Commands;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.Commands;
-using CQRS.Shared.Factories;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.Framework.Kernel.Commands;
+using Jarvis.Framework.Shared.Commands;
 using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.Support

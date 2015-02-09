@@ -1,5 +1,5 @@
-using CQRS.Kernel.Commands;
-using CQRS.Shared.Commands;
+using Jarvis.Framework.Kernel.Commands;
+using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {

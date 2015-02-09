@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Routing;
 using Castle.Core.Logging;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.MultitenantSupport;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Host.Support
 {

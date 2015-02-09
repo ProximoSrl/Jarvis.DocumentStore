@@ -1,10 +1,10 @@
 ﻿using Castle.Core;
 using Castle.Core.Logging;
-using CQRS.Shared.MultitenantSupport;
-using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.Framework.Shared.MultitenantSupport;
+using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using System;

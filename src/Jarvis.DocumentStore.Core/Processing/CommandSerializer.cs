@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization.Formatters;
-using CQRS.Shared.Commands;
-using CQRS.Shared.Domain.Serialization;
-using CQRS.Shared.Messages;
+using Jarvis.Framework.Shared.Commands;
+using Jarvis.Framework.Shared.Domain.Serialization;
+using Jarvis.Framework.Shared.Messages;
 using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Core.Processing

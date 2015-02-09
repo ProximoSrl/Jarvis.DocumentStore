@@ -1,11 +1,10 @@
-﻿using CQRS.Shared.Domain.Serialization;
-using CQRS.Shared.IdentitySupport;
-using CQRS.Shared.IdentitySupport.Serialization;
-using CQRS.Shared.MultitenantSupport;
-using Jarvis.DocumentStore.Core.Domain.Document;
+﻿using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.IdentitySupport.Serialization;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 using System;

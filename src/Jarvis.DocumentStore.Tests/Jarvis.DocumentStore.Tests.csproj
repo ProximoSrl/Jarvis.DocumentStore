@@ -317,21 +317,21 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\cqrs\CQRS.Kernel\CQRS.Kernel.csproj">
+    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Kernel\Jarvis.Framework.Kernel.csproj">
       <Project>{203AD69F-E839-46CF-A25A-0ED22EA1ABF8}</Project>
-      <Name>CQRS.Kernel</Name>
+      <Name>Jarvis.Framework.Kernel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\cqrs\CQRS.Shared\CQRS.Shared.csproj">
+    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Shared\Jarvis.Framework.Shared.csproj">
       <Project>{70B179ED-C419-4782-B080-0D1678C90279}</Project>
-      <Name>CQRS.Shared</Name>
+      <Name>Jarvis.Framework.Shared</Name>
     </ProjectReference>
-    <ProjectReference Include="..\cqrs\CQRS.TestHelpers\CQRS.TestHelpers.csproj">
+    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.TestHelpers\Jarvis.Framework.TestHelpers.csproj">
       <Project>{DF7EF8CC-CDA7-4299-8769-62FDD1654FB9}</Project>
-      <Name>CQRS.TestHelpers</Name>
+      <Name>Jarvis.Framework.TestHelpers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\cqrs\CQRS.Tests\CQRS.Tests.csproj">
+    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Tests\Jarvis.Framework.Tests.csproj">
       <Project>{D5D90909-CFEF-443E-BDDE-318FE638E5C0}</Project>
-      <Name>CQRS.Tests</Name>
+      <Name>Jarvis.Framework.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">
       <Project>{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}</Project>

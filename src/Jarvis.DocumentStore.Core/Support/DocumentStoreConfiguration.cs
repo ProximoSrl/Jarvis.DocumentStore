@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Castle.Facilities.Logging;
 using Castle.Services.Logging.Log4netIntegration;
-using CQRS.Kernel.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Jarvis.Framework.Kernel.MultitenantSupport;
 
 
 namespace Jarvis.DocumentStore.Core.Support

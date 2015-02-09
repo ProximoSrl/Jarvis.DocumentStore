@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using Quartz;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Shared.Jobs;
-using CQRS.Shared.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {

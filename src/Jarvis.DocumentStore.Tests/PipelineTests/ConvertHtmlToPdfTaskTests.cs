@@ -1,6 +1,4 @@
 ﻿using Castle.Core.Logging;
-using CQRS.Shared.IdentitySupport;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
@@ -8,6 +6,8 @@ using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Jobs.Processing.Conversions;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests

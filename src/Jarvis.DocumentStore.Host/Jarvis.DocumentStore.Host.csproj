@@ -232,13 +232,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\cqrs\CQRS.Kernel\CQRS.Kernel.csproj">
+    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Kernel\Jarvis.Framework.Kernel.csproj">
       <Project>{203ad69f-e839-46cf-a25a-0ed22ea1abf8}</Project>
-      <Name>CQRS.Kernel</Name>
+      <Name>Jarvis.Framework.Kernel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\cqrs\CQRS.Shared\CQRS.Shared.csproj">
+    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Shared\Jarvis.Framework.Shared.csproj">
       <Project>{70b179ed-c419-4782-b080-0d1678c90279}</Project>
-      <Name>CQRS.Shared</Name>
+      <Name>Jarvis.Framework.Shared</Name>
     </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Core\Jarvis.DocumentStore.Core.csproj">
       <Project>{A03810AE-2905-4CEE-A5D9-5E25C9A6309A}</Project>

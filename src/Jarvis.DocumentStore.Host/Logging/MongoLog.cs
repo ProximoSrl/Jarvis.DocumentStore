@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
 using System.Linq;
+using Jarvis.Framework.Kernel.MultitenantSupport;
 using log4net.Core;
 using log4net.Util;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
-using CQRS.Kernel.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Host.Logging
 {

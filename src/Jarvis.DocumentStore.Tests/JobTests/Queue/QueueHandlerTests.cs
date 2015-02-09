@@ -2,6 +2,7 @@
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver;
 using NSubstitute;
 using NUnit.Framework;
@@ -11,17 +12,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Driver.Linq;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using MongoDB.Bson;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Jobs;
-using CQRS.Shared.IdentitySupport;
-using CQRS.Shared.IdentitySupport.Serialization;
-using CQRS.Shared.Domain.Serialization;
 using MongoDB.Bson.Serialization;
-using CQRS.Shared.Events;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {

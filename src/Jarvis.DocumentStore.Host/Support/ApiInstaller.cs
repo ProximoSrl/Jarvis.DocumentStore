@@ -2,7 +2,6 @@
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using CQRS.Kernel.MultitenantSupport;
 using Jarvis.DocumentStore.Host.Controllers;
 
 namespace Jarvis.DocumentStore.Host.Support

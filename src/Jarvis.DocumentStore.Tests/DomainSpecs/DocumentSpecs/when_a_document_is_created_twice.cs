@@ -1,7 +1,7 @@
 using System;
-using CQRS.Kernel.Engine;
-using CQRS.TestHelpers;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.Framework.Kernel.Engine;
+using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs

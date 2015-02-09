@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
-using CQRS.Kernel.Events;
-using CQRS.Kernel.ProjectionEngine;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.Framework.Kernel.Events;
+using Jarvis.Framework.Kernel.ProjectionEngine;
 using MongoDB.Driver.Builders;
 using NEventStore;
 

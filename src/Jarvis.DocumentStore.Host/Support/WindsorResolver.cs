@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Dependencies;
 using Castle.Windsor;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.MultitenantSupport;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
 
 namespace Jarvis.DocumentStore.Host.Support
 {

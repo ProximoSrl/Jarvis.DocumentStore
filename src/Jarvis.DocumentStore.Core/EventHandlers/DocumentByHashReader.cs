@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver.Builders;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers

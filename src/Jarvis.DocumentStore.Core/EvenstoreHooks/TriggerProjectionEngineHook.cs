@@ -5,9 +5,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Kernel.ProjectionEngine;
-using CQRS.Shared.MultitenantSupport;
+using Jarvis.Framework.Kernel.ProjectionEngine;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using NEventStore;
 
 namespace Jarvis.DocumentStore.Core.EvenstoreHooks

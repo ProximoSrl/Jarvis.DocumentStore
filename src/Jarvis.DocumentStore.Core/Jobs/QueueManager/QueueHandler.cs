@@ -1,6 +1,6 @@
-﻿using CQRS.Shared.MultitenantSupport;
-using Jarvis.DocumentStore.Core.ReadModel;
+﻿using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;

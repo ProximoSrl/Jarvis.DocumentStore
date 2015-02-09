@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Core.Domain.Handle.Commands
 {

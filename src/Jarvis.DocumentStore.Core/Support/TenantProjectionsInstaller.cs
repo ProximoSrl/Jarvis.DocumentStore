@@ -3,16 +3,15 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using CQRS.Kernel.Engine.Snapshots;
-using CQRS.Kernel.Events;
-using CQRS.Kernel.ProjectionEngine;
-using CQRS.Kernel.ProjectionEngine.Client;
-using CQRS.Kernel.ProjectionEngine.RecycleBin;
-using CQRS.Shared.Messages;
-using CQRS.Shared.MultitenantSupport;
-using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.Framework.Kernel.Events;
+using Jarvis.Framework.Kernel.ProjectionEngine;
+using Jarvis.Framework.Kernel.ProjectionEngine.Client;
+using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
+using Jarvis.Framework.Shared.Messages;
+using Jarvis.Framework.Shared.MultitenantSupport;
+using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.Support

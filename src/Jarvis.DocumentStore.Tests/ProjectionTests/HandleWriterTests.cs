@@ -1,13 +1,12 @@
-using CQRS.Kernel.Commands;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.MultitenantSupport;
-using CQRS.Tests.DomainTests;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
+using Jarvis.Framework.Tests.DomainTests;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests

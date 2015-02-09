@@ -1,6 +1,6 @@
 using System.ComponentModel;
-using CQRS.Shared.Domain;
-using CQRS.Shared.Domain.Serialization;
+using Jarvis.Framework.Shared.Domain;
+using Jarvis.Framework.Shared.Domain.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document

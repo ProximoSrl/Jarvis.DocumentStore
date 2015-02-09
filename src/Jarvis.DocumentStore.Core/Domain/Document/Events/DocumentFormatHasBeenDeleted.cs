@@ -1,4 +1,4 @@
-using CQRS.Shared.Events;
+using Jarvis.Framework.Shared.Events;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 {

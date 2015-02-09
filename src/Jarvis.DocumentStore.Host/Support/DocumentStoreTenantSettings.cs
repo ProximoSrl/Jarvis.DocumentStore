@@ -1,6 +1,6 @@
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.ConfigurationService.Client;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Host.Support

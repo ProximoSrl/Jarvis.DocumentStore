@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CQRS.Kernel.Engine;
-using CQRS.Shared.ValueObjects;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Kernel.Engine;
+using Jarvis.Framework.Shared.IdentitySupport;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {

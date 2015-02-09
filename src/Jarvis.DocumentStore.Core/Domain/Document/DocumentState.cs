@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using CQRS.Kernel.Engine;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Kernel.Engine;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {

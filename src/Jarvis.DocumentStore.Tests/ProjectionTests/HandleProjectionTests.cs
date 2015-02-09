@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CQRS.Shared.Domain.Serialization;
-using CQRS.Shared.IdentitySupport;
-using CQRS.Shared.IdentitySupport.Serialization;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Shared.Domain.Serialization;
+using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests

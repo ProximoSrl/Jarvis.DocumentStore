@@ -1,6 +1,6 @@
 using System.Configuration;
-using CQRS.Kernel.MultitenantSupport;
-using CQRS.Shared.MultitenantSupport;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver.GridFS;
 
 namespace Jarvis.DocumentStore.Tests.Support

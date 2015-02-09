@@ -1,7 +1,7 @@
-﻿using CQRS.Shared.MultitenantSupport;
-using Jarvis.DocumentStore.Core.Jobs;
+﻿using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;

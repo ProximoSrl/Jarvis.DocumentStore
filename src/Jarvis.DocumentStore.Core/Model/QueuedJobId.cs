@@ -1,5 +1,5 @@
-﻿using CQRS.Shared.Domain;
-using CQRS.Shared.Domain.Serialization;
+﻿using Jarvis.Framework.Shared.Domain;
+using Jarvis.Framework.Shared.Domain.Serialization;
 using log4net.Util.TypeConverters;
 using MongoDB.Bson.Serialization.Attributes;
 using System;

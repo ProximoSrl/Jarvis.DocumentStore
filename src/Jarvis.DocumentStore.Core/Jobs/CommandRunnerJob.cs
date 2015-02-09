@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using Castle.Core.Logging;
-using CQRS.Kernel.Commands;
-using CQRS.Kernel.Engine;
-using CQRS.Kernel.Store;
-using CQRS.Shared.Commands;
-using CQRS.Shared.MultitenantSupport;
 using Jarvis.DocumentStore.Core.Processing;
+using Jarvis.Framework.Kernel.Commands;
+using Jarvis.Framework.Kernel.Engine;
+using Jarvis.Framework.Kernel.Store;
+using Jarvis.Framework.Shared.Commands;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs

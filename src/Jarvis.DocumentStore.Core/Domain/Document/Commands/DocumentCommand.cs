@@ -1,4 +1,4 @@
-﻿using CQRS.Shared.Commands;
+﻿using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {

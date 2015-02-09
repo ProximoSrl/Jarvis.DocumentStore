@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Castle.Core.Logging;
-using CQRS.Shared.IdentitySupport;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
@@ -15,6 +14,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Shared.IdentitySupport;
 using Newtonsoft.Json;
 using NUnit.Framework;
 

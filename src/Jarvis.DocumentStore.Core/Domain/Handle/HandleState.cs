@@ -1,7 +1,7 @@
-using CQRS.Kernel.Engine;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Kernel.Engine;
 
 namespace Jarvis.DocumentStore.Core.Domain.Handle
 {

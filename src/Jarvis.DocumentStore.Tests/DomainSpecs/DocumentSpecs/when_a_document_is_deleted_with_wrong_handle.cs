@@ -1,8 +1,8 @@
 using System;
-using CQRS.Kernel.Engine;
-using CQRS.TestHelpers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Kernel.Engine;
+using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
 using NUnit.Framework;
 

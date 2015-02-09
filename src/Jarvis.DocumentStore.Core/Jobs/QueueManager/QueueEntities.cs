@@ -1,6 +1,6 @@
-﻿using CQRS.Shared.MultitenantSupport;
-using CQRS.Shared.ReadModel;
-using Jarvis.DocumentStore.Core.ReadModel;
+﻿using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.Framework.Shared.MultitenantSupport;
+using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using System;

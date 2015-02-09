@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
-using CQRS.Kernel.Commands;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.Framework.Kernel.Commands;
 
 namespace Jarvis.DocumentStore.Host.Commands
 {

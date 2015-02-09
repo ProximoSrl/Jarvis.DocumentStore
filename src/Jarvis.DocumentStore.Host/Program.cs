@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Configuration;
 using System.Linq;
-using CQRS.Kernel.ProjectionEngine.Client;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.Framework.Kernel.ProjectionEngine.Client;
 using Topshelf;
 using Jarvis.ConfigurationService.Client;
 using System.Threading;

@@ -8,13 +8,11 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using CQRS.Kernel.Commands;
-using CQRS.Shared.Commands;
-using CQRS.Shared.MultitenantSupport;
-using CQRS.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Host.Commands;
+using Jarvis.Framework.Kernel.Commands;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Support

@@ -1,5 +1,3 @@
-using CQRS.Kernel.Events;
-using CQRS.Shared.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
@@ -7,6 +5,8 @@ using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
 using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.Framework.Kernel.Events;
+using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
