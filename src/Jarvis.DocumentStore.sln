@@ -14,17 +14,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Host",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Client", "Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj", "{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CQRS", "CQRS", "{1D4A10A7-136D-4D1B-A7AE-82648AD6162B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jarvis.Framework", "Jarvis.Framework", "{1D4A10A7-136D-4D1B-A7AE-82648AD6162B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CQRS.Shared", "cqrs\CQRS.Shared\CQRS.Shared.csproj", "{70B179ED-C419-4782-B080-0D1678C90279}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.Shared", "Jarvis.Framework\Jarvis.Framework.Shared\Jarvis.Framework.Shared.csproj", "{70B179ED-C419-4782-B080-0D1678C90279}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CQRS.Kernel", "cqrs\CQRS.Kernel\CQRS.Kernel.csproj", "{203AD69F-E839-46CF-A25A-0ED22EA1ABF8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.Kernel", "Jarvis.Framework\Jarvis.Framework.Kernel\Jarvis.Framework.Kernel.csproj", "{203AD69F-E839-46CF-A25A-0ED22EA1ABF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CQRS.TestHelpers", "cqrs\CQRS.TestHelpers\CQRS.TestHelpers.csproj", "{DF7EF8CC-CDA7-4299-8769-62FDD1654FB9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.TestHelpers", "Jarvis.Framework\Jarvis.Framework.TestHelpers\Jarvis.Framework.TestHelpers.csproj", "{DF7EF8CC-CDA7-4299-8769-62FDD1654FB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CQRS.Tests", "cqrs\CQRS.Tests\CQRS.Tests.csproj", "{D5D90909-CFEF-443E-BDDE-318FE638E5C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.Tests", "Jarvis.Framework\Jarvis.Framework.Tests\Jarvis.Framework.Tests.csproj", "{D5D90909-CFEF-443E-BDDE-318FE638E5C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CQRS.Bus.Rebus.Integration", "cqrs\CQRS.Bus.Rebus.Integration\CQRS.Bus.Rebus.Integration.csproj", "{804D09EF-0E40-4C7C-8064-ADD92B7DE03F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.Bus.Rebus.Integration", "Jarvis.Framework\Jarvis.Framework.Bus.Rebus.Integration\Jarvis.Framework.Bus.Rebus.Integration.csproj", "{804D09EF-0E40-4C7C-8064-ADD92B7DE03F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6DDCA900-57CE-4C53-9CBF-B3ED8E7968E8}"
 	ProjectSection(SolutionItems) = preProject

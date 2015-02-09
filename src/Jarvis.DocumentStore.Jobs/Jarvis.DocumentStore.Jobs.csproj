@@ -248,11 +248,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Kernel\Jarvis.Framework.Kernel.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Kernel\Jarvis.Framework.Kernel.csproj">
       <Project>{203AD69F-E839-46CF-A25A-0ED22EA1ABF8}</Project>
       <Name>Jarvis.Framework.Kernel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Shared\Jarvis.Framework.Shared.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Shared\Jarvis.Framework.Shared.csproj">
       <Project>{70B179ED-C419-4782-B080-0D1678C90279}</Project>
       <Name>Jarvis.Framework.Shared</Name>
     </ProjectReference>

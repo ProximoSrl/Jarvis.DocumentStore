@@ -222,11 +222,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Kernel\Jarvis.Framework.Kernel.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Kernel\Jarvis.Framework.Kernel.csproj">
       <Project>{203ad69f-e839-46cf-a25a-0ed22ea1abf8}</Project>
       <Name>Jarvis.Framework.Kernel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Shared\Jarvis.Framework.Shared.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Shared\Jarvis.Framework.Shared.csproj">
       <Project>{70b179ed-c419-4782-b080-0d1678c90279}</Project>
       <Name>Jarvis.Framework.Shared</Name>
     </ProjectReference>

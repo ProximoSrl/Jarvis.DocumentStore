@@ -145,9 +145,10 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Machine.Specifications, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Machine.Specifications, Version=0.8.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Machine.Specifications.0.9.1\lib\net45\Machine.Specifications.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Machine.Specifications.Clr4, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -317,19 +318,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Kernel\Jarvis.Framework.Kernel.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Kernel\Jarvis.Framework.Kernel.csproj">
       <Project>{203AD69F-E839-46CF-A25A-0ED22EA1ABF8}</Project>
       <Name>Jarvis.Framework.Kernel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Shared\Jarvis.Framework.Shared.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Shared\Jarvis.Framework.Shared.csproj">
       <Project>{70B179ED-C419-4782-B080-0D1678C90279}</Project>
       <Name>Jarvis.Framework.Shared</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.TestHelpers\Jarvis.Framework.TestHelpers.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.TestHelpers\Jarvis.Framework.TestHelpers.csproj">
       <Project>{DF7EF8CC-CDA7-4299-8769-62FDD1654FB9}</Project>
       <Name>Jarvis.Framework.TestHelpers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Jarvis\src\CQRS\CQRS.Tests\Jarvis.Framework.Tests.csproj">
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Tests\Jarvis.Framework.Tests.csproj">
       <Project>{D5D90909-CFEF-443E-BDDE-318FE638E5C0}</Project>
       <Name>Jarvis.Framework.Tests</Name>
     </ProjectReference>
