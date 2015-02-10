@@ -25,6 +25,7 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 using System.Runtime.Serialization.Formatters;
 
+
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
     public abstract class AbstractOutOfProcessPollerFileJob : IPollerJob
@@ -125,6 +126,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             _pollingTimer.Start();
         }
 
+        private Int32 _numOfPollerTaskActive = 0;
+
         void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _pollingTimer.Stop();
@@ -133,11 +136,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             {
                 if (this.ThreadNumber == 1)
                 {
+                    _numOfPollerTaskActive = 1;
                     ExecuteJobCore();
                 }
                 else
                 {
                     List<Task> taskList = new List<Task>();
+                    _numOfPollerTaskActive = ThreadNumber;
                     for (int i = 0; i < ThreadNumber; i++)
                     {
                         var task = Task.Factory.StartNew(ExecuteJobCore);
@@ -168,10 +173,22 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             do
             {
+                //if half of the task thread finished working, we should end all the pool and restart
+                if (ThreadNumber > 2 && _numOfPollerTaskActive < (ThreadNumber / 2))
+                {
+                    //This can happen because jobs are generated not in block, if we have ex 6 threads
+                    //base jobs started 6 tasks, then if in a moment only one task remain only one task remain active
+                    //then if the queue manager queue 100 jobs, we have only one thread active. This condition
+                    //stops the poll if half of the threads are active, so we need to restart polling with all the tasks.
+                    return;
+                }
                 String workingFolder = null;
                 QueuedJobDto nextJob = DsGetNextJob();
-                if (nextJob == null) return;
-
+                if (nextJob == null) 
+                {
+                    System.Threading.Interlocked.Decrement(ref _numOfPollerTaskActive);
+                    return;
+                }
                 var baseParameters = ExtractJobParameters(nextJob);
                 //remember to enter the right tenant.
                 TenantContext.Enter(new TenantId(baseParameters.TenantId));
