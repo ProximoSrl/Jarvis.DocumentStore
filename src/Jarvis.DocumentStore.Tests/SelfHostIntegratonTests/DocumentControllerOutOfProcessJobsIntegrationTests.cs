@@ -144,41 +144,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Tika document not found");
         }
 
-        [Test]
-        public async void should_create_and_download_content_format()
-        {
-            _sutBase = sut = new OutOfProcessTikaNetJob();
-            PrepareJob();
-
-            var handle = DocumentHandle.FromString("verify_tika_job");
-            await _documentStoreClient.UploadAsync(
-               TestConfig.PathToWordDocument,
-               DocumentHandle.FromString("verify_tika_job"),
-               new Dictionary<string, object>{
-                    { "callback", "http://localhost/demo"}
-                }
-            );
-
-            DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            do
-            {
-                Thread.Sleep(300);
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
-                if (document != null &&
-                    document.Formats.ContainsKey(new Core.Domain.Document.DocumentFormat("tika")))
-                {
-                    var content = await _documentStoreClient.GetContentAsync(handle);
-                    Assert.NotNull(content);
-                    Assert.AreEqual(1, content.Pages.Length);
-                }
-
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
-
-            Assert.Fail("Tika document not found");
-        }
-
+  
         [Test]
         public async void verify_tika_set_content()
         {

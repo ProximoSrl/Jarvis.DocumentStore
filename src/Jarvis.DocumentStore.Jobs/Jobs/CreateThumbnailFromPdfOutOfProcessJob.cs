@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Jobs.Jobs
                 task.Run(
                     sourceStream,
                     convertParams,
-                    (i, s) => Write(parameters, format, i, s) //Currying
+                    (i, s) => Write(workingFolder, parameters, format, i, s) //Currying
                 );
             }
 
@@ -50,9 +50,10 @@ namespace Jarvis.DocumentStore.Jobs.Jobs
             return true;
         }
 
-        public async Task<Boolean> Write(PollerJobParameters parameters, String format, int pageIndex, Stream stream)
+        public async Task<Boolean> Write(String workerFolder, PollerJobParameters parameters, String format, int pageIndex, Stream stream)
         {
-            var fileName = new FileNameWithExtension(parameters.JobId + ".page_" + pageIndex + "." + format);
+            var rawFileName = Path.Combine(workerFolder,  parameters.JobId + ".page_" + pageIndex + "." + format);
+            var fileName = new FileNameWithExtension(rawFileName);
             using (var outStream = File.OpenWrite(fileName))
             {
                 stream.CopyTo(outStream);
