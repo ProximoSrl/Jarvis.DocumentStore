@@ -52,9 +52,8 @@ namespace Jarvis.DocumentStore.Jobs.Jobs
 
         public async Task<Boolean> Write(String workerFolder, PollerJobParameters parameters, String format, int pageIndex, Stream stream)
         {
-            var rawFileName = Path.Combine(workerFolder,  parameters.JobId + ".page_" + pageIndex + "." + format);
-            var fileName = new FileNameWithExtension(rawFileName);
-            using (var outStream = File.OpenWrite(fileName))
+            var rawFileName = Path.Combine(workerFolder,  "thumb.page_" + pageIndex + "." + format);
+            using (var outStream = File.OpenWrite(rawFileName))
             {
                 stream.CopyTo(outStream);
             }
@@ -63,7 +62,7 @@ namespace Jarvis.DocumentStore.Jobs.Jobs
                  parameters.TenantId,
                  parameters.JobId,
                  new DocumentFormat(DocumentFormats.RasterImage),
-                 fileName,
+                 rawFileName,
                 new Dictionary<string, object>());
             return true;
         }
