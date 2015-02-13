@@ -59,6 +59,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.1.94\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
     </Reference>
+    <Reference Include="Jarvis.Framework.MongoAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.0.5\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
@@ -148,11 +152,7 @@
     <Compile Include="Controllers\LogController.cs" />
     <Compile Include="Controllers\QueueController.cs" />
     <Compile Include="Controllers\SchedulerController.cs" />
-    <Compile Include="Logging\BufferedMongoDBAppender.cs" />
-    <Compile Include="Logging\FieldNames.cs" />
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
-    <Compile Include="Logging\MongoDBAppender.cs" />
-    <Compile Include="Logging\MongoLog.cs" />
     <Compile Include="Model\AddFormatToDocument.cs" />
     <Compile Include="Model\UploadedDocumentResponse.cs" />
     <Compile Include="Program.cs" />
