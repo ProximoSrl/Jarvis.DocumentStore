@@ -100,7 +100,6 @@ namespace Jarvis.DocumentStore.Jobs
         {
             if (!Environment.UserInteractive)
                 return;
-            Console.WindowWidth = 140;
             Console.Title = "JARVIS :: Document Store Service";
             Console.BackgroundColor = ConsoleColor.DarkBlue;
             Console.Clear();
