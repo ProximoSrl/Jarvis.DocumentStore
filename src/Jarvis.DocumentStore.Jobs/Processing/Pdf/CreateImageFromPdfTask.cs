@@ -2,6 +2,7 @@
 using System.IO;
 using Castle.Core.Logging;
 using GraphicsMagick;
+using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Jobs.Processing.Pdf
 {
@@ -17,7 +18,10 @@ namespace Jarvis.DocumentStore.Jobs.Processing.Pdf
             set { _logger = value; }
         }
 
-        public void Run(Stream sourceStream, CreatePdfImageTaskParams createPdfImageTaskParams, Action<int, Stream> pageWriter)
+        public async Task<Boolean> Run(
+            Stream sourceStream, 
+            CreatePdfImageTaskParams createPdfImageTaskParams, 
+            Func<int, Stream, Task<Boolean>> pageWriter)
         {
             var settings = new MagickReadSettings
             {
@@ -56,10 +60,11 @@ namespace Jarvis.DocumentStore.Jobs.Processing.Pdf
                     {
                         image.Write(ms);
                         ms.Seek(0L, SeekOrigin.Begin);
-                        pageWriter(page + 1, ms);
+                        await pageWriter(page + 1, ms);
                     }
                 }
             }
+            return true;
         }
 
         MagickFormat TranslateFormat(CreatePdfImageTaskParams.ImageFormat format)

@@ -39,13 +39,13 @@ namespace Jarvis.DocumentStore.Jobs.Jobs
                     Format = (CreatePdfImageTaskParams.ImageFormat)Enum.Parse(typeof(CreatePdfImageTaskParams.ImageFormat), format, true)
                 };
 
-                task.Run(
+                await task.Run(
                     sourceStream,
                     convertParams,
                     (i, s) => Write(workingFolder, parameters, format, i, s) //Currying
                 );
             }
-
+       
             Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.JobId, format);
             return true;
         }
