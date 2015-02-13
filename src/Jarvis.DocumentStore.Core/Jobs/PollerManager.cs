@@ -66,7 +66,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     }
                     var clientJobHandle = _pollerJobManagers[poller.Name].Start(
                         queueInfo.Name,
-                        new Dictionary<String, String>(),
+                        poller.Parameters,
                         new List<String>() { _configuration.ServerAddress.AbsoluteUri });
                     if (!String.IsNullOrEmpty(clientJobHandle))
                     {

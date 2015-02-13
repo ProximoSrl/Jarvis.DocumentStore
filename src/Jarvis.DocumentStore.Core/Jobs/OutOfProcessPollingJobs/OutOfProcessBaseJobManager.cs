@@ -30,6 +30,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             public String QueueId { get; set; }
 
+            public Dictionary<String,String> CustomParameters { get; set; }
+
             public List<String> DocStoreAddresses { get; set; }
         }
 
@@ -47,17 +49,19 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         public string Start(String queueName, Dictionary<String, String> customParameters, List<string> docStoreAddresses)
         {
             String processHandle = Guid.NewGuid().ToString() + "-" + Environment.MachineName;
-            InnerStart(queueName, docStoreAddresses, processHandle);
+            InnerStart(queueName, customParameters, docStoreAddresses, processHandle);
             _started = true;
             return processHandle;
         }
 
-        private void InnerStart(string queueId, List<string> docStoreAddresses, String processHandle)
+        private void InnerStart(
+            string queueId, 
+            Dictionary<String, String> customParameters, 
+            List<string> docStoreAddresses, 
+            String processHandle)
         {
-            //var thisFileName = Environment.CommandLine.Split(' ')[0]
-            //    .Trim('/', '"')
-            //    .Replace(".vshost.exe", ".exe");
             var jobsLauncherFileExe = @"JobsRunner\Jarvis.DocumentStore.Jobs.exe";
+            if (customParameters.ContainsKey("location")) jobsLauncherFileExe = customParameters["location"];
 
             Process process = GetLocalProcessForQueue(queueId, jobsLauncherFileExe);
             if (process == null)
@@ -94,8 +98,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             {
                 Process = process,
                 QueueId = queueId,
+                CustomParameters = customParameters,               
                 DocStoreAddresses = docStoreAddresses,
-            };
+             };
             activeProcesses[processHandle] = info;
             Logger.InfoFormat("Started worker: ProcessHandle {0} for queue {1}", processHandle, queueId);
         }
@@ -170,7 +175,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
                 //process is ended, restart the process, it will have new id.
                 Logger.WarnFormat("Job terminated unexpectedly, job handle {0} for queue {1}. Restarting!!", handle, processInfo.QueueId);
-                InnerStart(processInfo.QueueId, processInfo.DocStoreAddresses, handle);
+                InnerStart(processInfo.QueueId, processInfo.CustomParameters, processInfo.DocStoreAddresses, handle);
 
             }
         }
@@ -204,7 +209,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 return false;
             }
             //Restart the same job with the same handle.
-            InnerStart(activeProcess.QueueId, activeProcess.DocStoreAddresses, jobHandle);
+            InnerStart(activeProcess.QueueId, activeProcess.CustomParameters, activeProcess.DocStoreAddresses, jobHandle);
             return true;
         }
 
