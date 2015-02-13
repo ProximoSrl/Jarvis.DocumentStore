@@ -44,10 +44,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             Logger = NullLogger.Instance;
         }
 
-        public string Start(QueueInfo queueInfo, List<string> docStoreAddresses)
+        public string Start(String queueName, Dictionary<String, String> customParameters, List<string> docStoreAddresses)
         {
             String processHandle = Guid.NewGuid().ToString() + "-" + Environment.MachineName;
-            InnerStart(queueInfo.Name, docStoreAddresses, processHandle);
+            InnerStart(queueName, docStoreAddresses, processHandle);
             _started = true;
             return processHandle;
         }

@@ -11,18 +11,40 @@ namespace Jarvis.DocumentStore.Core.Jobs
 {
     public class PollerManager  
     {
-        readonly IPollerJobManager _pollerJobManager;
+        readonly Dictionary<String, IPollerJobManager> _pollerJobManagers;
+
         private DocumentStoreConfiguration _configuration;
-        private Dictionary<String, String> queueClients;
+
+        private List<ClientInfo> queueClients;
+
+        private class ClientInfo 
+        {
+            public ClientInfo(
+                IPollerJobManager pollerManager,
+                String queueName,
+                String handle)
+            {
+                PollerManager = pollerManager;
+                QueueName = queueName;
+                Handle = handle;
+            }
+
+            public IPollerJobManager PollerManager { get; private set; }
+
+            public String QueueName { get; private set; }
+
+            public String Handle { get; private set; }
+        }
+
         public ILogger Logger { get; set; }
 
         public PollerManager(
-            IPollerJobManager pollerJobManager,
+            IPollerJobManager[] pollerJobManagers,
             DocumentStoreConfiguration configuration)
         {
-            _pollerJobManager = pollerJobManager;
+            _pollerJobManagers = pollerJobManagers.ToDictionary(p => p.GetType().Name, p => p);
             _configuration = configuration;
-            queueClients = new Dictionary<string, string>();
+            queueClients = new List<ClientInfo>();
             Logger = NullLogger.Instance;
         }
 
@@ -31,20 +53,31 @@ namespace Jarvis.DocumentStore.Core.Jobs
             if (_configuration.JobMode != JobModes.Queue) return; //different job mode
             if (!_configuration.IsWorker) return; //I'm not a worker configuration.
 
-            foreach (var queueInfo in _configuration.QueueInfoList)
+            foreach (var queueInfo in _configuration.QueueInfoList.Where(info => info.PollersInfo != null))
             {
-                //for each queue I need to start client
-                var clientJobHandle = _pollerJobManager.Start(queueInfo, new List<String>() {
-                    _configuration.ServerAddress.AbsoluteUri
-                });
-                if (!String.IsNullOrEmpty(clientJobHandle))
+                //for each queue I can have more than one poller to observe
+                foreach (var poller in queueInfo.PollersInfo)
                 {
-                    queueClients.Add(queueInfo.Name, clientJobHandle);
+                    //for each queue I need to start client
+                    if (!_pollerJobManagers.ContainsKey(poller.Name)) 
+                    {
+                        Logger.ErrorFormat("Unable to start polling with poller {0}, unknown poller class.");
+                        continue;
+                    }
+                    var clientJobHandle = _pollerJobManagers[poller.Name].Start(
+                        queueInfo.Name,
+                        new Dictionary<String, String>(),
+                        new List<String>() { _configuration.ServerAddress.AbsoluteUri });
+                    if (!String.IsNullOrEmpty(clientJobHandle))
+                    {
+                        queueClients.Add(new ClientInfo(_pollerJobManagers[poller.Name], queueInfo.Name, clientJobHandle));
+                    }
+                    else
+                    {
+                        Logger.ErrorFormat("Error starting client job for queue {0}", queueInfo.Name);
+                    }
                 }
-                else
-                {
-                    Logger.ErrorFormat("Error starting client job for queue {0}", queueInfo.Name);
-                }
+               
             }
         }
 
@@ -55,8 +88,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             foreach (var queueInfo in queueClients.ToList())
             {
-                _pollerJobManager.Stop(queueInfo.Value);
-                queueClients.Remove(queueInfo.Key);
+                queueInfo.PollerManager.Stop(queueInfo.Handle);
+                queueClients.Remove(queueInfo);
             }
         }
     }

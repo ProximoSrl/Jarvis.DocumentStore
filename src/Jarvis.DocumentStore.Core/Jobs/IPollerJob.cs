@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         /// <param name="docStoreAddresses"></param>
         /// <param name="queueId">The info of the queue associated with the job.</param>
         /// <returns>An opaque handle that represent the new identity of the poller.</returns>
-        String Start(QueueInfo queueInfo, List<String> docStoreAddresses);
+        String Start(String queueName, Dictionary<String, String> customParameters, List<String> docStoreAddresses);
 
         /// <summary>
         /// Stops poller job, 
