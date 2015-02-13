@@ -6,7 +6,6 @@ using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
-using Jarvis.Framework.Tests.DomainTests;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests

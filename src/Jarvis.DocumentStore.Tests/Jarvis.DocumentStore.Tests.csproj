@@ -273,6 +273,7 @@
     <Compile Include="PipelineTests\LanguageDetectionTest.cs" />
     <Compile Include="PipelineTests\TestConfig.cs" />
     <Compile Include="PipelineTests\TikaNetHtmlExtractionTest.cs" />
+    <Compile Include="ProjectionTests\BsonClassMapHelper.cs" />
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
     <Compile Include="ProjectionTests\HandleProjectionTests.cs" />
     <Compile Include="ProjectionTests\StreamProjectionTest.cs" />
@@ -318,22 +319,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Kernel\Jarvis.Framework.Kernel.csproj">
-      <Project>{203AD69F-E839-46CF-A25A-0ED22EA1ABF8}</Project>
-      <Name>Jarvis.Framework.Kernel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Shared\Jarvis.Framework.Shared.csproj">
-      <Project>{70B179ED-C419-4782-B080-0D1678C90279}</Project>
-      <Name>Jarvis.Framework.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.TestHelpers\Jarvis.Framework.TestHelpers.csproj">
-      <Project>{DF7EF8CC-CDA7-4299-8769-62FDD1654FB9}</Project>
-      <Name>Jarvis.Framework.TestHelpers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Tests\Jarvis.Framework.Tests.csproj">
-      <Project>{D5D90909-CFEF-443E-BDDE-318FE638E5C0}</Project>
-      <Name>Jarvis.Framework.Tests</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">
       <Project>{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}</Project>
       <Name>Jarvis.DocumentStore.Client</Name>
@@ -353,6 +338,18 @@
     <ProjectReference Include="..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj">
       <Project>{377E1786-2C26-4C3B-ACBA-A9CD73FB53E6}</Project>
       <Name>Jarvis.DocumentStore.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Kernel\Jarvis.Framework.Kernel.csproj">
+      <Project>{203ad69f-e839-46cf-a25a-0ed22ea1abf8}</Project>
+      <Name>Jarvis.Framework.Kernel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Shared\Jarvis.Framework.Shared.csproj">
+      <Project>{70b179ed-c419-4782-b080-0d1678c90279}</Project>
+      <Name>Jarvis.Framework.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.TestHelpers\Jarvis.Framework.TestHelpers.csproj">
+      <Project>{df7ef8cc-cda7-4299-8769-62fdd1654fb9}</Project>
+      <Name>Jarvis.Framework.TestHelpers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

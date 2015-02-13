@@ -17,7 +17,6 @@ using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
-using Jarvis.Framework.Tests.DomainTests;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using NUnit.Framework;
@@ -28,6 +27,7 @@ using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using System;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Jarvis.DocumentStore.Tests.ProjectionTests;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -19,8 +17,6 @@ using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
-using Jarvis.Framework.Tests.DomainTests;
-using NEventStore.Dispatcher;
 using NUnit.Framework;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 
