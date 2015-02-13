@@ -9,6 +9,7 @@ using System.Management;
 using System.Text;
 using System.IO;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
@@ -43,10 +44,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             Logger = NullLogger.Instance;
         }
 
-        public string Start(string queueId, List<string> docStoreAddresses)
+        public string Start(QueueInfo queueInfo, List<string> docStoreAddresses)
         {
             String processHandle = Guid.NewGuid().ToString() + "-" + Environment.MachineName;
-            InnerStart(queueId, docStoreAddresses, processHandle);
+            InnerStart(queueInfo.Name, docStoreAddresses, processHandle);
             _started = true;
             return processHandle;
         }

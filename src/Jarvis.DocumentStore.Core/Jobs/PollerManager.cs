@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             foreach (var queueInfo in _configuration.QueueInfoList)
             {
                 //for each queue I need to start client
-                var clientJobHandle = _pollerJobManager.Start(queueInfo.Name, new List<String>() {
+                var clientJobHandle = _pollerJobManager.Start(queueInfo, new List<String>() {
                     _configuration.ServerAddress.AbsoluteUri
                 });
                 if (!String.IsNullOrEmpty(clientJobHandle))

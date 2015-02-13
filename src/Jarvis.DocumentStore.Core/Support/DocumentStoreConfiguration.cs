@@ -4,6 +4,8 @@ using Castle.Facilities.Logging;
 using Castle.Services.Logging.Log4netIntegration;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.Framework.Kernel.MultitenantSupport;
+using System.Collections;
+using Newtonsoft.Json;
 
 
 namespace Jarvis.DocumentStore.Core.Support
@@ -39,6 +41,15 @@ namespace Jarvis.DocumentStore.Core.Support
         }
 
         public JobsManagementConfiguration JobsManagement { get; set; }
+
+        public static void ParseQueueList(List<QueueInfo> queueInfoList, dynamic queueList)
+        {
+            foreach (dynamic queue in (IEnumerable)queueList)
+            {
+                QueueInfo info = JsonConvert.DeserializeObject<QueueInfo>(queue.ToString());
+                queueInfoList.Add(info);
+            }
+        }
     }
 
     public class JobsManagementConfiguration

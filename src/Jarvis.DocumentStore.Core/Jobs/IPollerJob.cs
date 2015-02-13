@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using System;
 using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Core.Jobs
@@ -12,9 +13,9 @@ namespace Jarvis.DocumentStore.Core.Jobs
         /// Starts a new poller job.
         /// </summary>
         /// <param name="docStoreAddresses"></param>
-        /// <param name="queueId">The id of the queue associated with the job.</param>
+        /// <param name="queueId">The info of the queue associated with the job.</param>
         /// <returns>An opaque handle that represent the new identity of the poller.</returns>
-        String Start(String queueId, List<String> docStoreAddresses);
+        String Start(QueueInfo queueInfo, List<String> docStoreAddresses);
 
         /// <summary>
         /// Stops poller job, 

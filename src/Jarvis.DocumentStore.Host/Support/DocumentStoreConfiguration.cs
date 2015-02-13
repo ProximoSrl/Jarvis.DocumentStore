@@ -57,30 +57,7 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             dynamic queueList = ConfigurationServiceClient.Instance.GetStructuredSetting("queues.list");
 
-            foreach (dynamic queue in (IEnumerable)queueList)
-            {
-                QueueInfo info = new QueueInfo(
-                    (String) queue.name,
-                    (String) queue.pipeline,
-                    (String) queue.extension);
-                if (queue.maxNumberOfFailure != null) 
-                {
-                    info.MaxNumberOfFailure = (Int32)queue.maxNumberOfFailure;
-                }
-                if (queue.jobLockTimeout != null)
-                {
-                    info.JobLockTimeout = (Int32)queue.jobLockTimeout;
-                }
-                if (queue.parameters != null)
-                {
-                    info.Parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(queue.parameters.ToString());
-                }
-                else
-                {
-                    info.Parameters = new Dictionary<string, string>();
-                }
-                queueInfoList.Add(info);
-            }
+            ParseQueueList(queueInfoList, queueList);
         }
 
         Int32 GetInt32(string name, Int32 defaultValue)
