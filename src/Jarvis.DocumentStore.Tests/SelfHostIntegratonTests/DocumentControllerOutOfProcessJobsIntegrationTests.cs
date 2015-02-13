@@ -38,6 +38,7 @@ using System.Drawing;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
+using Newtonsoft.Json;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -53,6 +54,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     //[Explicit("This integration test is slow because it wait for polling")]
     public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public const int MaxTimeout = 10000;
+
         protected DocumentStoreBootstrapper _documentStoreService;
         protected DocumentStoreServiceClient _documentStoreClient;
         protected MongoCollection<DocumentReadModel> _documents;
@@ -300,7 +303,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return; //test is good
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("expected formats not found");
         }
@@ -342,9 +345,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return; //test is good
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
-            Assert.Fail("expected formats not found");
+            if(document == null)
+                Assert.Fail("Missing document");
+
+            Debug.WriteLine("document:\n{0}", (object)JsonConvert.SerializeObject(document, Formatting.Indented));
+
+            if(!document.Formats.ContainsKey(emailFormat))
+                Assert.Fail("Missing format: {0}", emailFormat);
+
+            if (!document.Formats.ContainsKey(pdfFormat))
+                Assert.Fail("Missing format: {0}", pdfFormat);
         }
 
     
