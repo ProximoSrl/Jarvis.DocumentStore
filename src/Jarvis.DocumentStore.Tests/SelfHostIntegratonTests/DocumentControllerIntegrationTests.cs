@@ -338,7 +338,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.AreEqual(0, allDocuments);
         }
 
-        [Test, Explicit]
+//        [Test, Explicit]
         public void should_upload_all_documents()
         {
             Task.WaitAll(
