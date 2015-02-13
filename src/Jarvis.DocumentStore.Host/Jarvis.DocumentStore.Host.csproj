@@ -59,10 +59,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.1.94\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.Framework.MongoAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.0.5\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
-    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
@@ -253,6 +249,10 @@
     <ProjectReference Include="..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj">
       <Project>{377e1786-2c26-4c3b-acba-a9cd73fb53e6}</Project>
       <Name>Jarvis.DocumentStore.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.Framework\Logging\Jarvis.Framework.MongoAppender\Jarvis.Framework.MongoAppender.csproj">
+      <Project>{c4ed6087-35d8-408b-a638-0153adbb2fd7}</Project>
+      <Name>Jarvis.Framework.MongoAppender</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
