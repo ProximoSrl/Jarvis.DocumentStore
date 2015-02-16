@@ -87,14 +87,14 @@ namespace Jarvis.DocumentStore.Host.Support
                             return f.BuildEventStore(
                                 tenant1.GetConnectionString("events"),
                                 hooks
-                            );
+                                );
                         })
                         .LifestyleSingleton(),
                     Component
                         .For<ICQRSRepository, CQRSRepository>()
                         .ImplementedBy<CQRSRepository>()
                         .Named(tenant.Id + ".repository")
-                        .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
+                        .DependsOn(Dependency.OnComponent(typeof (IStoreEvents), esComponentName))
                         .LifestyleTransient()
                     );
             }

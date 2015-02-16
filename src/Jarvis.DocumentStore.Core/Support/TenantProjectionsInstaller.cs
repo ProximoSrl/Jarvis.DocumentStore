@@ -38,7 +38,8 @@ namespace Jarvis.DocumentStore.Core.Support
                 Slots = ConfigurationManager.AppSettings["engine-slots"].Split(','),
                 PollingMsInterval = int.Parse(ConfigurationManager.AppSettings["polling-interval-ms"]),
                 ForcedGcSecondsInterval = int.Parse(ConfigurationManager.AppSettings["memory-collect-seconds"]),
-                TenantId = _tenant.Id
+                TenantId = _tenant.Id,
+                DelayedStartInMilliseconds = 2000,
             };
 
             var readModelDb = _tenant.Get<MongoDatabase>("readmodel.db");
