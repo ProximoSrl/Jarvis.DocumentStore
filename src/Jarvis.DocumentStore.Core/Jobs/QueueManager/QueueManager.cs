@@ -26,6 +26,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <summary>
         /// Internally used to grab a job reference from its id.
         /// </summary>
+        /// <param name="queueName">Name of the queue.</param>
         /// <param name="jobId"></param>
         /// <returns></returns>
         QueuedJob GetJob(String queueName, String jobId);
@@ -42,7 +43,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     {
         private DocumentStoreConfiguration _configuration;
         private ITenantAccessor _tenantAccessor;
-        private MongoDatabase _mongoDatabase;
         private Thread _pollerThread;
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
@@ -63,7 +63,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _tenantAccessor = tenantAccessor;
             _configuration = configuration;
-            _mongoDatabase = mongoDatabase;
             _queueHandlers = queueHandlers
                 .ToDictionary(qh => qh.Name, qh => qh);
             _checkpointCollection = mongoDatabase.GetCollection<StreamCheckpoint>("stream.checkpoints");

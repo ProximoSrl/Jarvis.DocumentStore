@@ -19,6 +19,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
             BlobId blobId,
             PipelineId createdById) : base(aggregateId)
         {
+            if (aggregateId == null) throw new ArgumentNullException("aggregateId");
             DocumentFormat = documentFormat;
             BlobId = blobId;
             CreatedBy = createdById;

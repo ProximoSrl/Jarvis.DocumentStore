@@ -48,6 +48,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         HandleDeleted = 2,
         HandleHasNewFormat = 3,
         HandleFileNameSet = 4,
-        HandleFormatUpdated = 3,
+        HandleFormatUpdated = 5,
     }
 }

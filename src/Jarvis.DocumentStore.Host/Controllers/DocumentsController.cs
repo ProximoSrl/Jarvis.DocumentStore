@@ -127,10 +127,17 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (String.IsNullOrEmpty(queueName))
             {
                 //user ask for handle, we need to grab the handle
-                
                 var documentHandle = new DocumentHandle(_customData[AddFormatToDocumentParameters.DocumentHandle] as String);
                 var handle = _handleWriter.FindOneById(documentHandle);
                 documentId = handle.DocumentId;
+                if (documentId == null)
+                {
+                    Logger.ErrorFormat("Trying to add a format for Handle {0} with a null DocumentId", documentHandle);
+                    return Request.CreateErrorResponse(
+                       HttpStatusCode.BadRequest,
+                       ""
+                   );
+                }
                 Logger.DebugFormat("Add format {0} to handle {1} and document id {2}", format, handle, documentId);
             }
             else
@@ -144,13 +151,21 @@ namespace Jarvis.DocumentStore.Host.Controllers
                         String.Format("Job id {0} not found in queue {1}", jobId, queueName));
                 }
                 documentId = job.DocumentId;
+                if (documentId == null)
+                {
+                    Logger.ErrorFormat("Trying to add a format for Job Id {0} queue {1} - Job has DocumentId null", jobId, queueName);
+                    return Request.CreateErrorResponse(
+                       HttpStatusCode.BadRequest,
+                       ""
+                   );
+                }
                 Logger.DebugFormat("Add format {0} to job id {1} and document id {2}", format, job.Id, documentId);
             }
 
             var documentFormat = new DocumentFormat(_customData[AddFormatToDocumentParameters.Format] as String);
             var createdById = new PipelineId(_customData[AddFormatToDocumentParameters.CreatedBy] as String);
             Logger.DebugFormat("Incoming new format for documentId {0}", documentId);
-
+           
             var command = new AddFormatToDocument(documentId, documentFormat, _blobId, createdById);
             CommandBus.Send(command, "api");
 
