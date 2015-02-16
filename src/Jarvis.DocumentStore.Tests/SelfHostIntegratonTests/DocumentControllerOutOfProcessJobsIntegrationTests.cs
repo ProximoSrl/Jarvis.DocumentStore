@@ -142,7 +142,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return;
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("Tika document not found");
         }
