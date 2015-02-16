@@ -178,7 +178,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             DocumentReadModel document;
             do
             {
-                Thread.Sleep(300);
+                UpdateAndWait();
                 document = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
                 if (document != null &&
@@ -356,7 +356,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return; //test is good
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout * 2);
 
             if(document == null)
                 Assert.Fail("Missing document");

@@ -64,17 +64,25 @@ namespace Jarvis.DocumentStore.Jobs.Processing.Conversions
                     },
                 }
             };
+            try
+            {
+                var converter = Factory.Create();
+                var pdf = converter.Convert(document);
 
-            var converter = Factory.Create();
-            var pdf = converter.Convert(document);
+                File.WriteAllBytes(outputFileName, pdf);
 
-            File.WriteAllBytes(outputFileName, pdf);
+                Logger.DebugFormat("Deleting {0}", localFileName);
+                File.Delete(localFileName);
+                Logger.DebugFormat("Conversion of {0} to pdf done!", jobId);
 
-            Logger.DebugFormat("Deleting {0}", localFileName);
-            File.Delete(localFileName);
-            Logger.DebugFormat("Conversion of {0} to pdf done!", jobId);
-
-            return outputFileName;
+                return outputFileName;
+            }
+            catch (Exception ex)
+            {
+                
+                throw;
+            }
+          
         }
 
         string DownloadLocalCopy(TenantId tenantId, QueuedJobId jobId)
