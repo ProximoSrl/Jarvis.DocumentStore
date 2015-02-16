@@ -15,6 +15,8 @@ using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Tests.JobTests;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver;
@@ -38,6 +40,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
         private MongoCollection<DocumentReadModel> _documents;
+        private ITriggerProjectionsUpdate _projections;
+
+        private void UpdateAndWait()
+        {
+            _projections.UpdateAndWait();
+        }
 
         [SetUp]
         public void SetUp()
@@ -52,6 +60,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.ServerAddress,
                 TestConfig.Tenant
             );
+            var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
+            _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
         }
 
@@ -74,7 +84,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // waits for storage
-            Thread.Sleep(2000);
+            UpdateAndWait();
 
             using (var reader = _documentStoreClient.OpenRead(DocumentHandle.FromString("Pdf_2")))
             {
@@ -121,7 +131,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.AreEqual("md5", response.HashType);
             Assert.AreEqual("http://localhost:5123/tests/documents/pdf_1", response.Uri);
             // wait background projection polling
-            Thread.Sleep(500);
+            UpdateAndWait();
 
             var customData = await _documentStoreClient.GetCustomDataAsync(DocumentHandle.FromString("Pdf_1"));
             Assert.NotNull(customData);
@@ -155,7 +165,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
 
             // wait background projection polling
-            Thread.Sleep(500);
+            UpdateAndWait();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -169,7 +179,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
 
             // wait background projection polling
-            Thread.Sleep(500);
+            UpdateAndWait();
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -180,7 +190,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            Thread.Sleep(500);
+            UpdateAndWait();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -196,7 +206,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
 
             // wait background projection polling
-            Thread.Sleep(500);
+            UpdateAndWait();
 
             DocumentContent content = new DocumentContent(new DocumentContent.DocumentPage[]
             {
@@ -212,7 +222,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            Thread.Sleep(500);
+            UpdateAndWait();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -233,7 +243,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
 
             // wait background projection polling
-            Thread.Sleep(200);
+            UpdateAndWait();
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -244,7 +254,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            Thread.Sleep(200);
+            UpdateAndWait();
 
             //now add same format with different content.
             model = new AddFormatFromFileToDocumentModel();
@@ -255,7 +265,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            Thread.Sleep(200);
+            UpdateAndWait();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -314,13 +324,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // wait background projection polling
-            Thread.Sleep(1000);
+            UpdateAndWait();
 
             var data = await _documentStoreClient.GetCustomDataAsync(handle);
 
             await _documentStoreClient.DeleteAsync(handle);
 
-            Thread.Sleep(1000);
+            UpdateAndWait();
 
             var ex = Assert.Throws<HttpRequestException>(async () =>
             {

@@ -23,6 +23,7 @@ using Jarvis.DocumentStore.Tests.JobTests;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.TestHelpers;
 using MongoDB.Driver;
@@ -31,6 +32,7 @@ using NUnit.Framework;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
+using ucar.nc2.ft.point.collection;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Core.Storage;
@@ -63,6 +65,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected IBlobStore _blobStore;
         protected AbstractOutOfProcessPollerFileJob _sutBase;
 
+        private ITriggerProjectionsUpdate _projections;
+
+        protected void UpdateAndWait()
+        {
+            _projections.UpdateAndWait();
+        }
+
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
@@ -79,6 +88,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
+            _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _blobStore = tenant.Container.Resolve<IBlobStore>();
         }
 
@@ -130,9 +140,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentReadModel document;
+            
             do
             {
-                Thread.Sleep(300);
+                UpdateAndWait();
                 document = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
                 if (document != null &&
@@ -222,7 +233,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var thumbLargeFormat = new Core.Domain.Document.DocumentFormat("thumb.large");
             do
             {
-                Thread.Sleep(300);
+                UpdateAndWait();
                 document = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
                 if (document != null &&
@@ -293,7 +304,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var emailFormat = new Core.Domain.Document.DocumentFormat("email");
             do
             {
-                Thread.Sleep(300);
+                UpdateAndWait();
                 document = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
                 if (document != null &&
@@ -334,7 +345,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var pdfFormat = new Core.Domain.Document.DocumentFormat("Pdf");
             do
             {
-                Thread.Sleep(300);
+                UpdateAndWait();
                 document = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
                 if (document != null &&
