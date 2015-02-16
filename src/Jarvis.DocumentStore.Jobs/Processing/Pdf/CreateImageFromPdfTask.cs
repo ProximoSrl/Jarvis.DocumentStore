@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Castle.Core.Logging;
 using GraphicsMagick;
-using System.Threading.Tasks;
 
-namespace Jarvis.DocumentStore.Jobs.Processing.Pdf
+namespace Jarvis.DocumentStore.JobsHost.Processing.Pdf
 {
     public class CreateImageFromPdfTask
     {

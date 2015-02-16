@@ -4,9 +4,9 @@ using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.Jobs.Processing.Tools;
+using Jarvis.DocumentStore.JobsHost.Processing.Tools;
 
-namespace Jarvis.DocumentStore.Jobs.Jobs
+namespace Jarvis.DocumentStore.JobsHost.Jobs
 {
     public class ImageResizePollerOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {

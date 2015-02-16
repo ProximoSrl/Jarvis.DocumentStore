@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
-using Castle.Core.Logging;
 using System.IO.Compression;
-using MsgReader;
 using System.Linq;
+using Castle.Core.Logging;
+using MsgReader;
 
-namespace Jarvis.DocumentStore.Jobs.Processing.Conversions
+namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
 {
     /// <summary>
     /// Outlook email & msg conversion

@@ -11,10 +11,10 @@ using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.Jobs.Processing.Conversions;
-using Jarvis.DocumentStore.Jobs.Processing.Pdf;
+using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
+using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
 
-namespace Jarvis.DocumentStore.Jobs.Support
+namespace Jarvis.DocumentStore.JobsHost.Support
 {
     public class DocumentStoreSingleQueueClientBootstrapper
     {

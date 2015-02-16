@@ -1,6 +1,6 @@
 using Castle.Windsor;
 
-namespace Jarvis.DocumentStore.Jobs.Support
+namespace Jarvis.DocumentStore.JobsHost.Support
 {
     public static class ContainerAccessor
     {

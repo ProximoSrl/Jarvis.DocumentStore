@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Services;
 
-namespace Jarvis.DocumentStore.Jobs.Processing.Conversions
+namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
 {
     public interface ITikaAnalyzer
     {

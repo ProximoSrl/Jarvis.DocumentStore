@@ -7,8 +7,8 @@
     <ProjectGuid>{65411E15-6EC3-455F-A5E4-34446A808474}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Jarvis.DocumentStore.Jobs</RootNamespace>
-    <AssemblyName>Jarvis.DocumentStore.Jobs</AssemblyName>
+    <RootNamespace>Jarvis.DocumentStore.JobsHost</RootNamespace>
+    <AssemblyName>Jarvis.DocumentStore.JobsHost</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>

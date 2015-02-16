@@ -8,7 +8,7 @@ using org.apache.tika.parser;
 using org.apache.tika.sax;
 using TikaOnDotNet;
 
-namespace Jarvis.DocumentStore.Jobs.Processing.Conversions
+namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
 {
     public class TikaNetAnalyzer : ITikaAnalyzer
     {

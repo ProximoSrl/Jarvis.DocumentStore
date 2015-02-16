@@ -10,7 +10,7 @@ using unoidl.com.sun.star.beans;
 using unoidl.com.sun.star.frame;
 using unoidl.com.sun.star.lang;
 
-namespace Jarvis.DocumentStore.Jobs.Processing.Conversions
+namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
 {
     /// <summary>
     /// http://tinyway.wordpress.com/2011/03/30/how-to-convert-office-documents-to-pdf-using-open-office-in-c/

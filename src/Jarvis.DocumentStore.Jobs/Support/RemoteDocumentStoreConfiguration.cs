@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Configuration;
 using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Support;
-using Newtonsoft.Json;
 
-namespace Jarvis.DocumentStore.Jobs.Support
+namespace Jarvis.DocumentStore.JobsHost.Support
 {
     public class RemoteDocumentStoreConfiguration : DocumentStoreConfiguration
     {

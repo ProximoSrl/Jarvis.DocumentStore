@@ -6,10 +6,10 @@ using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Jobs.Processing.Pdf;
+using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
 using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
 
-namespace Jarvis.DocumentStore.Jobs.Jobs
+namespace Jarvis.DocumentStore.JobsHost.Jobs
 {
     public class CreateThumbnailFromPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {

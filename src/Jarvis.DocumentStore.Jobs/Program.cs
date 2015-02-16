@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.Jobs.Support;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.Framework.MongoAppender;
 
-namespace Jarvis.DocumentStore.Jobs
+namespace Jarvis.DocumentStore.JobsHost
 {
     public class Program
     {

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using IvanAkcheurov.NTextCat.Lib;
 
-namespace Jarvis.DocumentStore.Jobs.Processing.Analyzers
+namespace Jarvis.DocumentStore.JobsHost.Processing.Analyzers
 {
     public class LanguageDetector
     {

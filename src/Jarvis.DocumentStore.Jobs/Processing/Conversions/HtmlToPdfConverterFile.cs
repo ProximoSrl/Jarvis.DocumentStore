@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Drawing.Printing;
 using System.IO;
+using System.IO.Compression;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using TuesPechkin;
-using System.IO.Compression;
 
-namespace Jarvis.DocumentStore.Jobs.Processing.Conversions
+namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
 {
     /// <summary>
     /// Version that does not need blob store.
