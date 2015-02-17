@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
@@ -8,6 +10,7 @@ using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
+using Castle.Windsor.Installer;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Support;
@@ -84,12 +87,14 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface() ,
+                Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*")) 
+                    .BasedOn<IPollerJob>()
+                    .WithServiceFirstInterface(),
                 Component
                     .For<CreateImageFromPdfTask>()
                     .LifestyleTransient()
             );
-            _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
-
+            _logger = _container.Resolve<ILogger>();
         }
 
       
@@ -102,5 +107,6 @@ namespace Jarvis.DocumentStore.JobsHost.Support
         }
     }
 
-  
+   
+
 }
