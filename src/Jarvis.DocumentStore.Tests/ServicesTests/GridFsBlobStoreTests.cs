@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Services;
@@ -17,6 +17,7 @@ using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 
 namespace Jarvis.DocumentStore.Tests.ServicesTests
 {

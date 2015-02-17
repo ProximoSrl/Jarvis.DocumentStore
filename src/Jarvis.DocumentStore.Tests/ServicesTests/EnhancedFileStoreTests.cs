@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using NSubstitute;
 using NUnit.Framework;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 
 namespace Jarvis.DocumentStore.Tests.ServicesTests
 {
@@ -30,14 +31,14 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         [Test]
         public void should_select_original()
         {
-            var selected = _manager.ForFormat(Core.Processing.DocumentFormats.Original);
+            var selected = _manager.ForFormat(DocumentFormats.Original);
             Assert.AreEqual(_originals, selected);
         }
 
         [Test]
         public void should_select_artifacts()
         {
-            var selected = _manager.ForFormat(Core.Processing.DocumentFormats.Pdf);
+            var selected = _manager.ForFormat(DocumentFormats.Pdf);
             Assert.AreEqual(_artifacts, selected);
         }
 
@@ -58,10 +59,10 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         [Test]
         public void should_write_original_format_to_original_store()
         {
-            var blobId = new BlobId(Core.Processing.DocumentFormats.Original, 1);
+            var blobId = new BlobId(DocumentFormats.Original, 1);
             _originals.Upload(Arg.Any<DocumentFormat>(), Arg.Any<string>()).Returns(blobId);
             
-            var id = _manager.Upload(Core.Processing.DocumentFormats.Original, TestConfig.PathToDocumentPdf);
+            var id = _manager.Upload(DocumentFormats.Original, TestConfig.PathToDocumentPdf);
             
             Assert.AreEqual(blobId, id);
         }
@@ -69,10 +70,10 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         [Test]
         public void should_write_pdf_format_to_original_store()
         {
-            var blobId = new BlobId(Core.Processing.DocumentFormats.Pdf, 1);
+            var blobId = new BlobId(DocumentFormats.Pdf, 1);
             _artifacts.Upload(Arg.Any<DocumentFormat>(), Arg.Any<string>()).Returns(blobId);
             
-            var id = _manager.Upload(Core.Processing.DocumentFormats.Pdf, TestConfig.PathToDocumentPdf);
+            var id = _manager.Upload(DocumentFormats.Pdf, TestConfig.PathToDocumentPdf);
             
             Assert.AreEqual(blobId, id);
         }
@@ -80,7 +81,7 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         [Test]
         public void should_read_original_file_from_originals_store()
         {
-            var blobId = new BlobId(Core.Processing.DocumentFormats.Original, 1);
+            var blobId = new BlobId(DocumentFormats.Original, 1);
             _originals.Download(blobId, "path/to/nothing").Returns("a.file");
             
             var fname = _manager.Download(blobId, "path/to/nothing");
@@ -91,7 +92,7 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         [Test]
         public void should_read_pdf_file_from_artifacts_store()
         {
-            var blobId = new BlobId(Core.Processing.DocumentFormats.Pdf, 1);
+            var blobId = new BlobId(DocumentFormats.Pdf, 1);
             _artifacts.Download(blobId, "path/to/nothing").Returns("a.file");
 
             var fname = _manager.Download(blobId, "path/to/nothing");

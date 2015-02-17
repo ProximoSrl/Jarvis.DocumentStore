@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
 
             var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
             var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
-            _blobId = _blobStore.Upload(Jarvis.DocumentStore.Core.Processing.DocumentFormats.ZHtml, zipped);
+            _blobId = _blobStore.Upload(DocumentFormats.ZHtml, zipped);
         }
 
         [Test]

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Services;

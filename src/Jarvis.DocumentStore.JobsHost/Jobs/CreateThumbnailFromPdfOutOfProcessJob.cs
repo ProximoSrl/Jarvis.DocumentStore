@@ -7,7 +7,7 @@ using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
-using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.JobsHost.Jobs
 {

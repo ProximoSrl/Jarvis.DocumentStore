@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Model;
@@ -18,6 +19,7 @@ using Jarvis.Framework.Shared.Commands;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using NUnit.Framework;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
@@ -63,7 +65,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
             _bus.Send(new CreateDocument(
                 new DocumentId(id),
-                _filestore.Upload(Core.Processing.DocumentFormats.Original, pathToFile),
+                _filestore.Upload(DocumentFormats.Original, pathToFile),
                 info,
                 new FileHash("1234abcd"),
                 new FileNameWithExtension("a","file")

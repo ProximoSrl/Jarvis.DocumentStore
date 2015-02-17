@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public String QueueName { get; protected set; }
 
-        public PipelineId PipelineId { get; protected set; }
+        public String PipelineId { get; protected set; }
 
         public virtual bool IsActive { get { return true; } }
 
@@ -277,7 +277,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         protected async Task<Boolean> AddFormatToDocumentFromFile(
             string tenantId,
-            QueuedJobId jobId,
+            String jobId,
             Client.Model.DocumentFormat format,
             string pathToFile,
             IDictionary<string, object> customData)
@@ -321,8 +321,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
 
         protected async Task<String> DownloadBlob(
-            TenantId tenantId,
-            QueuedJobId jobId,
+            String tenantId,
+            String jobId,
             String extension,
             String workingFolder)
         {

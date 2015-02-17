@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Handle;
@@ -30,6 +31,8 @@ using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
+using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {

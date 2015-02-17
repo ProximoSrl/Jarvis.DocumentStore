@@ -242,6 +242,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">
+      <Project>{a7b56dee-8009-47b2-89e4-c9f7a5c67236}</Project>
+      <Name>Jarvis.DocumentStore.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Jarvis.Framework\Jarvis.Framework.Kernel\Jarvis.Framework.Kernel.csproj">
       <Project>{203ad69f-e839-46cf-a25a-0ed22ea1abf8}</Project>
       <Name>Jarvis.Framework.Kernel</Name>

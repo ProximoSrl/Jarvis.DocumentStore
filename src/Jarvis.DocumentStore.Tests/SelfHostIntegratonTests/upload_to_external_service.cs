@@ -129,7 +129,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             model.CreatedById = "tika";
             model.DocumentHandle = DocumentHandle.FromString("doc_2");
             model.PathToFile = TestConfig.PathToTextDocument;
-            model.Format = new DocumentFormat(Jarvis.DocumentStore.Core.Processing.DocumentFormats.Tika);
+            model.Format = new DocumentFormat(DocumentFormats.Tika);
             _docs.AddFormatToDocument(model, null).Wait();
         }
 

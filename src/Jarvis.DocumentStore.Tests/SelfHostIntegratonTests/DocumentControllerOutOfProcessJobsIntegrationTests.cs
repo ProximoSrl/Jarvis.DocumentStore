@@ -18,6 +18,7 @@ using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.DocumentStore.Jobs.Tika;
 using Jarvis.DocumentStore.JobsHost.Jobs;
 using Jarvis.DocumentStore.Tests.JobTests;
 using Jarvis.DocumentStore.Tests.PipelineTests;

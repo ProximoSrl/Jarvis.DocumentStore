@@ -5,6 +5,7 @@ using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.JobsHost.Processing.Tools;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.JobsHost.Jobs
 {

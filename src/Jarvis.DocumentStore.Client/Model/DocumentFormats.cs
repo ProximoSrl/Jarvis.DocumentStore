@@ -31,6 +31,14 @@ namespace Jarvis.DocumentStore.Client.Model
 
     public class DocumentFormats
     {
+        public static readonly DocumentFormat RasterImage = new DocumentFormat("RasterImage");
+        public static readonly DocumentFormat Pdf = new DocumentFormat("pdf");
+        public static readonly DocumentFormat Original = new DocumentFormat("original");
+        public static readonly DocumentFormat Email = new DocumentFormat("email");
+        public static readonly DocumentFormat Tika = new DocumentFormat("tika");
+        public static readonly DocumentFormat Content = new DocumentFormat("content");
+        public static readonly DocumentFormat ZHtml = new DocumentFormat("zhtml");
+
         readonly IDictionary<DocumentFormat, Uri> _formats;
 
         public DocumentFormats(IDictionary<DocumentFormat, Uri> formats)
@@ -48,4 +56,5 @@ namespace Jarvis.DocumentStore.Client.Model
             get { return _formats.Count; }
         }
     }
+
 }

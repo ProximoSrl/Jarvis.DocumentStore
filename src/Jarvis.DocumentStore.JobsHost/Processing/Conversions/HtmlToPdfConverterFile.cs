@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
         /// <param name="tenantId"></param>
         /// <param name="jobId"></param>
         /// <returns></returns>
-        public String Run(TenantId tenantId, QueuedJobId jobId)
+        public String Run(String tenantId, String jobId)
         {
             Logger.DebugFormat("Converting {0} to pdf", jobId);
             var localFileName = DownloadLocalCopy(tenantId, jobId);
@@ -85,7 +85,7 @@ namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
           
         }
 
-        string DownloadLocalCopy(TenantId tenantId, QueuedJobId jobId)
+        string DownloadLocalCopy(String tenantId, String jobId)
         {
             var folder = _config.GetWorkingFolder(tenantId, jobId);
 

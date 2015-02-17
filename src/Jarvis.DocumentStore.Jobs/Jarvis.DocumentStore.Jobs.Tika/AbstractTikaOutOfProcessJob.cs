@@ -10,10 +10,10 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.JobsHost.Processing.Analyzers;
 using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Shared.Model;
-using DocumentFormats = Jarvis.DocumentStore.Core.Processing.DocumentFormats;
 
-namespace Jarvis.DocumentStore.JobsHost.Jobs
+namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.JobsHost.Jobs
         public AbstractTikaOutOfProcessJob()
         {
             _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt".Split('|');
-            base.PipelineId = new PipelineId("tika");
+            base.PipelineId = "tika";
             base.QueueName = "tika";
         }
 
