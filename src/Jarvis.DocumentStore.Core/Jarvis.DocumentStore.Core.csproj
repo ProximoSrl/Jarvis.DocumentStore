@@ -217,7 +217,6 @@
     <Compile Include="Support\SizeInfoHelper.cs" />
     <Compile Include="Support\TenantJobFactory.cs" />
     <Compile Include="Support\TenantJobsInstaller.cs" />
-    <Compile Include="Support\UdpAppender.cs" />
     <Compile Include="Support\WebClientEx.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.MongoAppen
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jobs", "Jobs", "{1BF1D624-839D-4042-BADD-DB00F4067BED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.UdpAppender", "Jarvis.Framework\Logging\Jarvis.Framework.UdpAppender\Jarvis.Framework.UdpAppender.csproj", "{F37284CA-EF9C-4505-9C21-363F15F2E525}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,10 @@ Global
 		{C4ED6087-35D8-408B-A638-0153ADBB2FD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4ED6087-35D8-408B-A638-0153ADBB2FD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4ED6087-35D8-408B-A638-0153ADBB2FD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F37284CA-EF9C-4505-9C21-363F15F2E525}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F37284CA-EF9C-4505-9C21-363F15F2E525}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F37284CA-EF9C-4505-9C21-363F15F2E525}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F37284CA-EF9C-4505-9C21-363F15F2E525}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,5 +119,6 @@ Global
 		{804D09EF-0E40-4C7C-8064-ADD92B7DE03F} = {1D4A10A7-136D-4D1B-A7AE-82648AD6162B}
 		{C540057F-7031-48E3-9997-213FBC4CCB6A} = {1D4A10A7-136D-4D1B-A7AE-82648AD6162B}
 		{C4ED6087-35D8-408B-A638-0153ADBB2FD7} = {C540057F-7031-48E3-9997-213FBC4CCB6A}
+		{F37284CA-EF9C-4505-9C21-363F15F2E525} = {C540057F-7031-48E3-9997-213FBC4CCB6A}
 	EndGlobalSection
 EndGlobal
