@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
+using Jarvis.DocumentStore.Jobs.Office;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 

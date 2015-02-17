@@ -4,17 +4,15 @@ using System.IO;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
 using Jarvis.DocumentStore.Shared.Jobs;
 
-namespace Jarvis.DocumentStore.JobsHost.Jobs
+namespace Jarvis.DocumentStore.Jobs.HtmlZip
 {
     public class HtmlToPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
         public HtmlToPdfOutOfProcessJob()
         {
-            base.PipelineId = new PipelineId("htmlzip");
+            base.PipelineId = "htmlzip";
             base.QueueName = "htmlzip";
         }
 

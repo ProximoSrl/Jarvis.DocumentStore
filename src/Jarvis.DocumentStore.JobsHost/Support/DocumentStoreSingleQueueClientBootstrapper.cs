@@ -14,7 +14,6 @@ using Castle.Windsor.Installer;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
 using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
 
 namespace Jarvis.DocumentStore.JobsHost.Support

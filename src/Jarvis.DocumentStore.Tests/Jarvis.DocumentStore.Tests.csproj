@@ -348,6 +348,18 @@
       <Project>{65411E15-6EC3-455F-A5E4-34446A808474}</Project>
       <Name>Jarvis.DocumentStore.JobsHost</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Email\Jarvis.DocumentStore.Jobs.Email.csproj">
+      <Project>{c636055c-8ae6-443d-a4ae-dc023b159564}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.Email</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.HtmlZip\Jarvis.DocumentStore.Jobs.HtmlZip.csproj">
+      <Project>{fe881078-a453-4687-ac55-7c4d89502072}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.HtmlZip</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Office\Jarvis.DocumentStore.Jobs.Office.csproj">
+      <Project>{9b18cf88-8758-44e9-bed8-e5fd53504c8b}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.Office</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Tika\Jarvis.DocumentStore.Jobs.Tika.csproj">
       <Project>{99cc9ca1-9a95-4ecb-a7f4-3a46892bf2c8}</Project>
       <Name>Jarvis.DocumentStore.Jobs.Tika</Name>

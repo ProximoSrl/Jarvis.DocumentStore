@@ -114,7 +114,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Jobs\CreateThumbnailFromPdfOutOfProcessJob.cs" />
-    <Compile Include="Jobs\HtmlToPdfOutOfProcessJob.cs" />
     <Compile Include="Jobs\ImageResizePollerOutOfProcessJob.cs" />
     <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
     <Compile Include="Processing\Conversions\HtmlToPdfConverter.cs" />
@@ -161,6 +160,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

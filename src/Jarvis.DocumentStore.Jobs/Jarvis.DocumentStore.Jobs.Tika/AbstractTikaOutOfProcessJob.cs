@@ -4,12 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.JobsHost.Processing.Analyzers;
-using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Shared.Model;
 

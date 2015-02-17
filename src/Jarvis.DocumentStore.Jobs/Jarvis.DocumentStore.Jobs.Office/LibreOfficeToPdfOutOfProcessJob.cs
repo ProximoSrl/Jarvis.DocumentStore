@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
 using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.Office
