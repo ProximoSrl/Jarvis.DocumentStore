@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.JobsHost.Processing.Analyzers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Shared.Model;
 

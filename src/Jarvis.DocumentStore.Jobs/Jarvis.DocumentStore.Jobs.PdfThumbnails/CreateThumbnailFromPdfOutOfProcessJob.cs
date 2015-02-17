@@ -5,17 +5,16 @@ using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
 using Jarvis.DocumentStore.Shared.Jobs;
 
-namespace Jarvis.DocumentStore.JobsHost.Jobs
+namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class CreateThumbnailFromPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
         public CreateThumbnailFromPdfOutOfProcessJob()
         {
-            base.PipelineId = new PipelineId("pdf");
+            base.PipelineId = "pdf";
             base.QueueName = "pdfThumb";
         }
 

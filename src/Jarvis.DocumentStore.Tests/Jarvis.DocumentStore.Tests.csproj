@@ -356,6 +356,10 @@
       <Project>{fe881078-a453-4687-ac55-7c4d89502072}</Project>
       <Name>Jarvis.DocumentStore.Jobs.HtmlZip</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.ImageResizer\Jarvis.DocumentStore.Jobs.ImageResizer.csproj">
+      <Project>{a561b929-14e8-4824-be05-004b610491ea}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.ImageResizer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Office\Jarvis.DocumentStore.Jobs.Office.csproj">
       <Project>{9b18cf88-8758-44e9-bed8-e5fd53504c8b}</Project>
       <Name>Jarvis.DocumentStore.Jobs.Office</Name>

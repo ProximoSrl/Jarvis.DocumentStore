@@ -119,6 +119,18 @@
     <Reference Include="IKVM.Runtime.JNI">
       <HintPath>..\..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
     </Reference>
+    <Reference Include="IvanAkcheurov.Commons, Version=0.2.1.1, Culture=neutral, PublicKeyToken=a61413de1d13f8fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.Commons.dll</HintPath>
+    </Reference>
+    <Reference Include="IvanAkcheurov.NClassify, Version=0.2.1.1, Culture=neutral, PublicKeyToken=a61413de1d13f8fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NClassify.dll</HintPath>
+    </Reference>
+    <Reference Include="IvanAkcheurov.NTextCat.Lib, Version=0.2.1.1, Culture=neutral, PublicKeyToken=a61413de1d13f8fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NTextCat.Lib.dll</HintPath>
+    </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Jarvis.Framework.MongoAppender.1.0.11\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
     </Reference>
@@ -155,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractTikaOutOfProcessJob.cs" />
+    <Compile Include="LanguageDetector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TikaAnalyzer.cs" />
     <Compile Include="TikaNetAnalyzer.cs" />

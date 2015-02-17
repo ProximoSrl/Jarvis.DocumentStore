@@ -46,7 +46,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             }
             var queuePoller = allPollers.SingleOrDefault(p =>
                 p.IsOutOfProcess && 
-                p.QueueName == _queueName &&
+                p.QueueName.Equals(_queueName, StringComparison.OrdinalIgnoreCase) &&
                 p.IsActive);
           
             if (queuePoller == null)
