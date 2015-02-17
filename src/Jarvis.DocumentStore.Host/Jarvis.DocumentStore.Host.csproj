@@ -62,10 +62,11 @@
     </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.0.8\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
+      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.0.11\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.Framework.UdpAppender">
-      <HintPath>..\packages\Jarvis.Framework.UdpAppender.1.0.1\lib\NET45\Jarvis.Framework.UdpAppender.dll</HintPath>
+    <Reference Include="Jarvis.Framework.UdpAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Jarvis.Framework.UdpAppender.1.0.9\lib\NET45\Jarvis.Framework.UdpAppender.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>

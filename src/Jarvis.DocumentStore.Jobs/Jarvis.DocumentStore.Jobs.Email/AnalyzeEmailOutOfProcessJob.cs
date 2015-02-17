@@ -1,19 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
 using Jarvis.DocumentStore.Shared.Jobs;
 
-namespace Jarvis.DocumentStore.JobsHost.Jobs
+namespace Jarvis.DocumentStore.Jobs.Email
 {
     public class AnalyzeEmailOutOfProcessJob: AbstractOutOfProcessPollerFileJob
     {
         public AnalyzeEmailOutOfProcessJob()
         {
-            base.PipelineId = new PipelineId("email");
+            base.PipelineId = "email";
             base.QueueName = "email";
         }
 

@@ -5,6 +5,8 @@ using System.Linq;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.Framework.Kernel.ProjectionEngine.Client;
+using Jarvis.Framework.UdpAppender;
+using log4net.Core;
 using Topshelf;
 using Jarvis.ConfigurationService.Client;
 using System.Threading;

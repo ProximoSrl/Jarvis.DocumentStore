@@ -5,7 +5,7 @@ using System.Linq;
 using Castle.Core.Logging;
 using MsgReader;
 
-namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
+namespace Jarvis.DocumentStore.Jobs.Email
 {
     /// <summary>
     /// Outlook email & msg conversion

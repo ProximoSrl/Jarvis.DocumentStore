@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             IsWorker = false;
             IsReadmodelBuilder = false;
             IsQueueManager = false;
-
+    
             var jobMode = ConfigurationServiceClient.Instance.GetSetting("roles.jobMode", "Quartz");
             JobMode = (JobModes) Enum.Parse(typeof(JobModes), jobMode, true);
 
