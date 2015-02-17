@@ -4,13 +4,14 @@ using System.IO;
 using System.Threading;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
 using uno;
 using uno.util;
 using unoidl.com.sun.star.beans;
 using unoidl.com.sun.star.frame;
 using unoidl.com.sun.star.lang;
 
-namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
+namespace Jarvis.DocumentStore.Jobs.Office
 {
     /// <summary>
     /// http://tinyway.wordpress.com/2011/03/30/how-to-convert-office-documents-to-pdf-using-open-office-in-c/

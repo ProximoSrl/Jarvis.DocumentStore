@@ -4,7 +4,7 @@ using System.IO;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Services;
 
-namespace Jarvis.DocumentStore.JobsHost.Processing.Conversions
+namespace Jarvis.DocumentStore.Jobs.Office
 {
     /// <summary>
     /// Office / OpenOffice => pdf with Headless Libreoffice

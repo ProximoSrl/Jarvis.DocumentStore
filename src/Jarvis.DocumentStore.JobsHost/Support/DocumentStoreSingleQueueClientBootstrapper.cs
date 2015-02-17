@@ -80,10 +80,6 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             _container.Register(
                 Component
                     .For<ConfigService>(),
-                Component
-                    .For<ILibreOfficeConversion>()
-                    .ImplementedBy<LibreOfficeUnoConversion>()
-                    .LifeStyle.Transient,
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface() ,
@@ -94,6 +90,11 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                     .For<CreateImageFromPdfTask>()
                     .LifestyleTransient()
             );
+
+            _container.Install(
+                FromAssembly.InDirectory(
+                    new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*")));
+
             _logger = _container.Resolve<ILogger>();
         }
 

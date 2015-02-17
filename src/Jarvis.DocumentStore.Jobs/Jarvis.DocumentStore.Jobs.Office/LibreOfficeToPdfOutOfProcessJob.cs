@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.JobsHost.Processing.Conversions;
 using Jarvis.DocumentStore.Shared.Jobs;
 
-namespace Jarvis.DocumentStore.JobsHost.Jobs
+namespace Jarvis.DocumentStore.Jobs.Office
 {
     /// <summary>
     /// Converts a file to pdf using headless libreoffice
@@ -18,7 +17,7 @@ namespace Jarvis.DocumentStore.JobsHost.Jobs
 
         public LibreOfficeToPdfOutOfProcessJob(ILibreOfficeConversion conversion)
         {
-            base.PipelineId = new PipelineId("office");
+            base.PipelineId = "office";
             base.QueueName = "office";
             _conversion = conversion;
             _conversion.Initialize();
