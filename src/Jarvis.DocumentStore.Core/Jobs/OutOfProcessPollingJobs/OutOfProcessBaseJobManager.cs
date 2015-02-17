@@ -62,7 +62,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             var jobsLauncherFileExe = @"JobsRunner\Jarvis.DocumentStore.Jobs.exe";
             if (customParameters.ContainsKey("location")) jobsLauncherFileExe = customParameters["location"];
-
+            FileInfo fi = new FileInfo(jobsLauncherFileExe);
+            Logger.InfoFormat("Launching external job process {0} for queue {1}", fi.FullName,  queueId);
             Process process = GetLocalProcessForQueue(queueId, jobsLauncherFileExe);
             if (process == null)
             {
