@@ -28,6 +28,7 @@ using System.Drawing;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
 using Newtonsoft.Json;
+using System.Threading;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -57,6 +58,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected void UpdateAndWait()
         {
             _projections.UpdateAndWait();
+            Thread.Sleep(500); //update and wait returns immediately if there are no other stuff to dispatch.
         }
 
         [TestFixtureSetUp]

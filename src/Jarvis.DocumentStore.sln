@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Core", "Jarvis.DocumentStore.Core\Jarvis.DocumentStore.Core.csproj", "{A03810AE-2905-4CEE-A5D9-5E25C9A6309A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Tests", "Jarvis.DocumentStore.Tests\Jarvis.DocumentStore.Tests.csproj", "{C22E8635-694B-4799-93A2-E10B33E0B04D}"
@@ -58,8 +60,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.ImageResizer", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.ImageResizer\Jarvis.DocumentStore.Jobs.ImageResizer.csproj", "{A561B929-14E8-4824-BE05-004B610491EA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.PdfThumbnails", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.PdfThumbnails\Jarvis.DocumentStore.Jobs.PdfThumbnails.csproj", "{B2C4EC5C-B514-4745-8CCE-233F1E05DD1C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Framework.LogViewer.Host", "Jarvis.Framework\Logging\Jarvis.Framework.LogViewer.Host\Jarvis.Framework.LogViewer.Host.csproj", "{8D656BB6-54B2-4F50-B2A1-237C7FE3EC8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -143,10 +143,6 @@ Global
 		{B2C4EC5C-B514-4745-8CCE-233F1E05DD1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2C4EC5C-B514-4745-8CCE-233F1E05DD1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2C4EC5C-B514-4745-8CCE-233F1E05DD1C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8D656BB6-54B2-4F50-B2A1-237C7FE3EC8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D656BB6-54B2-4F50-B2A1-237C7FE3EC8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D656BB6-54B2-4F50-B2A1-237C7FE3EC8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D656BB6-54B2-4F50-B2A1-237C7FE3EC8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -160,7 +156,6 @@ Global
 		{C540057F-7031-48E3-9997-213FBC4CCB6A} = {1D4A10A7-136D-4D1B-A7AE-82648AD6162B}
 		{C4ED6087-35D8-408B-A638-0153ADBB2FD7} = {C540057F-7031-48E3-9997-213FBC4CCB6A}
 		{F37284CA-EF9C-4505-9C21-363F15F2E525} = {C540057F-7031-48E3-9997-213FBC4CCB6A}
-		{8D656BB6-54B2-4F50-B2A1-237C7FE3EC8D} = {C540057F-7031-48E3-9997-213FBC4CCB6A}
 		{99CC9CA1-9A95-4ECB-A7F4-3A46892BF2C8} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{9B18CF88-8758-44E9-BED8-E5FD53504C8B} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{C636055C-8AE6-443D-A4AE-DC023B159564} = {1BF1D624-839D-4042-BADD-DB00F4067BED}

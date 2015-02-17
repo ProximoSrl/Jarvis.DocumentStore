@@ -64,7 +64,11 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
             };
             try
             {
-                var converter = Factory.Create();
+                IConverter converter =
+                     new ThreadSafeConverter(
+                         new PdfToolset(
+                             new Win32EmbeddedDeployment(
+                                 new TempFolderDeployment())));
                 var pdf = converter.Convert(document);
 
                 File.WriteAllBytes(outputFileName, pdf);
