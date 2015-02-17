@@ -114,7 +114,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Jobs\CreateThumbnailFromPdfOutOfProcessJob.cs" />
-    <Compile Include="Jobs\ImageResizePollerOutOfProcessJob.cs" />
     <Compile Include="Processing\Analyzers\LanguageDetector.cs" />
     <Compile Include="Processing\Conversions\HtmlToPdfConverter.cs" />
     <Compile Include="Processing\Conversions\HtmlToPdfConverterFile.cs" />

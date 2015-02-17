@@ -2,18 +2,16 @@
 using System.IO;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.JobsHost.Processing.Tools;
 using Jarvis.DocumentStore.Shared.Jobs;
 
-namespace Jarvis.DocumentStore.JobsHost.Jobs
+namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
     public class ImageResizePollerOutOfProcessJob : AbstractOutOfProcessPollerFileJob
     {
         public ImageResizePollerOutOfProcessJob()
         {
-            base.PipelineId = new PipelineId("img");
+            base.PipelineId = "img";
             base.QueueName = "imgResize";
         }
 
@@ -44,7 +42,7 @@ namespace Jarvis.DocumentStore.JobsHost.Jobs
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
                             Logger.DebugFormat("Resizing {0}", parameters.JobId);
-                            ImageResizer.Shrink(pageStream, outStream, size.Width, size.Height);
+                            JobsHost.Processing.Tools.ImageResizer.Shrink(pageStream, outStream, size.Width, size.Height);
                         }
                         await AddFormatToDocumentFromFile(
                             parameters.TenantId, 
