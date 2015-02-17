@@ -34,7 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Shared", "Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj", "{377E1786-2C26-4C3B-ACBA-A9CD73FB53E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.JobsHost", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.JobsHost.csproj", "{65411E15-6EC3-455F-A5E4-34446A808474}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.JobsHost", "Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj", "{65411E15-6EC3-455F-A5E4-34446A808474}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{6F0BD141-2501-42C7-A86E-2AFE165CC7C8}"
 	ProjectSection(SolutionItems) = preProject

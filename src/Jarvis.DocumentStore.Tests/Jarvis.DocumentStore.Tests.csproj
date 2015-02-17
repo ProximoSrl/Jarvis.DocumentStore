@@ -344,7 +344,7 @@
       <Project>{26EE5189-77AD-4D18-BD4E-313E024E8941}</Project>
       <Name>Jarvis.DocumentStore.Host</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.JobsHost.csproj">
+    <ProjectReference Include="..\Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj">
       <Project>{65411E15-6EC3-455F-A5E4-34446A808474}</Project>
       <Name>Jarvis.DocumentStore.JobsHost</Name>
     </ProjectReference>
