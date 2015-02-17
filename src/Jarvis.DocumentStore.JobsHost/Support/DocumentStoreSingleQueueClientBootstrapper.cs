@@ -14,7 +14,6 @@ using Castle.Windsor.Installer;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
 
 namespace Jarvis.DocumentStore.JobsHost.Support
 {
@@ -84,10 +83,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                     .WithServiceFirstInterface() ,
                 Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*")) 
                     .BasedOn<IPollerJob>()
-                    .WithServiceFirstInterface(),
-                Component
-                    .For<CreateImageFromPdfTask>()
-                    .LifestyleTransient()
+                    .WithServiceFirstInterface()
             );
 
             _container.Install(

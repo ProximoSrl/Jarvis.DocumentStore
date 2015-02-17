@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected MongoCollection<DocumentReadModel> _documents;
         protected DocumentStoreTestConfigurationForPollQueue _config;
         protected IBlobStore _blobStore;
-        protected AbstractOutOfProcessPollerFileJob _sutBase;
+        protected AbstractOutOfProcessPollerJob _sutBase;
 
         private ITriggerProjectionsUpdate _projections;
 
@@ -81,7 +81,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected abstract QueueInfo[] OnGetQueueInfo();
 
-        protected void PrepareJob(String handle = "TESTHANDLE", AbstractOutOfProcessPollerFileJob testJob = null)
+        protected void PrepareJob(String handle = "TESTHANDLE", AbstractOutOfProcessPollerJob testJob = null)
         {
             var job = testJob ?? _sutBase;
             job.DocumentStoreConfiguration = _config;
@@ -370,6 +370,59 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 new QueueInfo("htmlzip", "", "htmlzip|ezip"),
                 new QueueInfo("email", "", "eml|msg"),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_html_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        HtmlToPdfOutOfProcessJob sut;
+
+        [Test]
+        public async void verify_htmlToPdf()
+        {
+            _sutBase = sut = new HtmlToPdfOutOfProcessJob();
+            PrepareJob();
+
+            DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_htmlzip");
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+            var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
+
+            await _documentStoreClient.UploadAsync(
+               zipped,
+               handle,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentReadModel document;
+            var pdfFormat = DocumentFormats.Pdf;
+            do
+            {
+                UpdateAndWait();
+                document = _documents.AsQueryable()
+                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
+                if (document != null &&
+                    document.Formats.ContainsKey(pdfFormat))
+                {
+
+                    return; //test is good
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("expected formats not found");
+        }
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("htmlzip", "", "htmlzip|ezip"),
             };
         }
     }

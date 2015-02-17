@@ -8,7 +8,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
 {
-    public class HtmlToPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
+    public class HtmlToPdfOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
         public HtmlToPdfOutOfProcessJob()
         {

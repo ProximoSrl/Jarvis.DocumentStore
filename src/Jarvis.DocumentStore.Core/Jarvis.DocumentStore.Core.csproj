@@ -158,7 +158,7 @@
     <Compile Include="Jobs\PollerManager.cs" />
     <Compile Include="Jobs\QueuedJobQuartzMonitor.cs" />
     <Compile Include="Jobs\JobStats.cs" />
-    <Compile Include="Jobs\OutOfProcessPollingJobs\AbstractOutOfProcessPollerFileJob.cs" />
+    <Compile Include="Jobs\OutOfProcessPollingJobs\AbstractOutOfProcessPollerJob.cs" />
     <Compile Include="Jobs\OutOfProcessPollingJobs\OutOfProcessBaseJobManager.cs" />
     <Compile Include="Jobs\IPollerJob.cs" />
     <Compile Include="Jobs\QueueManager\QueuedJob.cs" />

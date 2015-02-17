@@ -28,7 +28,7 @@ using System.Runtime.Serialization.Formatters;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
-    public abstract class AbstractOutOfProcessPollerFileJob : IPollerJob
+    public abstract class AbstractOutOfProcessPollerJob : IPollerJob
     {
         public bool IsOutOfProcess
         {
@@ -55,7 +55,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         JsonSerializerSettings _settings;
 
-        public AbstractOutOfProcessPollerFileJob()
+        public AbstractOutOfProcessPollerJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
             _settings = new JsonSerializerSettings()
@@ -203,6 +203,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     var task = OnPolling(baseParameters, workingFolder);
                     Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, task.Result);
                     DsSetJobExecuted(QueueName, nextJob.Id, "");
+                }
+                catch (AggregateException aex)
+                {
+                    Logger.ErrorFormat(aex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
+                        nextJob.Parameters[JobKeys.TenantId]);
+                    foreach (var ex in aex.InnerExceptions)
+                    {
+                        Logger.ErrorFormat(ex, "Inner error queued job {0} queue {1}: {2}", nextJob.Id, this.QueueName, ex.Message);
+                    }
                 }
                 catch (Exception ex)
                 {

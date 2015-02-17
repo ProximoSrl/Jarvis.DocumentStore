@@ -7,7 +7,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
-    public class ImageResizePollerOutOfProcessJob : AbstractOutOfProcessPollerFileJob
+    public class ImageResizePollerOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
         public ImageResizePollerOutOfProcessJob()
         {

@@ -11,7 +11,7 @@ using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
-    public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerFileJob
+    public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
         readonly string[] _formats;
 

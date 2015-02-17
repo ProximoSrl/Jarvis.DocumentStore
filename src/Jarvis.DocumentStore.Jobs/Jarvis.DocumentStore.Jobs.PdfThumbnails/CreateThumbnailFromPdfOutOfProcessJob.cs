@@ -10,7 +10,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
-    public class CreateThumbnailFromPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
+    public class CreateThumbnailFromPdfOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
         public CreateThumbnailFromPdfOutOfProcessJob()
         {

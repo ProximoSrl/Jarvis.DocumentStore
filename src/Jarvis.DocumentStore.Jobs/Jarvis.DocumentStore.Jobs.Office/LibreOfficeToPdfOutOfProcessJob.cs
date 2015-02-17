@@ -9,7 +9,7 @@ namespace Jarvis.DocumentStore.Jobs.Office
     /// Converts a file to pdf using headless libreoffice
     /// </summary>
 
-    public class LibreOfficeToPdfOutOfProcessJob : AbstractOutOfProcessPollerFileJob
+    public class LibreOfficeToPdfOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
         private ILibreOfficeConversion _conversion;
 

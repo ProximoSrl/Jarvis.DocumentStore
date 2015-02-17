@@ -44,6 +44,10 @@
       <HintPath>..\..\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="GraphicsMagick.NET-x86, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ee2094eb40f5ea47, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\GraphicsMagick.NET-Q8-x86.1.3.20.2\lib\net40-client\GraphicsMagick.NET-x86.dll</HintPath>
+    </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Jarvis.Framework.MongoAppender.1.0.11\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
@@ -64,6 +68,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -71,8 +76,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CreateImageFromPdfTask.cs" />
+    <Compile Include="CreatePdfImageTaskParams.cs" />
     <Compile Include="CreateThumbnailFromPdfOutOfProcessJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindsorInstaller.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">
