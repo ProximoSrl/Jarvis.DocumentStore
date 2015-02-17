@@ -11,6 +11,7 @@ using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using Newtonsoft.Json.Serialization;
 using Owin;
+using Swashbuckle.Application;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -87,6 +88,11 @@ namespace Jarvis.DocumentStore.Host.Support
             var factory = ContainerAccessor.Instance.Resolve<IExtendedLoggerFactory>();
 
             config.MessageHandlers.Add(new TenantContextHandler(factory.Create(typeof(TenantContextHandler))));
+
+            /* swagger */
+            config
+                .EnableSwagger(c=>c.SingleApiVersion("v1", "Documenstore api"))
+                .EnableSwaggerUi();
 
             application.UseWebApi(config);
         }
