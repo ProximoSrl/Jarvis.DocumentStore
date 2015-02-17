@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
                             Logger.DebugFormat("Resizing {0}", parameters.JobId);
-                            JobsHost.Processing.Tools.ImageResizer.Shrink(pageStream, outStream, size.Width, size.Height);
+                            ImageResizer.Shrink(pageStream, outStream, size.Width, size.Height);
                         }
                         await AddFormatToDocumentFromFile(
                             parameters.TenantId, 
