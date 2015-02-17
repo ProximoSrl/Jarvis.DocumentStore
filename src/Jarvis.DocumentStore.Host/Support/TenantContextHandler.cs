@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             var routeData = request.GetConfiguration().Routes.GetRouteData(request);
 
-            if (routeData != null)
+            if (routeData != null && routeData.Values.ContainsKey("MS_SubRoutes"))
             {
                 var route = ((IHttpRouteData[])routeData.Values["MS_SubRoutes"]).First();
 
