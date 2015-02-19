@@ -64,10 +64,20 @@ namespace Jarvis.DocumentStore.Core.Jobs
                         Logger.ErrorFormat("Unable to start polling with poller {0}, unknown poller class.");
                         continue;
                     }
-                    var clientJobHandle = _pollerJobManagers[poller.Name].Start(
-                        queueInfo.Name,
-                        poller.Parameters,
-                        new List<String>() { _configuration.ServerAddress.AbsoluteUri });
+
+                    string clientJobHandle = null;
+                    try
+                    {
+                        clientJobHandle = _pollerJobManagers[poller.Name].Start(
+                            queueInfo.Name,
+                            poller.Parameters,
+                            new List<String>() { _configuration.ServerAddress.AbsoluteUri });
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorFormat(ex, "Exception launching job for queue {0}: {1}", queueInfo.Name, ex.Message);
+                    }
+                  
                     if (!String.IsNullOrEmpty(clientJobHandle))
                     {
                         queueClients.Add(new ClientInfo(_pollerJobManagers[poller.Name], queueInfo.Name, clientJobHandle));
