@@ -64,11 +64,22 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
             };
             try
             {
+                //This is the thread safe converter
+                //it seems sometimes to hang forever during tests.
+                //https://github.com/tuespetre/TuesPechkin
+                //IConverter converter =
+                //     new ThreadSafeConverter(
+                //         new PdfToolset(
+                //             new Win32EmbeddedDeployment(
+                //                 new TempFolderDeployment())));
+
+                //Standard, non thread safe converter.
                 IConverter converter =
-                     new ThreadSafeConverter(
-                         new PdfToolset(
-                             new Win32EmbeddedDeployment(
-                                 new TempFolderDeployment())));
+                    new StandardConverter(
+                        new PdfToolset(
+                            new Win32EmbeddedDeployment(
+                                new TempFolderDeployment())));
+
                 var pdf = converter.Convert(document);
 
                 File.WriteAllBytes(outputFileName, pdf);
