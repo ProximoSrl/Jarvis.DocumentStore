@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Jarvis.ConfigurationService.Client;
-using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.Framework.MongoAppender;
 
@@ -12,7 +10,7 @@ namespace Jarvis.DocumentStore.JobsHost
 {
     public class Program
     {
-        static DocumentStoreConfiguration _documentStoreConfiguration;
+        static JobsHostConfiguration _jobsHostConfiguration;
 
         static int Main(string[] args)
         {
@@ -59,23 +57,9 @@ namespace Jarvis.DocumentStore.JobsHost
             Thread.Sleep(new Random().Next(1000, 3000));
             SetupColors();
             LoadConfiguration();
-
-            try
-            {
-                var resourceDownload = ConfigurationServiceClient.Instance.DownloadResource("log4net.config", monitorForChange: true);
-                if (!resourceDownload)
-                {
-                    Console.Error.WriteLine("Unable to download log4net.config from configuration store");
-                }
-            }
-            catch (System.IO.IOException ex)
-            {
-                //If multiple prcesses starts, we cannot access log4net.config because it can be lcoked.
-            }
-
             var uri = new Uri(dsBaseAddress);
             var bootstrapper = new DocumentStoreSingleQueueClientBootstrapper(uri, queueName, handle);
-            var jobStarted = bootstrapper.Start(_documentStoreConfiguration);
+            var jobStarted = bootstrapper.Start(_jobsHostConfiguration);
 
             if (jobStarted)
             {
@@ -104,9 +88,9 @@ namespace Jarvis.DocumentStore.JobsHost
         }
 
         static void LoadConfiguration()
-        {         
+        {
 
-            _documentStoreConfiguration = new RemoteDocumentStoreConfiguration();
+            _jobsHostConfiguration = new JobsHostConfiguration();
         }
 
         private static string FindArgument(string[] args, string prefix, String defaultValue = "")

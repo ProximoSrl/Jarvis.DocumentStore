@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.JobsHost.Support;
 using uno;
 using uno.util;
 using unoidl.com.sun.star.beans;
@@ -21,9 +21,9 @@ namespace Jarvis.DocumentStore.Jobs.Office
 
         public ILogger Logger { get; set; }
 
-        readonly ConfigService _config;
+        readonly JobsHostConfiguration _config;
 
-        public LibreOfficeUnoConversion(ConfigService config)
+        public LibreOfficeUnoConversion(JobsHostConfiguration config)
         {
             _config = config;
         }

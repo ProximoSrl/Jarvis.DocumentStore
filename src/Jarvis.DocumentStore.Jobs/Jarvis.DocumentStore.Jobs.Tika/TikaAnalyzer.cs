@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.JobsHost.Support;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
@@ -12,21 +12,21 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
     public class TikaAnalyzer : ITikaAnalyzer
     {
-        public TikaAnalyzer(ConfigService configService)
+        public TikaAnalyzer(JobsHostConfiguration jobsHostConfiguration)
         {
-            ConfigService = configService;
+            JobsHostConfiguration = jobsHostConfiguration;
         }
 
         public ILogger Logger { get; set; }
-        private ConfigService ConfigService { get; set; }
+        private JobsHostConfiguration JobsHostConfiguration { get; set; }
 
         public string GetHtmlContent(string pathToInputFile)
         {
-            string pathToJavaExe = ConfigService.GetPathToJava();
+            string pathToJavaExe = JobsHostConfiguration.GetPathToJava();
 
             var arguments = String.Format(
                 "-jar {0} -h \"{1}\"", 
-                ConfigService.GetPathToTika(), 
+                JobsHostConfiguration.GetPathToTika(), 
                 pathToInputFile
             );
 

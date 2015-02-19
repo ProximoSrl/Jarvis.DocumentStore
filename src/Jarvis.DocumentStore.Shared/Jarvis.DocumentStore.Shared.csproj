@@ -46,6 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Jobs\BlobId.cs" />
+    <Compile Include="Jobs\IPollerJob.cs" />
+    <Compile Include="Jobs\JobKeys.cs" />
     <Compile Include="Jobs\PollerJobParameters.cs" />
     <Compile Include="Jobs\QueuedJobDto.cs" />
     <Compile Include="Model\AddFormatToDocumentParameters.cs" />

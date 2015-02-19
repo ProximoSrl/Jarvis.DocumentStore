@@ -1,4 +1,4 @@
-namespace Jarvis.DocumentStore.Core.Jobs
+namespace Jarvis.DocumentStore.Shared.Jobs
 {
     public static class JobKeys
     {
@@ -17,7 +17,5 @@ namespace Jarvis.DocumentStore.Core.Jobs
         public const string PipelineId = "pipeline_id";
         public const string Command = "cmd";
         public const string Format = "format";
-
-
     }
 }

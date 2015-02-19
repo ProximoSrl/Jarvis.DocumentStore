@@ -1,6 +1,7 @@
 ﻿using System;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;

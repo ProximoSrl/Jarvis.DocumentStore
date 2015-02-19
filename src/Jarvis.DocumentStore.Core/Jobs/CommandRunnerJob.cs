@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Processing;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.Framework.Kernel.Store;

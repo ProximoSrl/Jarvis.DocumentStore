@@ -14,6 +14,8 @@ using Jarvis.DocumentStore.Jobs.Email;
 using Jarvis.DocumentStore.Jobs.HtmlZip;
 using Jarvis.DocumentStore.Jobs.ImageResizer;
 using Jarvis.DocumentStore.Jobs.Tika;
+using Jarvis.DocumentStore.JobsHost.Helpers;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
@@ -29,6 +31,7 @@ using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
 using Newtonsoft.Json;
 using System.Threading;
+using ContainerAccessor = Jarvis.DocumentStore.Host.Support.ContainerAccessor;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -50,6 +53,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected DocumentStoreServiceClient _documentStoreClient;
         protected MongoCollection<DocumentReadModel> _documents;
         protected DocumentStoreTestConfigurationForPollQueue _config;
+        protected JobsHostConfiguration _jobsHostConfiguration;
         protected IBlobStore _blobStore;
         protected AbstractOutOfProcessPollerJob _sutBase;
 
@@ -65,7 +69,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void TestFixtureSetUp()
         {
             _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo());
-
+            _jobsHostConfiguration = new JobsHostConfiguration();
             MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
             _config.ServerAddress = TestConfig.ServerAddress;
             _documentStoreService = new DocumentStoreBootstrapper();
@@ -86,9 +90,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected void PrepareJob(String handle = "TESTHANDLE", AbstractOutOfProcessPollerJob testJob = null)
         {
             var job = testJob ?? _sutBase;
-            job.DocumentStoreConfiguration = _config;
+            job.JobsHostConfiguration = _jobsHostConfiguration;
             job.Logger = new TestLogger(LoggerLevel.Error);
-            job.ConfigService = new ConfigService();
             job.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, handle);
         }
 
@@ -203,9 +206,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_image_resizer_job()
         {
             ImageResizePollerOutOfProcessJob sut = new ImageResizePollerOutOfProcessJob();
-            sut.DocumentStoreConfiguration = _config;
+            sut.JobsHostConfiguration = _jobsHostConfiguration;
             sut.Logger = new TestLogger(LoggerLevel.Error);
-            sut.ConfigService = new ConfigService();
             sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, "TESTHANDLE");
             DocumentHandle handle = DocumentHandle.FromString("verify_img_resize_job");
             await _documentStoreClient.UploadAsync(

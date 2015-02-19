@@ -11,9 +11,8 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
-using Jarvis.DocumentStore.Core.Jobs;
-using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.JobsHost.Helpers;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.JobsHost.Support
 {
@@ -33,7 +32,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             _handle = handle;
         }
 
-        public Boolean Start(DocumentStoreConfiguration config)
+        public Boolean Start(JobsHostConfiguration config)
         {
             Console.WriteLine("Starting");
             BuildContainer(config);
@@ -61,11 +60,11 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             return true;
         }
 
-        void BuildContainer(DocumentStoreConfiguration config)
+        void BuildContainer(JobsHostConfiguration config)
         {
             _container = new WindsorContainer();
             ContainerAccessor.Instance = _container;
-            _container.Register(Component.For<DocumentStoreConfiguration>().Instance(config));
+            _container.Register(Component.For<JobsHostConfiguration>().Instance(config));
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
 
@@ -76,8 +75,6 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             _container.AddFacility<TypedFactoryFacility>();
 
             _container.Register(
-                Component
-                    .For<ConfigService>(),
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface() ,

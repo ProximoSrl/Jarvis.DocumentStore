@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Jobs.Office;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 
@@ -32,12 +33,12 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             _mapping["odp"] = TestConfig.PathToOpenDocumentPresentation;
             _mapping["rtf"] = TestConfig.PathToRTFDocument;
 
-            _withLibreOfficeConversion = new LibreOfficeConversion(new ConfigService())
+            _withLibreOfficeConversion = new LibreOfficeConversion(new JobsHostConfiguration())
             {
                 Logger = new ConsoleLogger()
             };
 
-            _unoConversion = new LibreOfficeUnoConversion(new ConfigService())
+            _unoConversion = new LibreOfficeUnoConversion(new JobsHostConfiguration())
             {
                 Logger = new ConsoleLogger()
             };

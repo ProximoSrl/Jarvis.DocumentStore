@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Jobs;
-using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
+using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
 using Jarvis.DocumentStore.Shared.Jobs;
 

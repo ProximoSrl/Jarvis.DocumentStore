@@ -1,4 +1,5 @@
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Jobs.ImageResizer;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.Misc

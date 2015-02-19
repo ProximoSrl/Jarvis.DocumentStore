@@ -90,10 +90,6 @@
       <Project>{a7b56dee-8009-47b2-89e4-c9f7a5c67236}</Project>
       <Name>Jarvis.DocumentStore.Client</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Jarvis.DocumentStore.Core\Jarvis.DocumentStore.Core.csproj">
-      <Project>{a03810ae-2905-4cee-a5d9-5e25c9a6309a}</Project>
-      <Name>Jarvis.DocumentStore.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj">
       <Project>{65411e15-6ec3-455f-a5e4-34446a808474}</Project>
       <Name>Jarvis.DocumentStore.JobsHost</Name>

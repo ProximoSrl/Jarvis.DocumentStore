@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AngleSharp;
 using Jarvis.DocumentStore.Shared.Model;
 
-namespace Jarvis.DocumentStore.Core.Services
+namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public static class ContentFormatBuilder
     {

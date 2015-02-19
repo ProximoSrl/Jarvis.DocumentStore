@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.JobsHost.Support;
 
 namespace Jarvis.DocumentStore.Jobs.Office
 {
@@ -14,9 +14,9 @@ namespace Jarvis.DocumentStore.Jobs.Office
     {
         public ILogger Logger { get; set; }
         
-        readonly ConfigService _config;
+        readonly JobsHostConfiguration _config;
 
-        public LibreOfficeConversion(ConfigService config)
+        public LibreOfficeConversion(JobsHostConfiguration config)
         {
             _config = config;
         }

@@ -2,9 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Jarvis.DocumentStore.Core.Model;
 
-namespace Jarvis.DocumentStore.Core.Support
+namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
     public static class SizeInfoHelper
     {

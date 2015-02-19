@@ -6,6 +6,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
+using Jarvis.DocumentStore.Shared.Jobs;
 using MongoDB.Driver;
 using Quartz;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;

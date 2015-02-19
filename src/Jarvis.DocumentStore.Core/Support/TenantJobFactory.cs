@@ -2,6 +2,7 @@ using System;
 using Castle.Core.Logging;
 using Castle.MicroKernel;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Quartz;
 using Quartz.Spi;

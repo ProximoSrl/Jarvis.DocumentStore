@@ -1,32 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
 using System.Timers;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Domain.Document;
-
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
-using Jarvis.Framework.Kernel.MultitenantSupport;
-using Jarvis.Framework.Shared.Domain.Serialization;
-using Jarvis.Framework.Shared.Messages;
-using Jarvis.Framework.Shared.MultitenantSupport;
-using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
-using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
-using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
-using System.Runtime.Serialization.Formatters;
+using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 
-
-namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
+namespace Jarvis.DocumentStore.JobsHost.Helpers
 {
     public abstract class AbstractOutOfProcessPollerJob : IPollerJob
     {
@@ -43,9 +31,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public ILogger Logger { get; set; }
 
-        public ConfigService ConfigService { get; set; }
-
-        public DocumentStoreConfiguration DocumentStoreConfiguration { get; set; }
+        public JobsHostConfiguration JobsHostConfiguration { get; set; }
 
         public Boolean Started { get; private set; }
 
@@ -61,11 +47,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             _settings = new JsonSerializerSettings()
             {
                 TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
-                Converters = new JsonConverter[]
-                {
-                    new StringValueJsonConverter()
-                },
-                ContractResolver = new MessagesContractResolver(),
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
             };
         }
@@ -104,7 +85,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                         addr.TrimEnd('/') + "/queue/setjobcomplete",
                         new Uri(addr)))
                 .ToList();
-            Start(DocumentStoreConfiguration.QueueStreamPollInterval);
+            Start(JobsHostConfiguration.QueueJobsPollInterval);
             Started = true;
         }
 
@@ -191,10 +172,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 }
                 var baseParameters = ExtractJobParameters(nextJob);
                 //remember to enter the right tenant.
-                TenantContext.Enter(new TenantId(baseParameters.TenantId));
                 workingFolder = Path.Combine(
-                        ConfigService.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
-                        baseParameters.JobId.ToString()
+                        JobsHostConfiguration.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
+                        baseParameters.JobId
                     );
                 if (Directory.Exists(workingFolder)) Directory.Delete(workingFolder, true);
                 Directory.CreateDirectory(workingFolder);
@@ -252,8 +232,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             PollerJobParameters parameters = new PollerJobParameters();
             parameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
             parameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
-            parameters.JobId = new QueuedJobId(nextJob.Id);
-            parameters.TenantId = new TenantId(nextJob.Parameters[JobKeys.TenantId]);
+            parameters.JobId = nextJob.Id;
+            parameters.TenantId = nextJob.Parameters[JobKeys.TenantId];
             parameters.All = nextJob.Parameters;
             return parameters;
         }

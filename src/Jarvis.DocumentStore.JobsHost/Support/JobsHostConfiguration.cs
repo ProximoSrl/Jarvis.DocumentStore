@@ -1,37 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Support;
 
-namespace Jarvis.DocumentStore.Core.Services
+using Castle.Facilities.Logging;
+using Castle.Services.Logging.Log4netIntegration;
+
+
+namespace Jarvis.DocumentStore.JobsHost.Support
 {
-    public class ConfigService
+    public class JobsHostConfiguration
     {
-        readonly string[] _allowedExtensions;
-        
-        public ConfigService()
-        {
-            var configExtensions = GetConfigValue(
-                "JARVIS_DOCUMENTSTORE_ALLOWED_FILE_TYPES",
-                "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png"
-                ).ToLowerInvariant();
+        public int QueueJobsPollInterval { get; protected set; }
 
-            _allowedExtensions = configExtensions != "*" ? configExtensions.Split('|') : null;
-            IsDeduplicationActive = GetConfigValue(
-                "JARVIS_DOCUMENTSTORE_DEDUPLICATION",
-                "on"
-            ).ToLowerInvariant() == "on";
-
-            UseEmbeddedTika = GetConfigValue(
-                "JARVIS_DOCUMENTSTORE_TIKA_EMBEDDED", 
-                "true"
-            ).ToLowerInvariant() =="true";
-        }
-
-        public bool IsDeduplicationActive { get; private set; }
         public bool UseEmbeddedTika { get; private set; }
+
+        public JobsHostConfiguration()
+        {
+            UseEmbeddedTika = GetConfigValue(
+               "JARVIS_DOCUMENTSTORE_TIKA_EMBEDDED",
+               "true"
+           ).ToLowerInvariant() == "true";
+
+            QueueJobsPollInterval = Int32.Parse(GetConfigValue("queues.jobs-poll-interval-ms", "1000"));
+        }
 
         public string GetPathToLibreOffice()
         {
@@ -84,8 +76,8 @@ namespace Jarvis.DocumentStore.Core.Services
 
         string GetConfigValue(string key, string defaultValue = null)
         {
-            return  ConfigurationManager.AppSettings[key] ??
-                    Environment.GetEnvironmentVariable(key) ?? 
+            return ConfigurationManager.AppSettings[key] ??
+                    Environment.GetEnvironmentVariable(key) ??
                     defaultValue;
         }
 
@@ -97,12 +89,9 @@ namespace Jarvis.DocumentStore.Core.Services
             return folder;
         }
 
-        public bool IsFileAllowed(FileNameWithExtension filename)
+        public virtual void CreateLoggingFacility(LoggingFacility f)
         {
-            if (_allowedExtensions == null)
-                return true;
-
-            return _allowedExtensions.Contains(filename.Extension);
+            f.LogUsing(new ExtendedLog4netFactory("log4net.config"));
         }
     }
 }

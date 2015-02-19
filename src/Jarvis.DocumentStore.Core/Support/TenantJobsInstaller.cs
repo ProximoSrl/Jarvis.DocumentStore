@@ -4,6 +4,7 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Quartz;
 

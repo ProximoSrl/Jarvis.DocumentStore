@@ -4,8 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
-using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Shared.Model;
 
@@ -104,7 +103,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
         protected override ITikaAnalyzer BuildAnalyzer()
         {
-            return new TikaAnalyzer(ConfigService)
+            return new TikaAnalyzer(JobsHostConfiguration)
             {
                 Logger = this.Logger
             };
@@ -112,7 +111,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
         public override bool IsActive
         {
-            get { return !base.ConfigService.UseEmbeddedTika; }
+            get { return !base.JobsHostConfiguration.UseEmbeddedTika; }
         }
     }
 
@@ -125,7 +124,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
         public override bool IsActive
         {
-            get { return base.ConfigService.UseEmbeddedTika; }
+            get { return base.JobsHostConfiguration.UseEmbeddedTika; }
         }
     }
 }

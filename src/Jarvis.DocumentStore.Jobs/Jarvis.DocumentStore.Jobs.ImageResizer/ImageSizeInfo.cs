@@ -1,4 +1,4 @@
-﻿namespace Jarvis.DocumentStore.Core.Model
+﻿namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
     public class ImageSizeInfo
     {

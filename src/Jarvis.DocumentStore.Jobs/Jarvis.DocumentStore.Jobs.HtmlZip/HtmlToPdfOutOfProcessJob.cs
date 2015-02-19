@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Jobs;
-using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
+using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
@@ -23,7 +22,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
             Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
             if (File.Exists(fileName)) File.Delete(fileName);
             File.Copy(pathToFile, fileName);
-            var converter = new HtmlToPdfConverterFromDiskFile(fileName, ConfigService)
+            var converter = new HtmlToPdfConverterFromDiskFile(fileName, base.JobsHostConfiguration)
             {
                 Logger = Logger
             };

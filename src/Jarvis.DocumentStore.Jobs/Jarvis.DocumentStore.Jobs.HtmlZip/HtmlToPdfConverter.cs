@@ -15,9 +15,9 @@
 //        const bool ProduceOutline = false;
 //        readonly IBlobStore _blobStore;
 //        public ILogger Logger { get; set; }
-//        readonly ConfigService _config;
+//        readonly SettingsHelper _config;
 
-//        public HtmlToPdfConverter(IBlobStore blobStore, ConfigService config)
+//        public HtmlToPdfConverter(IBlobStore blobStore, SettingsHelper config)
 //        {
 //            _blobStore = blobStore;
 //            _config = config;

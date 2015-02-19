@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using NEventStore;

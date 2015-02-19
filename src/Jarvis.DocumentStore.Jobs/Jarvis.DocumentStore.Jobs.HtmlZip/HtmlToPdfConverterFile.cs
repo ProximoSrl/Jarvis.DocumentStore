@@ -3,7 +3,7 @@ using System.Drawing.Printing;
 using System.IO;
 using System.IO.Compression;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Services;
+using Jarvis.DocumentStore.JobsHost.Support;
 using TuesPechkin;
 
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
@@ -16,9 +16,9 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
         const bool ProduceOutline = false;
         private String _inputFileName;
         public ILogger Logger { get; set; }
-        readonly ConfigService _config;
+        readonly JobsHostConfiguration _config;
 
-        public HtmlToPdfConverterFromDiskFile(String inputFileName, ConfigService config)
+        public HtmlToPdfConverterFromDiskFile(String inputFileName, JobsHostConfiguration config)
         {
             _inputFileName = inputFileName;
             _config = config;
