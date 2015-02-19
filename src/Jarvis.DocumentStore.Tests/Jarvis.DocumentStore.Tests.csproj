@@ -244,9 +244,9 @@
     <Reference Include="TopShelf.OldLog4NetIntegration">
       <HintPath>..\packages\TopShelf.OldLog4NetIntegration.1.01\lib\net35\TopShelf.OldLog4NetIntegration.dll</HintPath>
     </Reference>
-    <Reference Include="TuesPechkin, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="TuesPechkin, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\TuesPechkin.2.1.1\lib\net20\TuesPechkin.dll</HintPath>
+      <HintPath>..\packages\TuesPechkin.1.0.3.0\lib\net20\TuesPechkin.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -352,9 +352,9 @@
       <Project>{c636055c-8ae6-443d-a4ae-dc023b159564}</Project>
       <Name>Jarvis.DocumentStore.Jobs.Email</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.HtmlZip\Jarvis.DocumentStore.Jobs.HtmlZip.csproj">
-      <Project>{fe881078-a453-4687-ac55-7c4d89502072}</Project>
-      <Name>Jarvis.DocumentStore.Jobs.HtmlZip</Name>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.HtmlZipOld\Jarvis.DocumentStore.Jobs.HtmlZipOld.csproj">
+      <Project>{416674f1-a0f0-46da-92cd-f1191a2eb54c}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.HtmlZipOld</Name>
     </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.ImageResizer\Jarvis.DocumentStore.Jobs.ImageResizer.csproj">
       <Project>{a561b929-14e8-4824-be05-004b610491ea}</Project>
