@@ -10,6 +10,7 @@ using System.Text;
 using System.IO;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using System.Threading;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
@@ -175,9 +176,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 }
 
                 //process is ended, restart the process, it will have new id.
+                Thread.Sleep(1000); //if for some reason the executable is stuck, not waiting for restart can kill the machine.
                 Logger.WarnFormat("Job terminated unexpectedly, job handle {0} for queue {1}. Restarting!!", handle, processInfo.QueueId);
                 InnerStart(processInfo.QueueId, processInfo.CustomParameters, processInfo.DocStoreAddresses, handle);
-
             }
         }
 

@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\Native.cs" />
     <Compile Include="Jobs\BlobId.cs" />
     <Compile Include="Jobs\IPollerJob.cs" />
     <Compile Include="Jobs\JobKeys.cs" />

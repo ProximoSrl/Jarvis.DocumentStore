@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Jarvis.DocumentStore.JobsHost.Support;
+using Jarvis.DocumentStore.Shared.Helpers;
 using Jarvis.Framework.MongoAppender;
 
 namespace Jarvis.DocumentStore.JobsHost
@@ -16,6 +17,7 @@ namespace Jarvis.DocumentStore.JobsHost
         {
             try
             {
+                Native.DisableWindowsErrorReporting();
                 Int32 exitCode;
                 if (args.Length > 0)
                 {

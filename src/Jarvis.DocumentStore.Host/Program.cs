@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.DocumentStore.Shared.Helpers;
 using Jarvis.Framework.Kernel.ProjectionEngine.Client;
 using Jarvis.Framework.UdpAppender;
 using log4net.Core;
@@ -20,8 +21,10 @@ namespace Jarvis.DocumentStore.Host
 
         static int Main(string[] args)
         {
+            
             try
             {
+                Native.DisableWindowsErrorReporting();
                 MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
                 var executionExitCode = StandardDocumentStoreStart();
                 return (Int32)executionExitCode;
