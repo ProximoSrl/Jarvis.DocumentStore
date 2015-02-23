@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using java.io;
 using org.apache.tika.io;
 using org.apache.tika.metadata;
@@ -66,18 +64,5 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 throw new TextExtractionException("Extraction failed.", ex);
             }
         }
-
-        private static TextExtractionResult assembleExtractionResult(string text, Metadata metadata)
-        {
-            Dictionary<string, string> dictionary = Enumerable.ToDictionary<string, string, string>((IEnumerable<string>)metadata.names(), (Func<string, string>)(name => name), (Func<string, string>)(name => string.Join(", ", metadata.getValues(name))));
-            string str = dictionary["Content-Type"];
-            return new TextExtractionResult()
-            {
-                Text = text,
-                ContentType = str,
-                Metadata = (IDictionary<string, string>)dictionary
-            };
-        }
-
     }
 }

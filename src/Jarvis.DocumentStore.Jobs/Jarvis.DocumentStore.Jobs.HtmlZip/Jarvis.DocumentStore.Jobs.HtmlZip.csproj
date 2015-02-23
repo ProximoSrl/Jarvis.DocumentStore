@@ -68,7 +68,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HtmlToPdfConverter.cs" />
     <Compile Include="HtmlToPdfConverterFile.cs" />
     <Compile Include="HtmlToPdfOutOfProcessJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

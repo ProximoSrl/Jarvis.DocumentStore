@@ -12,6 +12,8 @@ Project Jarvis.DocumentStore.JobsHost is the host pre-configured to run a poller
 2. Reference projects JobsHost, Core, Client and Shared, also add nuget package Castle.Logging integration
 3. Write your plugin inheriting from base class AbstractOutOfProcessPollerFileJob
 4. (Optional) Change post-build action of your project to copy everything in a known directory, es: xcopy "$(TargetDir)*.*" "$(SolutionDir)..\artifacts\jobs\email\" /Y /E
-5. If you want to test the single poller you can simply configure VS to use the host to debug the project, just add needed executable parameters, es /dsuris:http://localhost:5123 /queue:pdfThumb /handle:manual-execution
+5. If you want to test the single poller you can simply configure VS to use the host to debug the project, just add needed executable parameters, es 
+
+	/dsuris:http://localhost:5123 /queue:pdfThumb /handle:manual-execution
 
  

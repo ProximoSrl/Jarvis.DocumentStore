@@ -333,7 +333,8 @@ namespace Jarvis.DocumentStore.Client
         /// Open a binary content, it is necessary for workers out of process that does not care
         /// about <see cref="DocumentHandle" /> but have a reference to a job id related to a blob
         /// </summary>
-        /// <param name="blobId">STring representation of the job id wants to read.</param>
+        /// <param name="queueName">The name of the queue that is executing the job</param>
+        /// <param name="jobId">The id of the job.</param>
         /// <returns></returns>
         public DocumentFormatReader OpenBlobIdForRead(String queueName, String jobId)
         {
