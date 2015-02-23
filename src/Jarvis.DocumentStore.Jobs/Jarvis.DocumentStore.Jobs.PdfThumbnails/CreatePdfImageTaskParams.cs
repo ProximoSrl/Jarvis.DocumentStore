@@ -1,4 +1,4 @@
-﻿namespace Jarvis.DocumentStore.JobsHost.Processing.Pdf
+﻿namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class CreatePdfImageTaskParams
     {

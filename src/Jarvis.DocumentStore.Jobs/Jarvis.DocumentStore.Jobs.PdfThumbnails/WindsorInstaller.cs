@@ -3,18 +3,25 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.MicroKernel.Registration;
-using Jarvis.DocumentStore.JobsHost.Processing.Pdf;
 
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
-    class WindsorInstaller : IWindsorInstaller
+    public class WindsorInstaller : IWindsorInstaller
     {
         public void Install(Castle.Windsor.IWindsorContainer container, Castle.MicroKernel.SubSystems.Configuration.IConfigurationStore store)
         {
             container.Register(
-                Component
+                  Component
+                    .For<PdfDecrypt>(),
+                 Component
                     .For<CreateImageFromPdfTask>()
-                    .LifestyleTransient());
+                    .ImplementedBy<CreateImageFromPdfTask>()
+                    .LifestyleTransient(),
+                  Component
+                     .For<Func<CreateImageFromPdfTask>>()
+                     .Instance(() => container.Resolve<CreateImageFromPdfTask>())
+                     );
+            var check = container.Resolve<CreateImageFromPdfTask>();
         }
     }
 }

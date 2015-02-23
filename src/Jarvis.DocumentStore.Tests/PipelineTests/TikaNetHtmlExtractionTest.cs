@@ -25,5 +25,14 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             var result = sut.GetHtmlContent(file, "jarvistest");
             Assert.That(result, Is.Not.Null);
         }
+
+        [Test]
+        public void Extract_with_unprotected_file_passing_password()
+        {
+            var file = TestConfig.PathToDocumentPdf;
+            TikaNetAnalyzer sut = new TikaNetAnalyzer();
+            var result = sut.GetHtmlContent(file, "jarvistest");
+            Assert.That(result, Is.Not.Null);
+        }
     }
 }
