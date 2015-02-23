@@ -51,7 +51,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             Logger.DebugFormat("Downloading blob for job: {0}, on local path {1}", parameters.JobId, workingFolder);
 
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
-            string content = analyzer.GetHtmlContent(pathToFile) ?? "";
+            string content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
 
             var tikaFileName = Path.Combine(workingFolder, parameters.JobId + ".tika.html");

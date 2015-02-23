@@ -272,6 +272,7 @@
     <Compile Include="DomainSpecs\HandleSpecs\HandleSpecification.cs" />
     <Compile Include="DomainSpecs\SerializationIdTests.cs" />
     <Compile Include="GlobalSetupFixture.cs" />
+    <Compile Include="JobsHostTest\Support\ClientPasswordSetTests.cs" />
     <Compile Include="JobTests\Queue\QueueHandlerTests.cs" />
     <Compile Include="DomainSpecs\ClassWithBlobId.cs" />
     <Compile Include="DomainSpecs\BlobIdJsonConverterTests.cs" />
@@ -311,6 +312,9 @@
     <None Include="Docs\Multilanguage.docx" />
     <None Include="Docs\Multilanguage.pdf" />
     <None Include="Docs\Multipage Word.docx" />
+    <None Include="Docs\passwordprotected.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Docs\Powerpoint show.ppsx" />
     <None Include="Docs\RTF Document.rtf" />
     <None Include="Docs\file.invalid" />

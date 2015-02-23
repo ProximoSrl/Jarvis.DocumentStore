@@ -68,13 +68,13 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
 
-
             _container.AddFacility<LoggingFacility>(config.CreateLoggingFacility);
-
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
 
             _container.Register(
+                Component.For<IClientPasswordSet>()
+                    .ImplementedBy<EnvironmentVariableClientPasswordSet>(),
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface() ,
@@ -88,15 +88,6 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                     new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*")));
 
             _logger = _container.Resolve<ILogger>();
-        }
-
-      
-
-        public void Stop()
-        {
-           
-
-            _container.Dispose();
         }
     }
 

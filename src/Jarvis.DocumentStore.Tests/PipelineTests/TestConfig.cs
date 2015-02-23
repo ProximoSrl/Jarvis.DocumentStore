@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Jarvis.DocumentStore.Core.Domain.Document;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
@@ -22,6 +23,12 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         public static string PathToDocumentPdf
         {
             get { return Path.Combine(DocumentsFolder, "Document.pdf"); }
+        }
+
+        public static string PathToPasswordProtectedPdf
+        {
+            get { return Path.Combine(DocumentsFolder, "passwordprotected.pdf"); }
+
         }
 
         public static string PathToDocumentCopyPdf

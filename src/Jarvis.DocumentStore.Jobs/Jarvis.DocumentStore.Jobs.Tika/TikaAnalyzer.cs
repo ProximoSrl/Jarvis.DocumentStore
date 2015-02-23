@@ -7,7 +7,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public interface ITikaAnalyzer
     {
-        string GetHtmlContent(string pathToInputFile);
+        string GetHtmlContent(String pathToInputFile, String password);
     }
 
     public class TikaAnalyzer : ITikaAnalyzer
@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         public ILogger Logger { get; set; }
         private JobsHostConfiguration JobsHostConfiguration { get; set; }
 
-        public string GetHtmlContent(string pathToInputFile)
+        public string GetHtmlContent(string pathToInputFile, String password)
         {
             string pathToJavaExe = JobsHostConfiguration.GetPathToJava();
 
