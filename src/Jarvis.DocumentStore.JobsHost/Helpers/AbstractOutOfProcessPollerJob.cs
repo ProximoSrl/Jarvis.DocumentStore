@@ -41,9 +41,12 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         JsonSerializerSettings _settings;
 
+        public IClientPasswordSet ClientPasswordSet { get; set; }
+
         public AbstractOutOfProcessPollerJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
+            ClientPasswordSet = NullClientPasswordSet.Instance;
             _settings = new JsonSerializerSettings()
             {
                 TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
@@ -231,6 +234,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         {
             PollerJobParameters parameters = new PollerJobParameters();
             parameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
+            parameters.FileName = nextJob.Parameters[JobKeys.FileName];
             parameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
             parameters.JobId = nextJob.Id;
             parameters.TenantId = nextJob.Parameters[JobKeys.TenantId];

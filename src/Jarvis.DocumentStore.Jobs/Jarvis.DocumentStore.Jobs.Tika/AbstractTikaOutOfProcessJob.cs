@@ -51,7 +51,30 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             Logger.DebugFormat("Downloading blob for job: {0}, on local path {1}", parameters.JobId, workingFolder);
 
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
-            string content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
+
+            var passwords = ClientPasswordSet.GetPasswordFor(parameters.FileName);
+            String content = "";
+            if (passwords.Any())
+            {
+                //Try with all the password
+                foreach (var password in passwords)
+                {
+                    try
+                    {
+                        content = analyzer.GetHtmlContent(pathToFile, password) ?? "";
+                        break; //first password that can decrypt file break the list of password to try
+                    }
+                    catch (Exception)
+                    {
+                        Logger.ErrorFormat("Error opening file {0} with password", parameters.FileName);
+                    }
+                }
+            } 
+            else
+            {
+                //Simply analyze file without password
+                content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
+            }
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
 
             var tikaFileName = Path.Combine(workingFolder, parameters.JobId + ".tika.html");

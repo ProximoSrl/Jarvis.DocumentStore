@@ -16,4 +16,22 @@ Project Jarvis.DocumentStore.JobsHost is the host pre-configured to run a poller
 
 	/dsuris:http://localhost:5123 /queue:pdfThumb /handle:manual-execution
 
+###Passwords
+
+Some file are password protected. Tika is enabled to use password. The real password is stored in client running jobs. The setting is in environment variable
+
+	DS_DOCPWDS
+
+The content of this variable is a list of tuple
+
+	regex||password
+
+where regex is a regex that specify whitch file should use the password. you can specify more tuples for different files es:
+
+	\.pdf||passwd1,\.doc||passwd2
+
+Where I specified two password, one for pdf files the other for doc files. If you need to use a comma inside a password, you should escape the password with double comma. ES
+
+	\.pdf||contains,,comma
+
  

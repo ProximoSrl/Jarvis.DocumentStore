@@ -17,6 +17,8 @@ namespace Jarvis.DocumentStore.Shared.Jobs
 
         public String FileExtension { get; set; }
 
+        public String FileName { get; set; }
+
         public Dictionary<String, String> All { get; set; }
 
         public Int32 GetIntOrDefault(string key, int defaultvalue)

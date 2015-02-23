@@ -43,6 +43,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_pdf_with_password()
+        {
+            _docs.UploadAsync(TestConfig.PathToPasswordProtectedPdf, DocumentHandle.FromString("pdf_password")).Wait();
+        }
+
+        [Test]
         public void upload_ppt_with_link()
         {
             //the file for this test is in trello card https://trello.com/c/SKGrSdAQ/156-libreoffice-dialog
