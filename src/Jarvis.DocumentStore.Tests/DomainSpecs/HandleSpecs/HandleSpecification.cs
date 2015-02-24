@@ -67,7 +67,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
             var e = RaisedEvent<HandleInitialized>();
             e.Handle.ShouldBeTheSameAs(DocumentHandle);
             e.Id.ShouldBeLike(HandleId_1);
-            e.FatherHandle.ShouldBeLike(FatherDocumentHandle);
+            e.FatherHandle.ShouldEqual(FatherDocumentHandle);
         };
 
         It linked_document_should_be_null = () =>

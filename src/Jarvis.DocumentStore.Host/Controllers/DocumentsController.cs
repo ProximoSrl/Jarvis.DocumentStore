@@ -307,6 +307,29 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, formats);
         }
 
+        [Route("{tenantId}/documents/attachments/{handle}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetAttachmentList(
+            TenantId tenantId,
+            DocumentHandle handle
+        )
+        {
+            var mapping = _handleWriter.FindOneById(handle);
+
+            if (mapping == null)
+            {
+                return DocumentNotFound(handle);
+            }
+
+            if (mapping.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+
+            var attachments = mapping.Attachments.ToDictionary(x =>
+                x,
+                x => Url.Content("/" + tenantId + "/documents/" + x)
+            );
+            return Request.CreateResponse(HttpStatusCode.OK, attachments);
+        }
+
         [Route("{tenantId}/documents/{handle}/{format}")]
         [HttpGet]
         public async Task<HttpResponseMessage> GetFormat(

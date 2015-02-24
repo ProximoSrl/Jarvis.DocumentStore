@@ -52,6 +52,7 @@
     <Compile Include="DocumentStoreServiceClient.cs" />
     <Compile Include="Model\AddFormatToDocument.cs" />
     <Compile Include="Model\ClientAbstractStringValue.cs" />
+    <Compile Include="Model\DocumentAttachments.cs" />
     <Compile Include="Model\DocumentFormats.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UploadedDocumentResponse.cs" />

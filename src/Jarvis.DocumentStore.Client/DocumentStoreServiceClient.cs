@@ -420,6 +420,17 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
+        public async Task<DocumentAttachments> GetAttachmentsAsync(DocumentHandle handle)
+        {
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments/" + handle);
+            using (var client = new HttpClient())
+            {
+                var json = await client.GetStringAsync(resourceUri);
+                var d = await FromJsonAsync<IDictionary<DocumentHandle, Uri>>(json);
+                return new DocumentAttachments(d);
+            }
+        }
+
         /// <summary>
         /// Get document content (typed)
         /// </summary>

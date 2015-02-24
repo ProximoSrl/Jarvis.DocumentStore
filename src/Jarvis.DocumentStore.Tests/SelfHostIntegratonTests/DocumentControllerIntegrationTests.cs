@@ -301,6 +301,29 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(document, Is.Not.Null, "Document with child@father handle was not find.");
         }
 
+        [Test]
+        public async void can_retrieve_attachments()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            var childHandle = new DocumentHandle("child");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, childHandle, "test");
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
+            Assert.NotNull(attachments);
+            Assert.That(attachments.Attachments, Has.Count.EqualTo(1));
+            Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("child@father"));
+            Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/child@father"));
+        }
+
         private async Task CompareDownloadedStreamToFile(string pathToFileToCompare, DocumentFormatReader documentFormatReader)
         {
             using (var reader = documentFormatReader)
