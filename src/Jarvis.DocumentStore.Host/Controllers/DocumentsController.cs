@@ -33,6 +33,7 @@ using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
+using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -105,11 +106,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
                    "Character @ is not permitted when creating Handle, use call to create an attachment instead"
                );
             }
-            var handle = new DocumentHandle(String.Format("{0}@{1}", attachHandle, fatherHandle));
-            return await InnerUploadDocument(tenantId, handle);
+
+            return await InnerUploadDocument(tenantId, attachHandle, fatherHandle);
         }
 
-        private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle)
+        private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle, DocumentHandle fatherHandle = null)
         {
             var documentId = _identityGenerator.New<DocumentId>();
 
@@ -125,7 +126,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            CreateDocument(documentId, _blobId, handle, _fileName, _customData);
+            CreateDocument(documentId, _blobId, handle, fatherHandle, _fileName, _customData);
 
             Logger.DebugFormat("File {0} uploaded as {1}", _blobId, documentId);
 
@@ -429,14 +430,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentId documentId,
             BlobId blobId,
             DocumentHandle handle,
+            DocumentHandle fatherHandle,
             FileNameWithExtension fileName,
             HandleCustomData customData
         )
         {
-            var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
+            
             var descriptor = _blobStore.GetDescriptor(blobId);
-            var createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
-            //            createDocument.WithDiagnosticDescription("Created by rest api");
+            ICommand createDocument;
+            if (fatherHandle == null)
+            {
+                var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
+                createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
+            }
+            else
+            {
+                var realHandle = new DocumentHandle(String.Format("{0}@{1}", handle, fatherHandle));
+                var handleInfo = new DocumentHandleInfo(realHandle, fileName, customData);
+                createDocument = new CreateDocumentAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
+            }
             CommandBus.Send(createDocument, "api");
         }
 

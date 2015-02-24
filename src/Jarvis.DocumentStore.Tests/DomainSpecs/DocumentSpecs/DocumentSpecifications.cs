@@ -18,6 +18,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         protected static readonly DocumentHandle Handle = new DocumentHandle("handle-to-file");
         protected static readonly FileNameWithExtension _fname = new FileNameWithExtension("pathTo.file");
         protected static readonly DocumentHandleInfo _handleInfo = new DocumentHandleInfo(Handle, _fname);
+        protected static readonly DocumentHandle _fatherHandle = new DocumentHandle("handle-to-father");
 
         protected static Document Document
         {
