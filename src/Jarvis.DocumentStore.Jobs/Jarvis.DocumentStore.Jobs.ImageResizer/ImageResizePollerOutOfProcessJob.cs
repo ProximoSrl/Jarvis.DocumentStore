@@ -2,6 +2,7 @@
 using System.IO;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
+using System;
 
 namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
@@ -21,7 +22,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
 
             Logger.DebugFormat("Starting resize job for {0} - {1}", parameters.JobId, sizesAsString);
 
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
 
 
             using (var sourceStream = File.OpenRead(pathToFile))
@@ -36,7 +37,9 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
                         pageStream.Seek(0, SeekOrigin.Begin);
                         var fileFormat = new Client.Model.DocumentFormat("thumb." + size.Name);
 
-                        string resizeImagePath = Path.Combine(workingFolder, size.Name + "." + fileExtension);
+                        string resizeImagePath = Path.Combine(
+                            workingFolder, 
+                            String.Format("{0}.{1}.{2}" ,Path.GetFileNameWithoutExtension(parameters.FileName),size.Name , fileExtension));
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
                             Logger.DebugFormat("Resizing {0}", parameters.JobId);

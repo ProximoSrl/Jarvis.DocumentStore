@@ -251,7 +251,7 @@ namespace Jarvis.DocumentStore.Client
                         content.Add(
                             new StreamContent(sourceStream),
                             "stream",
-                            "objectContent"
+                            model.FileName
                         );
 
                         customData = customData ?? new Dictionary<String, Object>();

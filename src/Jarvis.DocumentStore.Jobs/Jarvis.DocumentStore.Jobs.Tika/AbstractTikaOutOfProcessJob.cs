@@ -42,7 +42,10 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 result = await AddFormatToDocumentFromObject(parameters.TenantId,
                     this.QueueName,
                     parameters.JobId,
-                    new DocumentFormat(DocumentFormats.Content), DocumentContent.NullContent, new Dictionary<string, object>());
+                    new DocumentFormat(DocumentFormats.Content), 
+                    DocumentContent.NullContent, 
+                    parameters.FileName,
+                    new Dictionary<string, object>());
                 return result;
             }
 
@@ -50,7 +53,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             var analyzer = BuildAnalyzer();
             Logger.DebugFormat("Downloading blob for job: {0}, on local path {1}", parameters.JobId, workingFolder);
 
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
 
             var passwords = ClientPasswordSet.GetPasswordFor(parameters.FileName);
             String content = "";
@@ -77,7 +80,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             }
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
 
-            var tikaFileName = Path.Combine(workingFolder, parameters.JobId + ".tika.html");
+            var tikaFileName = Path.Combine(workingFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".tika.html");
             File.WriteAllText(tikaFileName, content);
             result =  await AddFormatToDocumentFromFile(
                 parameters.TenantId,
@@ -106,13 +109,14 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 {
                     documentContent.AddMetadata(DocumentContent.MedatataLanguage, lang);
                 }
-
+                var contentFileName = Path.ChangeExtension(parameters.FileName, ".content");
                 result = await AddFormatToDocumentFromObject(
                       parameters.TenantId,
                       this.QueueName,
                       parameters.JobId,
                       new DocumentFormat(DocumentFormats.Content),
                       documentContent,
+                      contentFileName,
                       new Dictionary<string, object>());
                 Logger.DebugFormat("Added format {0} to jobId {1}, result: {2}", DocumentFormats.Content, parameters.JobId, result);
             }
