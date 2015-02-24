@@ -39,6 +39,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             JobMode = JobModes.Queue;
             QueueJobsPollInterval = 50; //poll each 50 milliseconds.
             QueueStreamPollInterval = 50;
+            
             this.QueueInfoList = queueInfo;
         }
 

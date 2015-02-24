@@ -31,6 +31,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public DocumentId DocumentId { get; set; }
 
+        public DocumentHandle Handle { get; set; }
+
         /// <summary>
         /// This is the field used to determine job order execution
         /// </summary>
@@ -64,6 +66,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 HandleCustomData = original.HandleCustomData,
             };
         }
+
+
 
     }
 }

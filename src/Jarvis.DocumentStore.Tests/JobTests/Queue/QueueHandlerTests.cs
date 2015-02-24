@@ -70,6 +70,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     PipelineId = new PipelineId("thumbnail"),
                 },
                 DocumentId = new DocumentId("Document_1"),
+                Handle = new DocumentHandle("Revision_2"),
             };
             sut.Handle(rm, new TenantId("test_tenant"));
             var collection = _db.GetCollection<QueuedJob>("queue.test");
@@ -78,6 +79,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(job.BlobId, Is.EqualTo(new BlobId("blob.1")));
             Assert.That(job.TenantId, Is.EqualTo(new TenantId("test_tenant")));
             Assert.That(job.DocumentId, Is.EqualTo(new DocumentId("Document_1")));
+            Assert.That(job.Handle.ToString(), Is.EqualTo(rm.Handle));
             Assert.That(job.Id.ToString(), Is.Not.Contains("blob.1"), "Id should not contains internal concempts like blob id");
             Assert.That(job.Id.ToString(), Is.Not.Contains("tenant"), "Id should not contains internal concempts like tenant id");
             Assert.That(job.Parameters.Keys, Is.Not.Contains(JobKeys.BlobId));

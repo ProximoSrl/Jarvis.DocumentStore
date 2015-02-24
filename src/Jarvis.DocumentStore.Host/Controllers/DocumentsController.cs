@@ -110,6 +110,29 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return await InnerUploadDocument(tenantId, attachHandle, fatherHandle);
         }
 
+        /// <summary>
+        /// Upload a new document but it will be considered an attached of an existing
+        /// handle.
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        [Route("{tenantId}/documents/jobs/attach/{queueName}/{jobId}/{attachHandle}")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> UploadAttachFromJob(TenantId tenantId, String queueName, String jobId, DocumentHandle attachHandle)
+        {
+            var job = _queueDispatcher.GetJob(queueName, jobId);
+            if (job == null)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    String.Format("Job id {0} not valid for queue {1}", jobId, queueName)
+                );
+            }
+
+            return await InnerUploadDocument(tenantId, attachHandle, job.Handle);
+        }
+
         private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle, DocumentHandle fatherHandle = null)
         {
             var documentId = _identityGenerator.New<DocumentId>();

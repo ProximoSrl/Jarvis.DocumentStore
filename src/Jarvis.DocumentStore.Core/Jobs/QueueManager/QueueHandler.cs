@@ -82,6 +82,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 job.TenantId = tenantId;
                 job.DocumentId = streamElement.DocumentId;
                 job.BlobId = streamElement.FormatInfo.BlobId;
+                job.Handle = new DocumentHandle( streamElement.Handle);
                 job.Parameters = new Dictionary<string, string>();
                 job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
                 job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);

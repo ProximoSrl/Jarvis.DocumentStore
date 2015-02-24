@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Core.Services
         {
             var configExtensions = GetConfigValue(
                 "JARVIS_DOCUMENTSTORE_ALLOWED_FILE_TYPES",
-                "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png"
+                "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip"
                 ).ToLowerInvariant();
 
             _allowedExtensions = configExtensions != "*" ? configExtensions.Split('|') : null;

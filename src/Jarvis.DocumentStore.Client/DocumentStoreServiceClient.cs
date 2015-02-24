@@ -145,6 +145,20 @@ namespace Jarvis.DocumentStore.Client
             return await UploadFromFile(endPoint, pathToFile, attachHandle, customData);
         }
 
+        public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
+           string pathToFile,
+           String queueName,
+           String jobId,
+           DocumentHandle attachHandle,
+           String attachSource,
+           IDictionary<string, object> customData = null)
+        {
+            if (customData == null) customData = new Dictionary<String, Object>();
+            customData["source"] = attachSource;
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/attach/" + queueName + "/" + jobId + "/" + attachHandle);
+            return await UploadFromFile(endPoint, pathToFile, attachHandle, customData);
+        }
+
         /// <summary>
         /// Upload a document
         /// </summary>

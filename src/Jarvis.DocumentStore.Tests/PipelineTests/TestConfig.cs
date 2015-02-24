@@ -126,6 +126,16 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "medium_image.jpg"); }
         }
 
+        public static string PathToZipFile
+        {
+            get { return Path.Combine(DocumentsFolder, "zipped.zip"); }
+        }
+
+        public static string PathToZipFileThatContainsOtherZip
+        {
+            get { return Path.Combine(DocumentsFolder, "ZipWithNestedZip.zip"); }
+        }
+
         public static string PathToDocumentPng
         {
             get { return Path.Combine(DocumentsFolder, "document_1.png"); }

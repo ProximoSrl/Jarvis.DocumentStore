@@ -333,6 +333,12 @@
     <None Include="Docs\Document.pdf" />
     <None Include="Docs\eml sample.eml" />
     <None Include="Docs\outlook message.msg" />
+    <None Include="Docs\Zipped.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\ZipWithNestedZip.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="job_scheduling_data_2_0.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -357,6 +363,10 @@
     <ProjectReference Include="..\Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj">
       <Project>{65411E15-6EC3-455F-A5E4-34446A808474}</Project>
       <Name>Jarvis.DocumentStore.JobsHost</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Attachments\Jarvis.DocumentStore.Jobs.Attachments.csproj">
+      <Project>{abaed052-e89a-4de7-b1ea-ef53f549dd17}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.Attachments</Name>
     </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Email\Jarvis.DocumentStore.Jobs.Email.csproj">
       <Project>{c636055c-8ae6-443d-a4ae-dc023b159564}</Project>

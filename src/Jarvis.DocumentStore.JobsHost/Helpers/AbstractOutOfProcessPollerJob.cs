@@ -313,6 +313,20 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             return response != null;
         }
 
+        protected async Task<Boolean> AddAttachmentToHandle(
+            string tenantId,
+            String jobId,
+            string pathToFile,
+            String source,
+            DocumentHandle attachmentHandle,
+            IDictionary<string, object> customData)
+        {
+            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
+               _dsEndpoints.First().BaseUrl, tenantId);
+
+            var response = await client.UploadAttachmentAsync(pathToFile, this.QueueName, jobId, attachmentHandle, source, customData);
+            return response != null;
+        }
 
 
         protected async Task<String> DownloadBlob(

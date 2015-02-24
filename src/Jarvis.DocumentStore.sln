@@ -65,6 +65,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.NEventStoreEx", "Jarvis.Framework\Jarvis.NEventStoreEx\Jarvis.NEventStoreEx.csproj", "{68A4D5D2-C860-48A5-9189-60BB2A9A7ED1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.Attachments", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Attachments\Jarvis.DocumentStore.Jobs.Attachments.csproj", "{ABAED052-E89A-4DE7-B1EA-EF53F549DD17}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,10 @@ Global
 		{68A4D5D2-C860-48A5-9189-60BB2A9A7ED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68A4D5D2-C860-48A5-9189-60BB2A9A7ED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68A4D5D2-C860-48A5-9189-60BB2A9A7ED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABAED052-E89A-4DE7-B1EA-EF53F549DD17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABAED052-E89A-4DE7-B1EA-EF53F549DD17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABAED052-E89A-4DE7-B1EA-EF53F549DD17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABAED052-E89A-4DE7-B1EA-EF53F549DD17}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -176,5 +182,6 @@ Global
 		{B2C4EC5C-B514-4745-8CCE-233F1E05DD1C} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{416674F1-A0F0-46DA-92CD-F1191A2EB54C} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{68A4D5D2-C860-48A5-9189-60BB2A9A7ED1} = {1D4A10A7-136D-4D1B-A7AE-82648AD6162B}
+		{ABAED052-E89A-4DE7-B1EA-EF53F549DD17} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 	EndGlobalSection
 EndGlobal

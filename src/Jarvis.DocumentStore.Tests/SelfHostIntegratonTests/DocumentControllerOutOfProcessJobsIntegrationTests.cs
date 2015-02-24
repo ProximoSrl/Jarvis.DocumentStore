@@ -35,6 +35,8 @@ using Newtonsoft.Json;
 using System.Threading;
 using ContainerAccessor = Jarvis.DocumentStore.Host.Support.ContainerAccessor;
 using Jarvis.DocumentStore.Jobs.Office;
+using Jarvis.DocumentStore.Jobs.Attachments;
+using Jarvis.DocumentStore.Core;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -515,6 +517,93 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             return new QueueInfo[]
             {
                 new QueueInfo("office", "", "doc|docx"),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_attachments_queue : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        [Test]
+        public async void verify_single_zip_count_file_verification()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("verify_zip");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFile,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentReadModel document;
+            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            do
+            {
+                UpdateAndWait();
+                var docCount = _documents.AsQueryable().Count();
+                if (docCount == 4)
+                {
+                    //all attachment are unzipped correctly
+                    
+                    return;
+                } 
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("documents not unzipped correctly");
+        }
+
+        [Test]
+        public async void verify_nested_zip_count_file_verification()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("verify_nested_zip");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFileThatContainsOtherZip,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );  
+
+            DateTime startWait = DateTime.Now;
+            DocumentReadModel document;
+            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            do
+            {
+                UpdateAndWait();
+                var docCount = _documents.AsQueryable().Count();
+                if (docCount >= 7)
+                {
+                    //all attachment are unzipped correctly
+
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("documents not unzipped correctly");
+        }
+
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
             };
         }
     }

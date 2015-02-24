@@ -128,6 +128,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 return false;
 
             if (!String.IsNullOrEmpty(Pipeline) &&
+                streamElement.FormatInfo.PipelineId != null &&
                 !Regex.IsMatch(streamElement.FormatInfo.PipelineId, Pipeline))
                 return false;
 
