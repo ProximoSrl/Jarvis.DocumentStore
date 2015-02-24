@@ -49,6 +49,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_zipped_file()
+        {
+            _docs.UploadAsync(TestConfig.PathToZipFile, DocumentHandle.FromString("zipsimple")).Wait();
+        }
+
+        [Test]
         public void upload_ppt_with_link()
         {
             //the file for this test is in trello card https://trello.com/c/SKGrSdAQ/156-libreoffice-dialog

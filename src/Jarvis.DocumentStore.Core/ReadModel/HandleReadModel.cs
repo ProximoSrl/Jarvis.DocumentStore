@@ -97,9 +97,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<HandleReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
-                    .Set(x => x.DocumentId, null)
+                    .SetOnInsert(x => x.DocumentId, null)
                     .Set(x=>x.CreatetAt, createdAt)
-                    .Set(x=>x.FileName, null),
+                    .SetOnInsert(x => x.FileName, null),
                 Upsert = true,
                 VersionReturned = FindAndModifyDocumentVersion.Modified
             };
