@@ -11,6 +11,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.Linq;
+using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
@@ -18,6 +19,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
     {
         [BsonId]
         public DocumentHandle Handle { get; private set; }
+
+        public HashSet<DocumentHandle> Attachments { get; private set; }
         
         public DocumentId DocumentId { get; private set; }
         
@@ -61,7 +64,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<HandleReadModel> AllSortedByHandle { get;}
-        void CreateIfMissing(DocumentHandle handle,long createdAt);
+        void CreateIfMissing(DocumentHandle handle, DocumentHandle fatherHandle, long createdAt);
         void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
         long Count();
     }
@@ -194,7 +197,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             get { return _collection.AsQueryable().OrderBy(x => x.Handle); }
         }
 
-        public void CreateIfMissing(DocumentHandle handle, long createdAt)
+        public void CreateIfMissing(DocumentHandle handle, DocumentHandle fatherHandle, long createdAt)
         {
             Logger.DebugFormat("CreateIfMissing on handle {0} [{1}]", handle, createdAt);
             var args = new FindAndModifyArgs
@@ -209,7 +212,18 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .SetOnInsert(x => x.FileName, null),
                 Upsert = true
             };
-            _collection.FindAndModify(args);            
+            _collection.FindAndModify(args);
+
+            if (fatherHandle != null) 
+            {
+                _collection.Update(
+                    Query.Or( 
+                    Query<HandleReadModel>.EQ(x => x.Handle, fatherHandle),
+                    Query<HandleReadModel>.EQ(x => x.Attachments, fatherHandle)),
+                    Update<HandleReadModel>.Push(x => x.Attachments, handle),
+                    UpdateFlags.Multi
+                );
+            }
         }
 
         public HandleReadModel FindOneById(DocumentHandle handle)

@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     public abstract class HandleSpecification : AggregateSpecification<Handle, HandleState>
     {
         public static readonly HandleId HandleId_1 = new HandleId(1);
-        public static readonly HandleId HandleId_2 = new HandleId(2);
+   
         public static readonly DocumentId Document_1 = new DocumentId(1);
         public static readonly DocumentId Document_2 = new DocumentId(2);
         public static readonly FileNameWithExtension FileName_1 = new FileNameWithExtension("a","file");
@@ -28,6 +28,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         public static readonly HandleCustomData CustomData_2 = new HandleCustomData();
         public static readonly HandleCustomData CustomData_3 = new HandleCustomData(){{"a", "b"}};
         public static readonly DocumentHandle DocumentHandle = new DocumentHandle("this_is_an_handle");
+        public static readonly DocumentHandle FatherDocumentHandle = new DocumentHandle("this_is_a_Father_handle");
+
         public static Handle HandleAggregate { get { return Aggregate; }}
     }
 
@@ -55,7 +57,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     public class when_creating_an_handle_as_attach : HandleSpecification
     {
         Establish context = () => Create();
-        Because of = () => HandleAggregate.InitializeAsAttachment(HandleId_1, HandleId_2, DocumentHandle);
+        Because of = () => HandleAggregate.InitializeAsAttachment(HandleId_1, FatherDocumentHandle, DocumentHandle);
 
         It handle_initilized_event_should_be_raised = () =>
             EventHasBeenRaised<HandleInitialized>().ShouldBeTrue();
@@ -65,7 +67,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
             var e = RaisedEvent<HandleInitialized>();
             e.Handle.ShouldBeTheSameAs(DocumentHandle);
             e.Id.ShouldBeLike(HandleId_1);
-            e.FatherId.ShouldBeLike(HandleId_2);
+            e.FatherHandle.ShouldBeLike(FatherDocumentHandle);
         };
 
         It linked_document_should_be_null = () =>

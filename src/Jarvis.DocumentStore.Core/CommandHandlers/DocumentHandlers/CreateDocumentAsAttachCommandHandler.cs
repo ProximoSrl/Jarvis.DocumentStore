@@ -31,11 +31,15 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
             var docHandle = cmd.HandleInfo.Handle;
             var id = _mapper.Map(docHandle);
-            var fatherId = _mapper.Map(cmd.FatherHandle);
             var handle = Repository.GetById<Handle>(id);
+
+            var fatherId = _mapper.Map(cmd.FatherHandle);
+            var fatherHandle = Repository.GetById<Handle>(fatherId);
+            if (!fatherHandle.HasBeenCreated)
+                throw new ArgumentException("Father Handle " + cmd.FatherHandle + " is invalid", "FatherHandle");
             if (!handle.HasBeenCreated)
             {
-                handle.InitializeAsAttachment(id, fatherId, docHandle);
+                handle.InitializeAsAttachment(id, cmd.FatherHandle, docHandle);
             }
 
             handle.SetFileName(cmd.FileName);
