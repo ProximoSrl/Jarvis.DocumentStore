@@ -43,5 +43,11 @@ namespace Jarvis.DocumentStore.Client.Model
         /// If this parameter is used <see cref="AddFormatFromFileToDocumentModel.PathToFile" /> is ignored.
         /// </summary>
         public String StringContent { get; set; }
+
+        /// <summary>
+        /// This is optionally needed to give a file name to the blob store. Since this is a serialzied
+        /// object the concept of fileName is not really interesting, but can be useful.
+        /// </summary>
+        public String FileName { get; set; }
     }
 }

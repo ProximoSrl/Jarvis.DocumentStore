@@ -51,6 +51,7 @@
     <Compile Include="Jobs\JobKeys.cs" />
     <Compile Include="Jobs\PollerJobParameters.cs" />
     <Compile Include="Jobs\QueuedJobDto.cs" />
+    <Compile Include="Model\AddAttachmentToHandleParameters.cs" />
     <Compile Include="Model\AddFormatToDocumentParameters.cs" />
     <Compile Include="Model\DocumentContent.cs" />
     <Compile Include="Model\StructuralExtensions.cs" />

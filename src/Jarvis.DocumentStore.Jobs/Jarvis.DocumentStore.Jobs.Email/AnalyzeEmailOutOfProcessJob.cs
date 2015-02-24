@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Jobs.Email
             string localFile = await DownloadBlob(
                 parameters.TenantId, 
                 parameters.JobId, 
-                parameters.FileExtension,
+                parameters.FileName,
                 workingFolder);
 
             var zipFile = task.Convert(parameters.JobId, localFile, workingFolder);

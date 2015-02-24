@@ -34,6 +34,7 @@ using Jarvis.DocumentStore.Tests.ProjectionTests;
 using Newtonsoft.Json;
 using System.Threading;
 using ContainerAccessor = Jarvis.DocumentStore.Host.Support.ContainerAccessor;
+using Jarvis.DocumentStore.Jobs.Office;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -123,10 +124,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _sutBase = sut = new OutOfProcessTikaNetJob();
             PrepareJob();
 
-            var handle = DocumentHandle.FromString("verify_tika_job");
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
+            var handleClient = new DocumentHandle("verify_tika_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
-               DocumentHandle.FromString("verify_tika_job"),
+               handleClient,
                new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
                 }
@@ -134,16 +136,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentReadModel document;
-            
+            var format = new Core.Domain.Document.DocumentFormat("tika");
             do
             {
                 UpdateAndWait();
                 document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
+                    .SingleOrDefault(d => d.Handles.Contains(handleCore));
                 if (document != null &&
-                    document.Formats.ContainsKey(new Core.Domain.Document.DocumentFormat("tika")))
+                    document.Formats.ContainsKey(format))
                 {
-                    //Test is ok, document found
+                    //Document found, but we want to be sure that the fileName of the format is correct.
+                    var formatInfo = document.Formats[format];
+                    var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
+                    Assert.That(
+                        blob.FileNameWithExtension.ToString(), 
+                        Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToWordDocument) + ".tika.html"),
+                        "File name is wrong, we expect the same file name with extension .tika.html");
                     return;
                 }
 
@@ -170,23 +178,32 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentReadModel document;
+            var format = new Core.Domain.Document.DocumentFormat("content");
             do
             {
                 UpdateAndWait();
                 document = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
                 if (document != null &&
-                    document.Formats.ContainsKey(new Core.Domain.Document.DocumentFormat("content")))
+                    document.Formats.ContainsKey(format))
                 {
                     //now we want to verify if content is set correctly
                     var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
                     var content = await client.GetContentAsync(handle);
                     Assert.That(content.Pages.Length, Is.EqualTo(1));
                     Assert.That(content.Pages[0].Content, Contains.Substring("word document").IgnoreCase);
+
+                    var formatInfo = document.Formats[format];
+                    var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
+                    Assert.That(
+                        blob.FileNameWithExtension.ToString(),
+                        Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToWordDocument) + ".content"),
+                        "File name is wrong, we expect the same file name with extension .content");
+
                     return;
                 }
     
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 50000);
 
             Assert.Fail("Tika document not found");
         }
@@ -233,9 +250,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     document.Formats.ContainsKey(thumbSmallFormat) &&
                     document.Formats.ContainsKey(thumbLargeFormat))
                 {
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(TestConfig.PathToDocumentPng);
                     var blobId = document.Formats[thumbSmallFormat].BlobId;
                     var file = _blobStore.GetDescriptor(blobId);
-                    Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo("small.png"));
+                    Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".small.png"));
                     var downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
                     using (var image = Image.FromFile(downloadedImage)) 
                     {
@@ -244,7 +262,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
                      blobId = document.Formats[thumbLargeFormat].BlobId;
                     file = _blobStore.GetDescriptor(blobId);
-                    Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo("large.png"));
+                    Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".large.png"));
                     downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
                     using (var image = Image.FromFile(downloadedImage))
                     {
@@ -313,56 +331,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         HtmlToPdfOutOfProcessJobOld _htmlSut;
-
-        //[Test]
-        //[Explicit("New version of tuesPechin seems to hang the process sometimes.")]
-        //public async void verify_full_chain_for_email_and_html_zip()
-        //{
-        //    _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
-        //    PrepareJob();
-
-        //    HtmlToPdfOutOfProcessJob htmlSut = new HtmlToPdfOutOfProcessJob();
-        //    PrepareJob(testJob : htmlSut);
-
-        //    DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_email");
-        //    await _documentStoreClient.UploadAsync(
-        //       TestConfig.PathToEml,
-        //       handle,
-        //       new Dictionary<string, object>{
-        //            { "callback", "http://localhost/demo"}
-        //        }
-        //    );
-
-        //    DateTime startWait = DateTime.Now;
-        //    DocumentReadModel document;
-        //    var emailFormat = new Core.Domain.Document.DocumentFormat("email");
-        //    var pdfFormat = new Core.Domain.Document.DocumentFormat("Pdf");
-        //    do
-        //    {
-        //        UpdateAndWait();
-        //        document = _documents.AsQueryable()
-        //            .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
-        //        if (document != null &&
-        //            document.Formats.ContainsKey(emailFormat) &&
-        //            document.Formats.ContainsKey(pdfFormat))
-        //        {
-
-        //            return; //test is good
-        //        }
-
-        //    } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout * 2);
-
-        //    if(document == null)
-        //        Assert.Fail("Missing document");
-
-        //    Debug.WriteLine("document:\n{0}", (object)JsonConvert.SerializeObject(document, Formatting.Indented));
-
-        //    if(!document.Formats.ContainsKey(emailFormat))
-        //        Assert.Fail("Missing format: {0}", emailFormat);
-
-        //    if (!document.Formats.ContainsKey(pdfFormat))
-        //        Assert.Fail("Missing format: {0}", pdfFormat);
-        //}
 
         [Test]
         public async void verify_full_chain_for_email_and_html_zipOld()
@@ -488,6 +456,65 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             return new QueueInfo[]
             {
                 new QueueInfo("htmlzip", "", "htmlzip|ezip"),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_office_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        [Test]
+        public async void verify_office_job()
+        {
+            JobsHostConfiguration config = new JobsHostConfiguration();
+            var conversion = new LibreOfficeUnoConversion(config);
+            _sutBase = new LibreOfficeToPdfOutOfProcessJob(conversion);
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("verify_office_job");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_office_job");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToWordDocument,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentReadModel document;
+            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            do
+            {
+                UpdateAndWait();
+                document = _documents.AsQueryable()
+                    .SingleOrDefault(d => d.Handles.Contains(handleServer));
+                if (document != null &&
+                    document.Formats.ContainsKey(format))
+                {
+                    //Document found, but we want to be sure that the fileName of the format is correct.
+                    var formatInfo = document.Formats[format];
+                    var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
+                    Assert.That(
+                        blob.FileNameWithExtension.ToString(),
+                        Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToWordDocument) + ".pdf"),
+                        "File name is wrong, we expect the same file name with extension .pdf");
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("Pdf format not found");
+        }
+
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("office", "", "doc|docx"),
             };
         }
     }

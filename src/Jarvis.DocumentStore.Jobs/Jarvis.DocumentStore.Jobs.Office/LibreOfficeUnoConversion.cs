@@ -26,6 +26,7 @@ namespace Jarvis.DocumentStore.Jobs.Office
         public LibreOfficeUnoConversion(JobsHostConfiguration config)
         {
             _config = config;
+            Logger = NullLogger.Instance;
         }
 
         public string Run(string sourceFile, string outType)

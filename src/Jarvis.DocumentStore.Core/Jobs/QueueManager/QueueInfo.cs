@@ -63,11 +63,31 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
+        private String _mimeTypes;
+        /// <summary>
+        /// It is a pipe separated list of all the formats the pipeline is interested to
+        /// </summary>
+        public String MimeTypes
+        {
+            get { return _mimeTypes; }
+            private set
+            {
+                _mimeTypes = value;
+
+                if (!String.IsNullOrEmpty(value))
+                    _splittedMimeTypes = value.Split('|');
+                else
+                    _splittedMimeTypes = new string[] { };
+            }
+        }
+
         public PollerInfo[] PollersInfo { get; set; }
 
         private String[] _splittedExtensions;
 
         private String[] _splittedFormats;
+
+        private String[] _splittedMimeTypes;
 
         public Dictionary<String, String> Parameters { get; set; }
 
@@ -80,16 +100,18 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public int JobLockTimeout { get; set; }
 
         public QueueInfo(
-                      String name,
-                      String pipeline = null,
-                      String extensions = null,
-                      String formats = null
-                  )
+            String name,
+            String pipeline = null,
+            String extensions = null,
+            String formats = null,
+            String mimeTypes = null
+        )
         {
             Name = name;
             Pipeline = pipeline;
             Extension = extensions;
             Formats = formats;
+            MimeTypes = mimeTypes;
             MaxNumberOfFailure = 5;
             JobLockTimeout = 5;
         }
@@ -100,8 +122,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 return false;
 
             if (_splittedFormats.Length > 0 && !_splittedFormats.Contains(streamElement.FormatInfo.DocumentFormat.ToString()))
-
                 return false;
+            
+            if (_splittedMimeTypes.Length > 0 && !_splittedMimeTypes.Contains(Jarvis.DocumentStore.Core.MimeTypes.GetMimeType(streamElement.Filename)))
+                return false;
+
             if (!String.IsNullOrEmpty(Pipeline) &&
                 !Regex.IsMatch(streamElement.FormatInfo.PipelineId, Pipeline))
                 return false;

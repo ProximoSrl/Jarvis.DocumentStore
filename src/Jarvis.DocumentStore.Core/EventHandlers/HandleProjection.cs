@@ -10,6 +10,7 @@ using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using NEventStore;
+using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -61,6 +62,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _writer.CreateIfMissing(
                 e.Handle,
+                e.FatherHandle,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
         }

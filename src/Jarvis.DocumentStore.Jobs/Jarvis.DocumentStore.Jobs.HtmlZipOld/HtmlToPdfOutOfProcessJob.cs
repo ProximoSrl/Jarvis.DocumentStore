@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
 
         protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
             String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
             Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
             if (File.Exists(fileName)) File.Delete(fileName);
