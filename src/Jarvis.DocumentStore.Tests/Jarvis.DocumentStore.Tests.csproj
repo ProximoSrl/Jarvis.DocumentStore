@@ -148,6 +148,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
     </Reference>
+    <Reference Include="Jarvis.NEventStoreEx">
+      <HintPath>..\Jarvis.Framework\Jarvis.NEventStoreEx\bin\Debug\Jarvis.NEventStoreEx.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>

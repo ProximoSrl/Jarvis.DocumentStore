@@ -54,6 +54,9 @@
     <Reference Include="Common.Logging">
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
     </Reference>
+    <Reference Include="Jarvis.NEventStoreEx">
+      <HintPath>..\Jarvis.Framework\Jarvis.NEventStoreEx\bin\Debug\Jarvis.NEventStoreEx.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>

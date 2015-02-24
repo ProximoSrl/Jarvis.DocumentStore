@@ -7,6 +7,7 @@ using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.NEventStoreEx.CommonDomainEx;
 
 namespace Jarvis.DocumentStore.Core.Domain.Handle
 {

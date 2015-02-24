@@ -2,6 +2,7 @@ using System;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.Framework.TestHelpers;
+using Jarvis.NEventStoreEx.CommonDomainEx;
 using Machine.Specifications;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs

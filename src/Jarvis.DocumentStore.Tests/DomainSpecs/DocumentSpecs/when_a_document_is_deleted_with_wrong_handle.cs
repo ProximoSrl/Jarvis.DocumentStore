@@ -3,6 +3,7 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.Framework.TestHelpers;
+using Jarvis.NEventStoreEx.CommonDomainEx;
 using Machine.Specifications;
 using NUnit.Framework;
 

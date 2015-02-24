@@ -20,6 +20,8 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.Storage;
+using Jarvis.NEventStoreEx.CommonDomainEx;
+using Jarvis.NEventStoreEx.CommonDomainEx.Persistence.EventStore;
 using MongoDB.Bson.Serialization;
 using NEventStore;
 using NEventStore.Dispatcher;
