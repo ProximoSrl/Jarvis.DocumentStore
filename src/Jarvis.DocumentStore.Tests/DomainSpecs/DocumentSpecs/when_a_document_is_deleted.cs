@@ -10,7 +10,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         Establish context = () =>
         {
             Create();
-            Document.Create(_id, _blobId, _handleInfo, _fileHash);
+            Document.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
             Document.Process(Handle);
         };
 

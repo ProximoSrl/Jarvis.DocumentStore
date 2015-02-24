@@ -7,6 +7,8 @@ using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.NEventStoreEx.CommonDomainEx;
+using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 
 namespace Jarvis.DocumentStore.Core.Domain.Handle
 {
@@ -28,6 +30,17 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             ThrowIfDeleted();
 
             RaiseEvent(new HandleInitialized(id, handle));
+        }
+
+        public void InitializeAsAttachment(HandleId id, DocumentHandle fatherHandle, DocumentHandle handle)
+        {
+            if (HasBeenCreated)
+                throw new DomainException((IIdentity)id, "handle already initialized");
+            ThrowIfDeleted();
+            if (fatherHandle == null)
+                throw new DomainException((IIdentity)id, "cannot create an attach of an null handle");
+
+            RaiseEvent(new HandleInitialized(id, fatherHandle, handle));
         }
 
         public void Link(DocumentId documentId)
@@ -74,5 +87,8 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             if (InternalState.HasBeenDeleted)
                 throw new DomainException((IIdentity)Id, "Handle has been deleted");
         }
+
+      
+
     }
 }

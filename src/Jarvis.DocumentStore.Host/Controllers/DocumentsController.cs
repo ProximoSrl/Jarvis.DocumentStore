@@ -33,6 +33,7 @@ using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
+using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -76,6 +77,41 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(TenantId tenantId, DocumentHandle handle)
         {
+            if (handle.ToString().Contains("@"))
+            {
+                return Request.CreateErrorResponse(
+                   HttpStatusCode.BadRequest,
+                   "Character @ is not permitted when creating Handle, use call to create an attachment instead"
+               );
+            }
+            return await InnerUploadDocument(tenantId, handle);
+        }
+
+
+        /// <summary>
+        /// Upload a new document but it will be considered an attached of an existing
+        /// handle.
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        [Route("{tenantId}/documents/{fatherHandle}/attach/{attachHandle}")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> UploadAttach(TenantId tenantId, DocumentHandle fatherHandle, DocumentHandle attachHandle)
+        {
+            if (attachHandle.ToString().Contains("@"))
+            {
+                return Request.CreateErrorResponse(
+                   HttpStatusCode.BadRequest,
+                   "Character @ is not permitted when creating Handle, use call to create an attachment instead"
+               );
+            }
+
+            return await InnerUploadDocument(tenantId, attachHandle, fatherHandle);
+        }
+
+        private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle, DocumentHandle fatherHandle = null)
+        {
             var documentId = _identityGenerator.New<DocumentId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
@@ -90,7 +126,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            CreateDocument(documentId, _blobId, handle, _fileName, _customData);
+            CreateDocument(documentId, _blobId, handle, fatherHandle, _fileName, _customData);
 
             Logger.DebugFormat("File {0} uploaded as {1}", _blobId, documentId);
 
@@ -238,6 +274,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return null;
         }
 
+
         [Route("{tenantId}/documents/{handle}/@customdata")]
         [HttpGet]
         public HttpResponseMessage GetCustomData(TenantId tenantId, DocumentHandle handle)
@@ -268,6 +305,29 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 x => Url.Content("/" + tenantId + "/documents/" + handle + "/" + x.Key)
             );
             return Request.CreateResponse(HttpStatusCode.OK, formats);
+        }
+
+        [Route("{tenantId}/documents/attachments/{handle}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetAttachmentList(
+            TenantId tenantId,
+            DocumentHandle handle
+        )
+        {
+            var mapping = _handleWriter.FindOneById(handle);
+
+            if (mapping == null)
+            {
+                return DocumentNotFound(handle);
+            }
+
+            if (mapping.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+
+            var attachments = mapping.Attachments.ToDictionary(x =>
+                x,
+                x => Url.Content("/" + tenantId + "/documents/" + x)
+            );
+            return Request.CreateResponse(HttpStatusCode.OK, attachments);
         }
 
         [Route("{tenantId}/documents/{handle}/{format}")]
@@ -393,14 +453,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentId documentId,
             BlobId blobId,
             DocumentHandle handle,
+            DocumentHandle fatherHandle,
             FileNameWithExtension fileName,
             HandleCustomData customData
         )
         {
-            var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
+            
             var descriptor = _blobStore.GetDescriptor(blobId);
-            var createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
-            //            createDocument.WithDiagnosticDescription("Created by rest api");
+            ICommand createDocument;
+            if (fatherHandle == null)
+            {
+                var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
+                createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
+            }
+            else
+            {
+                var realHandle = new DocumentHandle(String.Format("{0}@{1}", handle, fatherHandle));
+                var handleInfo = new DocumentHandleInfo(realHandle, fileName, customData);
+                createDocument = new CreateDocumentAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
+            }
             CommandBus.Send(createDocument, "api");
         }
 

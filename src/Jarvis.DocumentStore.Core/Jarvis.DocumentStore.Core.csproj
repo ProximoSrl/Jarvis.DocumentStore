@@ -54,6 +54,9 @@
     <Reference Include="Common.Logging">
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
     </Reference>
+    <Reference Include="Jarvis.NEventStoreEx">
+      <HintPath>..\Jarvis.Framework\Jarvis.NEventStoreEx\bin\Debug\Jarvis.NEventStoreEx.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>
@@ -101,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandHandlers\DocumentHandlers\AddFormatToDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentAsAttachCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DeduplicateDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentCommandHandler.cs" />
@@ -110,6 +114,7 @@
     <Compile Include="CommandHandlers\HandleHandlers\IHandleMapper.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\LinkHandleToDocumentCommandHandler.cs" />
     <Compile Include="Domain\Document\Commands\AddFormatToDocument.cs" />
+    <Compile Include="Domain\Document\Commands\CreateDocumentAsAttach.cs" />
     <Compile Include="Domain\Document\Commands\CreateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeduplicateDocument.cs" />
     <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
@@ -139,6 +144,7 @@
     <Compile Include="Domain\Handle\Events\HandleInitialized.cs" />
     <Compile Include="Domain\Handle\Events\HandleLinked.cs" />
     <Compile Include="Domain\Handle\HandleState.cs" />
+    <Compile Include="Domain\Document\IDocumentFormatTranslator.cs" />
     <Compile Include="EvenstoreHooks\ReadModelPromisesHook.cs" />
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DeduplicationHelper.cs" />

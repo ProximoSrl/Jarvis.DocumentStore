@@ -88,7 +88,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestCase("ods")]
         [TestCase("odp")]
         [TestCase("rtf")]
-        public void processing_file_with_sdk_should_succeed(string blobId)
+        public void processing_file_with_sdk_should_succeed(string blobId) 
         {
             var s = new Stopwatch();
             s.Start();

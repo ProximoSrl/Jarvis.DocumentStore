@@ -7,6 +7,7 @@ namespace Jarvis.DocumentStore.Shared.Jobs
         public const string DocumentId = "document_id";
         public const string BlobId = "blob_id";
         public const string FileExtension = "file_ext";
+        public const string MimeType = "mime_type";
         public const string FileName = "file_name";
 
         public const string Dpi = "dpi";

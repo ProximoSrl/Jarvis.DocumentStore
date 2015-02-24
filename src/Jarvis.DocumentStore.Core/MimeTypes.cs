@@ -1016,5 +1016,14 @@ namespace Jarvis.DocumentStore.Core
 
             return result ?? "application/octet-stream";
         }
+
+        public static string GetMimeTypeByExtension(string extension)
+        {
+            string result;
+            if (TypeMap.TryGetValue(extension.Trim('.'), out result))
+                return result;
+
+            return "application/octet-stream";
+        }
     }
 }

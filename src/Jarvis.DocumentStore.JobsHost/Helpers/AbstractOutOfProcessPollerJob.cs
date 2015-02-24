@@ -295,6 +295,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
               String jobId,
               Client.Model.DocumentFormat format,
               Object obj,
+              String originalFileName,
               IDictionary<string, object> customData)
         {
             DocumentStoreServiceClient client = new DocumentStoreServiceClient(
@@ -305,6 +306,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 JobId = jobId,
                 QueueName = queueName,
                 Format = format,
+                FileName = originalFileName,
                 StringContent = JsonConvert.SerializeObject(obj),
             };
             var response = await client.AddFormatToDocument(model, customData);
@@ -316,10 +318,10 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         protected async Task<String> DownloadBlob(
             String tenantId,
             String jobId,
-            String extension,
+            String originalFileName,
             String workingFolder)
         {
-            String fileName = Path.Combine(workingFolder, "blob." + extension);
+            String fileName = Path.Combine(workingFolder, originalFileName);
             DocumentStoreServiceClient client = new DocumentStoreServiceClient(
                 _dsEndpoints.First().BaseUrl, tenantId);
             using (var reader = client.OpenBlobIdForRead(this.QueueName, jobId))

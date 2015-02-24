@@ -7,6 +7,8 @@ using Jarvis.DocumentStore.Core.Services;
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.Commands;
 using MongoDB.Driver;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.Framework.Shared.IoC;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -30,6 +32,15 @@ namespace Jarvis.DocumentStore.Core.Support
             container.Register(
                 Component
                     .For<ConfigService>()
+            );
+
+            container.Register(
+                Component
+                    .For<IDocumentFormatTranslator>()
+                    .ImplementedBy<StandardDocumentFormatTranslator>(),
+                Component
+                    .For<Document>()
+                    .LifestyleCustom(typeof(TransientNotTrackingLifestyle))
             );
         }
     }

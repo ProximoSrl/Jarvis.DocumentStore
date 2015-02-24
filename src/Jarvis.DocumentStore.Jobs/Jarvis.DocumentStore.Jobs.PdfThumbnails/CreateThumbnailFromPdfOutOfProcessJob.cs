@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
             {
                 task.Passwords.Add(password);
             }
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileExtension, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
 
             var convertParams = new CreatePdfImageTaskParams()
             {
@@ -54,7 +54,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 
         public async Task<Boolean> Write(String workerFolder, PollerJobParameters parameters, String format, int pageIndex, Stream stream)
         {
-            var rawFileName = Path.Combine(workerFolder, "thumb.page_" + pageIndex + "." + format);
+            var rawFileName = Path.Combine(workerFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".page_" + pageIndex + "." + format);
             using (var outStream = File.OpenWrite(rawFileName))
             {
                 stream.CopyTo(outStream);

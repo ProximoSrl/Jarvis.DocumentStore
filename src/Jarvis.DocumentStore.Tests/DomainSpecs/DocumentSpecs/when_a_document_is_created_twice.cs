@@ -2,6 +2,8 @@ using System;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.Framework.TestHelpers;
+using Jarvis.NEventStoreEx.CommonDomainEx;
+using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 using Machine.Specifications;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
@@ -13,10 +15,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         Establish context = () =>
         {
             AggregateSpecification<Core.Domain.Document.Document, DocumentState>.Create();
-            Document.Create(_id, _blobId, _handleInfo,_fileHash);
+            Document.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
         };
 
-        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _blobId, _handleInfo,_fileHash));
+        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _blobId, _handleInfo, _fileHash, _fileName));
 
         It a_domain_exception_should_be_thrown = () =>
         {

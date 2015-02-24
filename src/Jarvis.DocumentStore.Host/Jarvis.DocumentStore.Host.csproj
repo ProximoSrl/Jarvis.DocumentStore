@@ -71,6 +71,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Jarvis.Framework.UdpAppender.1.0.9\lib\NET45\Jarvis.Framework.UdpAppender.dll</HintPath>
     </Reference>
+    <Reference Include="Jarvis.NEventStoreEx">
+      <HintPath>..\Jarvis.Framework\Jarvis.NEventStoreEx\bin\Debug\Jarvis.NEventStoreEx.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
     </Reference>

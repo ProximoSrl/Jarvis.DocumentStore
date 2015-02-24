@@ -18,6 +18,7 @@ using MongoDB.Bson;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Jobs;
 using MongoDB.Bson.Serialization;
+using Jarvis.DocumentStore.Core;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -81,6 +82,32 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(job.Id.ToString(), Is.Not.Contains("tenant"), "Id should not contains internal concempts like tenant id");
             Assert.That(job.Parameters.Keys, Is.Not.Contains(JobKeys.BlobId));
             Assert.That(job.Parameters.Keys, Is.Not.Contains(JobKeys.DocumentId));
+        }
+
+        /// <summary>
+        /// </summary>
+        [Test]
+        public void verify_job_parameters_contains_mime_type()
+        {
+            var info = new QueueInfo("test", "", "");
+            QueueHandler sut = new QueueHandler(info, _db);
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                FormatInfo = new FormatInfo()
+                {
+                    DocumentFormat = new DocumentFormat("thumb.small"),
+                    BlobId = new BlobId("blob.1"),
+                    PipelineId = new PipelineId("thumbnail"),
+                },
+                DocumentId = new DocumentId("Document_1"),
+            };
+            sut.Handle(rm, new TenantId("test_tenant"));
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1));
+            var job = collection.AsQueryable().Single();
+            Assert.That(job.BlobId, Is.EqualTo(new BlobId("blob.1")));
+            Assert.That(job.Parameters[JobKeys.MimeType], Is.EqualTo(MimeTypes.GetMimeTypeByExtension("docx")));
         }   
 
         [Test]
@@ -101,6 +128,42 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             sut.Handle(rm, new TenantId("test"));
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void verify_filtering_on_mime_types()
+        {
+            var mimeTypeDocx = MimeTypes.GetMimeTypeByExtension("docx");
+            var mimeTypePdf = MimeTypes.GetMimeTypeByExtension("pdf");
+            var info = new QueueInfo("test", mimeTypes: mimeTypeDocx);
+            QueueHandler sut = new QueueHandler(info, _db);
+            StreamReadModel rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.pdf"),
+                FormatInfo = new FormatInfo()
+                {
+                    DocumentFormat = new DocumentFormat("thumb.small"),
+                    BlobId = new BlobId("blob.1"),
+                    PipelineId = new PipelineId("thumbnail")
+                }
+            };
+            sut.Handle(rm, new TenantId("test"));
+            var collection = _db.GetCollection<QueuedJob>("queue.test");
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(0));
+
+            rm = new StreamReadModel()
+            {
+                Filename = new FileNameWithExtension("test.docx"),
+                FormatInfo = new FormatInfo()
+                {
+                    DocumentFormat = new DocumentFormat("thumb.small"),
+                    BlobId = new BlobId("blob.1"),
+                    PipelineId = new PipelineId("thumbnail")
+                }
+            };
+            sut.Handle(rm, new TenantId("test"));
+
+            Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -275,7 +338,6 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 
             var nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob.Parameters["Custom"], Is.EqualTo("CustomValue"));
-
         }
 
         [Test]

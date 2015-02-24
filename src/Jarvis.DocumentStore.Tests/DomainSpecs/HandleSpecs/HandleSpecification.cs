@@ -19,7 +19,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
 {
     public abstract class HandleSpecification : AggregateSpecification<Handle, HandleState>
     {
-        public static readonly HandleId HandleId = new HandleId(1);
+        public static readonly HandleId HandleId_1 = new HandleId(1);
+   
         public static readonly DocumentId Document_1 = new DocumentId(1);
         public static readonly DocumentId Document_2 = new DocumentId(2);
         public static readonly FileNameWithExtension FileName_1 = new FileNameWithExtension("a","file");
@@ -27,6 +28,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         public static readonly HandleCustomData CustomData_2 = new HandleCustomData();
         public static readonly HandleCustomData CustomData_3 = new HandleCustomData(){{"a", "b"}};
         public static readonly DocumentHandle DocumentHandle = new DocumentHandle("this_is_an_handle");
+        public static readonly DocumentHandle FatherDocumentHandle = new DocumentHandle("this_is_a_Father_handle");
+
         public static Handle HandleAggregate { get { return Aggregate; }}
     }
 
@@ -34,7 +37,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     public class when_creating_an_handle : HandleSpecification
     {
         Establish context = () => Create();
-        Because of = () => HandleAggregate.Initialize(HandleId, DocumentHandle);
+        Because of = () => HandleAggregate.Initialize(HandleId_1, DocumentHandle);
 
         It handle_initilized_event_should_be_raised = () =>
             EventHasBeenRaised<HandleInitialized>().ShouldBeTrue();
@@ -43,7 +46,28 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         {
             var e = RaisedEvent<HandleInitialized>();
             e.Handle.ShouldBeTheSameAs(DocumentHandle);
-            e.Id.ShouldBeLike(HandleId);
+            e.Id.ShouldBeLike(HandleId_1);
+        };
+
+        It linked_document_should_be_null = () =>
+            State.LinkedDocument.ShouldBeNull();
+    }
+
+    [Subject("with a uninitialized handle")]
+    public class when_creating_an_handle_as_attach : HandleSpecification
+    {
+        Establish context = () => Create();
+        Because of = () => HandleAggregate.InitializeAsAttachment(HandleId_1, FatherDocumentHandle, DocumentHandle);
+
+        It handle_initilized_event_should_be_raised = () =>
+            EventHasBeenRaised<HandleInitialized>().ShouldBeTrue();
+
+        It handle_initialized_event_should_have_id_handle_and_father_id = () =>
+        {
+            var e = RaisedEvent<HandleInitialized>();
+            e.Handle.ShouldBeTheSameAs(DocumentHandle);
+            e.Id.ShouldBeLike(HandleId_1);
+            e.FatherHandle.ShouldEqual(FatherDocumentHandle);
         };
 
         It linked_document_should_be_null = () =>
@@ -52,7 +76,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
 
     public abstract class with_an_initialized_handle : HandleSpecification
     {
-        Establish context = () => SetUp(new HandleState(HandleId, DocumentHandle));
+        Establish context = () => SetUp(new HandleState(HandleId_1, DocumentHandle));
     }
 
     [Subject(typeof(with_an_initialized_handle))]
@@ -108,7 +132,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     {
         Establish context = () =>
         {
-            var handleState = new HandleState(HandleId, DocumentHandle);
+            var handleState = new HandleState(HandleId_1, DocumentHandle);
             handleState.Link(Document_1);
             SetUp(handleState);
         };
