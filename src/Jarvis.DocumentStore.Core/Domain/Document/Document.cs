@@ -36,6 +36,26 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 RaiseEvent(new FormatAddedToDocument(knownFormat, blobId, null));
         }
 
+        public void CreateAsAttach(
+            DocumentId id, 
+            BlobId blobId, 
+            DocumentHandleInfo fatherHandle, 
+            DocumentHandleInfo attachHandle, 
+            FileHash hash, 
+            String fileName)
+        {
+            //ThrowIfDeleted();
+
+            //if (HasBeenCreated)
+            //    throw new DomainException((IIdentity)id, "Already created");
+
+            //RaiseEvent(new DocumentCreated(id, blobId, handleInfo, hash));
+
+            //var knownFormat = DocumentFormatTranslator.GetFormatFromFileName(fileName);
+            //if (knownFormat != null)
+            //    RaiseEvent(new FormatAddedToDocument(knownFormat, blobId, null));
+        }
+
         public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
         {
             ThrowIfDeleted();

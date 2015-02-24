@@ -30,6 +30,8 @@ using System;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
+using MongoDB.Bson;
+using MongoDB.Driver.Builders;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -176,7 +178,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
+            await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
             UpdateAndWait();
@@ -203,7 +205,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
+            await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
             UpdateAndWait();
@@ -217,7 +219,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             model.DocumentHandle = handle;
             model.StringContent = JsonConvert.SerializeObject(content);
             model.CreatedById = "tika";
-
+            model.FileName = "add_format_test.content";
             model.Format = new DocumentFormat("content");
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
@@ -240,7 +242,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
+            await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
             UpdateAndWait();
@@ -273,6 +275,30 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(formats, Has.Count.EqualTo(2));
 
             await CompareDownloadedStreamToFile(TestConfig.PathToHtml, _documentStoreClient.OpenRead(handle, new DocumentFormat("tika")));
+        }
+
+
+        [Test]
+        public async void can_add_attachment_to_existing_handle()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            var childHandle = new DocumentHandle("child");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPdf, fatherHandle, childHandle, "test");
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            var formats = await _documentStoreClient.GetFormatsAsync(fatherHandle);
+            Assert.NotNull(formats);
+
+            var document = _documents.Find(Query.EQ("Handles", "child@father")).SingleOrDefault();
+            Assert.That(document, Is.Not.Null, "Document with child@father handle was not find.");
         }
 
         private async Task CompareDownloadedStreamToFile(string pathToFileToCompare, DocumentFormatReader documentFormatReader)

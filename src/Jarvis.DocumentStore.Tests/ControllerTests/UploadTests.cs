@@ -10,6 +10,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using NSubstitute;
 using NUnit.Framework;
+using System;
 
 namespace Jarvis.DocumentStore.Tests.ControllerTests
 {
@@ -33,15 +34,29 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         }
 
         [Test]
+        public async void calling_upload_with_handle_containing_at_char_return_bad_request()
+        {
+            var response = await InnerUploadFile("Document@otherhandle");
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.Response.StatusCode);
+        }
+
+        [Test]
         public async void calling_upload_with_unsupported_file_type_should_return_BadRequest()
         {
-            var response = await upload_file(TestConfig.PathToInvalidFile);
+            var response = await upload_file(TestConfig.PathToInvalidFile, "Document_1");
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.AreEqual("Unsupported file file.invalid", response.GetError().Message);
         }
 
         [Test]
         public async void calling_upload_with_supported_file_type_should_return_Ok()
+        {
+            var response = await InnerUploadFile("Document_1");
+            Assert.AreEqual(new FileInfo(TestConfig.PathToDocumentPdf).Length, response.StreamLength);       
+            response.Response.EnsureSuccessStatusCode();
+        }
+
+        private async Task<InnerUploadFileResponse> InnerUploadFile(String documentHandle)
         {
             IdentityGenerator.New<DocumentId>().Returns(new DocumentId(1));
             var descriptor = Substitute.For<IBlobDescriptor>();
@@ -53,15 +68,22 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             {
                 var fileWriter = new BlobWriter(new BlobId("sample_1"), stream, new FileNameWithExtension("a.file"));
                 BlobStore.CreateNew(Arg.Any<DocumentFormat>(), Arg.Any<FileNameWithExtension>()).Returns(fileWriter);
-                response = await upload_file(TestConfig.PathToDocumentPdf);
+                response = await upload_file(TestConfig.PathToDocumentPdf, documentHandle);
                 streamLen = stream.Length;
             }
 
-            response.EnsureSuccessStatusCode();
-            Assert.AreEqual(new FileInfo(TestConfig.PathToDocumentPdf).Length, streamLen);
+
+            return new InnerUploadFileResponse() {Response = response, StreamLength = streamLen};
         }
 
-        private async Task<HttpResponseMessage> upload_file(string pathToFile)
+        public class InnerUploadFileResponse 
+        {
+            public HttpResponseMessage Response { get; set; }
+
+            public Int64 StreamLength { get; set; }
+        }
+
+        private async Task<HttpResponseMessage> upload_file(string pathToFile, string documentHandle)
         {
             using (var stream = new FileStream(pathToFile, FileMode.Open))
             {
@@ -75,7 +97,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
                 Controller.Request.Content = multipartFormDataContent;
 
-                return await Controller.Upload(_tenantId, new DocumentHandle("Document_1"));
+                return await Controller.Upload(_tenantId, new DocumentHandle(documentHandle));
             }
         }
     }

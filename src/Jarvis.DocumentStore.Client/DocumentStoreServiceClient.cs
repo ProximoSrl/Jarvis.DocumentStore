@@ -107,7 +107,42 @@ namespace Jarvis.DocumentStore.Client
             Stream inputStream,
             IDictionary<string, object> customData = null)
         {
-            return await DoUpload(documentHandle, fileNameWithExtension, inputStream, customData);
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
+            return await DoUpload(endPoint, documentHandle, fileNameWithExtension, inputStream, customData);
+        }
+
+        /// <summary>
+        /// Create a new document as an attach of existing document
+        /// </summary>
+        /// <param name="fileNameWithExtension">File name with extension</param>
+        /// <param name="documentHandle">Document handle</param>
+        /// <param name="inputStream">Input stream</param>
+        /// <param name="customData">Custom Data</param>
+        /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
+        public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
+            string fileNameWithExtension,
+            DocumentHandle fatherDocumentHandle,
+            DocumentHandle attachHandle,
+            Stream inputStream,
+            String attachSource,
+            IDictionary<string, object> customData = null)
+        {
+            customData["source"] = attachSource;
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachHandle);
+            return await DoUpload(endPoint, attachHandle, fileNameWithExtension, inputStream, customData);
+        }
+
+        public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
+           string pathToFile,
+           DocumentHandle fatherDocumentHandle,
+           DocumentHandle attachHandle,
+           String attachSource,
+           IDictionary<string, object> customData = null) 
+        {
+            if (customData == null) customData = new Dictionary<String, Object>();
+            customData["source"] = attachSource;
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachHandle);
+            return await UploadFromFile(endPoint, pathToFile, attachHandle, customData);
         }
 
         /// <summary>
@@ -117,15 +152,25 @@ namespace Jarvis.DocumentStore.Client
         /// <param name="documentHandle">Document handle</param>
         /// <param name="customData">Custom data</param>
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
-        public async Task<UploadedDocumentResponse> UploadAsync(string pathToFile, DocumentHandle documentHandle, IDictionary<string, object> customData = null)
+        public async Task<UploadedDocumentResponse> UploadAsync(
+            string pathToFile,
+            DocumentHandle documentHandle, 
+            IDictionary<string, object> customData = null)
         {
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
+            return await UploadFromFile(endPoint, pathToFile, documentHandle, customData);
+        }
+
+        private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, DocumentHandle documentHandle, IDictionary<string, object> customData)
+        {
+
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
             if (fileExt == ".html" || fileExt == ".htm")
             {
                 var zippedFile = ZipHtmlPage(pathToFile);
                 try
                 {
-                    return await InnerUploadAsync(zippedFile, documentHandle, customData);
+                    return await InnerUploadAsync(endPoint, zippedFile, documentHandle, customData);
 
                 }
                 finally
@@ -134,7 +179,7 @@ namespace Jarvis.DocumentStore.Client
                 }
             }
 
-            return await InnerUploadAsync(pathToFile, documentHandle, customData);
+            return await InnerUploadAsync(endPoint, pathToFile, documentHandle, customData);
         }
 
         /// <summary>
@@ -145,20 +190,25 @@ namespace Jarvis.DocumentStore.Client
         /// <param name="customData">Custom data</param>
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
         private async Task<UploadedDocumentResponse> InnerUploadAsync(
+            Uri endPoint,
             string pathToFile,
             DocumentHandle documentHandle,
             IDictionary<string, object> customData
         )
         {
             string fileNameWithExtension = Path.GetFileName(pathToFile);
-
             using (var sourceStream = File.OpenRead(pathToFile))
             {
-                return await DoUpload(documentHandle, fileNameWithExtension, sourceStream, customData);
+                return await DoUpload(endPoint, documentHandle, fileNameWithExtension, sourceStream, customData);
             }
         }
 
-        async Task<UploadedDocumentResponse> DoUpload(DocumentHandle documentHandle, string fileNameWithExtension, Stream inputStream, IDictionary<string, object> customData)
+        async Task<UploadedDocumentResponse> DoUpload(
+            Uri endPoint,
+            DocumentHandle documentHandle, 
+            string fileNameWithExtension, 
+            Stream inputStream, 
+            IDictionary<string, object> customData)
         {
             string fileName = Path.GetFileNameWithoutExtension(fileNameWithExtension);
 
@@ -178,8 +228,6 @@ namespace Jarvis.DocumentStore.Client
                         var stringContent = new StringContent(await ToJsonAsync(customData));
                         content.Add(stringContent, "custom-data");
                     }
-
-                    var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
 
                     using (var message = await client.PostAsync(endPoint, content))
                     {

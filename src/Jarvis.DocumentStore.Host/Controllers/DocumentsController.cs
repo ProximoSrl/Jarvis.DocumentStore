@@ -76,6 +76,41 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(TenantId tenantId, DocumentHandle handle)
         {
+            if (handle.ToString().Contains("@"))
+            {
+                return Request.CreateErrorResponse(
+                   HttpStatusCode.BadRequest,
+                   "Character @ is not permitted when creating Handle, use call to create an attachment instead"
+               );
+            }
+            return await InnerUploadDocument(tenantId, handle);
+        }
+
+
+        /// <summary>
+        /// Upload a new document but it will be considered an attached of an existing
+        /// handle.
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        [Route("{tenantId}/documents/{fatherHandle}/attach/{attachHandle}")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> UploadAttach(TenantId tenantId, DocumentHandle fatherHandle, DocumentHandle attachHandle)
+        {
+            if (attachHandle.ToString().Contains("@"))
+            {
+                return Request.CreateErrorResponse(
+                   HttpStatusCode.BadRequest,
+                   "Character @ is not permitted when creating Handle, use call to create an attachment instead"
+               );
+            }
+            var handle = new DocumentHandle(String.Format("{0}@{1}", attachHandle, fatherHandle));
+            return await InnerUploadDocument(tenantId, handle);
+        }
+
+        private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle)
+        {
             var documentId = _identityGenerator.New<DocumentId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
@@ -237,6 +272,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _blobId = provider.BlobId;
             return null;
         }
+
 
         [Route("{tenantId}/documents/{handle}/@customdata")]
         [HttpGet]
