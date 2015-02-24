@@ -87,6 +87,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
                 job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
                 job.Parameters.Add(JobKeys.TenantId, tenantId);
+                job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
                 job.HandleCustomData = streamElement.HandleCustomData;
                 if (_info.Parameters != null) 
                 {
