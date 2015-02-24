@@ -367,7 +367,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return; //test is good
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout * 2);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             if (document == null)
                 Assert.Fail("Missing document");
@@ -433,7 +433,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return true; //test is good
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout * 2);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             return false;
         }
