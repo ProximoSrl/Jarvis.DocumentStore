@@ -21,6 +21,7 @@ using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.Storage;
 using Jarvis.NEventStoreEx.CommonDomainEx;
+using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 using Jarvis.NEventStoreEx.CommonDomainEx.Persistence.EventStore;
 using MongoDB.Bson.Serialization;
 using NEventStore;
@@ -93,8 +94,8 @@ namespace Jarvis.DocumentStore.Host.Support
                         })
                         .LifestyleSingleton(),
                     Component
-                        .For<ICQRSRepository, CQRSRepository>()
-                        .ImplementedBy<CQRSRepository>()
+                        .For<IRepositoryEx, RepositoryEx>()
+                        .ImplementedBy<RepositoryEx>()
                         .Named(tenant.Id + ".repository")
                         .DependsOn(Dependency.OnComponent(typeof (IStoreEvents), esComponentName))
                         .LifestyleTransient()
@@ -109,7 +110,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .For<IDispatchCommits>()
                     .ImplementedBy<NullDispatcher>(),
                 Component
-                    .For<ICQRSConstructAggregates>()
+                    .For<IConstructAggregatesEx>()
                     .ImplementedBy<AggregateFactory>(),
                 Component
                     .For<EventStoreFactory>()

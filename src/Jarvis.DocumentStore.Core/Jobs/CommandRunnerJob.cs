@@ -15,6 +15,7 @@ using Jarvis.Framework.Kernel.Store;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.NEventStoreEx.CommonDomainEx;
+using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 using Quartz;
 
 namespace Jarvis.DocumentStore.Core.Jobs
