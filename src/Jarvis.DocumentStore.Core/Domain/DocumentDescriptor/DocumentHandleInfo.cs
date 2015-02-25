@@ -1,4 +1,4 @@
-using Jarvis.DocumentStore.Core.Domain.Handle;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
@@ -6,13 +6,13 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
     public class DocumentHandleInfo
     {
         public FileNameWithExtension FileName { get; private set; }
-        public HandleCustomData CustomData { get; private set; }
+        public DocumentCustomData CustomData { get; private set; }
         public DocumentHandle Handle { get; private set; }
 
         public DocumentHandleInfo(
             DocumentHandle handle,
             FileNameWithExtension fileName,
-            HandleCustomData customData = null
+            DocumentCustomData customData = null
             )
         {
             Handle = handle;

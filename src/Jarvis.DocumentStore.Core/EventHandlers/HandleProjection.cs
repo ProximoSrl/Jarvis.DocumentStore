@@ -1,6 +1,6 @@
-﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+﻿using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
-using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using NEventStore;
@@ -8,11 +8,11 @@ using NEventStore;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class HandleProjection : AbstractProjection
-        ,IEventHandler<HandleInitialized>
-        ,IEventHandler<HandleLinked>
-        ,IEventHandler<HandleFileNameSet>
-        ,IEventHandler<HandleCustomDataSet>
-        ,IEventHandler<HandleDeleted>
+        ,IEventHandler<DocumentInitialized>
+        ,IEventHandler<DocumentLinked>
+        ,IEventHandler<DocumentFileNameSet>
+        ,IEventHandler<DocumentCustomDataSet>
+        ,IEventHandler<DocumentDeleted>
         ,IEventHandler<DocumentDescriptorHasBeenDeduplicated>
     {
         readonly IHandleWriter _writer;
@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.Init();
         }
 
-        public void On(HandleLinked e)
+        public void On(DocumentLinked e)
         {
             _writer.LinkDocument(
                 e.Handle, 
@@ -46,12 +46,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             );
         }
 
-        public void On(HandleCustomDataSet e)
+        public void On(DocumentCustomDataSet e)
         {
             _writer.UpdateCustomData(e.Handle, e.CustomData);
         }
 
-        public void On(HandleInitialized e)
+        public void On(DocumentInitialized e)
         {
             _writer.CreateIfMissing(
                 e.Handle,
@@ -59,12 +59,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             );
         }
 
-        public void On(HandleDeleted e)
+        public void On(DocumentDeleted e)
         {
             _writer.Delete(e.Handle, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
         }
 
-        public void On(HandleFileNameSet e)
+        public void On(DocumentFileNameSet e)
         {
             _writer.SetFileName(e.Handle, e.FileName, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
         }
@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             );
         }
 
-        public void On(HandleHasNewAttachment e)
+        public void On(DocumentHasNewAttachment e)
         {
             _writer.AddAttachment(
                 e.Handle,

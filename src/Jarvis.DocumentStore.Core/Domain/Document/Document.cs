@@ -1,31 +1,31 @@
 ﻿using System.Linq;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.NEventStoreEx.CommonDomainEx;
 using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 
-namespace Jarvis.DocumentStore.Core.Domain.Handle
+namespace Jarvis.DocumentStore.Core.Domain.Document
 {
-    public class Handle : AggregateRoot<HandleState>
+    public class Document : AggregateRoot<DocumentState>
     {
-        public Handle()
+        public Document()
         {
         }
 
-        public Handle(HandleState initialState)
+        public Document(DocumentState initialState)
             : base(initialState)
         {
         }
 
-        public void Initialize(HandleId id, DocumentHandle handle)
+        public void Initialize(DocumentId id, DocumentHandle handle)
         {
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "handle already initialized");
             ThrowIfDeleted();
 
-            RaiseEvent(new HandleInitialized(id, handle));
+            RaiseEvent(new DocumentInitialized(id, handle));
         }
 
         public void Link(DocumentDescriptorId documentId)
@@ -33,7 +33,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             ThrowIfDeleted();
 
             if (InternalState.LinkedDocument != documentId){
-                RaiseEvent(new HandleLinked(
+                RaiseEvent(new DocumentLinked(
                     InternalState.Handle, 
                     documentId, 
                     InternalState.LinkedDocument,
@@ -48,23 +48,23 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             if (InternalState.FileName == fileName)
                 return;
 
-            RaiseEvent(new HandleFileNameSet(InternalState.Handle, fileName));
+            RaiseEvent(new DocumentFileNameSet(InternalState.Handle, fileName));
         }
 
-        public void SetCustomData(HandleCustomData customData)
+        public void SetCustomData(DocumentCustomData customData)
         {
             ThrowIfDeleted();
 
-            if (HandleCustomData.IsEquals(InternalState.CustomData, customData))
+            if (DocumentCustomData.IsEquals(InternalState.CustomData, customData))
                 return;
 
-            RaiseEvent(new HandleCustomDataSet(InternalState.Handle, customData));
+            RaiseEvent(new DocumentCustomDataSet(InternalState.Handle, customData));
         }
 
         public void Delete()
         {
             if (!InternalState.HasBeenDeleted)
-                RaiseEvent(new HandleDeleted(InternalState.Handle, InternalState.LinkedDocument));
+                RaiseEvent(new DocumentDeleted(InternalState.Handle, InternalState.LinkedDocument));
         }
 
         public void AddAttachment(DocumentHandle attachmentDocumentHandle)
@@ -74,7 +74,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             if (InternalState.Attachments.Contains(attachmentDocumentHandle))
                 return;
 
-            RaiseEvent(new HandleHasNewAttachment(InternalState.Handle, attachmentDocumentHandle));
+            RaiseEvent(new DocumentHasNewAttachment(InternalState.Handle, attachmentDocumentHandle));
         }
 
         void ThrowIfDeleted()

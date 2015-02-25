@@ -1,5 +1,5 @@
-﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.Handle;
+﻿using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Shared.Domain;
 using Jarvis.Framework.Shared.Domain.Serialization;
@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
             });
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
-            EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
             StringValueCustomBsonTypeMapper.Register<BlobId>();
             StringValueCustomBsonTypeMapper.Register<TenantId>();
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();

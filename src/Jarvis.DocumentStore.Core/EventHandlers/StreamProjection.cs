@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
-using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
@@ -13,11 +13,11 @@ using Jarvis.DocumentStore.Core.Storage;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class StreamProjection : AbstractProjection,
-         IEventHandler<HandleInitialized>,
-         IEventHandler<HandleDeleted>,
-         IEventHandler<HandleLinked>,
+         IEventHandler<DocumentInitialized>,
+         IEventHandler<DocumentDeleted>,
+         IEventHandler<DocumentLinked>,
          IEventHandler<FormatAddedToDocumentDescriptor>,
-         IEventHandler<HandleFileNameSet>,
+         IEventHandler<DocumentFileNameSet>,
          IEventHandler<DocumentFormatHasBeenUpdated>
     {
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
@@ -70,7 +70,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         }
 
-        public void On(HandleInitialized e)
+        public void On(DocumentInitialized e)
         {
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
@@ -81,7 +81,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             });
         }
 
-        public void On(HandleFileNameSet e)
+        public void On(DocumentFileNameSet e)
         {
             var handle = _handleWriter.FindOneById(e.Handle);
             _streamReadModelCollection.Insert(e, new StreamReadModel()
@@ -89,12 +89,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 Id = GetNewId(),
                 //TenantId = this.TenantId,
                 Handle = e.Handle,
-                HandleCustomData = handle.CustomData,
+                DocumentCustomData = handle.CustomData,
                 EventType = HandleStreamEventTypes.HandleFileNameSet
             });
         }
 
-        public void On(HandleDeleted e)
+        public void On(DocumentDeleted e)
         {
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
@@ -105,7 +105,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             });
         }
 
-        public void On(HandleLinked e)
+        public void On(DocumentLinked e)
         {
             var doc = _documentReadModel.FindOneById(e.DocumentId);
             var handle = _handleWriter.FindOneById(e.Handle);
@@ -128,7 +128,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             : new PipelineId("original"),
                     },
                     EventType = HandleStreamEventTypes.HandleHasNewFormat,
-                    HandleCustomData = handle.CustomData,
+                    DocumentCustomData = handle.CustomData,
                 });
             }
         }
@@ -160,7 +160,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             : new PipelineId("original"),
                     },
                     EventType = HandleStreamEventTypes.HandleHasNewFormat,
-                    HandleCustomData = handleReadMode.CustomData,
+                    DocumentCustomData = handleReadMode.CustomData,
                 });
             }
         }
@@ -190,7 +190,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             : new PipelineId("original"),
                     },
                     EventType = HandleStreamEventTypes.HandleFormatUpdated,
-                    HandleCustomData = handleReadMode.CustomData,
+                    DocumentCustomData = handleReadMode.CustomData,
                 });
             }
         }

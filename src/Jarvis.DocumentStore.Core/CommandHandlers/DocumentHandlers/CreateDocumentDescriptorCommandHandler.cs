@@ -1,6 +1,6 @@
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
-using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.ReadModel;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
             var docHandle = cmd.HandleInfo.Handle;
             var id = _mapper.Map(docHandle);
-            var handle = Repository.GetById<Handle>(id);
+            var handle = Repository.GetById<Document>(id);
             if (!handle.HasBeenCreated)
             {
                 handle.Initialize(id, docHandle);

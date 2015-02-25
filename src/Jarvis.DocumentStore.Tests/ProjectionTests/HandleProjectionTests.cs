@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.Handle;
-using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -24,7 +23,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
         readonly DocumentHandle _documentHandle = new DocumentHandle("a");
         readonly DocumentHandle _attachmentHandle = new DocumentHandle("attach");
-        readonly HandleId _handleId = new HandleId(1);
+        readonly DocumentId _documentId = new DocumentId(1);
         readonly DocumentDescriptorId _document1 = new DocumentDescriptorId(1);
         readonly DocumentDescriptorId _document2 = new DocumentDescriptorId(2);
         readonly FileNameWithExtension _fileName1 = new FileNameWithExtension("a", "file");
@@ -43,7 +42,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
 
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
-            EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
             StringValueCustomBsonTypeMapper.Register<BlobId>();
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
             StringValueCustomBsonTypeMapper.Register<FileHash>();
@@ -91,8 +90,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void add_attachment()
         {
-            _sut.On(new HandleInitialized(_handleId, _documentHandle) {AggregateId =  _handleId});
-            _sut.On(new HandleHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _handleId });
+            _sut.On(new DocumentInitialized(_documentId, _documentHandle) {AggregateId =  _documentId});
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _documentId });
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.That(h.Attachments, Is.EquivalentTo(new [] { _attachmentHandle }));
@@ -102,7 +101,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void update_custom_data()
         {
             _writer.Create(_documentHandle);
-            var handleCustomData = new HandleCustomData() { { "a", "b" } };
+            var handleCustomData = new DocumentCustomData() { { "a", "b" } };
             _writer.UpdateCustomData(_documentHandle, handleCustomData);
             var h = _writer.FindOneById(_documentHandle);
 

@@ -1,51 +1,51 @@
 using System.Collections.Generic;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 
-namespace Jarvis.DocumentStore.Core.Domain.Handle
+namespace Jarvis.DocumentStore.Core.Domain.Document
 {
-    public class HandleState : AggregateState
+    public class DocumentState : AggregateState
     {
-        public HandleState(HandleId handleId, DocumentHandle handle) : this()
+        public DocumentState(DocumentId documentId, DocumentHandle handle) : this()
         {
-            this.AggregateId = handleId;
+            this.AggregateId = documentId;
             this.Handle = handle;
         }
 
-        public HandleState()
+        public DocumentState()
         {
             _attachments = new List<DocumentHandle>();
         }
 
-        void When(HandleInitialized e)
+        void When(DocumentInitialized e)
         {
             this.AggregateId = e.Id;
             this.Handle = e.Handle;
         }
 
-        void When(HandleDeleted e)
+        void When(DocumentDeleted e)
         {
             MarkAsDeleted();
         }
 
-        void When(HandleCustomDataSet e)
+        void When(DocumentCustomDataSet e)
         {
             this.CustomData = e.CustomData;
         }
 
-        void When(HandleFileNameSet e)
+        void When(DocumentFileNameSet e)
         {
             this.FileName = e.FileName;
         }
 
-        void When(HandleLinked e)
+        void When(DocumentLinked e)
         {
             Link(e.DocumentId);
         }
 
-        void When(HandleHasNewAttachment e)
+        void When(DocumentHasNewAttachment e)
         {
             AddAttachment(e.Attachment);
         }
@@ -63,7 +63,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         }
 
         public bool HasBeenDeleted { get; private set; }
-        public HandleCustomData CustomData { get; private set; }
+        public DocumentCustomData CustomData { get; private set; }
         public DocumentHandle Handle { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
 
@@ -83,7 +83,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             _attachments.Remove(attachment);
         }
 
-        public void SetCustomData(HandleCustomData data)
+        public void SetCustomData(DocumentCustomData data)
         {
             this.CustomData = data;
         }

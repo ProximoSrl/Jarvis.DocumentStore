@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
-using Jarvis.DocumentStore.Core.Domain.Handle;
-using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -74,7 +73,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_id_when_empty_projection()
         {
             CreateSut();
-            var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("Rev_1"));
+            var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("Rev_1"));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].Id, Is.EqualTo(1));
@@ -90,7 +89,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(
+            var evt = new DocumentLinked(
                 new DocumentHandle("rev_1"),
                 new DocumentDescriptorId(1),
                 new DocumentDescriptorId(2),
@@ -104,7 +103,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_handle_initialized()
         {
             CreateSut();
-            var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("rev_1"));
+            var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("rev_1"));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleInitialized));
@@ -115,7 +114,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         //public void verify_stream_events_have_tenant()
         //{
         //    CreateSut();
-        //    var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("rev_1"));
+        //    var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("rev_1"));
         //    _sut.Handle(evt, false);
         //    Assert.That(rmStream, Has.Count.EqualTo(1));
         //    Assert.That(rmStream[0].TenantId.ToString(), Is.EqualTo("test-tenant"));
@@ -129,7 +128,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
+            var evt = new DocumentLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
@@ -144,10 +143,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
+            var evt = new DocumentLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
-            Assert.That(rmStream[0].HandleCustomData, Is.EqualTo(handle.CustomData));
+            Assert.That(rmStream[0].DocumentCustomData, Is.EqualTo(handle.CustomData));
     
         }
 
@@ -159,7 +158,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
+            var evt = new DocumentLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
 
@@ -168,7 +167,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
         private void SetHandleToReturn()
         {
-            var customData = new HandleCustomData() 
+            var customData = new DocumentCustomData() 
             {
                 {"handle1" , "test"},
                 {"handle2" , new { isComplex = true, theTruth = 42} },
@@ -193,7 +192,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             rmStream.Add(new StreamReadModel() { Id = 41 });
             CreateSut();
-            var evt = new HandleInitialized(new HandleId(1), new DocumentHandle("rev_1"));
+            var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("rev_1"));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(2));
             Assert.That(rmStream[1].Id, Is.EqualTo(42));
@@ -203,7 +202,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_handle_deleted()
         {
             CreateSut();
-            var evt = new HandleDeleted(new DocumentHandle("rev_1"), new DocumentDescriptorId(1));
+            var evt = new DocumentDeleted(new DocumentHandle("rev_1"), new DocumentDescriptorId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleDeleted));
@@ -223,7 +222,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddFormat(new PipelineId("test"), new DocumentFormat("blah blah"), new BlobId("test"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
+            var evt = new DocumentLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
 
             _sut.Handle(evt, false); //I'm expecting new format added to handle
             Assert.That(rmStream, Has.Count.EqualTo(3));
@@ -255,7 +254,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
+            var evt = new DocumentLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
 
             var evtFormat = new FormatAddedToDocumentDescriptor(new DocumentFormat("blah"), new BlobId("test"),
@@ -292,7 +291,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
+            var evt = new DocumentLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
 
             var evtFormat = new FormatAddedToDocumentDescriptor(new DocumentFormat("blah"), new BlobId("test.1"), new PipelineId("tika"));

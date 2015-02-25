@@ -2,18 +2,18 @@
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Shared.Commands;
 
-namespace Jarvis.DocumentStore.Core.Domain.Handle.Commands
+namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
-    public class LinkHandleToDocument : Command
+    public class LinkDocumentToDocumentDescriptor : Command
     {
-        public LinkHandleToDocument(DocumentHandle handle, DocumentDescriptorId documentId)
+        public LinkDocumentToDocumentDescriptor(DocumentHandle handle, DocumentDescriptorId documentDescriptorId)
         {
             Handle = handle;
-            DocumentId = documentId;
+            DocumentDescriptorId = documentDescriptorId;
         }
 
         public DocumentHandle Handle { get; private set; }
-        public DocumentDescriptorId DocumentId { get; private set; }
+        public DocumentDescriptorId DocumentDescriptorId { get; private set; }
     }
 
     public class DeleteHandle : Command

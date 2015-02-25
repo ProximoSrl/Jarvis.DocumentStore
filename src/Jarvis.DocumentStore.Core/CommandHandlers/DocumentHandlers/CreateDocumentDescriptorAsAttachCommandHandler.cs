@@ -1,6 +1,6 @@
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
-using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using System;
@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
             var docHandle = cmd.HandleInfo.Handle;
             var id = _mapper.Map(docHandle);
-            var handle = Repository.GetById<Handle>(id);
+            var handle = Repository.GetById<Document>(id);
             if (!handle.HasBeenCreated)
             {
                 handle.Initialize(id, docHandle);
@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
             handle.SetCustomData(cmd.HandleInfo.CustomData);
 
             var fatherId = _mapper.Map(cmd.FatherHandle);
-            var fatherHandle = Repository.GetById<Handle>(fatherId);
+            var fatherHandle = Repository.GetById<Document>(fatherId);
             fatherHandle.AddAttachment(docHandle);
 
             Repository.Save(handle, cmd.MessageId, h => { });

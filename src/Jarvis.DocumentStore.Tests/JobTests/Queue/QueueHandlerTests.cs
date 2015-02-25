@@ -16,7 +16,6 @@ using MongoDB.Driver.Linq;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using MongoDB.Bson;
-using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Jobs;
 using MongoDB.Bson.Serialization;
 using Jarvis.DocumentStore.Core;
@@ -260,7 +259,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         {
             var info = new QueueInfo("test", "", "pdf|docx");
             QueueHandler sut = new QueueHandler(info, _db);
-            var customData = new Core.Domain.Handle.HandleCustomData() 
+            var customData = new DocumentCustomData() 
                 {
                     {"test" , "value"},
                     {"complex" , 42},
@@ -278,7 +277,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     BlobId = new BlobId("soffice.1")
                 },
                 DocumentId = new DocumentDescriptorId(1),
-                HandleCustomData = customData,
+                DocumentCustomData = customData,
             };
 
             sut.Handle(rm, new TenantId("test"));
@@ -424,7 +423,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     DocumentFormat = new DocumentFormat("tika"),
                     BlobId = new BlobId("tika." + lastBlobId++)
                 },
-                HandleCustomData = new HandleCustomData(customData ?? new Dictionary<String,Object>()),
+                DocumentCustomData = new DocumentCustomData(customData ?? new Dictionary<String,Object>()),
             };
             sut.Handle(rm, new TenantId(tenant));
         }

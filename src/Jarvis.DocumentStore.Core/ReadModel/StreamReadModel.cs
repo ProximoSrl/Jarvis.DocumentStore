@@ -1,6 +1,6 @@
 ﻿using System;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Shared.ReadModel;
 
@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public HandleStreamEventTypes EventType { get; set; }
 
-        public HandleCustomData HandleCustomData { get; set; }
+        public DocumentCustomData DocumentCustomData { get; set; }
 
     }
 

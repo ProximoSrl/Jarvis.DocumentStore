@@ -1,7 +1,7 @@
 using System.Linq;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Bson;
@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public long CreatetAt { get; private set; }
         
         public long ProjectedAt { get; private set; }
-        public HandleCustomData CustomData { get; private set; }
+        public DocumentCustomData CustomData { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
 
         public HandleReadModel(DocumentHandle handle) : this(handle, null, null, null)
@@ -38,7 +38,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
         }
 
-        public HandleReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName, HandleCustomData customData)
+        public HandleReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName, DocumentCustomData customData)
         {
             Handle = handle;
             DocumentId = documentid;
@@ -59,7 +59,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void Drop();
         void Init();
         void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt);
-        void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
+        void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<HandleReadModel> AllSortedByHandle { get;}
         void CreateIfMissing(DocumentHandle handle, long createdAt);
@@ -166,7 +166,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             }
         }
 
-        public void UpdateCustomData(DocumentHandle handle, HandleCustomData customData)
+        public void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData)
         {
             Logger.DebugFormat("UpdateCustomData on handle {0}", handle);
             var args = new FindAndModifyArgs

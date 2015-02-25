@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.Handle;
-using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.Framework.Kernel.Commands;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
 {
-    public class LinkHandleToDocumentCommandHandler : RepositoryCommandHandler<Handle, LinkHandleToDocument>
+    public class LinkHandleToDocumentCommandHandler : RepositoryCommandHandler<Document, LinkDocumentToDocumentDescriptor>
     {
         readonly IHandleMapper _mapper;
 
@@ -18,7 +18,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
             _mapper = mapper;
         }
 
-        protected override void Execute(LinkHandleToDocument cmd)
+        protected override void Execute(LinkDocumentToDocumentDescriptor cmd)
         {
             var handleId = _mapper.Map(cmd.Handle);
             FindAndModify(
@@ -26,13 +26,13 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
                 h =>
                 {
                     if (!h.HasBeenCreated) h.Initialize(handleId, cmd.Handle);
-                    h.Link(cmd.DocumentId);
+                    h.Link(cmd.DocumentDescriptorId);
                 },
                 true);
         }
     }
 
-    public class DeleteHandleCommandHandler : RepositoryCommandHandler<Handle, DeleteHandle>
+    public class DeleteHandleCommandHandler : RepositoryCommandHandler<Document, DeleteHandle>
     {
         readonly IHandleMapper _mapper;
 

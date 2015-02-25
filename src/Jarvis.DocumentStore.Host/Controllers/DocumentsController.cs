@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
-using Jarvis.DocumentStore.Core.Domain.Handle;
-using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public IInProcessCommandBus CommandBus { get; private set; }
         readonly IHandleWriter _handleWriter;
 
-        HandleCustomData _customData;
+        DocumentCustomData _customData;
         FileNameWithExtension _fileName;
         BlobId _blobId;
 
@@ -255,7 +255,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (provider.FormData["custom-data"] != null)
             {
-                _customData = JsonConvert.DeserializeObject<HandleCustomData>(provider.FormData["custom-data"]);
+                _customData = JsonConvert.DeserializeObject<DocumentCustomData>(provider.FormData["custom-data"]);
             }
 
             _fileName = provider.Filename;
@@ -282,7 +282,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (provider.FormData["custom-data"] != null)
             {
-                _customData = JsonConvert.DeserializeObject<HandleCustomData>(provider.FormData["custom-data"]);
+                _customData = JsonConvert.DeserializeObject<DocumentCustomData>(provider.FormData["custom-data"]);
             }
 
             _fileName = provider.Filename;
@@ -471,7 +471,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentHandle handle,
             DocumentHandle fatherHandle,
             FileNameWithExtension fileName,
-            HandleCustomData customData
+            DocumentCustomData customData
         )
         {
             
