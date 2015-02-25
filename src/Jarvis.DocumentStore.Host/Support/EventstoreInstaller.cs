@@ -51,11 +51,11 @@ namespace Jarvis.DocumentStore.Host.Support
 
             EnableFlatIdMapping(identityManager);
 
-            MessagesRegistration.RegisterAssembly(typeof(Document).Assembly);
-            SnapshotRegistration.AutomapAggregateState(typeof(DocumentState).Assembly);
+            MessagesRegistration.RegisterAssembly(typeof(DocumentDescriptor).Assembly);
+            SnapshotRegistration.AutomapAggregateState(typeof(DocumentDescriptorState).Assembly);
 
-            identityManager.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
-            IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentId).Assembly);
+            identityManager.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
+            IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentDescriptorId).Assembly);
 
             BsonClassMap.LookupClassMap(typeof(BlobId));
             BsonClassMap.LookupClassMap(typeof(DocumentHandle));
@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
                 tenant1.Container.Register(
                     Classes
-                        .FromAssemblyContaining<Document>()
+                        .FromAssemblyContaining<DocumentDescriptor>()
                         .BasedOn<IPipelineHook>()
                         .WithServiceAllInterfaces(),
                     Component
@@ -127,7 +127,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .For<IIdentityManager, IIdentityGenerator, IIdentityConverter, IdentityManager>()
                     .ImplementedBy<IdentityManager>(),
                 Classes
-                    .FromAssemblyContaining<Document>()
+                    .FromAssemblyContaining<DocumentDescriptor>()
                     .BasedOn<AggregateBase>()
                     .WithService.Self()
                     .LifestyleTransient()

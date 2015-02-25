@@ -6,11 +6,11 @@ using Jarvis.Framework.Kernel.Engine;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
-    public class DocumentState : AggregateState
+    public class DocumentDescriptorState : AggregateState
     {
         private readonly HashSet<DocumentHandle> _handles = new Quartz.Collection.HashSet<DocumentHandle>();
 
-        public DocumentState(params KeyValuePair<DocumentFormat, BlobId>[] formats)
+        public DocumentDescriptorState(params KeyValuePair<DocumentFormat, BlobId>[] formats)
             : this()
         {
             foreach (var keyValuePair in formats)
@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             }
         }
 
-        public DocumentState()
+        public DocumentDescriptorState()
         {
             Formats = new Dictionary<DocumentFormat, BlobId>();
         }
@@ -29,18 +29,18 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public bool HasBeenDeleted { get; private set; }
 
-        private void When(DocumentDeleted e)
+        private void When(DocumentDescriptorDeleted e)
         {
             HasBeenDeleted = true;
         }
 
-        private void When(DocumentCreated e)
+        private void When(DocumentDescriptorCreated e)
         {
             AggregateId = e.AggregateId;
             BlobId = e.BlobId;
         }
 
-        private void When(FormatAddedToDocument e)
+        private void When(FormatAddedToDocumentDescriptor e)
         {
             Formats.Add(e.DocumentFormat, e.BlobId);
         }

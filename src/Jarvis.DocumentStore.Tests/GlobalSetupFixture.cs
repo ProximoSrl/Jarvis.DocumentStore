@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests
             try
             {
                 var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
-                mngr.RegisterIdentitiesFromAssembly(typeof (DocumentId).Assembly);
+                mngr.RegisterIdentitiesFromAssembly(typeof (DocumentDescriptorId).Assembly);
                 mngr.RegisterIdentitiesFromAssembly(typeof (TenantId).Assembly);
                 mngr.RegisterIdentitiesFromAssembly(typeof (QueuedJobId).Assembly);
 

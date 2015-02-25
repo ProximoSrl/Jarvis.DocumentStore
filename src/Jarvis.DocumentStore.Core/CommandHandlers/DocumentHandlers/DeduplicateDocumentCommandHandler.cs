@@ -2,9 +2,9 @@
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
-    public class DeduplicateDocumentCommandHandler : DocumentCommandHandler<DeduplicateDocument>
+    public class DeduplicateDocumentCommandHandler : DocumentCommandHandler<DeduplicateDocumentDescriptor>
     {
-        protected override void Execute(DeduplicateDocument cmd)
+        protected override void Execute(DeduplicateDocumentDescriptor cmd)
         {
            FindAndModify(cmd.AggregateId, doc => doc.Deduplicate(
                cmd.OtherDocumentId, 

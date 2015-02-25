@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .DependsOn(Dependency.OnValue<IWindsorContainer>(container))
                     .DependsOn(Dependency.OnValue<Assembly[]>(new[]
                         {
-                            typeof (Document).Assembly,
+                            typeof (DocumentDescriptor).Assembly,
                         }))
                     .StartUsingMethod(x => x.Register),
                 Component
@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .ImplementedBy<HandleMapper>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(sysDb)),
                 Classes
-                    .FromAssemblyContaining<Document>()
+                    .FromAssemblyContaining<DocumentDescriptor>()
                     .BasedOn(typeof(ICommandHandler<>))
                     .WithServiceFirstInterface()
                     .LifestyleTransient()

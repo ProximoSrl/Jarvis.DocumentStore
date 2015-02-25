@@ -5,7 +5,7 @@ using Jarvis.DocumentStore.Core.ReadModel;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
-    public class CreateDocumentCommandHandler : DocumentCommandHandler<CreateDocument>
+    public class CreateDocumentCommandHandler : DocumentCommandHandler<CreateDocumentDescriptor>
     {
         readonly IHandleMapper _mapper;
         public CreateDocumentCommandHandler(IHandleMapper mapper, IHandleWriter writer)
@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
             _mapper = mapper;
         }
 
-        protected override void Execute(CreateDocument cmd)
+        protected override void Execute(CreateDocumentDescriptor cmd)
         {
             FindAndModify(
                 cmd.AggregateId, 
@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
             LinkHandle(cmd);
         }
 
-        void LinkHandle(CreateDocument cmd)
+        void LinkHandle(CreateDocumentDescriptor cmd)
         {
             var docHandle = cmd.HandleInfo.Handle;
             var id = _mapper.Map(docHandle);

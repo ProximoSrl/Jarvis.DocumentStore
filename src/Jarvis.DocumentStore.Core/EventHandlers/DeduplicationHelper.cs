@@ -19,8 +19,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _blobStore = blobStore;
         }
 
-        public DocumentId FindDuplicateDocumentId(
-            DocumentId sourceDocumentId, 
+        public DocumentDescriptorId FindDuplicateDocumentId(
+            DocumentDescriptorId sourceDocumentId, 
             FileHash sourceHash,
             BlobId sourceBlobId 
             )

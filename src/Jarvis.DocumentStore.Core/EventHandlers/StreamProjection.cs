@@ -21,12 +21,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
          IEventHandler<HandleInitialized>,
          IEventHandler<HandleDeleted>,
          IEventHandler<HandleLinked>,
-         IEventHandler<FormatAddedToDocument>,
+         IEventHandler<FormatAddedToDocumentDescriptor>,
          IEventHandler<HandleFileNameSet>,
          IEventHandler<DocumentFormatHasBeenUpdated>
     {
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
-        private readonly IReader<DocumentReadModel, DocumentId> _documentReadModel;
+        private readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentReadModel;
         private readonly IHandleWriter _handleWriter;
         private readonly IBlobStore _blobStore;
 
@@ -38,7 +38,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             ICollectionWrapper<StreamReadModel, Int64> streamReadModelCollection,
             IHandleWriter handleWriter,
             IBlobStore blobStore,
-            IReader<DocumentReadModel, DocumentId> documentReadModel)
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentReadModel)
         {
             _streamReadModelCollection = streamReadModelCollection;
             _documentReadModel = documentReadModel;
@@ -142,9 +142,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         /// 
         /// </summary>
         /// <param name="e"></param>
-        public void On(FormatAddedToDocument e)
+        public void On(FormatAddedToDocumentDescriptor e)
         {
-            var allHandles = _documentReadModel.FindOneById((DocumentId) e.AggregateId).Handles;
+            var allHandles = _documentReadModel.FindOneById((DocumentDescriptorId) e.AggregateId).Handles;
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {
@@ -155,7 +155,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     //TenantId = this.TenantId,
                     Handle = handle,
                     Filename = descriptor.FileNameWithExtension,
-                    DocumentId = (DocumentId) e.AggregateId,
+                    DocumentId = (DocumentDescriptorId) e.AggregateId,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = e.BlobId,
@@ -174,7 +174,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentFormatHasBeenUpdated e)
         {
-            var allHandles = _documentReadModel.FindOneById((DocumentId)e.AggregateId).Handles;
+            var allHandles = _documentReadModel.FindOneById((DocumentDescriptorId)e.AggregateId).Handles;
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {
@@ -185,7 +185,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     //TenantId = this.TenantId,
                     Handle = handle,
                     Filename = descriptor.FileNameWithExtension,
-                    DocumentId = (DocumentId)e.AggregateId,
+                    DocumentId = (DocumentDescriptorId)e.AggregateId,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = e.BlobId,

@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private ICommandBus _bus;
         IBlobStore _filestore;
         IHandleWriter _handleWriter;
-        IReader<DocumentReadModel, DocumentId> _documentReader;
+        IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentReader;
         private ITriggerProjectionsUpdate _projections;
         [SetUp]
         public void SetUp()
@@ -49,7 +49,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.IsTrue(_bus is IInProcessCommandBus);
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _handleWriter = tenant.Container.Resolve<IHandleWriter>();
-            _documentReader = tenant.Container.Resolve<IReader<DocumentReadModel, DocumentId>>();
+            _documentReader = tenant.Container.Resolve<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
         }
 
         [TearDown]
@@ -63,8 +63,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             var fname = Path.GetFileName(pathToFile);
             var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
-            _bus.Send(new CreateDocument(
-                new DocumentId(id),
+            _bus.Send(new CreateDocumentDescriptor(
+                new DocumentDescriptorId(id),
                 _filestore.Upload(DocumentFormats.Original, pathToFile),
                 info,
                 new FileHash("1234abcd"),
@@ -78,8 +78,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var fname = Path.GetFileName(pathToFile);
             var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
             var blobId = _filestore.Upload(format, pathToFile);
-            _bus.Send(new AddFormatToDocument(
-                new DocumentId(id),
+            _bus.Send(new AddFormatToDocumentDescriptor(
+                new DocumentDescriptorId(id),
                 format,
                 blobId,
                 pipelineId
@@ -101,8 +101,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.AreEqual(new DocumentHandle("handle"), list[0].Handle);
             Assert.AreEqual(new DocumentHandle("handle_bis"), list[1].Handle);
 
-            Assert.AreEqual(new DocumentId(1), list[0].DocumentId);
-            Assert.AreEqual(new DocumentId(1), list[1].DocumentId);
+            Assert.AreEqual(new DocumentDescriptorId(1), list[0].DocumentId);
+            Assert.AreEqual(new DocumentDescriptorId(1), list[1].DocumentId);
         }
 
         [Test]
@@ -112,10 +112,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
 
-            var old_handle_bis_document = _documentReader.FindOneById(new DocumentId(1));
+            var old_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(1));
             Assert.IsNull(old_handle_bis_document);
 
-            var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
+            var new_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(2));
             Assert.NotNull(new_handle_bis_document);
         }
 
@@ -127,10 +127,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
 
-            var old_handle_bis_document = _documentReader.FindOneById(new DocumentId(1));
+            var old_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(1));
             Assert.IsNull(old_handle_bis_document);
 
-            var new_handle_bis_document = _documentReader.FindOneById(new DocumentId(2));
+            var new_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(2));
             Assert.NotNull(new_handle_bis_document);
         }
 
@@ -142,9 +142,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             CreateDocument(11, "handle", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
 
-            var original = _documentReader.FindOneById(new DocumentId(9));
-            var copy = _documentReader.FindOneById(new DocumentId(10));
-            var copy2 = _documentReader.FindOneById(new DocumentId(11));
+            var original = _documentReader.FindOneById(new DocumentDescriptorId(9));
+            var copy = _documentReader.FindOneById(new DocumentDescriptorId(10));
+            var copy2 = _documentReader.FindOneById(new DocumentDescriptorId(11));
 
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
 
@@ -153,7 +153,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.IsNull(copy2);
             
             Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentId(9));
+            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(9));
         }       
         
         [Test]
@@ -163,14 +163,14 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
 
-            var original = _documentReader.FindOneById(new DocumentId(1));
+            var original = _documentReader.FindOneById(new DocumentDescriptorId(1));
             Assert.IsNotNull(original);
 
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentId(1));
+            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(1));
 
-            var copy = _documentReader.FindOneById(new DocumentId(2));
+            var copy = _documentReader.FindOneById(new DocumentDescriptorId(2));
             Assert.IsNull(copy);
         }     
         
@@ -180,12 +180,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
 
-            var original = _documentReader.FindOneById(new DocumentId(1));
+            var original = _documentReader.FindOneById(new DocumentDescriptorId(1));
             Assert.IsNotNull(original);
 
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentId(1));
+            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(1));
         }
 
         [Test]
@@ -197,7 +197,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             await _projections.UpdateAndWait();
 
-            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentId(1));
+            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentDescriptorId(1));
             Assert.That(document.Formats, Has.Count.EqualTo(2));
             Assert.That(document.Formats[format], Is.Not.Null, "Document has not added format");
             Assert.That(document.Formats[format].BlobId, Is.EqualTo(blobId), "Wrong BlobId");
@@ -213,7 +213,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             await _projections.UpdateAndWait();
 
-            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentId(1));
+            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentDescriptorId(1));
             Assert.That(document.Formats, Has.Count.EqualTo(2));
             Assert.That(document.Formats[format], Is.Not.Null, "Document has not added format");
             Assert.That(document.Formats[format].BlobId, Is.EqualTo(blobId2), "Wrong BlobId");

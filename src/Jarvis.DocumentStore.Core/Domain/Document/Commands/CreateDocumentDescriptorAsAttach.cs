@@ -2,12 +2,12 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
-    public class CreateDocumentAsAttach : CreateDocument
+    public class CreateDocumentDescriptorAsAttach : CreateDocumentDescriptor
     {
         public DocumentHandle FatherHandle { get; private set; }
 
-        public CreateDocumentAsAttach(
-            DocumentId aggregateId, 
+        public CreateDocumentDescriptorAsAttach(
+            DocumentDescriptorId aggregateId, 
             BlobId blobId, 
             DocumentHandleInfo handleInfo,
             DocumentHandle fatherHandle,

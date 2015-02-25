@@ -7,9 +7,9 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
-    public class DeleteDocument : DocumentCommand
+    public class DeleteDocumentDescriptor : DocumentDescriptorCommand
     {
-        public DeleteDocument(DocumentId aggregateId, DocumentHandle handle) 
+        public DeleteDocumentDescriptor(DocumentDescriptorId aggregateId, DocumentHandle handle) 
             : base(aggregateId)
         {
             Handle = handle;

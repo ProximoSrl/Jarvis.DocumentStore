@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         ,IEventHandler<HandleFileNameSet>
         ,IEventHandler<HandleCustomDataSet>
         ,IEventHandler<HandleDeleted>
-        ,IEventHandler<DocumentHasBeenDeduplicated>
+        ,IEventHandler<DocumentDescriptorHasBeenDeduplicated>
     {
         readonly IHandleWriter _writer;
 
@@ -76,11 +76,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.SetFileName(e.Handle, e.FileName, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
         }
 
-        public void On(DocumentHasBeenDeduplicated e)
+        public void On(DocumentDescriptorHasBeenDeduplicated e)
         {
             _writer.LinkDocument(
                 e.Handle,
-                (DocumentId)e.AggregateId,
+                (DocumentDescriptorId)e.AggregateId,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
         }

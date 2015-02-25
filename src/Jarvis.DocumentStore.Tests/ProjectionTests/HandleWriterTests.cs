@@ -17,8 +17,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private DocumentHandle _handle = new DocumentHandle("handle_1");
         private DocumentHandle _handleAttach1 = new DocumentHandle("handle_2");
         private DocumentHandle _handleAttach2 = new DocumentHandle("handle_3");
-        private DocumentId _doc1 = new DocumentId(1);
-        private DocumentId _doc2 = new DocumentId(2);
+        private DocumentDescriptorId _doc1 = new DocumentDescriptorId(1);
+        private DocumentDescriptorId _doc2 = new DocumentDescriptorId(2);
         private DocumentStoreBootstrapper _documentStoreService;
 
         [SetUp]

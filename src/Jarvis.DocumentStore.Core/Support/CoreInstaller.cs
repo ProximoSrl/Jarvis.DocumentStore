@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<IDocumentFormatTranslator>()
                     .ImplementedBy<StandardDocumentFormatTranslator>(),
                 Component
-                    .For<Document>()
+                    .For<DocumentDescriptor>()
                     .LifestyleCustom(typeof(TransientNotTrackingLifestyle))
             );
         }

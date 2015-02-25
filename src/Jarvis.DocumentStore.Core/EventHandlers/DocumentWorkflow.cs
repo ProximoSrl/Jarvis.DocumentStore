@@ -12,9 +12,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentWorkflow : AbstractProjection,
         IEventHandler<DocumentQueuedForProcessing>,
-        IEventHandler<DocumentHasBeenDeduplicated>,
-        IEventHandler<DocumentCreated>,
-        IEventHandler<FormatAddedToDocument>,
+        IEventHandler<DocumentDescriptorHasBeenDeduplicated>,
+        IEventHandler<DocumentDescriptorCreated>,
+        IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<HandleDeleted>,
         IEventHandler<HandleLinked>
     {
@@ -42,28 +42,28 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             if (IsReplay) return;
 
-            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentId)e.AggregateId)
+            _commandBus.Send(new LinkHandleToDocument(e.Handle, (DocumentDescriptorId)e.AggregateId)
                 .WithDiagnosticTriggeredByInfo(e, "Queued for processing of " + e.AggregateId)
             );
 
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
         }
 
-        public void On(DocumentHasBeenDeduplicated e)
+        public void On(DocumentDescriptorHasBeenDeduplicated e)
         {
             if (IsReplay)
                 return;
 
-            _commandBus.Send(new LinkHandleToDocument(e.Handle,(DocumentId)e.AggregateId)
+            _commandBus.Send(new LinkHandleToDocument(e.Handle,(DocumentDescriptorId)e.AggregateId)
                 .WithDiagnosticTriggeredByInfo(e, "Document " + e.OtherDocumentId + " deduplicated to " + e.AggregateId)
             );
 
-            _commandBus.Send(new DeleteDocument(e.OtherDocumentId,DocumentHandle.Empty)
+            _commandBus.Send(new DeleteDocumentDescriptor(e.OtherDocumentId,DocumentHandle.Empty)
                 .WithDiagnosticTriggeredByInfo(e,"deduplication of " + e.AggregateId)
             );
         }
 
-        public void On(FormatAddedToDocument e)
+        public void On(FormatAddedToDocumentDescriptor e)
         {
             if (IsReplay)
                 return;
@@ -72,12 +72,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             Logger.DebugFormat("Next conversion step for document {0} {1}", e.BlobId, descriptor.FileNameWithExtension);
         }
 
-        public void On(DocumentCreated e)
+        public void On(DocumentDescriptorCreated e)
         {
             if (IsReplay)
                 return;
 
-            var thisDocumentId = (DocumentId)e.AggregateId;
+            var thisDocumentId = (DocumentDescriptorId)e.AggregateId;
 
             var duplicatedId = _deduplicationHelper.FindDuplicateDocumentId(
                 thisDocumentId,
@@ -87,13 +87,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
             if (duplicatedId != null)
             {
-                _commandBus.Send(new DeduplicateDocument(duplicatedId, thisDocumentId, e.HandleInfo.Handle)
+                _commandBus.Send(new DeduplicateDocumentDescriptor(duplicatedId, thisDocumentId, e.HandleInfo.Handle)
                     .WithDiagnosticTriggeredByInfo(e)                        
                 );
             }
             else
             {
-                _commandBus.Send(new ProcessDocument(thisDocumentId, e.HandleInfo.Handle)
+                _commandBus.Send(new ProcessDocumentDescriptor(thisDocumentId, e.HandleInfo.Handle)
                     .WithDiagnosticTriggeredByInfo(e)                        
                 );
             }
@@ -103,7 +103,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             if (IsReplay) return;
 
-            _commandBus.Send(new DeleteDocument(e.DocumentId, e.Handle)
+            _commandBus.Send(new DeleteDocumentDescriptor(e.DocumentId, e.Handle)
                 .WithDiagnosticTriggeredByInfo(e, "Handle deleted")
             );
         }
@@ -113,7 +113,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay) return;
 
             if (e.PreviousDocumentId != null)
-                _commandBus.Send(new DeleteDocument(e.PreviousDocumentId, e.Handle)
+                _commandBus.Send(new DeleteDocumentDescriptor(e.PreviousDocumentId, e.Handle)
                     .WithDiagnosticTriggeredByInfo(e,string.Format("Handle relinked from {0} to {1}", e.PreviousDocumentId, e.DocumentId))
                 );
         }

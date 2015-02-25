@@ -51,12 +51,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             AddAttachment(e.Attachment);
         }
 
-        public void Link(DocumentId documentId)
+        public void Link(DocumentDescriptorId documentId)
         {
             this.LinkedDocument = documentId;
         }
 
-        public DocumentId LinkedDocument { get; private set; }
+        public DocumentDescriptorId LinkedDocument { get; private set; }
 
         public void MarkAsDeleted()
         {

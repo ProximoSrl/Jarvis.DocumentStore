@@ -8,17 +8,17 @@ using Machine.Specifications;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
-    public class when_a_document_is_created_twice : DocumentSpecifications
+    public class when_a_documentDescriptor_is_created_twice : DocumentDescriptorSpecifications
     {
         static Exception _ex;
 
         Establish context = () =>
         {
-            AggregateSpecification<Core.Domain.Document.Document, DocumentState>.Create();
-            Document.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
+            AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.Create();
+            DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
         };
 
-        Because of = () => _ex = Catch.Exception(() => Document.Create(_id, _blobId, _handleInfo, _fileHash, _fileName));
+        Because of = () => _ex = Catch.Exception(() => DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName));
 
         It a_domain_exception_should_be_thrown = () =>
         {

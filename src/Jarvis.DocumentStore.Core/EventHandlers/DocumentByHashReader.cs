@@ -12,19 +12,19 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     {
         public class Match
         {
-            public DocumentId DocumentId { get; private set; }
+            public DocumentDescriptorId DocumentId { get; private set; }
             public BlobId BlobId { get; private set; }
 
-            public Match(DocumentId documentId, BlobId blobId)
+            public Match(DocumentDescriptorId documentId, BlobId blobId)
             {
                 DocumentId = documentId;
                 BlobId = blobId;
             }
         }
 
-        private IMongoDbReader<DocumentReadModel, DocumentId> _reader;
+        private IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> _reader;
 
-        public DocumentByHashReader(IMongoDbReader<DocumentReadModel, DocumentId> reader)
+        public DocumentByHashReader(IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> reader)
         {
             _reader = reader;
         }
@@ -32,8 +32,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public IEnumerable<Match> FindDocumentByHash(FileHash hash)
         {
             return _reader.Collection
-                .Find(Query<DocumentReadModel>.EQ(x => x.Hash, hash))
-                .SetSortOrder(SortBy<DocumentReadModel>.Ascending(x=>x.SequenceNumber))
+                .Find(Query<DocumentDescriptorReadModel>.EQ(x => x.Hash, hash))
+                .SetSortOrder(SortBy<DocumentDescriptorReadModel>.Ascending(x=>x.SequenceNumber))
                 .Select(x => new Match(x.Id, x.GetOriginalBlobId()));
         }
     }

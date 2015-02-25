@@ -11,31 +11,31 @@ using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
-    public class Document : AggregateRoot<DocumentState>
+    public class DocumentDescriptor : AggregateRoot<DocumentDescriptorState>
     {
-        public Document(DocumentState initialState)
+        public DocumentDescriptor(DocumentDescriptorState initialState)
             : base(initialState)
         {
         }
 
-        public Document()
+        public DocumentDescriptor()
         {
         }
 
         public IDocumentFormatTranslator DocumentFormatTranslator { get; set; }
 
-        public void Create(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
+        public void Create(DocumentDescriptorId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
         {
             ThrowIfDeleted();
 
             if (HasBeenCreated)
                 throw new DomainException((IIdentity)id, "Already created");
 
-            RaiseEvent(new DocumentCreated(id, blobId, handleInfo, hash));
+            RaiseEvent(new DocumentDescriptorCreated(id, blobId, handleInfo, hash));
 
             var knownFormat = DocumentFormatTranslator.GetFormatFromFileName(fileName);
             if (knownFormat != null)
-                RaiseEvent(new FormatAddedToDocument(knownFormat, blobId, null));
+                RaiseEvent(new FormatAddedToDocumentDescriptor(knownFormat, blobId, null));
         }
 
         public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
@@ -47,7 +47,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             }
             else
             {
-                RaiseEvent(new FormatAddedToDocument(documentFormat, blobId, createdBy));
+                RaiseEvent(new FormatAddedToDocumentDescriptor(documentFormat, blobId, createdBy));
             }
         }
 
@@ -80,17 +80,17 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
             if (!InternalState.HasActiveHandles())
             {
-                RaiseEvent(new DocumentDeleted(
+                RaiseEvent(new DocumentDescriptorDeleted(
                     InternalState.BlobId,
                     InternalState.Formats.Select(x => x.Value).ToArray()
                 ));
             }
         }
 
-        public void Deduplicate(DocumentId otherDocumentId, DocumentHandle handle, FileNameWithExtension fileName)
+        public void Deduplicate(DocumentDescriptorId otherDocumentId, DocumentHandle handle, FileNameWithExtension fileName)
         {
             ThrowIfDeleted();
-            RaiseEvent(new DocumentHasBeenDeduplicated(otherDocumentId, handle, fileName));
+            RaiseEvent(new DocumentDescriptorHasBeenDeduplicated(otherDocumentId, handle, fileName));
             Attach(handle);
         }
 

@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IIdentityGenerator _identityGenerator;
         private readonly ICounterService _counterService;
 
-        readonly IReader<DocumentReadModel, DocumentId> _documentReader;
+        readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentReader;
         readonly IQueueDispatcher _queueDispatcher;
 
         public ILogger Logger { get; set; }
@@ -59,7 +59,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IBlobStore blobStore,
             ConfigService configService,
             IIdentityGenerator identityGenerator,
-            IReader<DocumentReadModel, DocumentId> documentReader,
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentReader,
             IInProcessCommandBus commandBus,
             IHandleWriter handleWriter,
             IQueueDispatcher queueDispatcher, ICounterService counterService)
@@ -134,7 +134,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle, DocumentHandle fatherHandle = null)
         {
-            var documentId = _identityGenerator.New<DocumentId>();
+            var documentId = _identityGenerator.New<DocumentDescriptorId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
             var errorMessage = await UploadFromHttpContent(Request.Content);
@@ -184,7 +184,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             String queueName = _customData[AddFormatToDocumentParameters.QueueName] as String;
             String jobId = _customData[AddFormatToDocumentParameters.JobId] as String;
-            DocumentId documentId;
+            DocumentDescriptorId documentId;
             if (String.IsNullOrEmpty(queueName))
             {
                 //user ask for handle, we need to grab the handle
@@ -227,7 +227,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var createdById = new PipelineId(_customData[AddFormatToDocumentParameters.CreatedBy] as String);
             Logger.DebugFormat("Incoming new format for documentId {0}", documentId);
            
-            var command = new AddFormatToDocument(documentId, documentFormat, _blobId, createdById);
+            var command = new AddFormatToDocumentDescriptor(documentId, documentFormat, _blobId, createdById);
             CommandBus.Send(command, "api");
 
             return Request.CreateResponse(
@@ -472,7 +472,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
 
         private void CreateDocument(
-            DocumentId documentId,
+            DocumentDescriptorId documentId,
             BlobId blobId,
             DocumentHandle handle,
             DocumentHandle fatherHandle,
@@ -487,16 +487,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (fatherHandle == null)
             {
                 
-                createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
+                createDocument = new CreateDocumentDescriptor(documentId, blobId, handleInfo, descriptor.Hash, fileName);
             }
             else
             {
-                createDocument = new CreateDocumentAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
+                createDocument = new CreateDocumentDescriptorAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
             }
             CommandBus.Send(createDocument, "api");
         }
 
-        DocumentReadModel GetDocumentByHandle(DocumentHandle handle)
+        DocumentDescriptorReadModel GetDocumentByHandle(DocumentHandle handle)
         {
             var mapping = _handleWriter.FindOneById(handle);
             if (mapping == null)

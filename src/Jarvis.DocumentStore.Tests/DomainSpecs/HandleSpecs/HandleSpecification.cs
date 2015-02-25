@@ -21,8 +21,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
     {
         public static readonly HandleId HandleId_1 = new HandleId(1);
    
-        public static readonly DocumentId Document_1 = new DocumentId(1);
-        public static readonly DocumentId Document_2 = new DocumentId(2);
+        public static readonly DocumentDescriptorId Document_1 = new DocumentDescriptorId(1);
+        public static readonly DocumentDescriptorId Document_2 = new DocumentDescriptorId(2);
         public static readonly FileNameWithExtension FileName_1 = new FileNameWithExtension("a","file");
         public static readonly HandleCustomData CustomData_1 = new HandleCustomData();
         public static readonly HandleCustomData CustomData_2 = new HandleCustomData();

@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             RaiseEvent(new HandleInitialized(id, handle));
         }
 
-        public void Link(DocumentId documentId)
+        public void Link(DocumentDescriptorId documentId)
         {
             ThrowIfDeleted();
 

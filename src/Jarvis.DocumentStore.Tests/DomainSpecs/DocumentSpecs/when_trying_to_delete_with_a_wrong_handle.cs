@@ -7,17 +7,17 @@ using Machine.Specifications;
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     [Subject("With a New Created Document")]
-    public class when_trying_to_delete_with_a_wrong_handle: DocumentSpecifications
+    public class when_trying_to_delete_with_a_wrong_handle: DocumentDescriptorSpecifications
     {
         Establish context = () =>
         {
-            AggregateSpecification<Core.Domain.Document.Document, DocumentState>.Create();
-            Document.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
+            AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.Create();
+            DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
         };
 
         Because of = () =>
         {
-            exception = Catch.Exception(() => Document.Delete(new DocumentHandle("not_in_this_doc")));
+            exception = Catch.Exception(() => DocumentDescriptor.Delete(new DocumentHandle("not_in_this_doc")));
         };
 
         It Exception_should_have_been_raised = () =>

@@ -3,13 +3,13 @@ using Jarvis.Framework.Shared.Events;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 {
-    public class FormatAddedToDocument : DomainEvent
+    public class FormatAddedToDocumentDescriptor : DomainEvent
     {
         public DocumentFormat DocumentFormat { get; private set; }
         public BlobId BlobId { get; private set; }
         public PipelineId CreatedBy { get; private set; }
 
-        public FormatAddedToDocument(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
+        public FormatAddedToDocumentDescriptor(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
         {
             DocumentFormat = documentFormat;
             BlobId = blobId;

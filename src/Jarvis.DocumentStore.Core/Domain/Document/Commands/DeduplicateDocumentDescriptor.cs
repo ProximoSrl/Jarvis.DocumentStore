@@ -7,13 +7,13 @@ using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
-    public class DeduplicateDocument : DocumentCommand
+    public class DeduplicateDocumentDescriptor : DocumentDescriptorCommand
     {
-        public DocumentId OtherDocumentId { get; private set; }
+        public DocumentDescriptorId OtherDocumentId { get; private set; }
         public DocumentHandle OtherHandle { get; private set; }
         public FileNameWithExtension OtherFileName { get; private set; }
 
-        public DeduplicateDocument(DocumentId documentId, DocumentId otherDocumentId, DocumentHandle otherHandle)
+        public DeduplicateDocumentDescriptor(DocumentDescriptorId documentId, DocumentDescriptorId otherDocumentId, DocumentHandle otherHandle)
             : base(documentId)
         {
             OtherDocumentId = otherDocumentId;

@@ -10,7 +10,7 @@ using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class RecycleBinProjection : AbstractProjection
-        ,IEventHandler<DocumentDeleted>
+        ,IEventHandler<DocumentDescriptorDeleted>
     {
         private readonly IRecycleBin _recycleBin;
 
@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
         }
 
-        public void On(DocumentDeleted e)
+        public void On(DocumentDescriptorDeleted e)
         {
             var files = e.BlobFormatsId.Concat(new []{ e.BlobId}).ToArray();
             _recycleBin.Delete(e.AggregateId, "Jarvis", e.CommitStamp, new { files });

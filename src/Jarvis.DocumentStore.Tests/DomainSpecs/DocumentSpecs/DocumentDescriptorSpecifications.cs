@@ -9,9 +9,9 @@ using System;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
-    public abstract class DocumentSpecifications : AggregateSpecification<Document, DocumentState>
+    public abstract class DocumentDescriptorSpecifications : AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>
     {
-        protected static readonly DocumentId _id = new DocumentId(1);
+        protected static readonly DocumentDescriptorId _id = new DocumentDescriptorId(1);
         protected static readonly BlobId _blobId = new BlobId("newFile");
         protected static readonly FileHash _fileHash = new FileHash("abcd1234");
         protected static readonly String _fileName = "file.test";
@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         protected static readonly DocumentHandleInfo _handleInfo = new DocumentHandleInfo(Handle, _fname);
         protected static readonly DocumentHandle _fatherHandle = new DocumentHandle("handle-to-father");
 
-        protected static Document Document
+        protected static DocumentDescriptor DocumentDescriptor
         {
             get {
                 if (Aggregate.DocumentFormatTranslator == null) Aggregate.DocumentFormatTranslator = Substitute.For<IDocumentFormatTranslator>();

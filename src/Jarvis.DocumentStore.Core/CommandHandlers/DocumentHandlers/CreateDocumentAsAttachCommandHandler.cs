@@ -7,7 +7,7 @@ using System;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
-    public class CreateDocumentAsAttachCommandHandler : DocumentCommandHandler<CreateDocumentAsAttach>
+    public class CreateDocumentAsAttachCommandHandler : DocumentCommandHandler<CreateDocumentDescriptorAsAttach>
     {
         readonly IHandleMapper _mapper;
 
@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
             _mapper = mapper;
         }
 
-        protected override void Execute(CreateDocumentAsAttach cmd)
+        protected override void Execute(CreateDocumentDescriptorAsAttach cmd)
         {
             FindAndModify(
                 cmd.AggregateId,
@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 
         }
 
-        private void LinkHandleAndAddAttachment(CreateDocumentAsAttach cmd)
+        private void LinkHandleAndAddAttachment(CreateDocumentDescriptorAsAttach cmd)
         {
             var docHandle = cmd.HandleInfo.Handle;
             var id = _mapper.Map(docHandle);

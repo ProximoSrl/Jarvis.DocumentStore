@@ -6,15 +6,15 @@ using Newtonsoft.Json;
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
     [BsonSerializer(typeof(EventStoreIdentityBsonSerializer))]
-    public class DocumentId : EventStoreIdentity
+    public class DocumentDescriptorId : EventStoreIdentity
     {
         [JsonConstructor]
-        public DocumentId(string id)
+        public DocumentDescriptorId(string id)
             : base(id)
         {
         }
 
-        public DocumentId(long id)
+        public DocumentDescriptorId(long id)
             : base(id)
         {
         }

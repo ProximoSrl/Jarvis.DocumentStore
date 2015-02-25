@@ -7,7 +7,7 @@ using Machine.Specifications;
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     [Subject("document with xml format")]
-    public class document_with_xml_format : DocumentSpecifications
+    public class documentDescriptor_with_xml_format : DocumentDescriptorSpecifications
     {
         protected static readonly DocumentFormat XmlDocumentFormatId1 = new DocumentFormat("xml");
         protected static readonly BlobId XmlBlobId1 = new BlobId("xml1");
@@ -16,13 +16,13 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         protected static readonly BlobId XmlBlobId2 = new BlobId("xml1");
         protected static readonly PipelineId XmlPiplePipelineId = new PipelineId("xml");
 
-        public class when_xml_format_is_added : document_with_xml_format
+        public class when_xml_format_is_added : documentDescriptor_with_xml_format
         {
-            Establish context = () => SetUp(new DocumentState(
+            Establish context = () => SetUp(new DocumentDescriptorState(
                 new KeyValuePair<DocumentFormat, BlobId>(XmlDocumentFormatId1, XmlBlobId1))
                 );
 
-            Because of = () => Document.AddFormat(XmlDocumentFormatId2, XmlBlobId2, XmlPiplePipelineId);
+            Because of = () => DocumentDescriptor.AddFormat(XmlDocumentFormatId2, XmlBlobId2, XmlPiplePipelineId);
 
             It DocumentFormatHasBeenUpdated_event_should_have_been_raised = () =>
                 EventHasBeenRaised<DocumentFormatHasBeenUpdated>().ShouldBeTrue();

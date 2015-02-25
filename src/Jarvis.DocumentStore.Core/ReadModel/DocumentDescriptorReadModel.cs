@@ -15,7 +15,7 @@ using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
-    public class DocumentReadModel : AbstractReadModel<DocumentId>
+    public class DocumentDescriptorReadModel : AbstractReadModel<DocumentDescriptorId>
     {
         public class FormatInfo
         {
@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public int FormatsCount { get; set; }
         public long SequenceNumber { get; set; }
 
-        public DocumentReadModel(DocumentId id, BlobId blobId)
+        public DocumentDescriptorReadModel(DocumentDescriptorId id, BlobId blobId)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
             this.Handles = new HashSet<DocumentHandle>();

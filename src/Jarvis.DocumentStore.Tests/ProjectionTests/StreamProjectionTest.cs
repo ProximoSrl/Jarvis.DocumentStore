@@ -27,11 +27,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private DocumentStoreBootstrapper _documentStoreService;
         private StreamProjection _sut;
         private ICollectionWrapper<StreamReadModel, Int64> _collectionWrapper;
-        private IReader<DocumentReadModel, DocumentId> _readerDocumentReadModel;
+        private IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _readerDocumentReadModel;
         private IHandleWriter _handleWriter;
         private IBlobStore _blobStore;
         private List<StreamReadModel> rmStream;
-        private List<DocumentReadModel> rmDocuments;
+        private List<DocumentDescriptorReadModel> rmDocuments;
         private HandleReadModel handle;
 
         [SetUp]
@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             _collectionWrapper = Substitute.For<ICollectionWrapper<StreamReadModel, Int64>>();
             rmStream = new List<StreamReadModel>();
-            rmDocuments = new List<DocumentReadModel>();
+            rmDocuments = new List<DocumentDescriptorReadModel>();
 
             _collectionWrapper.When(r => r.Insert(
                 Arg.Any<DomainEvent>(),
@@ -47,11 +47,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                 .Do(cinfo => rmStream.Add((StreamReadModel)cinfo.Args()[1]));
             _collectionWrapper.All.Returns(rmStream.AsQueryable());
 
-            _readerDocumentReadModel = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
+            _readerDocumentReadModel = Substitute.For<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
             _readerDocumentReadModel.AllUnsorted.Returns(rmDocuments.AsQueryable());
             _readerDocumentReadModel.AllSortedById.Returns(rmDocuments.AsQueryable().OrderBy(r => r.Id));
-            _readerDocumentReadModel.FindOneById(Arg.Any<DocumentId>())
-                .Returns(cinfo => rmDocuments.SingleOrDefault(d => d.Id == (DocumentId)cinfo.Args()[0]));
+            _readerDocumentReadModel.FindOneById(Arg.Any<DocumentDescriptorId>())
+                .Returns(cinfo => rmDocuments.SingleOrDefault(d => d.Id == (DocumentDescriptorId)cinfo.Args()[0]));
 
             _handleWriter = Substitute.For<IHandleWriter>();
             _blobStore = Substitute.For<IBlobStore>();
@@ -85,14 +85,14 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_pipeline_id_is_original_when_pipeline_is_null()
         {
             SetHandleToReturn();
-            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
             var evt = new HandleLinked(
                 new DocumentHandle("rev_1"),
-                new DocumentId(1),
-                new DocumentId(2),
+                new DocumentDescriptorId(1),
+                new DocumentDescriptorId(2),
                 new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
@@ -124,11 +124,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_stream_events_have_fileName()
         {
             SetHandleToReturn();
-            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
@@ -139,11 +139,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_stream_events_have_custom_handle_data()
         {
             SetHandleToReturn();
-            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].HandleCustomData, Is.EqualTo(handle.CustomData));
@@ -154,15 +154,15 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_stream_events_have_documentId()
         {
             SetHandleToReturn();
-            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("blob_test"));
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("blob_test"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
 
-            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentId(1)));
+            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
         }
 
         private void SetHandleToReturn()
@@ -174,7 +174,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             };
             handle = new HandleReadModel(
                     new DocumentHandle("rev_1"),
-                    new DocumentId(1),
+                    new DocumentDescriptorId(1),
                     new FileNameWithExtension("test.txt"),
                     customData
                 );
@@ -202,7 +202,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_handle_deleted()
         {
             CreateSut();
-            var evt = new HandleDeleted(new DocumentHandle("rev_1"), new DocumentId(1));
+            var evt = new HandleDeleted(new DocumentHandle("rev_1"), new DocumentDescriptorId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleDeleted));
@@ -217,12 +217,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             stub.FileNameWithExtension.Returns(new FileNameWithExtension("test.txt"));
             _blobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(stub);
 
-            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddFormat(new PipelineId("tika"), new DocumentFormat("blah"), new BlobId("pdf"));
             docRm.AddFormat(new PipelineId("test"), new DocumentFormat("blah blah"), new BlobId("test"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
 
             _sut.Handle(evt, false); //I'm expecting new format added to handle
             Assert.That(rmStream, Has.Count.EqualTo(3));
@@ -250,16 +250,16 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_format_added_to_handle_when_added_to_document()
         {
             SetHandleToReturn();
-            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
 
-            var evtFormat = new FormatAddedToDocument(new DocumentFormat("blah"), new BlobId("test"),
+            var evtFormat = new FormatAddedToDocumentDescriptor(new DocumentFormat("blah"), new BlobId("test"),
                 new PipelineId("tika"));
-            evtFormat.AggregateId = new DocumentId(1);
+            evtFormat.AggregateId = new DocumentDescriptorId(1);
             _sut.Handle(evtFormat, false); //format is linked to document.
 
             Assert.That(rmStream, Has.Count.EqualTo(2));
@@ -270,7 +270,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
-            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentId(1)));
+            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
 
             Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
@@ -280,26 +280,26 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[1].FormatInfo.BlobId, Is.EqualTo(new BlobId("test")));
-            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentId(1)));
+            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
         }
 
         [Test]
         public void verify_format_updated()
         {
             SetHandleToReturn();
-            var docRm = new DocumentReadModel(new DocumentId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
             CreateSut();
-            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentId(1), new DocumentId(2), new FileNameWithExtension("test.txt"));
+            var evt = new HandleLinked(new DocumentHandle("rev_1"), new DocumentDescriptorId(1), new DocumentDescriptorId(2), new FileNameWithExtension("test.txt"));
             _sut.Handle(evt, false); //Handle is linked to document.
 
-            var evtFormat = new FormatAddedToDocument(new DocumentFormat("blah"), new BlobId("test.1"), new PipelineId("tika"));
-            evtFormat.AggregateId = new DocumentId(1);
+            var evtFormat = new FormatAddedToDocumentDescriptor(new DocumentFormat("blah"), new BlobId("test.1"), new PipelineId("tika"));
+            evtFormat.AggregateId = new DocumentDescriptorId(1);
              _sut.Handle(evtFormat, false); //format is linked to document.
 
              var evtFormatUpdated = new DocumentFormatHasBeenUpdated(new DocumentFormat("blah"), new BlobId("test.2"), new PipelineId("tika"));
-             evtFormatUpdated.AggregateId = new DocumentId(1);
+             evtFormatUpdated.AggregateId = new DocumentDescriptorId(1);
              _sut.Handle(evtFormatUpdated, false); //format is linked to document.
 
             Assert.That(rmStream, Has.Count.EqualTo(3));
@@ -310,7 +310,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
-            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentId(1)));
+            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
 
             Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
@@ -319,7 +319,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[1].FormatInfo.PipelineId.ToString(), Is.EqualTo("tika"));
             Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
-            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentId(1)));
+            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
 
             Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.HandleFormatUpdated));
             Assert.That(rmStream[2].Handle, Is.EqualTo("rev_1"));
@@ -328,7 +328,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[2].FormatInfo.PipelineId.ToString(), Is.EqualTo("tika"));
             Assert.That(rmStream[2].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
             Assert.That(rmStream[2].Filename.Extension, Is.EqualTo("txt"));
-            Assert.That(rmStream[2].DocumentId, Is.EqualTo(new DocumentId(1)));
+            Assert.That(rmStream[2].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
         }
     }
 }

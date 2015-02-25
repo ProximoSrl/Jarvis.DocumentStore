@@ -56,7 +56,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected DocumentStoreBootstrapper _documentStoreService;
         protected DocumentStoreServiceClient _documentStoreClient;
-        protected MongoCollection<DocumentReadModel> _documents;
+        protected MongoCollection<DocumentDescriptorReadModel> _documents;
         protected DocumentStoreTestConfigurationForPollQueue _config;
         protected JobsHostConfiguration _jobsHostConfiguration;
         protected IBlobStore _blobStore;
@@ -83,7 +83,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.ServerAddress,
                 TestConfig.Tenant
             );
-            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.Document");
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
@@ -137,18 +137,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var format = new Core.Domain.Document.DocumentFormat("tika");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
+                documentDescriptor = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(handleCore));
-                if (document != null &&
-                    document.Formats.ContainsKey(format))
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
-                    var formatInfo = document.Formats[format];
+                    var formatInfo = documentDescriptor.Formats[format];
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
                         blob.FileNameWithExtension.ToString(), 
@@ -179,15 +179,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var format = new Core.Domain.Document.DocumentFormat("content");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
+                documentDescriptor = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
-                if (document != null &&
-                    document.Formats.ContainsKey(format))
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
                 {
                     //now we want to verify if content is set correctly
                     var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
@@ -195,7 +195,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     Assert.That(content.Pages.Length, Is.EqualTo(1));
                     Assert.That(content.Pages[0].Content, Contains.Substring("word document").IgnoreCase);
 
-                    var formatInfo = document.Formats[format];
+                    var formatInfo = documentDescriptor.Formats[format];
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
                         blob.FileNameWithExtension.ToString(),
@@ -240,20 +240,20 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var thumbSmallFormat = new Core.Domain.Document.DocumentFormat("thumb.small");
             var thumbLargeFormat = new Core.Domain.Document.DocumentFormat("thumb.large");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
+                documentDescriptor = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
-                if (document != null &&
-                    document.Formats.ContainsKey(thumbSmallFormat) &&
-                    document.Formats.ContainsKey(thumbLargeFormat))
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(thumbSmallFormat) &&
+                    documentDescriptor.Formats.ContainsKey(thumbLargeFormat))
                 {
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(TestConfig.PathToDocumentPng);
-                    var blobId = document.Formats[thumbSmallFormat].BlobId;
+                    var blobId = documentDescriptor.Formats[thumbSmallFormat].BlobId;
                     var file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".small.png"));
                     var downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
@@ -262,7 +262,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                         Assert.That(image.Height, Is.EqualTo(200));
                     }
 
-                     blobId = document.Formats[thumbLargeFormat].BlobId;
+                     blobId = documentDescriptor.Formats[thumbLargeFormat].BlobId;
                     file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".large.png"));
                     downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
@@ -313,15 +313,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var emailFormat = new Core.Domain.Document.DocumentFormat("email");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
+                documentDescriptor = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
-                if (document != null &&
-                    document.Formats.ContainsKey(emailFormat))
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(emailFormat))
                 {
                    
                     return; //test is good
@@ -353,17 +353,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var emailFormat = new Core.Domain.Document.DocumentFormat("email");
             var pdfFormat = new Core.Domain.Document.DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
+                documentDescriptor = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
-                if (document != null &&
-                    document.Formats.ContainsKey(emailFormat) &&
-                    document.Formats.ContainsKey(pdfFormat))
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(emailFormat) &&
+                    documentDescriptor.Formats.ContainsKey(pdfFormat))
                 {
 
                     return; //test is good
@@ -371,15 +371,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
-            if (document == null)
+            if (documentDescriptor == null)
                 Assert.Fail("Missing document");
 
-            Debug.WriteLine("document:\n{0}", (object)JsonConvert.SerializeObject(document, Formatting.Indented));
+            Debug.WriteLine("document:\n{0}", (object)JsonConvert.SerializeObject(documentDescriptor, Formatting.Indented));
 
-            if (!document.Formats.ContainsKey(emailFormat))
+            if (!documentDescriptor.Formats.ContainsKey(emailFormat))
                 Assert.Fail("Missing format: {0}", emailFormat);
 
-            if (!document.Formats.ContainsKey(pdfFormat))
+            if (!documentDescriptor.Formats.ContainsKey(pdfFormat))
                 Assert.Fail("Missing format: {0}", pdfFormat);
         }
 
@@ -421,15 +421,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var pdfFormat = DocumentFormats.Pdf;
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
+                documentDescriptor = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
-                if (document != null &&
-                    document.Formats.ContainsKey(pdfFormat))
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(pdfFormat))
                 {
 
                     return true; //test is good
@@ -486,18 +486,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var format = new Core.Domain.Document.DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
+                documentDescriptor = _documents.AsQueryable()
                     .SingleOrDefault(d => d.Handles.Contains(handleServer));
-                if (document != null &&
-                    document.Formats.ContainsKey(format))
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
-                    var formatInfo = document.Formats[format];
+                    var formatInfo = documentDescriptor.Formats[format];
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
                         blob.FileNameWithExtension.ToString(),
@@ -544,7 +544,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var format = new Core.Domain.Document.DocumentFormat("Pdf");
             do
             {
@@ -580,7 +580,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );  
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var format = new Core.Domain.Document.DocumentFormat("Pdf");
             do
             {

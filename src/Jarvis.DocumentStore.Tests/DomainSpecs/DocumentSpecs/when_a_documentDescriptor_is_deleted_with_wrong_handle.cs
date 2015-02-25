@@ -11,15 +11,15 @@ using NUnit.Framework;
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
     [Subject("Document")]
-    public class when_a_document_is_deleted_with_wrong_handle : DocumentSpecifications
+    public class when_a_documentDescriptor_is_deleted_with_wrong_handle : DocumentDescriptorSpecifications
     {
         private static Exception Exception { get; set; }
-        Establish context = () => AggregateSpecification<Document, DocumentState>.Create();
+        Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
 
         Because of = () =>
         {
-            Document.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
-            Exception = Catch.Exception(() => Document.Delete(new DocumentHandle("not_this_one")));
+            DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
+            Exception = Catch.Exception(() => DocumentDescriptor.Delete(new DocumentHandle("not_this_one")));
         };
 
 

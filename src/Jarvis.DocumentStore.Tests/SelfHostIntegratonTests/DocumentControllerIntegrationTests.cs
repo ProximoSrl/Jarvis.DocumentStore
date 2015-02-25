@@ -41,7 +41,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
-        private MongoCollection<DocumentReadModel> _documents;
+        private MongoCollection<DocumentDescriptorReadModel> _documents;
         private MongoCollection<HandleReadModel> _handles;
         private ITriggerProjectionsUpdate _projections;
 
@@ -65,7 +65,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
-            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<HandleReadModel>("rm.Handle");
         }
 
@@ -419,7 +419,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // check readmodel
             var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
             var tenant = tenantAccessor.GetTenant(new TenantId(TestConfig.Tenant));
-            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentReadModel, DocumentId>>();
+            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
 
             var allDocuments = docReader.AllUnsorted.Count();
             Assert.AreEqual(0, allDocuments);

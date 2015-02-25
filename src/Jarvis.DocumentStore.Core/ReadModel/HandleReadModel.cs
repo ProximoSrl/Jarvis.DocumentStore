@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public HashSet<DocumentHandle> Attachments { get; private set; }
         
-        public DocumentId DocumentId { get; private set; }
+        public DocumentDescriptorId DocumentId { get; private set; }
         
         public long CreatetAt { get; private set; }
         
@@ -35,12 +35,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         }
 
-        public HandleReadModel(DocumentHandle handle, DocumentId documentid, FileNameWithExtension fileName)
+        public HandleReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName)
             : this(handle, documentid, fileName, null)
         {
         }
 
-        public HandleReadModel(DocumentHandle handle, DocumentId documentid, FileNameWithExtension fileName, HandleCustomData customData)
+        public HandleReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName, HandleCustomData customData)
         {
             Handle = handle;
             DocumentId = documentid;
@@ -60,7 +60,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         HandleReadModel FindOneById(DocumentHandle handle);
         void Drop();
         void Init();
-        void LinkDocument(DocumentHandle handle, DocumentId id, long projectedAt);
+        void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt);
         void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<HandleReadModel> AllSortedByHandle { get;}
@@ -144,7 +144,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             return _collection.Count();
         }
 
-        public void LinkDocument(DocumentHandle handle, DocumentId id, long projectedAt)
+        public void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt)
         {
             Logger.DebugFormat("LinkDocument on handle {0} [{1}]", handle, projectedAt);
 

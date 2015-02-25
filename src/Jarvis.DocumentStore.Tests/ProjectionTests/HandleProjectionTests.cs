@@ -24,8 +24,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         readonly DocumentHandle _documentHandle = new DocumentHandle("a");
         readonly DocumentHandle _attachmentHandle = new DocumentHandle("attach");
         readonly HandleId _handleId = new HandleId(1);
-        readonly DocumentId _document1 = new DocumentId(1);
-        readonly DocumentId _document2 = new DocumentId(2);
+        readonly DocumentDescriptorId _document1 = new DocumentDescriptorId(1);
+        readonly DocumentDescriptorId _document2 = new DocumentDescriptorId(2);
         readonly FileNameWithExtension _fileName1 = new FileNameWithExtension("a", "file");
 
         HandleWriter _writer;
@@ -37,11 +37,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             MongoDbTestConnectionProvider.ReadModelDb.Drop();
 
             var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
-            mngr.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
+            mngr.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
 
             EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
 
-            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
             EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
             StringValueCustomBsonTypeMapper.Register<BlobId>();
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
@@ -115,7 +115,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [TestCase(1, 9, true)]
         public void Projected(int expectedDocId, int projectedAt, bool isPending)
         {
-            var expectedDocumentId = new DocumentId(expectedDocId);
+            var expectedDocumentId = new DocumentDescriptorId(expectedDocId);
             _writer.Promise(_documentHandle, 10);
             _writer.LinkDocument(_documentHandle, _document2, projectedAt);
 

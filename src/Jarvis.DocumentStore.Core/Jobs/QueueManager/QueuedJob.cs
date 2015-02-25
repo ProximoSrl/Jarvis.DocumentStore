@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public TenantId TenantId { get; set; }
 
-        public DocumentId DocumentId { get; set; }
+        public DocumentDescriptorId DocumentId { get; set; }
 
         public DocumentHandle Handle { get; set; }
 

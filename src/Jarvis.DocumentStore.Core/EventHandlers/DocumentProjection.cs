@@ -12,17 +12,17 @@ using NEventStore;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentProjection : AbstractProjection,
-        IEventHandler<DocumentCreated>,
-        IEventHandler<FormatAddedToDocument>,
-        IEventHandler<DocumentDeleted>,
+        IEventHandler<DocumentDescriptorCreated>,
+        IEventHandler<FormatAddedToDocumentDescriptor>,
+        IEventHandler<DocumentDescriptorDeleted>,
         IEventHandler<DocumentHandleAttached>,
         IEventHandler<DocumentHandleDetached>,
         IEventHandler<DocumentFormatHasBeenUpdated>
     {
-        private readonly ICollectionWrapper<DocumentReadModel, DocumentId> _documents;
+        private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documents;
         private IHandleWriter _handleWriter;
         public DocumentProjection(
-            ICollectionWrapper<DocumentReadModel, DocumentId> documents, IHandleWriter handleWriter)
+            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documents, IHandleWriter handleWriter)
         {
             _documents = documents;
             _handleWriter = handleWriter;
@@ -47,12 +47,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override void SetUp()
         {
-            _documents.CreateIndex(IndexKeys<DocumentReadModel>.Ascending(x => x.Hash));
+            _documents.CreateIndex(IndexKeys<DocumentDescriptorReadModel>.Ascending(x => x.Hash));
         }
 
-        public void On(DocumentCreated e)
+        public void On(DocumentDescriptorCreated e)
         {
-            var document = new DocumentReadModel((DocumentId)e.AggregateId, e.BlobId)
+            var document = new DocumentDescriptorReadModel((DocumentDescriptorId)e.AggregateId, e.BlobId)
             {
                 Hash = e.Hash
             };
@@ -60,32 +60,32 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.Insert(e, document);
         }
 
-        public void On(FormatAddedToDocument e)
+        public void On(FormatAddedToDocumentDescriptor e)
         {
-            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
+            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
             {
                 d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
             });
         }
 
-        public void On(DocumentDeleted e)
+        public void On(DocumentDescriptorDeleted e)
         {
-            _documents.Delete(e, (DocumentId)e.AggregateId);
+            _documents.Delete(e, (DocumentDescriptorId)e.AggregateId);
         }
 
         public void On(DocumentHandleAttached e)
         {
-            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => d.AddHandle(e.Handle));
+            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d => d.AddHandle(e.Handle));
         }
 
         public void On(DocumentHandleDetached e)
         {
-            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d => d.Remove(e.Handle));
+            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d => d.Remove(e.Handle));
         }
 
         public void On(DocumentFormatHasBeenUpdated e)
         {
-            _documents.FindAndModify(e, (DocumentId)e.AggregateId, d =>
+            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
             {
                 d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
             });

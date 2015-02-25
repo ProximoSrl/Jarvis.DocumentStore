@@ -69,7 +69,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     BlobId = new BlobId("blob.1"),
                     PipelineId = new PipelineId("thumbnail"),
                 },
-                DocumentId = new DocumentId("Document_1"),
+                DocumentId = new DocumentDescriptorId(1),
                 Handle = new DocumentHandle("Revision_2"),
             };
             sut.Handle(rm, new TenantId("test_tenant"));
@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var job = collection.AsQueryable().Single();
             Assert.That(job.BlobId, Is.EqualTo(new BlobId("blob.1")));
             Assert.That(job.TenantId, Is.EqualTo(new TenantId("test_tenant")));
-            Assert.That(job.DocumentId, Is.EqualTo(new DocumentId("Document_1")));
+            Assert.That(job.DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
             Assert.That(job.Handle.ToString(), Is.EqualTo(rm.Handle));
             Assert.That(job.Id.ToString(), Is.Not.Contains("blob.1"), "Id should not contains internal concempts like blob id");
             Assert.That(job.Id.ToString(), Is.Not.Contains("tenant"), "Id should not contains internal concempts like tenant id");
@@ -102,7 +102,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     BlobId = new BlobId("blob.1"),
                     PipelineId = new PipelineId("thumbnail"),
                 },
-                DocumentId = new DocumentId("Document_1"),
+                DocumentId = new DocumentDescriptorId(1),
             };
             sut.Handle(rm, new TenantId("test_tenant"));
             var collection = _db.GetCollection<QueuedJob>("queue.test");
@@ -240,7 +240,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     DocumentFormat = new DocumentFormat("office"),
                     BlobId = new BlobId("soffice.1")
                 },
-                DocumentId = new DocumentId(1),
+                DocumentId = new DocumentDescriptorId(1),
             };
 
             sut.Handle(rm, new TenantId("test"));
@@ -276,7 +276,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     DocumentFormat = new DocumentFormat("office"),
                     BlobId = new BlobId("soffice.1")
                 },
-                DocumentId = new DocumentId(1),
+                DocumentId = new DocumentDescriptorId(1),
                 HandleCustomData = customData,
             };
 

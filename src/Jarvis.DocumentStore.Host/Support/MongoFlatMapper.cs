@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 map.AutoMap();
                 map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
             });
-            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
             EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
             StringValueCustomBsonTypeMapper.Register<BlobId>();
             StringValueCustomBsonTypeMapper.Register<TenantId>();

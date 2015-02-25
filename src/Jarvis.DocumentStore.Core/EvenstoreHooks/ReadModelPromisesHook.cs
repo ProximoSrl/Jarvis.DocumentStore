@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
     public class ReadModelPromisesHook : PipelineHookBase
     {
         private readonly IHandleWriter _handleWriter;
-        private static readonly string DocumentTypeName = typeof (Document).FullName;
+        private static readonly string DocumentTypeName = typeof (DocumentDescriptor).FullName;
 
         public ReadModelPromisesHook(IHandleWriter handleWriter)
         {
@@ -35,8 +35,8 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
         void HandleDocumentCreation(ICommit committed)
         {
             var docCreated = committed.Events
-                .Where(x => x.Body is DocumentCreated)
-                .Select(x => (DocumentCreated) x.Body)
+                .Where(x => x.Body is DocumentDescriptorCreated)
+                .Select(x => (DocumentDescriptorCreated) x.Body)
                 .FirstOrDefault();
 
             if (docCreated != null)
