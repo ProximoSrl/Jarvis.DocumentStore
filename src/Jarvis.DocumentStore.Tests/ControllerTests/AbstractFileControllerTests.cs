@@ -27,14 +27,14 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected ICounterService CounterService;
         protected IReader<DocumentDescriptorReadModel, DocumentDescriptorId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
-        IHandleWriter _handleWriter;
+        IDocumentWriter _handleWriter;
         protected IQueueDispatcher QueueDispatcher;
         [SetUp]
         public void SetUp()
         {
             BlobStore = Substitute.For<IBlobStore>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
-            _handleWriter = Substitute.For<IHandleWriter>();
+            _handleWriter = Substitute.For<IDocumentWriter>();
             DocumentReader = Substitute.For<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
             QueueDispatcher= Substitute.For<IQueueDispatcher>();
             CounterService = Substitute.For<ICounterService>();

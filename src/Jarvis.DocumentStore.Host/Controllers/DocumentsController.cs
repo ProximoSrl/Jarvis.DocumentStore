@@ -43,7 +43,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
-        readonly IHandleWriter _handleWriter;
+        readonly IDocumentWriter _handleWriter;
 
         DocumentCustomData _customData;
         FileNameWithExtension _fileName;
@@ -55,7 +55,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IIdentityGenerator identityGenerator,
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentReader,
             IInProcessCommandBus commandBus,
-            IHandleWriter handleWriter,
+            IDocumentWriter handleWriter,
             IQueueDispatcher queueDispatcher, ICounterService counterService)
         {
             _blobStore = blobStore;

@@ -16,9 +16,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentFormatHasBeenUpdated>
     {
         private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documents;
-        private IHandleWriter _handleWriter;
+        private IDocumentWriter _handleWriter;
         public DocumentDescriptorProjection(
-            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documents, IHandleWriter handleWriter)
+            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documents, IDocumentWriter handleWriter)
         {
             _documents = documents;
             _handleWriter = handleWriter;

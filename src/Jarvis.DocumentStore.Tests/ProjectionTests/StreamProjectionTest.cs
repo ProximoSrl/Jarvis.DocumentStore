@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private StreamProjection _sut;
         private ICollectionWrapper<StreamReadModel, Int64> _collectionWrapper;
         private IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _readerDocumentReadModel;
-        private IHandleWriter _handleWriter;
+        private IDocumentWriter _handleWriter;
         private IBlobStore _blobStore;
         private List<StreamReadModel> rmStream;
         private List<DocumentDescriptorReadModel> rmDocuments;
@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _readerDocumentReadModel.FindOneById(Arg.Any<DocumentDescriptorId>())
                 .Returns(cinfo => rmDocuments.SingleOrDefault(d => d.Id == (DocumentDescriptorId)cinfo.Args()[0]));
 
-            _handleWriter = Substitute.For<IHandleWriter>();
+            _handleWriter = Substitute.For<IDocumentWriter>();
             _blobStore = Substitute.For<IBlobStore>();
         }
 

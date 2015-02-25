@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         readonly DocumentDescriptorId _document2 = new DocumentDescriptorId(2);
         readonly FileNameWithExtension _fileName1 = new FileNameWithExtension("a", "file");
 
-        HandleWriter _writer;
+        DocumentWriter _writer;
         DocumentProjection _sut;
 
         [SetUp]
@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
             StringValueCustomBsonTypeMapper.Register<FileHash>();
 
-            _writer = new HandleWriter(MongoDbTestConnectionProvider.ReadModelDb);
+            _writer = new DocumentWriter(MongoDbTestConnectionProvider.ReadModelDb);
             _sut = new DocumentProjection(_writer);
         }
 

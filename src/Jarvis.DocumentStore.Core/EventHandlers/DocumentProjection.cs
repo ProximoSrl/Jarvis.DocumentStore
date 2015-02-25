@@ -16,9 +16,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         ,IEventHandler<DocumentDeleted>
         ,IEventHandler<DocumentDescriptorHasBeenDeduplicated>
     {
-        readonly IHandleWriter _writer;
+        readonly IDocumentWriter _writer;
 
-        public DocumentProjection(IHandleWriter writer)
+        public DocumentProjection(IDocumentWriter writer)
         {
             _writer = writer;
         }

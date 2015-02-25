@@ -62,7 +62,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         }
     }
 
-    public interface IHandleWriter
+    public interface IDocumentWriter
     {
         void Promise(DocumentHandle handle, long createdAt);
         DocumentReadModel FindOneById(DocumentHandle handle);
@@ -79,7 +79,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle);
     }
 
-    public class HandleWriter : IHandleWriter
+    public class DocumentWriter : IDocumentWriter
     {
         public ILogger Logger
         {
@@ -90,7 +90,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         readonly MongoCollection<DocumentReadModel> _collection;
         private ILogger _logger = NullLogger.Instance;
 
-        public HandleWriter(MongoDatabase readModelDb)
+        public DocumentWriter(MongoDatabase readModelDb)
         {
             _collection = readModelDb.GetCollection<DocumentReadModel>(CollectionNames.GetCollectionName<DocumentReadModel>());
         }
@@ -107,6 +107,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
+                    .SetOnInsert(x => x.AttachmentPath, "/" + handle + "/")
                     .Set(x => x.DocumentId, null)
                     .Set(x => x.CreatetAt, createdAt)
                     .Set(x => x.FileName, null),

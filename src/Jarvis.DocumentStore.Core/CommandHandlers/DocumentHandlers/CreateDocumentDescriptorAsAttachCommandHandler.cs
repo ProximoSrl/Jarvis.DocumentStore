@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
     {
         readonly IHandleMapper _mapper;
 
-        public CreateDocumentDescriptorAsAttachCommandHandler(IHandleMapper mapper, IHandleWriter writer)
+        public CreateDocumentDescriptorAsAttachCommandHandler(IHandleMapper mapper, IDocumentWriter writer)
         {
             _mapper = mapper;
         }

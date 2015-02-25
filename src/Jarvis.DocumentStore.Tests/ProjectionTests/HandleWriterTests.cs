@@ -14,7 +14,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
     [TestFixture]
     public class HandleWriterTests
     {
-        private IHandleWriter _writer;
+        private IDocumentWriter _writer;
         private DocumentHandle _handle = new DocumentHandle("handle_1");
         private DocumentHandle _handleAttach1 = new DocumentHandle("handle_2");
         private DocumentHandle _handleAttach2 = new DocumentHandle("handle_3");
@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
-            _writer = tenant.Container.Resolve<IHandleWriter>();
+            _writer = tenant.Container.Resolve<IDocumentWriter>();
         }
 
         [TearDown]

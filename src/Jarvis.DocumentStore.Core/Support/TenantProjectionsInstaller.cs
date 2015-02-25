@@ -47,8 +47,8 @@ namespace Jarvis.DocumentStore.Core.Support
 
             container.Register(
                 Component
-                    .For<IHandleWriter>()
-                    .ImplementedBy<HandleWriter>()
+                    .For<IDocumentWriter>()
+                    .ImplementedBy<DocumentWriter>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 Component
                     .For(typeof(IReader<,>), typeof(IMongoDbReader<,>))

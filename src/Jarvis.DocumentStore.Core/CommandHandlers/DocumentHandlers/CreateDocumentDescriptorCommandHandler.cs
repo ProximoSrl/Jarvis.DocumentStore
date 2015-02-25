@@ -8,7 +8,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
     public class CreateDocumentDescriptorCommandHandler : DocumentDescriptorCommandHandler<CreateDocumentDescriptor>
     {
         readonly IHandleMapper _mapper;
-        public CreateDocumentDescriptorCommandHandler(IHandleMapper mapper, IHandleWriter writer)
+        public CreateDocumentDescriptorCommandHandler(IHandleMapper mapper, IDocumentWriter writer)
         {
             _mapper = mapper;
         }

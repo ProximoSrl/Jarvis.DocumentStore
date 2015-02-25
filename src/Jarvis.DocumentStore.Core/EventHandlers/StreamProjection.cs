@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     {
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
         private readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentReadModel;
-        private readonly IHandleWriter _handleWriter;
+        private readonly IDocumentWriter _handleWriter;
         private readonly IBlobStore _blobStore;
 
         private Int64 _lastCheckpointValue = -1;
@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public StreamProjection(
             ICollectionWrapper<StreamReadModel, Int64> streamReadModelCollection,
-            IHandleWriter handleWriter,
+            IDocumentWriter handleWriter,
             IBlobStore blobStore,
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentReadModel)
         {

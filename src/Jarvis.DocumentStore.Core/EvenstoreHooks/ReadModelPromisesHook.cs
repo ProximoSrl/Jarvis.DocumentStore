@@ -8,10 +8,10 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
 {
     public class ReadModelPromisesHook : PipelineHookBase
     {
-        private readonly IHandleWriter _handleWriter;
+        private readonly IDocumentWriter _handleWriter;
         private static readonly string DocumentTypeName = typeof (DocumentDescriptor).FullName;
 
-        public ReadModelPromisesHook(IHandleWriter handleWriter)
+        public ReadModelPromisesHook(IDocumentWriter handleWriter)
         {
             _handleWriter = handleWriter;
         }
