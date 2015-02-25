@@ -1,7 +1,7 @@
 ﻿using Jarvis.DocumentStore.Core.Model;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     // ReSharper disable InconsistentNaming
     [Subject(typeof(FileNameWithExtension))]

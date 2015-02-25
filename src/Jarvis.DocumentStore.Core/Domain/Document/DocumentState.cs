@@ -50,6 +50,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             AddAttachment(e.Attachment);
         }
 
+        void When(AttachmentDeleted e)
+        {
+            RemoveAttachment(e.Handle);
+        }
+
         public void Link(DocumentDescriptorId documentId)
         {
             this.LinkedDocument = documentId;
@@ -80,7 +85,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public void RemoveAttachment(DocumentHandle attachment)
         {
-            _attachments.Remove(attachment);
+            if (_attachments.Contains(attachment)) _attachments.Remove(attachment);
         }
 
         public void SetCustomData(DocumentCustomData data)

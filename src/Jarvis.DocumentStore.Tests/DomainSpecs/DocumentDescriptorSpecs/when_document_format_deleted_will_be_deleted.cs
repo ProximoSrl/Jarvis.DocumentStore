@@ -1,10 +1,10 @@
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
+using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     [Subject("DocumentFormats")]
     public class when_document_format_deleted_will_be_deleted : DocumentDescriptorSpecifications

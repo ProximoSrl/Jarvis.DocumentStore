@@ -1,15 +1,13 @@
 using System;
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.Framework.Kernel.Engine;
+using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Jarvis.Framework.TestHelpers;
-using Jarvis.NEventStoreEx.CommonDomainEx;
 using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 using Machine.Specifications;
 using NUnit.Framework;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     [Subject("Document")]
     public class when_a_documentDescriptor_is_deleted_with_wrong_handle : DocumentDescriptorSpecifications

@@ -1,10 +1,10 @@
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     [Subject("DocumentEvents")]
     public class when_a_deduplicated_documentDescriptor_is_deleted : DocumentDescriptorSpecifications

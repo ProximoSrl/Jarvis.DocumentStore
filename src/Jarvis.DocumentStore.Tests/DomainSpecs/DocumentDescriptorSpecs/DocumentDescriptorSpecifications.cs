@@ -1,10 +1,8 @@
-﻿using Jarvis.DocumentStore.Core.Domain.Document;
+﻿using System;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.TestHelpers;
 using NSubstitute;
-using System;
-
 
 // ReSharper disable InconsistentNaming
 

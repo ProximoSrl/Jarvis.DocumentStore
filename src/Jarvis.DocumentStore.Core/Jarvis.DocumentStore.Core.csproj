@@ -135,6 +135,7 @@
     <Compile Include="Domain\DocumentDescriptor\Events\FormatAddedToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentFormat.cs" />
     <Compile Include="Domain\Document\Commands\LinkDocumentToDocumentDescriptor.cs" />
+    <Compile Include="Domain\Document\Events\AttachmentDeleted.cs" />
     <Compile Include="Domain\Document\Events\DocumentHasNewAttachment.cs" />
     <Compile Include="Domain\Document\Events\DocumentCustomDataSet.cs" />
     <Compile Include="Domain\Document\Events\DocumentFileNameSet.cs" />

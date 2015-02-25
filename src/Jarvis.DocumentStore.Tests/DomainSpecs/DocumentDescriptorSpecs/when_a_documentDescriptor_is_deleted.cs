@@ -1,8 +1,8 @@
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
+using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     [Subject("Document created")]
     public class when_a_documentDescriptor_is_deleted : DocumentDescriptorSpecifications

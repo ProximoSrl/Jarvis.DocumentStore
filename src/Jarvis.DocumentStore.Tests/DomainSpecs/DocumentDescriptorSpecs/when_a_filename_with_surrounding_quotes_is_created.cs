@@ -1,7 +1,7 @@
 using Jarvis.DocumentStore.Core.Model;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     [Subject(typeof(FileNameWithExtension))]
     public class when_a_filename_with_surrounding_quotes_is_created

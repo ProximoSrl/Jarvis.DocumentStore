@@ -1,13 +1,11 @@
 using System;
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.Framework.Kernel.Engine;
+using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Jarvis.Framework.TestHelpers;
-using Jarvis.NEventStoreEx.CommonDomainEx;
 using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 using Machine.Specifications;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     public class when_a_documentDescriptor_is_created_twice : DocumentDescriptorSpecifications
     {

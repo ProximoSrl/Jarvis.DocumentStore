@@ -1,12 +1,12 @@
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
 using NUnit.Framework;
 
-namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
+namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     [Subject("with a document")]
     public class when_a_documentDescriptor_is_deduplicated : DocumentDescriptorSpecifications
