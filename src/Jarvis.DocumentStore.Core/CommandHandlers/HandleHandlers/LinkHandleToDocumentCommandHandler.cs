@@ -32,16 +32,16 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
         }
     }
 
-    public class DeleteHandleCommandHandler : RepositoryCommandHandler<Document, DeleteHandle>
+    public class DeleteDocumentCommandHandler : RepositoryCommandHandler<Document, DeleteDocument>
     {
         readonly IHandleMapper _mapper;
 
-        public DeleteHandleCommandHandler(IHandleMapper mapper)
+        public DeleteDocumentCommandHandler(IHandleMapper mapper)
         {
             _mapper = mapper;
         }
 
-        protected override void Execute(DeleteHandle cmd)
+        protected override void Execute(DeleteDocument cmd)
         {
             var handleId = _mapper.Map(cmd.Handle);
             FindAndModify(handleId, h => h.Delete());

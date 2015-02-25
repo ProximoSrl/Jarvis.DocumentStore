@@ -16,9 +16,9 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
         public DocumentDescriptorId DocumentDescriptorId { get; private set; }
     }
 
-    public class DeleteHandle : Command
+    public class DeleteDocument : Command
     {
-        public DeleteHandle(DocumentHandle handle)
+        public DeleteDocument(DocumentHandle handle)
         {
             Handle = handle;
         }

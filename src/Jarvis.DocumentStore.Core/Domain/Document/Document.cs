@@ -68,7 +68,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             {
                 if (InternalState.Attachments != null)
                 {
-                    foreach (var attachment in InternalState.Attachments)
+                    foreach (var attachment in InternalState.Attachments.ToList())
                     {
                         RaiseEvent(new AttachmentDeleted(attachment));
                     }

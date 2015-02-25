@@ -16,6 +16,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentDescriptorCreated>,
         IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<DocumentDeleted>,
+        IEventHandler<AttachmentDeleted>,
         IEventHandler<DocumentLinked>
     {
         private readonly ICommandBus _commandBus;
@@ -116,6 +117,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _commandBus.Send(new DeleteDocumentDescriptor(e.PreviousDocumentId, e.Handle)
                     .WithDiagnosticTriggeredByInfo(e,string.Format("Handle relinked from {0} to {1}", e.PreviousDocumentId, e.DocumentId))
                 );
+        }
+
+        public void On(AttachmentDeleted e)
+        {
+            if (IsReplay) return;
+
+            _commandBus.Send(new DeleteDocument(e.Handle)
+                .WithDiagnosticTriggeredByInfo(e, "AttachmentDeleted deleted")
+            );
         }
     }
 }

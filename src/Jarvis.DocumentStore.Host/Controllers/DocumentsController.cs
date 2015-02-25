@@ -456,7 +456,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (document == null)
                 return DocumentNotFound(handle);
 
-            CommandBus.Send(new DeleteHandle(handle), "api");
+            CommandBus.Send(new DeleteDocument(handle), "api");
 
             return Request.CreateResponse(
                 HttpStatusCode.Accepted,

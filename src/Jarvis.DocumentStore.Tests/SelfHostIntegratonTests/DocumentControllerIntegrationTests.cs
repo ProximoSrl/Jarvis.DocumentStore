@@ -42,8 +42,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
-        private MongoCollection<DocumentDescriptorReadModel> _documents;
-        private MongoCollection<DocumentReadModel> _handles;
+        private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
+        private MongoCollection<DocumentReadModel> _documentCollection;
         private ITriggerProjectionsUpdate _projections;
 
         private void UpdateAndWait()
@@ -66,8 +66,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
-            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
-            _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
+            _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
         }
 
         [TearDown]
@@ -296,10 +296,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             UpdateAndWait();
 
-            var document = _documents.Find(Query.EQ("Handles", "zip_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
-            var handle = _handles.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Jarvis.DocumentStore.Core.Model.DocumentHandle("zip_1") }));
         }
@@ -310,25 +310,44 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-
-            // wait background projection polling
             UpdateAndWait();
 
+            //upload attachments
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
-
-            // wait background projection polling
             UpdateAndWait();
 
-            var document = _documents.Find(Query.EQ("Handles", "zip_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with first child handle was not find.");
 
-            document = _documents.Find(Query.EQ("Handles", "zip_2")).SingleOrDefault();
+            document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_2")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with second child handle was not find.");
 
-            var handle = _handles.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("zip_1"), new Core.Model.DocumentHandle("zip_2") }));
+        }
+
+        [Test]
+        public async void add_multiple_attachment_to_existing_handle_then_delete_handle()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+            UpdateAndWait();
+
+            //upload attachments
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
+            UpdateAndWait();
+
+            await _documentStoreClient.DeleteAsync(fatherHandle);
+            UpdateAndWait();
+
+            Assert.That(_documentDescriptorCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
+            Assert.That(_documentCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
+
+           
         }
 
         [Test]
