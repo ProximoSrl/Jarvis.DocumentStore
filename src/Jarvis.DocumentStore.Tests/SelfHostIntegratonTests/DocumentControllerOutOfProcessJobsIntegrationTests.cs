@@ -37,6 +37,7 @@ using ContainerAccessor = Jarvis.DocumentStore.Host.Support.ContainerAccessor;
 using Jarvis.DocumentStore.Jobs.Office;
 using Jarvis.DocumentStore.Jobs.Attachments;
 using Jarvis.DocumentStore.Core;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -138,7 +139,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var format = new Core.Domain.Document.DocumentFormat("tika");
+            var format = new DocumentFormat("tika");
             do
             {
                 UpdateAndWait();
@@ -180,7 +181,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var format = new Core.Domain.Document.DocumentFormat("content");
+            var format = new DocumentFormat("content");
             do
             {
                 UpdateAndWait();
@@ -241,8 +242,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var thumbSmallFormat = new Core.Domain.Document.DocumentFormat("thumb.small");
-            var thumbLargeFormat = new Core.Domain.Document.DocumentFormat("thumb.large");
+            var thumbSmallFormat = new DocumentFormat("thumb.small");
+            var thumbLargeFormat = new DocumentFormat("thumb.large");
             do
             {
                 UpdateAndWait();
@@ -314,7 +315,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var emailFormat = new Core.Domain.Document.DocumentFormat("email");
+            var emailFormat = new DocumentFormat("email");
             do
             {
                 UpdateAndWait();
@@ -354,8 +355,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var emailFormat = new Core.Domain.Document.DocumentFormat("email");
-            var pdfFormat = new Core.Domain.Document.DocumentFormat("Pdf");
+            var emailFormat = new DocumentFormat("email");
+            var pdfFormat = new DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();
@@ -487,7 +488,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            var format = new DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();
@@ -545,7 +546,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            var format = new DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();
@@ -581,7 +582,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
-            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            var format = new DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();

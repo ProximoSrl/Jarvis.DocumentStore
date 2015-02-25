@@ -1,5 +1,6 @@
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
@@ -16,16 +17,16 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
             new FileNameWithExtension("Another.document")
             );
 
-        Establish context = () => AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState());
+        Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState());
 
         Because of = () => DocumentDescriptor.Deduplicate(_otherDocumentId, _otherHandleInfo.Handle,_fname);
 
         It DocumentDescriptorHasBeenDeduplicated_event_should_be_raised = () =>
-            AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorHasBeenDeduplicated>().ShouldBeTrue();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorHasBeenDeduplicated>().ShouldBeTrue();
 
         It DocumentDescriptorHasBeenDeduplicated_event_should_have_documentId_and_handle = () =>
         {
-            var e = AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.RaisedEvent<DocumentDescriptorHasBeenDeduplicated>();
+            var e = AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.RaisedEvent<DocumentDescriptorHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
             Assert.AreSame(_otherHandleInfo.Handle, e.Handle);
         };

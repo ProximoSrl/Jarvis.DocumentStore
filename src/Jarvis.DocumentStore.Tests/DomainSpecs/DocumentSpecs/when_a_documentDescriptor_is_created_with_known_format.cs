@@ -1,5 +1,6 @@
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
@@ -12,21 +13,21 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     {
         Establish context = () =>
         {
-            AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.Create();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
             DocumentDescriptor.DocumentFormatTranslator.GetFormatFromFileName(Arg.Any<String>()).Returns(new DocumentFormat("pdf"));
         };
 
         Because of = () => DocumentDescriptor.Create(_id, _blobId, _handleInfo,_fileHash, _fileName);
 
         It DocumentDescriptorCreatedEvent_should_have_been_raised = () =>
-            AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorCreated>().ShouldBeTrue();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorCreated>().ShouldBeTrue();
 
         It FormatAddedToDocumentDescriptorEvent_should_have_been_raised = () =>
-            AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<FormatAddedToDocumentDescriptor>().ShouldBeTrue();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<FormatAddedToDocumentDescriptor>().ShouldBeTrue();
 
         It format_added_to_documentDescriptor_event_should_store_relevant_info = () =>
         {
-            var e = AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.RaisedEvent<FormatAddedToDocumentDescriptor>();
+            var e = AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.RaisedEvent<FormatAddedToDocumentDescriptor>();
             e.BlobId.ShouldEqual(_blobId);
             e.DocumentFormat.ShouldEqual(new DocumentFormat("pdf"));
             e.CreatedBy.ShouldEqual(null);

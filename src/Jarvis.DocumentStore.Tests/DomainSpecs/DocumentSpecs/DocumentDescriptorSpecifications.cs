@@ -1,4 +1,5 @@
 ﻿using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.TestHelpers;
 using NSubstitute;

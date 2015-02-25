@@ -1,15 +1,11 @@
-﻿using Jarvis.DocumentStore.Core.Domain.Document;
+﻿using System;
+using System.Collections.Generic;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Shared.Jobs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Jarvis.Framework.Shared.MultitenantSupport;
 
-namespace Jarvis.DocumentStore.Core.Jobs
+namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
     public enum QueuedJobExecutionStatus
     {

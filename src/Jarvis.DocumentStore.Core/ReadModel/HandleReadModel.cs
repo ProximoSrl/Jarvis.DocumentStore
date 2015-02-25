@@ -1,8 +1,6 @@
-using System;
 using System.Linq;
-using System.Threading;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Shared.ReadModel;

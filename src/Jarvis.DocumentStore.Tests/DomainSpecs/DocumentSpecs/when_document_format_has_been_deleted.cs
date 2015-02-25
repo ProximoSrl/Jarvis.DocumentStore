@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
@@ -14,17 +15,17 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         protected static readonly BlobId XmlBlobId1 = new BlobId("xml1");
 
         Establish context =
-            () => AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState(new KeyValuePair<DocumentFormat, BlobId>(XmlDocumentFormatId1, XmlBlobId1)));
+            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState(new KeyValuePair<DocumentFormat, BlobId>(XmlDocumentFormatId1, XmlBlobId1)));
 
         Because of = () => DocumentDescriptor.DeleteFormat(XmlDocumentFormatId1);
 
         It DocumentFormatHasBeenDeleted_event_should_have_been_raised =
-            () => AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeTrue();
+            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeTrue();
 
         It document_format_do_not_contain_deleted_format =
-            () => AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.Aggregate.InternalState.Formats.ContainsKey(XmlDocumentFormatId1).ShouldBeFalse();
+            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Aggregate.InternalState.Formats.ContainsKey(XmlDocumentFormatId1).ShouldBeFalse();
 
         It document_format_do_not_contain_blobId =
-            () => AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.Aggregate.InternalState.Formats.Values.ShouldNotContain(XmlBlobId1);
+            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Aggregate.InternalState.Formats.Values.ShouldNotContain(XmlBlobId1);
     }
 }

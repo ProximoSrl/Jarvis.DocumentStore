@@ -1,5 +1,5 @@
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -7,11 +7,11 @@ using System;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
-    public class CreateDocumentAsAttachCommandHandler : DocumentCommandHandler<CreateDocumentDescriptorAsAttach>
+    public class CreateDocumentDescriptorAsAttachCommandHandler : DocumentDescriptorCommandHandler<CreateDocumentDescriptorAsAttach>
     {
         readonly IHandleMapper _mapper;
 
-        public CreateDocumentAsAttachCommandHandler(IHandleMapper mapper, IHandleWriter writer)
+        public CreateDocumentDescriptorAsAttachCommandHandler(IHandleMapper mapper, IHandleWriter writer)
         {
             _mapper = mapper;
         }

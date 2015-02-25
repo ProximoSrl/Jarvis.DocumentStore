@@ -1,5 +1,6 @@
 using System;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
@@ -11,7 +12,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     {
         Establish context = () =>
         {
-            AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.Create();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
             DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
         };
 

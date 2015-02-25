@@ -1,8 +1,8 @@
-﻿using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
-    public class AddFormatToDocumentCommandHandler : DocumentCommandHandler<AddFormatToDocumentDescriptor>
+    public class AddFormatToDocumentDescriptorCommandHandler : DocumentDescriptorCommandHandler<AddFormatToDocumentDescriptor>
     {
         protected override void Execute(AddFormatToDocumentDescriptor cmd)
         {

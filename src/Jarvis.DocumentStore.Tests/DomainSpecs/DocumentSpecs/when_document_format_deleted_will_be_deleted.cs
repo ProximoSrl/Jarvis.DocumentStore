@@ -1,5 +1,6 @@
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
 
@@ -11,11 +12,11 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         protected static readonly DocumentFormat XmlDocumentFormatId1 = new DocumentFormat("xml");
 
         Establish context =
-            () => AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState());
+            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState());
 
         Because of = () => DocumentDescriptor.DeleteFormat(XmlDocumentFormatId1);
 
         It DocumentFormatHasBeenDeleted_event_should_not_been_raised =
-            () => AggregateSpecification<Core.Domain.Document.DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeFalse();
+            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeFalse();
     }
 }
