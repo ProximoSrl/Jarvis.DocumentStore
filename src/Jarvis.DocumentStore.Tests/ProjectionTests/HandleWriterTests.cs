@@ -90,7 +90,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var h = _writer.FindOneById(_handle);
             Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1 }));
             h = _writer.FindOneById(_handleAttach1);
-            Assert.That(h.AttachmentPath, Is.EqualTo("/" + _handle.ToString() + "/" + _handleAttach1 + "/"));
+            Assert.That(h.AttachmentPath, Is.EqualTo(_handle.ToString() + "/" + _handleAttach1));
         }
 
         [Test]
@@ -98,7 +98,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             _writer.CreateIfMissing(_handle, 1);
             var h = _writer.FindOneById(_handle);
-            Assert.That(h.AttachmentPath, Is.EqualTo("/" + _handle.ToString() + "/"));
+            Assert.That(h.AttachmentPath, Is.EqualTo(_handle.ToString()));
         }
 
 
@@ -115,7 +115,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1, _handleAttach2 }));
 
             h = _writer.FindOneById(_handleAttach2);
-            Assert.That(h.AttachmentPath, Is.EqualTo("/" + _handle.ToString() + "/" + _handleAttach1 + "/" + _handleAttach2 + "/"));
+            Assert.That(h.AttachmentPath, Is.EqualTo( _handle.ToString() + "/" + _handleAttach1 + "/" + _handleAttach2 ));
 
         }
 

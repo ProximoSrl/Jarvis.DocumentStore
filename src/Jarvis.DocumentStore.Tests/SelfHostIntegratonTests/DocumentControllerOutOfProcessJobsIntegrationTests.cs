@@ -147,7 +147,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(handleCore));
+                    .SingleOrDefault(d => d.Documents.Contains(handleCore));
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(format))
                 {
@@ -204,7 +204,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(format))
                 {
@@ -266,7 +266,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(thumbSmallFormat) &&
                     documentDescriptor.Formats.ContainsKey(thumbLargeFormat))
@@ -338,7 +338,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(emailFormat))
                 {
@@ -401,7 +401,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(emailFormat) &&
                     documentDescriptor.Formats.ContainsKey(pdfFormat))
@@ -468,7 +468,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(pdfFormat))
                 {
@@ -533,7 +533,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(handleServer));
+                    .SingleOrDefault(d => d.Documents.Contains(handleServer));
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(format))
                 {

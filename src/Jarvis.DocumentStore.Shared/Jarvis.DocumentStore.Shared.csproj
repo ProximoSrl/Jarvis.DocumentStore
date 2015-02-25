@@ -54,6 +54,7 @@
     <Compile Include="Model\AddAttachmentToHandleParameters.cs" />
     <Compile Include="Model\AddFormatToDocumentParameters.cs" />
     <Compile Include="Model\DocumentContent.cs" />
+    <Compile Include="Model\StreamReadModelClasses.cs" />
     <Compile Include="Model\StructuralExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\PocoSerializationSettings.cs" />

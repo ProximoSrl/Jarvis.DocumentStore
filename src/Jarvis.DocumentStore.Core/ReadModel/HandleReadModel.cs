@@ -28,7 +28,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public long CreatetAt { get; private set; }
 
         public long ProjectedAt { get; private set; }
+
         public DocumentCustomData CustomData { get; private set; }
+
         public FileNameWithExtension FileName { get; private set; }
 
         public DocumentReadModel(DocumentHandle handle)
@@ -53,12 +55,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public bool IsPending()
         {
             return this.CreatetAt > this.ProjectedAt;
-        }
-
-        internal void AddAttachment(DocumentHandle attachmentHandle)
-        {
-            if (Attachments == null) Attachments = new HashSet<DocumentHandle>();
-            this.Attachments.Add(attachmentHandle);
         }
     }
 
@@ -107,7 +103,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
-                    .SetOnInsert(x => x.AttachmentPath, "/" + handle + "/")
+                    .SetOnInsert(x => x.AttachmentPath, handle)
                     .Set(x => x.DocumentId, null)
                     .Set(x => x.CreatetAt, createdAt)
                     .Set(x => x.FileName, null),
@@ -218,7 +214,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .EQ(x => x.Handle, handle),
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
-                    .SetOnInsert(x => x.AttachmentPath, "/" + handle + "/")
+                    .SetOnInsert(x => x.AttachmentPath, handle)
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .SetOnInsert(x => x.DocumentId, null)
                     .SetOnInsert(x => x.CreatetAt, createdAt)
@@ -233,7 +229,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
             var fatherRm = _collection.FindOneById(BsonValue.Create(fatherHandle));
             var allFathers = fatherRm.AttachmentPath.Split('/')
-                .Where(s => !String.IsNullOrEmpty(s))
                 .ToList();
 
             _collection.Update
@@ -245,7 +240,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 UpdateFlags.Multi
             );
 
-            var newPath = fatherRm.AttachmentPath + attachmentHandle + "/";
+            var newPath = fatherRm.AttachmentPath + "/" + attachmentHandle;
             FindAndModifyArgs args = new FindAndModifyArgs
             {
                 Query = Query<DocumentReadModel>

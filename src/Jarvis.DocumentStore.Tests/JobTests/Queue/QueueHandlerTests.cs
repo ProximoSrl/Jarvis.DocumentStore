@@ -19,6 +19,7 @@ using MongoDB.Bson;
 using Jarvis.DocumentStore.Core.Jobs;
 using MongoDB.Bson.Serialization;
 using Jarvis.DocumentStore.Core;
+using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -176,7 +177,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice"),
@@ -197,7 +198,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice")
@@ -233,7 +234,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 Id = 1L,
                 Handle = "FirstHandle",
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice"),
@@ -269,7 +270,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 Id = 1L,
                 Handle = "FirstHandle",
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice"),
@@ -416,7 +417,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("tika"),

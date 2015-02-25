@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Fasterflect;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
@@ -18,6 +19,7 @@ using Jarvis.Framework.Shared.ReadModel;
 using NSubstitute;
 using NUnit.Framework;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
@@ -106,7 +108,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("rev_1"));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
-            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleInitialized));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentInitialized));
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
         }
 
@@ -165,6 +167,27 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
         }
 
+        [Test]
+        public void verify_stream_events_on_attachment()
+        {
+            SetHandleToReturn();
+            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var rev1 = new DocumentHandle("rev_1");
+            docRm.AddHandle(rev1);
+            rmDocuments.Add(docRm);
+
+            var docRmAttach = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_2"));
+            docRmAttach.AddHandle(new DocumentHandle("rev_2"));
+            rmDocuments.Add(docRmAttach);
+            CreateSut();
+            var evt = new DocumentHasNewAttachment(rev1, new DocumentHandle("rev_2")) { AggregateId = new DocumentId(1) };
+            _sut.Handle(evt, false); //Handle is linked to document.
+            Assert.That(rmStream, Has.Count.EqualTo(1));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewAttachment));
+            Assert.That(rmStream[0].EventData[StreamReadModelEventDataKeys.FatherHandle], Is.EqualTo(rev1));
+            Assert.That(rmStream[0].EventData[StreamReadModelEventDataKeys.RootAttachmentHandle], Is.EqualTo("rev_1"));
+        }
+
         private void SetHandleToReturn()
         {
             var customData = new DocumentCustomData() 
@@ -178,7 +201,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                     new FileNameWithExtension("test.txt"),
                     customData
                 );
-            
+            handle.SetPropertyValue("AttachmentPath", "rev_1");
             _handleWriter
                 .FindOneById(Arg.Any<DocumentHandle>())
                 .Returns(handle);
@@ -205,7 +228,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var evt = new DocumentDeleted(new DocumentHandle("rev_1"), new DocumentDescriptorId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
-            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleDeleted));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentDeleted));
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
         }
 
@@ -227,19 +250,19 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _sut.Handle(evt, false); //I'm expecting new format added to handle
             Assert.That(rmStream, Has.Count.EqualTo(3));
 
-            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[0].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("original"));
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
 
-            Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[1].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah"));
             Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
 
-            Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[2].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[2].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah blah"));
             Assert.That(rmStream[2].Filename.FileName, Is.EqualTo("test"));
@@ -264,7 +287,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             Assert.That(rmStream, Has.Count.EqualTo(2));
 
-            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[0].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("original"));
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
@@ -272,7 +295,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
             Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
 
-            Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[1].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah"));
             Assert.That(rmStream[1].FormatInfo.BlobId.ToString(), Is.EqualTo("test"));
@@ -304,7 +327,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             Assert.That(rmStream, Has.Count.EqualTo(3));
 
-            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[0].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("original"));
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
@@ -312,7 +335,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
             Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
 
-            Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.HandleHasNewFormat));
+            Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[1].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah"));
             Assert.That(rmStream[1].FormatInfo.BlobId.ToString(), Is.EqualTo("test.1"));
@@ -321,7 +344,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
 
-            Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.HandleFormatUpdated));
+            Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentFormatUpdated));
             Assert.That(rmStream[2].Handle, Is.EqualTo("rev_1"));
             Assert.That(rmStream[2].FormatInfo.DocumentFormat.ToString(), Is.EqualTo("blah"));
             Assert.That(rmStream[2].FormatInfo.BlobId.ToString(), Is.EqualTo("test.2"));
