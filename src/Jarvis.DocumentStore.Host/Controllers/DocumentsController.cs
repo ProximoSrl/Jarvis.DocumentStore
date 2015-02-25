@@ -38,7 +38,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IIdentityGenerator _identityGenerator;
         private readonly ICounterService _counterService;
 
-        readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentReader;
+        readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
         readonly IQueueDispatcher _queueDispatcher;
 
         public ILogger Logger { get; set; }
@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IBlobStore blobStore,
             ConfigService configService,
             IIdentityGenerator identityGenerator,
-            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentReader,
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,
             IDocumentWriter handleWriter,
             IQueueDispatcher queueDispatcher, ICounterService counterService)
@@ -61,7 +61,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _blobStore = blobStore;
             _configService = configService;
             _identityGenerator = identityGenerator;
-            _documentReader = documentReader;
+            _documentDescriptorReader = documentDescriptorReader;
             _handleWriter = handleWriter;
             _queueDispatcher = queueDispatcher;
             _counterService = counterService;
@@ -358,7 +358,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (mapping == null)
                 return DocumentNotFound(handle);
 
-            var document = _documentReader.FindOneById(mapping.DocumentId);
+            var document = _documentDescriptorReader.FindOneById(mapping.DocumentId);
 
             if (document == null)
             {
@@ -464,6 +464,24 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
+        [HttpDelete]
+        [Route("{tenantId}/documents/{fatherHandle}/{source}")]
+        public HttpResponseMessage DeleteAttachments(TenantId tenantId, DocumentHandle fatherHandle, String source)
+        {
+            var document = GetDocumentByHandle(fatherHandle);
+            if (document == null)
+                return DocumentNotFound(fatherHandle);
+
+            //find all the attachments belonging to this source
+            CommandBus.Send(new DeleteAttachments(fatherHandle, source), "api");
+
+            return Request.CreateResponse(
+                HttpStatusCode.Accepted,
+                string.Format("Attachment of handle {0} with source {1} marked for deletion!", fatherHandle, source)
+            );
+        }
+
+
 
         private void CreateDocument(
             DocumentDescriptorId documentId,
@@ -496,7 +514,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (mapping == null)
                 return null;
 
-            return _documentReader.FindOneById(mapping.DocumentId);
+            return _documentDescriptorReader.FindOneById(mapping.DocumentId);
         }
     }
 

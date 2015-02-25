@@ -458,5 +458,10 @@ namespace Jarvis.DocumentStore.Client
         }
 
 
+
+        public Task DeleteAttachmentsAsync(string p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

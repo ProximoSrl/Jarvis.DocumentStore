@@ -329,6 +329,29 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void add_multiple_attachment_to_existing_handle_then_delete_by_source()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+            UpdateAndWait();
+
+            //upload attachments
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourceA");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceB");
+            UpdateAndWait();
+
+            await _documentStoreClient.DeleteAttachmentsAsync("sourceB");
+            UpdateAndWait();
+
+            var handle = _documentCollection.Find(Query.EQ("_id", "sourceA_1")).SingleOrDefault();
+            Assert.That(handle, Is.Not.Null, "SourceA attachment should not be deleted.");
+
+            handle = _documentCollection.Find(Query.EQ("_id", "sourceB_1")).SingleOrDefault();
+            Assert.That(handle, Is.Null, "SourceB attachment should be deleted.");
+        }
+
+        [Test]
         public async void add_multiple_attachment_to_existing_handle_then_delete_handle()
         {
             //Upload father

@@ -296,7 +296,7 @@
     <Compile Include="ProjectionTests\DocumentDescriptorProjectionTests.cs" />
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
     <Compile Include="ProjectionTests\StreamProjectionTest.cs" />
-    <Compile Include="ProjectionTests\HandleWriterTests.cs" />
+    <Compile Include="ProjectionTests\DocumentWriterTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerOutOfProcessJobsIntegrationTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

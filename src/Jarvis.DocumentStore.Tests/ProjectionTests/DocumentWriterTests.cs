@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
     [TestFixture]
-    public class HandleWriterTests
+    public class DocumentWriterTests
     {
         private IDocumentWriter _writer;
         private DocumentHandle _handle = new DocumentHandle("handle_1");
@@ -113,9 +113,85 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var h = _writer.FindOneById(_handle);
             Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1, _handleAttach2 }));
+            Assert.That(h.DirectAttachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1 }));
 
             h = _writer.FindOneById(_handleAttach2);
             Assert.That(h.AttachmentPath, Is.EqualTo( _handle.ToString() + "/" + _handleAttach1 + "/" + _handleAttach2 ));
+        }
+
+        [Test]
+        public void verify_delete_of_attachments()
+        {
+            _writer.CreateIfMissing(_handle, 1);
+            _writer.CreateIfMissing(_handleAttach1, 2);
+            _writer.CreateIfMissing(_handleAttach2, 3);
+            _writer.AddAttachment(_handle, _handleAttach1);
+            _writer.AddAttachment(_handle, _handleAttach2);
+
+            _writer.Delete(_handleAttach1, 3L);
+
+            var h = _writer.FindOneById(_handle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach2 }));
+            Assert.That(h.DirectAttachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach2 }));
+        }
+
+        [Test]
+        public void verify_delete_of_attachments_nested()
+        {
+            _writer.CreateIfMissing(_handle, 1);
+            _writer.CreateIfMissing(_handleAttach1, 2);
+            _writer.CreateIfMissing(_handleAttach2, 3);
+            _writer.CreateIfMissing(_handleAttach3, 4);
+            _writer.AddAttachment(_handle, _handleAttach1);
+            _writer.AddAttachment(_handle, _handleAttach2);
+            _writer.AddAttachment(_handleAttach1, _handleAttach3);
+
+            _writer.Delete(_handleAttach3, 3L);
+
+            var h = _writer.FindOneById(_handle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1, _handleAttach2 }));
+            Assert.That(h.DirectAttachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1, _handleAttach2 }));
+
+            h = _writer.FindOneById(_handleAttach1);
+            Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] {  }));
+            Assert.That(h.DirectAttachments, Is.EquivalentTo(new DocumentHandle[] { }));
+        }
+
+        [Test]
+        public void verify_delete_of_attachments_nested_cascade()
+        {
+            _writer.CreateIfMissing(_handle, 1);
+            _writer.CreateIfMissing(_handleAttach1, 2);
+            _writer.CreateIfMissing(_handleAttach2, 3);
+            _writer.CreateIfMissing(_handleAttach3, 4);
+            _writer.AddAttachment(_handle, _handleAttach1);
+            _writer.AddAttachment(_handle, _handleAttach2);
+            _writer.AddAttachment(_handleAttach1, _handleAttach3);
+
+            _writer.Delete(_handleAttach1, 3L);
+
+            var h = _writer.FindOneById(_handle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach2, _handleAttach3 }));
+            Assert.That(h.DirectAttachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach2 }));
+
+        }
+
+        [Test]
+        public void verify_delete_of_attachments_nested_intermediate()
+        {
+            _writer.CreateIfMissing(_handle, 1);
+            _writer.CreateIfMissing(_handleAttach1, 2);
+            _writer.CreateIfMissing(_handleAttach2, 3);
+            _writer.CreateIfMissing(_handleAttach3, 4);
+            _writer.AddAttachment(_handle, _handleAttach1);
+            _writer.AddAttachment(_handle, _handleAttach2);
+            _writer.AddAttachment(_handleAttach1, _handleAttach3);
+
+            _writer.Delete(_handleAttach2, 3L);
+
+            var h = _writer.FindOneById(_handle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1, _handleAttach3 }));
+            Assert.That(h.DirectAttachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1 }));
 
         }
 

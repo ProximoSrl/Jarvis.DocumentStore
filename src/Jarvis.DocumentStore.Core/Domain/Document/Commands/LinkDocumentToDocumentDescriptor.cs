@@ -15,14 +15,4 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
         public DocumentHandle Handle { get; private set; }
         public DocumentDescriptorId DocumentDescriptorId { get; private set; }
     }
-
-    public class DeleteDocument : Command
-    {
-        public DeleteDocument(DocumentHandle handle)
-        {
-            Handle = handle;
-        }
-
-        public DocumentHandle Handle { get; private set; }
-    }
 }

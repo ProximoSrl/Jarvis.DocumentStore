@@ -101,6 +101,17 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
+        public void add_attachment_then_delete()
+        {
+            _sut.On(new DocumentInitialized(_documentId1, _documentHandle) { AggregateId = _documentId1 });
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _documentId2 });
+            _sut.On(new DocumentDeleted(_attachmentHandle, _document2) { AggregateId = _documentId1 });
+
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.That(h.Attachments, Is.Empty);
+        }
+
+        [Test]
         public void add_attachment_nested()
         {
             _sut.On(new DocumentInitialized(_documentId1, _documentHandle) { AggregateId = _documentId1 });

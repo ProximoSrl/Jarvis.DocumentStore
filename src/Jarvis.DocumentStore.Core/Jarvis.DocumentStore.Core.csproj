@@ -110,6 +110,8 @@
     <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\ProcessDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\HandleHandlers\DeleteAttachmentsCommandHandler.cs" />
+    <Compile Include="CommandHandlers\HandleHandlers\DeleteDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\HandleMapper.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\IHandleMapper.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\LinkHandleToDocumentCommandHandler.cs" />
@@ -134,6 +136,8 @@
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentQueuedForProcessing.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\FormatAddedToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentFormat.cs" />
+    <Compile Include="Domain\Document\Commands\DeleteAttachments.cs" />
+    <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
     <Compile Include="Domain\Document\Commands\LinkDocumentToDocumentDescriptor.cs" />
     <Compile Include="Domain\Document\Events\AttachmentDeleted.cs" />
     <Compile Include="Domain\Document\Events\DocumentHasNewAttachment.cs" />

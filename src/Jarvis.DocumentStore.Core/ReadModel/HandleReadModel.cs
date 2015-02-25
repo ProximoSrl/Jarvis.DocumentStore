@@ -21,6 +21,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public HashSet<DocumentHandle> Attachments { get; private set; }
 
+        public HashSet<DocumentHandle> DirectAttachments { get; private set; }
+
         public string AttachmentPath { get; private set; }
 
         public DocumentDescriptorId DocumentId { get; private set; }
@@ -198,6 +200,16 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 )
             };
             _collection.FindAndRemove(args);
+
+            //once a document is deleted it should be removed from every other document that can have this document as attachment.
+            _collection.Update(
+                Query<DocumentReadModel>
+                    .EQ(x => x.Attachments, handle),
+                Update<DocumentReadModel>
+                    .Pull(x => x.Attachments, handle)
+                    .Pull(x => x.DirectAttachments, handle),
+                UpdateFlags.Multi
+                );
         }
 
         public IQueryable<DocumentReadModel> AllSortedByHandle
@@ -230,6 +242,15 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             var fatherRm = _collection.FindOneById(BsonValue.Create(fatherHandle));
             var allFathers = fatherRm.AttachmentPath.Split('/')
                 .ToList();
+
+            _collection.Update
+            (
+                Query<DocumentReadModel>
+                    .EQ(x => x.Handle, fatherHandle),
+                Update<DocumentReadModel>
+                    .AddToSet(x => x.DirectAttachments, attachmentHandle),
+                UpdateFlags.Multi
+            );
 
             _collection.Update
             (
