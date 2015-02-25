@@ -8,7 +8,7 @@ using MongoDB.Driver.Builders;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
-    public class DocumentByHashReader
+    public class DocumentDescriptorByHashReader
     {
         public class Match
         {
@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         private IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> _reader;
 
-        public DocumentByHashReader(IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> reader)
+        public DocumentDescriptorByHashReader(IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> reader)
         {
             _reader = reader;
         }

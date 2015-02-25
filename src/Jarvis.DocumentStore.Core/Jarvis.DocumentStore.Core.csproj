@@ -149,7 +149,7 @@
     <Compile Include="EvenstoreHooks\ReadModelPromisesHook.cs" />
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DeduplicationHelper.cs" />
-    <Compile Include="EventHandlers\DocumentByHashReader.cs" />
+    <Compile Include="EventHandlers\DocumentDescriptorByHashReader.cs" />
     <Compile Include="EventHandlers\DocumentProjection.cs" />
     <Compile Include="EventHandlers\DocumentStatsProjection.cs" />
     <Compile Include="EventHandlers\DocumentWorkflow.cs" />
