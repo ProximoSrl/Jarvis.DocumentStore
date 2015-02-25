@@ -18,6 +18,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private DocumentHandle _handle = new DocumentHandle("handle_1");
         private DocumentHandle _handleAttach1 = new DocumentHandle("handle_2");
         private DocumentHandle _handleAttach2 = new DocumentHandle("handle_3");
+        private DocumentHandle _handleAttach3 = new DocumentHandle("handle_4");
         private DocumentDescriptorId _doc1 = new DocumentDescriptorId(1);
         private DocumentDescriptorId _doc2 = new DocumentDescriptorId(2);
         private DocumentStoreBootstrapper _documentStoreService;
@@ -83,10 +84,39 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_collection_of_attachments()
         {
             _writer.CreateIfMissing(_handle, 1);
+            _writer.CreateIfMissing(_handleAttach1, 1);
             _writer.AddAttachment(_handle, _handleAttach1);
 
             var h = _writer.FindOneById(_handle);
             Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1 }));
+            h = _writer.FindOneById(_handleAttach1);
+            Assert.That(h.AttachmentPath, Is.EqualTo("/" + _handle.ToString() + "/" + _handleAttach1 + "/"));
+        }
+
+        [Test]
+        public void verify_create_set_attachment_path()
+        {
+            _writer.CreateIfMissing(_handle, 1);
+            var h = _writer.FindOneById(_handle);
+            Assert.That(h.AttachmentPath, Is.EqualTo("/" + _handle.ToString() + "/"));
+        }
+
+
+        [Test]
+        public void verify_nested_attachments()
+        {
+            _writer.CreateIfMissing(_handle, 1);
+            _writer.CreateIfMissing(_handleAttach1, 2);
+            _writer.CreateIfMissing(_handleAttach2, 3);
+            _writer.AddAttachment(_handle, _handleAttach1);
+            _writer.AddAttachment(_handleAttach1, _handleAttach2);
+
+            var h = _writer.FindOneById(_handle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1, _handleAttach2 }));
+
+            h = _writer.FindOneById(_handleAttach2);
+            Assert.That(h.AttachmentPath, Is.EqualTo("/" + _handle.ToString() + "/" + _handleAttach1 + "/" + _handleAttach2 + "/"));
+
         }
 
         [Test]

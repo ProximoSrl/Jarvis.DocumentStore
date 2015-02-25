@@ -67,7 +67,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
-            _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Handle");
+            _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
         }
 
         [TearDown]

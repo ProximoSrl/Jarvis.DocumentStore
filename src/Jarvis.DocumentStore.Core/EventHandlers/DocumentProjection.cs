@@ -1,6 +1,7 @@
 ﻿using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using NEventStore;
@@ -78,6 +79,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             );
         }
 
+        /// <summary>
+        /// Need to maintain the chain of the attachment.
+        /// </summary>
+        /// <param name="e"></param>
         public void On(DocumentHasNewAttachment e)
         {
             _writer.AddAttachment(

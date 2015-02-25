@@ -1,223 +1,200 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
+using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
-using Jarvis.DocumentStore.Core.Storage;
-using Jarvis.DocumentStore.Host.Support;
-using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
-using Jarvis.Framework.Kernel.Commands;
-using Jarvis.Framework.Kernel.MultitenantSupport;
-using Jarvis.Framework.Kernel.ProjectionEngine;
-using Jarvis.Framework.Shared.Commands;
-using Jarvis.Framework.Shared.MultitenantSupport;
-using Jarvis.Framework.Shared.ReadModel;
+using Jarvis.Framework.Shared.Domain.Serialization;
+using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using NUnit.Framework;
-using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
-using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
     [TestFixture]
     public class DocumentProjectionTests
     {
-        private DocumentStoreBootstrapper _documentStoreService;
-        private ICommandBus _bus;
-        IBlobStore _filestore;
-        IHandleWriter _handleWriter;
-        IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentReader;
-        private ITriggerProjectionsUpdate _projections;
+
+        readonly DocumentHandle _documentHandle = new DocumentHandle("a");
+        readonly DocumentHandle _attachmentHandle = new DocumentHandle("attach1");
+        readonly DocumentHandle _attachmentNestedHandle = new DocumentHandle("attach2");
+        readonly DocumentId _documentId1 = new DocumentId(1);
+        readonly DocumentId _documentId2 = new DocumentId(2);
+        readonly DocumentId _documentId3 = new DocumentId(3);
+        readonly DocumentDescriptorId _document1 = new DocumentDescriptorId(1);
+        readonly DocumentDescriptorId _document2 = new DocumentDescriptorId(2);
+        readonly FileNameWithExtension _fileName1 = new FileNameWithExtension("a", "file");
+
+        HandleWriter _writer;
+        DocumentProjection _sut;
+
         [SetUp]
         public void SetUp()
         {
-            var config = new DocumentStoreTestConfiguration();
-            MongoDbTestConnectionProvider.DropTestsTenant();
-            config.ServerAddress = TestConfig.ServerAddress;
-            _documentStoreService = new DocumentStoreBootstrapper();
-            _documentStoreService.Start(config);
+            MongoDbTestConnectionProvider.ReadModelDb.Drop();
 
-            TenantContext.Enter(new TenantId(TestConfig.Tenant));
-            var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
-            _bus = tenant.Container.Resolve<ICommandBus>();
-            _filestore = tenant.Container.Resolve<IBlobStore>();
-            Assert.IsTrue(_bus is IInProcessCommandBus);
-            _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
-            _handleWriter = tenant.Container.Resolve<IHandleWriter>();
-            _documentReader = tenant.Container.Resolve<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
-        }
+            var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
+            mngr.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
 
-        [TearDown]
-        public void TearDown()
-        {
-            _documentStoreService.Stop();
-            BsonClassMapHelper.Clear();
-        }
+            EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
 
-        void CreateDocument(int id, string handle, string pathToFile)
-        {
-            var fname = Path.GetFileName(pathToFile);
-            var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
-            _bus.Send(new CreateDocumentDescriptor(
-                new DocumentDescriptorId(id),
-                _filestore.Upload(DocumentFormats.Original, pathToFile),
-                info,
-                new FileHash("1234abcd"),
-                new FileNameWithExtension("a","file")
-            ));
-            Thread.Sleep(50);
-        }
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
+            StringValueCustomBsonTypeMapper.Register<BlobId>();
+            StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
+            StringValueCustomBsonTypeMapper.Register<FileHash>();
 
-        BlobId AddFormatToDocument(int id, string handle, DocumentFormat format, PipelineId pipelineId, string pathToFile)
-        {
-            var fname = Path.GetFileName(pathToFile);
-            var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
-            var blobId = _filestore.Upload(format, pathToFile);
-            _bus.Send(new AddFormatToDocumentDescriptor(
-                new DocumentDescriptorId(id),
-                format,
-                blobId,
-                pipelineId
-            ));
-            Thread.Sleep(50);
-            return blobId;
+            _writer = new HandleWriter(MongoDbTestConnectionProvider.ReadModelDb);
+            _sut = new DocumentProjection(_writer);
         }
 
         [Test]
-        public async void should_deduplicate()
+        public void Promise()
         {
-            CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
-            CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPng);
+            _writer.Promise(_documentHandle, 1);
 
-            await _projections.UpdateAndWait();
-
-            var list = _handleWriter.AllSortedByHandle.ToArray();
-            Assert.AreEqual(2, list.Length);
-            Assert.AreEqual(new DocumentHandle("handle"), list[0].Handle);
-            Assert.AreEqual(new DocumentHandle("handle_bis"), list[1].Handle);
-
-            Assert.AreEqual(new DocumentDescriptorId(1), list[0].DocumentId);
-            Assert.AreEqual(new DocumentDescriptorId(1), list[1].DocumentId);
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.NotNull(h);
+            Assert.IsNull(h.DocumentId);
+            Assert.AreEqual(0, h.ProjectedAt);
+            Assert.AreEqual(1, h.CreatetAt);
+            Assert.IsNull(h.FileName);
         }
 
         [Test]
-        public async void should_remove_handle_previous_document()
+        public void Create()
         {
-            CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
-            CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
-            await _projections.UpdateAndWait();
+            _writer.Create(_documentHandle);
+            var h = _writer.FindOneById(_documentHandle);
 
-            var old_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(1));
-            Assert.IsNull(old_handle_bis_document);
-
-            var new_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(2));
-            Assert.NotNull(new_handle_bis_document);
+            Assert.NotNull(h);
+            Assert.IsNull(h.DocumentId);
+            Assert.AreEqual(0, h.ProjectedAt);
+            Assert.AreEqual(0, h.CreatetAt);
         }
 
         [Test]
-        public async void should_remove_orphaned_document()
+        public void SetFileName()
         {
-            CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
-            CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
-            CreateDocument(3, "handle", TestConfig.PathToDocumentPdf);
-            await _projections.UpdateAndWait();
+            _writer.Create(_documentHandle);
+            _writer.SetFileName(_documentHandle, _fileName1, 10 );
+            var h = _writer.FindOneById(_documentHandle);
 
-            var old_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(1));
-            Assert.IsNull(old_handle_bis_document);
-
-            var new_handle_bis_document = _documentReader.FindOneById(new DocumentDescriptorId(2));
-            Assert.NotNull(new_handle_bis_document);
+            Assert.AreEqual(_fileName1, h.FileName);
+        
         }
 
         [Test]
-        public async void should_deduplicate_twice()
+        public void add_attachment()
         {
-            CreateDocument(9, "handle", TestConfig.PathToDocumentPdf);
-            CreateDocument(10, "handle", TestConfig.PathToDocumentPdf);
-            CreateDocument(11, "handle", TestConfig.PathToDocumentPdf);
-            await _projections.UpdateAndWait();
+            _sut.On(new DocumentInitialized(_documentId1, _documentHandle) {AggregateId =  _documentId1});
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _documentId1 });
 
-            var original = _documentReader.FindOneById(new DocumentDescriptorId(9));
-            var copy = _documentReader.FindOneById(new DocumentDescriptorId(10));
-            var copy2 = _documentReader.FindOneById(new DocumentDescriptorId(11));
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new [] { _attachmentHandle }));
+        }
 
-            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
+        [Test]
+        public void add_attachment_nested()
+        {
+            _sut.On(new DocumentInitialized(_documentId1, _documentHandle) { AggregateId = _documentId1 });
+            _sut.On(new DocumentInitialized(_documentId2, _documentHandle) { AggregateId = _documentId2 });
+            _sut.On(new DocumentInitialized(_documentId3, _documentHandle) { AggregateId = _documentId3 });
 
-            Assert.IsNotNull(original);
-            Assert.IsNull(copy);
-            Assert.IsNull(copy2);
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _documentId1 });
+            _sut.On(new DocumentHasNewAttachment(_attachmentHandle, _attachmentNestedHandle) { AggregateId = _documentId1 });
+
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _attachmentHandle, _attachmentNestedHandle }));
+
+            h = _writer.FindOneById(_attachmentHandle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _attachmentNestedHandle }));
+        }
+
+        [Test]
+        public void update_custom_data()
+        {
+            _writer.Create(_documentHandle);
+            var handleCustomData = new DocumentCustomData() { { "a", "b" } };
+            _writer.UpdateCustomData(_documentHandle, handleCustomData);
+            var h = _writer.FindOneById(_documentHandle);
+
+            Assert.NotNull(h.CustomData);
+            Assert.AreEqual("b", (string)h.CustomData["a"]);
+        }
+
+        [Test]
+        [TestCase(2, 10, false)]
+        [TestCase(2, 11, false)]
+        [TestCase(1, 9, true)]
+        public void Projected(int expectedDocId, int projectedAt, bool isPending)
+        {
+            var expectedDocumentId = new DocumentDescriptorId(expectedDocId);
+            _writer.Promise(_documentHandle, 10);
+            _writer.LinkDocument(_documentHandle, _document2, projectedAt);
+
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.NotNull(h);
+            Assert.AreEqual(10, h.CreatetAt);
+            Assert.IsNull(h.FileName);
+
+            if (h.ProjectedAt >= h.CreatetAt)
+            {
+                Assert.AreEqual(expectedDocumentId, h.DocumentId);
+                Assert.AreEqual(projectedAt, h.ProjectedAt);
+            }
+
+            Assert.AreEqual(isPending, h.IsPending());
+        }
+
+        [Test]
+        public void should_delete()
+        {
+            _writer.Create(_documentHandle);
+            _writer.Promise(_documentHandle, 10);
             
-            Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(9));
-        }       
-        
-        [Test]
-        public async void should_deduplicate_a_document_with_same_content_and_handle()
-        {
-            CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
-            CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
-            await _projections.UpdateAndWait();
-
-            var original = _documentReader.FindOneById(new DocumentDescriptorId(1));
-            Assert.IsNotNull(original);
-
-            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
-            Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(1));
-
-            var copy = _documentReader.FindOneById(new DocumentDescriptorId(2));
-            Assert.IsNull(copy);
-        }     
-        
-        [Test]
-        public async void should_create_a_document()
-        {
-            CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
-            await _projections.UpdateAndWait();
-
-            var original = _documentReader.FindOneById(new DocumentDescriptorId(1));
-            Assert.IsNotNull(original);
-
-            var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
-            Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(1));
+            _writer.Delete(_documentHandle, 11);
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.IsNull(h);
         }
 
         [Test]
-        public async void should_add_format_to_document()
+        public void should_not_delete()
         {
-            CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
-            var format = new DocumentFormat("tika");
-            var blobId = AddFormatToDocument(1, "handle", format, new PipelineId("tika"), TestConfig.PathToTextDocument);
-
-            await _projections.UpdateAndWait();
-
-            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentDescriptorId(1));
-            Assert.That(document.Formats, Has.Count.EqualTo(2));
-            Assert.That(document.Formats[format], Is.Not.Null, "Document has not added format");
-            Assert.That(document.Formats[format].BlobId, Is.EqualTo(blobId), "Wrong BlobId");
+            _writer.Create(_documentHandle);
+            _writer.Promise(_documentHandle, 10);
+            
+            _writer.Delete(_documentHandle, 9);
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.IsNotNull(h);
         }
 
         [Test]
-        public async void adding_twice_same_format_overwrite_format()
+        public void should_not_update_a_deleted_handle()
         {
-            CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
-            var format = new DocumentFormat("tika");
-            var blobId1 = AddFormatToDocument(1, "handle", format, new PipelineId("tika"), TestConfig.PathToTextDocument);
-            var blobId2 = AddFormatToDocument(1, "handle", format, new PipelineId("tika"), TestConfig.PathToHtml);
+            // arrage
+            _writer.Create(_documentHandle);
+            _writer.Promise(_documentHandle, 10);
 
-            await _projections.UpdateAndWait();
+            var h1 = _writer.FindOneById(_documentHandle);
 
-            var document = _documentReader.AllUnsorted.Single(d => d.Id == new DocumentDescriptorId(1));
-            Assert.That(document.Formats, Has.Count.EqualTo(2));
-            Assert.That(document.Formats[format], Is.Not.Null, "Document has not added format");
-            Assert.That(document.Formats[format].BlobId, Is.EqualTo(blobId2), "Wrong BlobId");
+            // act
+            _writer.Delete(_documentHandle, 20);
+            _writer.LinkDocument(_documentHandle, _document2, 15);
+            var h2 = _writer.FindOneById(_documentHandle);
+            _writer.LinkDocument(_documentHandle, _document2, 55);
+            var h3 = _writer.FindOneById(_documentHandle);
+
+            // assert
+            Assert.IsNotNull(h1);
+            Assert.IsNull(h2);
+            Assert.IsNull(h3);
         }
     }
 }

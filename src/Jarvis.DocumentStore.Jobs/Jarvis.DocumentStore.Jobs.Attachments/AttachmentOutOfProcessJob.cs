@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         parameters.TenantId,
                         parameters.JobId,
                         file,
-                        "attachments",
+                        "attachment_zip",
                         new Dictionary<string, object>()
                         {
                             {"RelativePath", relativeFileName}   
@@ -52,7 +52,26 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
             if (extension == ".eml" || extension == ".msg") 
             {
                 var reader = new Reader();
+                if (!Directory.Exists(unzippingDirectory)) Directory.CreateDirectory(unzippingDirectory);
                 reader.ExtractToFolder(localFile, unzippingDirectory);
+      
+                foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
+                {
+                    if ((Path.GetExtension(file) == ".htm" || Path.GetExtension(file) == ".html") && 
+                        Path.GetFileName(file).StartsWith(Path.GetFileName(parameters.FileName)))
+                        continue;
+
+                    var relativeFileName = file.Substring(unzippingDirectory.Length);
+                    await AddAttachmentToHandle(
+                        parameters.TenantId,
+                        parameters.JobId,
+                        file,
+                        "attachment_email",
+                        new Dictionary<string, object>()
+                        {
+                            {"RelativePath", relativeFileName}   
+                        });
+                }
 
             }
             return true;

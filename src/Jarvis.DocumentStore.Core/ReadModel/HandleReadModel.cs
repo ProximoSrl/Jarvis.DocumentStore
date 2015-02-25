@@ -10,6 +10,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.Linq;
 using System.Collections.Generic;
+using System;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
@@ -19,16 +20,19 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public DocumentHandle Handle { get; private set; }
 
         public HashSet<DocumentHandle> Attachments { get; private set; }
-        
+
+        public string AttachmentPath { get; private set; }
+
         public DocumentDescriptorId DocumentId { get; private set; }
-        
+
         public long CreatetAt { get; private set; }
-        
+
         public long ProjectedAt { get; private set; }
         public DocumentCustomData CustomData { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
 
-        public DocumentReadModel(DocumentHandle handle) : this(handle, null, null, null)
+        public DocumentReadModel(DocumentHandle handle)
+            : this(handle, null, null, null)
         {
 
         }
@@ -50,6 +54,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             return this.CreatetAt > this.ProjectedAt;
         }
+
+        internal void AddAttachment(DocumentHandle attachmentHandle)
+        {
+            if (Attachments == null) Attachments = new HashSet<DocumentHandle>();
+            this.Attachments.Add(attachmentHandle);
+        }
     }
 
     public interface IHandleWriter
@@ -61,7 +71,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt);
         void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
-        IQueryable<DocumentReadModel> AllSortedByHandle { get;}
+        IQueryable<DocumentReadModel> AllSortedByHandle { get; }
         void CreateIfMissing(DocumentHandle handle, long createdAt);
         void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
         long Count();
@@ -98,12 +108,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .Set(x => x.DocumentId, null)
-                    .Set(x=>x.CreatetAt, createdAt)
-                    .Set(x=>x.FileName, null),
+                    .Set(x => x.CreatetAt, createdAt)
+                    .Set(x => x.FileName, null),
                 Upsert = true,
                 VersionReturned = FindAndModifyDocumentVersion.Modified
             };
-            
+
             try
             {
                 var result = _collection.FindAndModify(args);
@@ -158,7 +168,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 VersionReturned = FindAndModifyDocumentVersion.Modified
             };
             var result = _collection.FindAndModify(args);
-            
+
             if (Logger.IsDebugEnabled)
             {
                 Logger.DebugFormat("LinkDocument on handle {0} [{1}] : {2}", handle, projectedAt,
@@ -177,7 +187,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<DocumentReadModel>
                     .Set(x => x.CustomData, customData)
             };
-            _collection.FindAndModify(args);            
+            _collection.FindAndModify(args);
         }
 
         public void Delete(DocumentHandle handle, long projectedAt)
@@ -193,7 +203,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             _collection.FindAndRemove(args);
         }
 
-        public IQueryable<DocumentReadModel> AllSortedByHandle {
+        public IQueryable<DocumentReadModel> AllSortedByHandle
+        {
             get { return _collection.AsQueryable().OrderBy(x => x.Handle); }
         }
 
@@ -206,6 +217,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .EQ(x => x.Handle, handle),
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
+                    .SetOnInsert(x => x.AttachmentPath, "/" + handle + "/")
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .SetOnInsert(x => x.DocumentId, null)
                     .SetOnInsert(x => x.CreatetAt, createdAt)
@@ -218,13 +230,28 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle)
         {
             Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
-            var args = new FindAndModifyArgs
+            var fatherRm = _collection.FindOneById(BsonValue.Create(fatherHandle));
+            var allFathers = fatherRm.AttachmentPath.Split('/')
+                .Where(s => !String.IsNullOrEmpty(s))
+                .ToList();
+
+            _collection.Update
+            (
+                Query<DocumentReadModel>
+                    .In(x => x.Handle, allFathers),
+                Update<DocumentReadModel>
+                    .AddToSet(x => x.Attachments, attachmentHandle),
+                UpdateFlags.Multi
+            );
+
+            var newPath = fatherRm.AttachmentPath + attachmentHandle + "/";
+            FindAndModifyArgs args = new FindAndModifyArgs
             {
                 Query = Query<DocumentReadModel>
-                    .EQ(x => x.Handle, fatherHandle),
+                    .EQ(x => x.Handle, attachmentHandle),
                 Update = Update<DocumentReadModel>
-                    .AddToSet(x => x.Attachments, attachmentHandle),
-                Upsert = false
+                    .Set(x => x.AttachmentPath, newPath),
+                Upsert = true
             };
             _collection.FindAndModify(args);
         }
@@ -250,6 +277,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         }
 
 
-       
+
     }
 }

@@ -293,8 +293,8 @@
     <Compile Include="PipelineTests\ThumbnailFromPdfExtractionTest.cs" />
     <Compile Include="PipelineTests\TikaNetHtmlExtractionTest.cs" />
     <Compile Include="ProjectionTests\BsonClassMapHelper.cs" />
+    <Compile Include="ProjectionTests\DocumentDescriptorProjectionTests.cs" />
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
-    <Compile Include="ProjectionTests\HandleProjectionTests.cs" />
     <Compile Include="ProjectionTests\StreamProjectionTest.cs" />
     <Compile Include="ProjectionTests\HandleWriterTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerOutOfProcessJobsIntegrationTests.cs" />
@@ -315,6 +315,9 @@
     <None Include="Docs\Document_copy.pdf" />
     <None Include="Docs\Lorem ipsum.pdf" />
     <None Include="Docs\Mail with attachments.msg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\mailWithcomplexAttachments.msg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Docs\Multilanguage.docx" />

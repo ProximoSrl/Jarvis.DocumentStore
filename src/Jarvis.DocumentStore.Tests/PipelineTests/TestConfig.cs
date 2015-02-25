@@ -56,6 +56,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Mail with attachments.msg"); }
         }
 
+        public static string PathToMsgWithComplexAttachment
+        {
+            get { return Path.Combine(DocumentsFolder, "mailWithcomplexAttachments.msg"); }
+        }
+        
         public static string PathToMsg
         {
             get { return Path.Combine(DocumentsFolder, "outlook message.msg"); }
