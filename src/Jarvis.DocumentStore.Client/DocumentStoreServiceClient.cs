@@ -416,6 +416,21 @@ namespace Jarvis.DocumentStore.Client
         }
 
         /// <summary>
+        /// Delete all attachment of a given handle, specifying the source.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public async Task DeleteAttachmentsAsync(DocumentHandle handle, String source)
+        {
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments/" + handle + "/" + source);
+            using (var client = new HttpClient())
+            {
+                await client.DeleteAsync(resourceUri);
+            }
+        }
+
+        /// <summary>
         /// Get the formats available for a document handle
         /// </summary>
         /// <param name="handle">document handles</param>
@@ -458,10 +473,5 @@ namespace Jarvis.DocumentStore.Client
         }
 
 
-
-        public Task DeleteAttachmentsAsync(string p)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

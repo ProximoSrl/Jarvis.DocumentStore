@@ -337,17 +337,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             UpdateAndWait();
 
             //upload attachments
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourceA");
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceB");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourcea");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceb");
             UpdateAndWait();
 
-            await _documentStoreClient.DeleteAttachmentsAsync("sourceB");
+            await _documentStoreClient.DeleteAttachmentsAsync(fatherHandle, "sourceb");
             UpdateAndWait();
 
-            var handle = _documentCollection.Find(Query.EQ("_id", "sourceA_1")).SingleOrDefault();
+            var handle = _documentCollection.Find(Query.EQ("_id", "sourcea_1")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "SourceA attachment should not be deleted.");
 
-            handle = _documentCollection.Find(Query.EQ("_id", "sourceB_1")).SingleOrDefault();
+            handle = _documentCollection.Find(Query.EQ("_id", "sourceb_1")).SingleOrDefault();
             Assert.That(handle, Is.Null, "SourceB attachment should be deleted.");
         }
 

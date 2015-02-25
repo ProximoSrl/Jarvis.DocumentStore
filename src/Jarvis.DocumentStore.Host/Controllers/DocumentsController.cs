@@ -465,7 +465,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         }
 
         [HttpDelete]
-        [Route("{tenantId}/documents/{fatherHandle}/{source}")]
+        [Route("{tenantId}/documents/attachments/{fatherHandle}/{source}")]
         public HttpResponseMessage DeleteAttachments(TenantId tenantId, DocumentHandle fatherHandle, String source)
         {
             var document = GetDocumentByHandle(fatherHandle);
