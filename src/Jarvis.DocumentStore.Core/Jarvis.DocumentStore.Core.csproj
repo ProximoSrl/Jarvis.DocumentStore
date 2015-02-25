@@ -150,7 +150,7 @@
     <Compile Include="Domain\Document\Events\DocumentInitialized.cs" />
     <Compile Include="Domain\Document\Events\DocumentLinked.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
-    <Compile Include="Domain\DocumentDescriptor\IDocumentFormatTranslator.cs" />
+    <Compile Include="Support\IDocumentFormatTranslator.cs" />
     <Compile Include="EvenstoreHooks\ReadModelPromisesHook.cs" />
     <Compile Include="EvenstoreHooks\TriggerProjectionEngineHook.cs" />
     <Compile Include="EventHandlers\DeduplicationHelper.cs" />

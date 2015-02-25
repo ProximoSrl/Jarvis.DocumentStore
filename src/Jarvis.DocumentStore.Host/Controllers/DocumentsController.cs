@@ -28,6 +28,7 @@ using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Jarvis.Framework.Shared.Commands;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -37,6 +38,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
         private readonly ICounterService _counterService;
+        private IDocumentFormatTranslator _documentFormatTranslator;
 
         readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
         readonly IQueueDispatcher _queueDispatcher;
@@ -56,7 +58,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,
             IDocumentWriter handleWriter,
-            IQueueDispatcher queueDispatcher, ICounterService counterService)
+            IQueueDispatcher queueDispatcher, 
+            ICounterService counterService,
+            IDocumentFormatTranslator documentFormatTranslator)
         {
             _blobStore = blobStore;
             _configService = configService;
@@ -65,7 +69,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _handleWriter = handleWriter;
             _queueDispatcher = queueDispatcher;
             _counterService = counterService;
-
+            _documentFormatTranslator = documentFormatTranslator;
             CommandBus = commandBus;
         }
 
@@ -217,11 +221,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 Logger.DebugFormat("Add format {0} to job id {1} and document id {2}", format, job.Id, documentId);
             }
 
-            var documentFormat = new DocumentFormat(_customData[AddFormatToDocumentParameters.Format] as String);
+            if (format == "null") 
+            {
+                var formatFromFileName = _documentFormatTranslator.GetFormatFromFileName(_fileName);
+                if (formatFromFileName == null)
+                {
+                    String error = "Format not specified and no known format for file: " + _fileName;
+                    Logger.Error(error);
+                    return Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        error
+                    );
+                }
+                format = new DocumentFormat(formatFromFileName); 
+            }
+
             var createdById = new PipelineId(_customData[AddFormatToDocumentParameters.CreatedBy] as String);
             Logger.DebugFormat("Incoming new format for documentId {0}", documentId);
-           
-            var command = new AddFormatToDocumentDescriptor(documentId, documentFormat, _blobId, createdById);
+
+            var command = new AddFormatToDocumentDescriptor(documentId, format, _blobId, createdById);
             CommandBus.Send(command, "api");
 
             return Request.CreateResponse(

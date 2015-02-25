@@ -48,7 +48,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 bus, 
                 _handleWriter,
                 QueueDispatcher,
-                CounterService)
+                CounterService,
+                null)
             {
                 Request = new HttpRequestMessage
                 {

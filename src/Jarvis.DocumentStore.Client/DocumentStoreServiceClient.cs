@@ -280,7 +280,8 @@ namespace Jarvis.DocumentStore.Client
                         var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
                         content.Add(stringContent, "custom-data");
 
-                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + model.Format);
+                        var modelFormat = model.Format == null ? "null" : model.Format.ToString();
+                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + modelFormat);
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {

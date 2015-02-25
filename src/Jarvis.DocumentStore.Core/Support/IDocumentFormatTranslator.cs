@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using System;
 using System.IO;
 
-namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
+namespace Jarvis.DocumentStore.Core.Support
 {
     public interface IDocumentFormatTranslator
     {

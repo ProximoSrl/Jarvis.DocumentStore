@@ -5,6 +5,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.NEventStoreEx.CommonDomainEx;
 using Jarvis.NEventStoreEx.CommonDomainEx.Core;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {

@@ -204,6 +204,33 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void can_add_new_format_with_api_and_automatic_format_detection()
+        {
+            //Upload original
+            var handle = new DocumentHandle("Add_Format_Test");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            //now add format to document.
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
+            model.DocumentHandle = handle;
+            model.PathToFile = TestConfig.PathToDocumentPdf;
+            model.CreatedById = "office";
+            model.Format = null; //NO FORMAT, I want document store to be able to detect format
+            await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
+
+            // wait background projection polling
+            UpdateAndWait();
+            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            Assert.NotNull(formats);
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("pdf")));
+            Assert.That(formats, Has.Count.EqualTo(2));
+        }
+
+        [Test]
         public async void can_add_new_format_with_api_from_object()
         {
             //Upload original
