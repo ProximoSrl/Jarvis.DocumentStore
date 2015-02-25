@@ -3,7 +3,7 @@ using Jarvis.Framework.Shared.Domain;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     /// <summary>
     /// We have an identical class named <see cref="Client.Model.DocumentFormat"/> that is duplicated

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 

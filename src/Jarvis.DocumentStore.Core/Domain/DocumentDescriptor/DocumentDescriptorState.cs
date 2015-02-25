@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     public class DocumentDescriptorState : AggregateState
     {

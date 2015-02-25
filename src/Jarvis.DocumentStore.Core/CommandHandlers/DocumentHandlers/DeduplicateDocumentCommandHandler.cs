@@ -1,4 +1,4 @@
-﻿using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {

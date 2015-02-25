@@ -1,6 +1,6 @@
 ﻿using Jarvis.Framework.Shared.Commands;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands
 {
     public abstract class DocumentDescriptorCommand : Command<DocumentDescriptorId>
     {

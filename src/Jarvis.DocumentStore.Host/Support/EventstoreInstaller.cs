@@ -10,6 +10,7 @@ using Castle.Windsor;
 using CommonDomain;
 using CommonDomain.Core;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;

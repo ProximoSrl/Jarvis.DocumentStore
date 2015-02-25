@@ -10,6 +10,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Host.Commands;
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.MultitenantSupport;

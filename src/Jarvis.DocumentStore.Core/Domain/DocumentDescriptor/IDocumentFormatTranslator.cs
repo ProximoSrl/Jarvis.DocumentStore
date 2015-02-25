@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     public interface IDocumentFormatTranslator
     {

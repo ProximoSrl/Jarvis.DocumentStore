@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Model;
+﻿using Jarvis.DocumentStore.Core.Model;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands
 {
     public class DeleteDocumentDescriptor : DocumentDescriptorCommand
     {

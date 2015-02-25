@@ -3,6 +3,7 @@ using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.Commands;

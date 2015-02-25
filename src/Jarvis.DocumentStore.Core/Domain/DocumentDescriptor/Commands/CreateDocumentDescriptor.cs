@@ -1,6 +1,6 @@
 using Jarvis.DocumentStore.Core.Model;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands
 {
     public class CreateDocumentDescriptor : DocumentDescriptorCommand
     {

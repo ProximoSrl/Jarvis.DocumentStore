@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
-using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.NEventStoreEx.CommonDomainEx;
 using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     public class DocumentDescriptor : AggregateRoot<DocumentDescriptorState>
     {

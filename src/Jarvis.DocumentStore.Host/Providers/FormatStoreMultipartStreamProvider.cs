@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Services;
@@ -12,7 +13,7 @@ namespace Jarvis.DocumentStore.Host.Providers
     {
         readonly IBlobStore _store;
 
-        readonly Core.Domain.Document.DocumentFormat _format;
+        readonly DocumentFormat _format;
 
         public FileNameWithExtension Filename { get; private set; }
 
@@ -23,7 +24,7 @@ namespace Jarvis.DocumentStore.Host.Providers
         IBlobWriter _writer;
         public FormatStoreMultipartStreamProvider(
             IBlobStore store, 
-            Core.Domain.Document.DocumentFormat format
+            DocumentFormat format
         ) : base(Path.GetTempPath())
         {
             _store = store;

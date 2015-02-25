@@ -1,8 +1,7 @@
-using System.Collections.Generic;
 using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Model;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     public class DocumentHandleInfo
     {

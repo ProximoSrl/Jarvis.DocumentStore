@@ -3,7 +3,7 @@ using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 
-namespace Jarvis.DocumentStore.Core.Domain.Document
+namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     [BsonSerializer(typeof(EventStoreIdentityBsonSerializer))]
     public class DocumentDescriptorId : EventStoreIdentity
