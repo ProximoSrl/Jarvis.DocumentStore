@@ -29,7 +29,8 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                  workingFolder);
 
             var extension = Path.GetExtension(localFile);
-             var unzippingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var unzippingDirectory = Path.Combine(workingFolder, Guid.NewGuid().ToString());
+            if (!Directory.Exists(unzippingDirectory)) Directory.CreateDirectory(unzippingDirectory);
             if (extension == ".zip") 
             {
                 //we can handle unzipping everything.
@@ -52,7 +53,6 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
             if (extension == ".eml" || extension == ".msg") 
             {
                 var reader = new Reader();
-                if (!Directory.Exists(unzippingDirectory)) Directory.CreateDirectory(unzippingDirectory);
                 reader.ExtractToFolder(localFile, unzippingDirectory);
       
                 foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
