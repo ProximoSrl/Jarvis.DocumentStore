@@ -10,9 +10,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     {
         public ILogger Logger { get; set; }
         private readonly ConfigService _configService;
-        private readonly DocumentByHashReader _hashReader;
+        private readonly DocumentDescriptorByHashReader _hashReader;
         private readonly IBlobStore _blobStore;
-        public DeduplicationHelper(ConfigService configService, DocumentByHashReader hashReader, IBlobStore blobStore)
+        public DeduplicationHelper(ConfigService configService, DocumentDescriptorByHashReader hashReader, IBlobStore blobStore)
         {
             _configService = configService;
             _hashReader = hashReader;

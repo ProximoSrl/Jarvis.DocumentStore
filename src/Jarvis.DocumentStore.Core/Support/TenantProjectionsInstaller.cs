@@ -107,7 +107,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     .ImplementedBy<MongoStorageFactory>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
                 Component
-                    .For<DocumentByHashReader>(),
+                    .For<DocumentDescriptorByHashReader>(),
                 Component
                     .For<DeduplicationHelper>(),
                 Component
