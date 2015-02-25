@@ -260,7 +260,6 @@
     <Compile Include="DomainSpecs\DocumentSpecs\DocumentSpecifications.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\document_with_xml_format.cs" />
     <Compile Include="DomainSpecs\BlobIdTests.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_created_as_attachment.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_created_with_known_format.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_a_filename_is_created.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\when_a_deduplicated_document_is_deleted.cs" />

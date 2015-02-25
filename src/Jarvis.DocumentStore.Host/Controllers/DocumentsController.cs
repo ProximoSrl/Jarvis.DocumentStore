@@ -42,6 +42,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly IBlobStore _blobStore;
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
+        private readonly ICounterService _counterService;
+
         readonly IReader<DocumentReadModel, DocumentId> _documentReader;
         readonly IQueueDispatcher _queueDispatcher;
 
@@ -60,8 +62,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IReader<DocumentReadModel, DocumentId> documentReader,
             IInProcessCommandBus commandBus,
             IHandleWriter handleWriter,
-            IQueueDispatcher queueDispatcher
-        )
+            IQueueDispatcher queueDispatcher, ICounterService counterService)
         {
             _blobStore = blobStore;
             _configService = configService;
@@ -69,6 +70,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _documentReader = documentReader;
             _handleWriter = handleWriter;
             _queueDispatcher = queueDispatcher;
+            _counterService = counterService;
 
             CommandBus = commandBus;
         }
@@ -77,13 +79,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(TenantId tenantId, DocumentHandle handle)
         {
-            if (handle.ToString().Contains("@"))
-            {
-                return Request.CreateErrorResponse(
-                   HttpStatusCode.BadRequest,
-                   "Character @ is not permitted when creating Handle, use call to create an attachment instead"
-               );
-            }
             return await InnerUploadDocument(tenantId, handle);
         }
 
@@ -93,21 +88,22 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// handle.
         /// </summary>
         /// <param name="tenantId"></param>
-        /// <param name="format"></param>
+        /// <param name="fatherHandle">Handle that will receive the attachment</param>
+        /// <param name="attachSource">Source of attach, it can be "zip" to indicate the queue that unzip document.
+        /// This will be translated into an unique id from the conttroller.</param>
         /// <returns></returns>
-        [Route("{tenantId}/documents/{fatherHandle}/attach/{attachHandle}")]
+        [Route("{tenantId}/documents/{fatherHandle}/attach/{attachSource}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> UploadAttach(TenantId tenantId, DocumentHandle fatherHandle, DocumentHandle attachHandle)
+        public async Task<HttpResponseMessage> UploadAttach(TenantId tenantId, DocumentHandle fatherHandle, DocumentHandle attachSource)
         {
-            if (attachHandle.ToString().Contains("@"))
-            {
-                return Request.CreateErrorResponse(
-                   HttpStatusCode.BadRequest,
-                   "Character @ is not permitted when creating Handle, use call to create an attachment instead"
-               );
-            }
+            var realAttacHandle = GetAttachHandleFromAttachSource(attachSource);
+            return await InnerUploadDocument(tenantId, realAttacHandle, fatherHandle);
+        }
 
-            return await InnerUploadDocument(tenantId, attachHandle, fatherHandle);
+        private DocumentHandle GetAttachHandleFromAttachSource(String attachSource)
+        {
+            var realAttacHandle = new DocumentHandle(attachSource + "_" + _counterService.GetNext(attachSource));
+            return realAttacHandle;
         }
 
         /// <summary>
@@ -115,11 +111,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// handle.
         /// </summary>
         /// <param name="tenantId"></param>
-        /// <param name="format"></param>
+        /// <param name="queueName"></param>
+        /// <param name="jobId"></param>
+        /// <param name="attachSource">Source of attach, it can be "zip" to indicate the queue that unzip document.
+        /// This will be translated into an unique id from the conttroller.</param>
         /// <returns></returns>
-        [Route("{tenantId}/documents/jobs/attach/{queueName}/{jobId}/{attachHandle}")]
+        [Route("{tenantId}/documents/jobs/attach/{queueName}/{jobId}/{attachSource}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> UploadAttachFromJob(TenantId tenantId, String queueName, String jobId, DocumentHandle attachHandle)
+        public async Task<HttpResponseMessage> UploadAttachFromJob(TenantId tenantId, String queueName, String jobId, String attachSource)
         {
             var job = _queueDispatcher.GetJob(queueName, jobId);
             if (job == null)
@@ -129,8 +128,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     String.Format("Job id {0} not valid for queue {1}", jobId, queueName)
                 );
             }
-
-            return await InnerUploadDocument(tenantId, attachHandle, job.Handle);
+            var realAttacHandle = GetAttachHandleFromAttachSource(attachSource);
+            return await InnerUploadDocument(tenantId, realAttacHandle, job.Handle);
         }
 
         private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle, DocumentHandle fatherHandle = null)
@@ -484,15 +483,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             
             var descriptor = _blobStore.GetDescriptor(blobId);
             ICommand createDocument;
+            var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
             if (fatherHandle == null)
             {
-                var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
+                
                 createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
             }
             else
             {
-                var realHandle = new DocumentHandle(String.Format("{0}@{1}", handle, fatherHandle));
-                var handleInfo = new DocumentHandleInfo(realHandle, fileName, customData);
                 createDocument = new CreateDocumentAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
             }
             CommandBus.Send(createDocument, "api");

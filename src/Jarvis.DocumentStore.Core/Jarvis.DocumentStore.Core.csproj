@@ -135,6 +135,7 @@
     <Compile Include="Domain\Document\Events\FormatAddedToDocument.cs" />
     <Compile Include="Domain\Document\DocumentFormat.cs" />
     <Compile Include="Domain\Handle\Commands\LinkHandleToDocument.cs" />
+    <Compile Include="Domain\Handle\Events\HandleHasNewAttachment.cs" />
     <Compile Include="Domain\Handle\Events\HandleCustomDataSet.cs" />
     <Compile Include="Domain\Handle\Events\HandleFileNameSet.cs" />
     <Compile Include="Domain\Handle\Handle.cs" />

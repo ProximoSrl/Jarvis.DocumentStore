@@ -33,7 +33,6 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                 //we can handle unzipping everything.
                 var unzippingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                 ZipFile.ExtractToDirectory(localFile, unzippingDirectory);
-                Int32 attachCounter = 1;
                 foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
                 {
                     var relativeFileName = file.Substring(unzippingDirectory.Length);
@@ -42,8 +41,10 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         parameters.JobId,
                         file,
                         "attachments",
-                        new DocumentHandle("attachment" + attachCounter++),
-                        null);
+                        new Dictionary<string, object>()
+                        {
+                            {"RelativePath", relativeFileName}   
+                        });
                 }
             }
             return true;

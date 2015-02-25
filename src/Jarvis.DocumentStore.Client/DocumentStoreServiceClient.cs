@@ -108,55 +108,54 @@ namespace Jarvis.DocumentStore.Client
             IDictionary<string, object> customData = null)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
-            return await DoUpload(endPoint, documentHandle, fileNameWithExtension, inputStream, customData);
+            return await DoUpload(endPoint, fileNameWithExtension, inputStream, customData);
         }
 
         /// <summary>
         /// Create a new document as an attach of existing document
         /// </summary>
         /// <param name="fileNameWithExtension">File name with extension</param>
-        /// <param name="documentHandle">Document handle</param>
+        /// <param name="fatherDocumentHandle">Document handle</param>
         /// <param name="inputStream">Input stream</param>
+        /// <param name="attachSource"></param>
         /// <param name="customData">Custom Data</param>
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
         public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
             string fileNameWithExtension,
             DocumentHandle fatherDocumentHandle,
-            DocumentHandle attachHandle,
             Stream inputStream,
             String attachSource,
             IDictionary<string, object> customData = null)
         {
+            if (customData == null) customData = new Dictionary<String, Object>();
             customData["source"] = attachSource;
-            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachHandle);
-            return await DoUpload(endPoint, attachHandle, fileNameWithExtension, inputStream, customData);
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachSource);
+            return await DoUpload(endPoint, fileNameWithExtension, inputStream, customData);
         }
 
         public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
            string pathToFile,
            DocumentHandle fatherDocumentHandle,
-           DocumentHandle attachHandle,
            String attachSource,
            IDictionary<string, object> customData = null) 
         {
             if (customData == null) customData = new Dictionary<String, Object>();
             customData["source"] = attachSource;
-            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachHandle);
-            return await UploadFromFile(endPoint, pathToFile, attachHandle, customData);
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachSource);
+            return await UploadFromFile(endPoint, pathToFile, customData);
         }
 
         public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
            string pathToFile,
            String queueName,
            String jobId,
-           DocumentHandle attachHandle,
            String attachSource,
            IDictionary<string, object> customData = null)
         {
             if (customData == null) customData = new Dictionary<String, Object>();
             customData["source"] = attachSource;
-            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/attach/" + queueName + "/" + jobId + "/" + attachHandle);
-            return await UploadFromFile(endPoint, pathToFile, attachHandle, customData);
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/attach/" + queueName + "/" + jobId + "/" + attachSource);
+            return await UploadFromFile(endPoint, pathToFile, customData);
         }
 
         /// <summary>
@@ -172,10 +171,10 @@ namespace Jarvis.DocumentStore.Client
             IDictionary<string, object> customData = null)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
-            return await UploadFromFile(endPoint, pathToFile, documentHandle, customData);
+            return await UploadFromFile(endPoint, pathToFile, customData);
         }
 
-        private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, DocumentHandle documentHandle, IDictionary<string, object> customData)
+        private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, IDictionary<string, object> customData)
         {
 
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
@@ -184,7 +183,7 @@ namespace Jarvis.DocumentStore.Client
                 var zippedFile = ZipHtmlPage(pathToFile);
                 try
                 {
-                    return await InnerUploadAsync(endPoint, zippedFile, documentHandle, customData);
+                    return await InnerUploadAsync(endPoint, zippedFile, customData);
 
                 }
                 finally
@@ -193,33 +192,31 @@ namespace Jarvis.DocumentStore.Client
                 }
             }
 
-            return await InnerUploadAsync(endPoint, pathToFile, documentHandle, customData);
+            return await InnerUploadAsync(endPoint, pathToFile, customData);
         }
 
         /// <summary>
         /// Utility method for uploads
         /// </summary>
+        /// <param name="endPoint">The endopoint used to upload the file</param>
         /// <param name="pathToFile">Path to local document</param>
-        /// <param name="documentHandle">Document handle</param>
         /// <param name="customData">Custom data</param>
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
         private async Task<UploadedDocumentResponse> InnerUploadAsync(
             Uri endPoint,
             string pathToFile,
-            DocumentHandle documentHandle,
             IDictionary<string, object> customData
         )
         {
             string fileNameWithExtension = Path.GetFileName(pathToFile);
             using (var sourceStream = File.OpenRead(pathToFile))
             {
-                return await DoUpload(endPoint, documentHandle, fileNameWithExtension, sourceStream, customData);
+                return await DoUpload(endPoint, fileNameWithExtension, sourceStream, customData);
             }
         }
 
         async Task<UploadedDocumentResponse> DoUpload(
-            Uri endPoint,
-            DocumentHandle documentHandle, 
+            Uri endPoint, 
             string fileNameWithExtension, 
             Stream inputStream, 
             IDictionary<string, object> customData)

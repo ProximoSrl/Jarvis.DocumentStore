@@ -64,9 +64,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void UpdateCustomData(DocumentHandle handle, HandleCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<HandleReadModel> AllSortedByHandle { get;}
-        void CreateIfMissing(DocumentHandle handle, DocumentHandle fatherHandle, long createdAt);
+        void CreateIfMissing(DocumentHandle handle, long createdAt);
         void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
         long Count();
+
+        void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle);
     }
 
     public class HandleWriter : IHandleWriter
@@ -197,7 +199,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             get { return _collection.AsQueryable().OrderBy(x => x.Handle); }
         }
 
-        public void CreateIfMissing(DocumentHandle handle, DocumentHandle fatherHandle, long createdAt)
+        public void CreateIfMissing(DocumentHandle handle, long createdAt)
         {
             Logger.DebugFormat("CreateIfMissing on handle {0} [{1}]", handle, createdAt);
             var args = new FindAndModifyArgs
@@ -213,17 +215,20 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Upsert = true
             };
             _collection.FindAndModify(args);
+        }
 
-            if (fatherHandle != null) 
+        public void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle)
+        {
+            Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
+            var args = new FindAndModifyArgs
             {
-                _collection.Update(
-                    Query.Or( 
-                    Query<HandleReadModel>.EQ(x => x.Handle, fatherHandle),
-                    Query<HandleReadModel>.EQ(x => x.Attachments, fatherHandle)),
-                    Update<HandleReadModel>.Push(x => x.Attachments, handle),
-                    UpdateFlags.Multi
-                );
-            }
+                Query = Query<HandleReadModel>
+                    .EQ(x => x.Handle, fatherHandle),
+                Update = Update<HandleReadModel>
+                    .AddToSet(x => x.Attachments, attachmentHandle),
+                Upsert = false
+            };
+            _collection.FindAndModify(args);
         }
 
         public HandleReadModel FindOneById(DocumentHandle handle)
@@ -245,5 +250,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             _collection.Insert(new HandleReadModel(documentHandle));
         }
+
+
+       
     }
 }

@@ -49,7 +49,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void with_promise_and_create_handle_should_be_linked_to_document_1()
         {
             _writer.Promise(_handle, 1);
-            _writer.CreateIfMissing(_handle, null, 1);
+            _writer.CreateIfMissing(_handle, 1);
             _writer.LinkDocument(_handle, _doc1, 2);
 
             var h = _writer.FindOneById(_handle);
@@ -59,7 +59,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void with_create_and_promise_handle_should_be_linked_to_document_1()
         {
-            _writer.CreateIfMissing(_handle, null, 1);
+            _writer.CreateIfMissing(_handle, 1);
             _writer.Promise(_handle, 1);
             _writer.LinkDocument(_handle, _doc1, 2);
         
@@ -70,7 +70,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void with_link_and_promise_handle_should_be_linked_to_document_1()
         {
-            _writer.CreateIfMissing(_handle, null, 1);
+            _writer.CreateIfMissing(_handle, 1);
             _writer.LinkDocument(_handle, _doc1, 2);
             _writer.Promise(_handle, 1);
         
@@ -81,30 +81,17 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_collection_of_attachments()
         {
-            _writer.CreateIfMissing(_handle, null, 1);
-            _writer.CreateIfMissing(_handleAttach1, _handle, 1);
+            _writer.CreateIfMissing(_handle, 1);
+            _writer.AddAttachment(_handle, _handleAttach1);
 
             var h = _writer.FindOneById(_handle);
             Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1 }));
         }
 
         [Test]
-        public void verify_collection_of_attachments_multilevel()
-        {
-            _writer.CreateIfMissing(_handle, null, 1);
-            _writer.CreateIfMissing(_handleAttach1, _handle, 1);
-            _writer.CreateIfMissing(_handleAttach2, _handleAttach1, 1);
-
-            var first = _writer.FindOneById(_handle);
-            var attach = _writer.FindOneById(_handleAttach1);
-            Assert.That(attach.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach2 }));
-            Assert.That(first.Attachments, Is.EquivalentTo(new DocumentHandle[] { _handleAttach1, _handleAttach2 }));
-        }  
-        
-        [Test]
         public void promise_should_set_document_id_equals_to_null()
         {
-            _writer.CreateIfMissing(_handle, null, 1);
+            _writer.CreateIfMissing(_handle, 1);
             _writer.LinkDocument(_handle, _doc1, 2);
             _writer.Promise(_handle, 1);
 

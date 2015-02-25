@@ -10,8 +10,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
         public DocumentHandleInfo HandleInfo { get; private set; }
         public FileHash Hash { get; private set; }
 
-        public DocumentHandle FatherHandle { get; private set; }
-
         public DocumentCreated(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash)
         {
             Hash = hash;
@@ -20,10 +18,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
             this.AggregateId = id;
         }
 
-        public DocumentCreated(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo, DocumentHandle fatherHandle, FileHash hash)
-            : this(id, blobId, handleInfo, hash)
-        {
-           FatherHandle = fatherHandle;
-        }
+
     }
 }

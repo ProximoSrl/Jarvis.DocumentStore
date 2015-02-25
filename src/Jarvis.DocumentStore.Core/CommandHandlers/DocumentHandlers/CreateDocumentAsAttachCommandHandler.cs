@@ -18,34 +18,35 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 
         protected override void Execute(CreateDocumentAsAttach cmd)
         {
-            LinkHandle(cmd);
-
             FindAndModify(
                 cmd.AggregateId,
                 doc => doc.Create(cmd.AggregateId, cmd.BlobId, cmd.HandleInfo, cmd.Hash, cmd.FileName),
                 true
             );
+
+            LinkHandleAndAddAttachment(cmd);
+
         }
 
-        private void LinkHandle(CreateDocumentAsAttach cmd)
+        private void LinkHandleAndAddAttachment(CreateDocumentAsAttach cmd)
         {
-            var fatherId = _mapper.Map(cmd.FatherHandle);
-            var fatherHandle = Repository.GetById<Handle>(fatherId);
-            if (!fatherHandle.HasBeenCreated)
-                throw new ArgumentException("Father Handle " + cmd.FatherHandle + " is invalid", "FatherHandle");
-
             var docHandle = cmd.HandleInfo.Handle;
             var id = _mapper.Map(docHandle);
             var handle = Repository.GetById<Handle>(id);
-
             if (!handle.HasBeenCreated)
             {
-                handle.InitializeAsAttachment(id, cmd.FatherHandle, docHandle);
+                handle.Initialize(id, docHandle);
             }
+
             handle.SetFileName(cmd.FileName);
             handle.SetCustomData(cmd.HandleInfo.CustomData);
 
+            var fatherId = _mapper.Map(cmd.FatherHandle);
+            var fatherHandle = Repository.GetById<Handle>(fatherId);
+            fatherHandle.AddAttachment(docHandle);
+
             Repository.Save(handle, cmd.MessageId, h => { });
+            Repository.Save(fatherHandle, cmd.MessageId, h => { });
         }
 
     }

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle;
+using Jarvis.DocumentStore.Core.Domain.Handle.Events;
+using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Tests.Support;
@@ -18,11 +20,16 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
     [TestFixture]
     public class HandleProjectionTests
     {
-        HandleWriter _writer;
+
         readonly DocumentHandle _documentHandle = new DocumentHandle("a");
-        readonly DocumentId Document_1 = new DocumentId(1);
-        readonly DocumentId Document_2 = new DocumentId(2);
-        readonly FileNameWithExtension FileName_1 = new FileNameWithExtension("a", "file");
+        readonly DocumentHandle _attachmentHandle = new DocumentHandle("attach");
+        readonly HandleId _handleId = new HandleId(1);
+        readonly DocumentId _document1 = new DocumentId(1);
+        readonly DocumentId _document2 = new DocumentId(2);
+        readonly FileNameWithExtension _fileName1 = new FileNameWithExtension("a", "file");
+
+        HandleWriter _writer;
+        HandleProjection _sut;
 
         [SetUp]
         public void SetUp()
@@ -41,6 +48,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             StringValueCustomBsonTypeMapper.Register<FileHash>();
 
             _writer = new HandleWriter(MongoDbTestConnectionProvider.ReadModelDb);
+            _sut = new HandleProjection(_writer);
         }
 
         [Test]
@@ -57,7 +65,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void create()
+        public void Create()
         {
             _writer.Create(_documentHandle);
             var h = _writer.FindOneById(_documentHandle);
@@ -72,11 +80,21 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void SetFileName()
         {
             _writer.Create(_documentHandle);
-            _writer.SetFileName(_documentHandle, FileName_1, 10 );
+            _writer.SetFileName(_documentHandle, _fileName1, 10 );
             var h = _writer.FindOneById(_documentHandle);
 
-            Assert.AreEqual(FileName_1, h.FileName);
+            Assert.AreEqual(_fileName1, h.FileName);
         
+        }
+
+        [Test]
+        public void add_attachment()
+        {
+            _sut.On(new HandleInitialized(_handleId, _documentHandle) {AggregateId =  _handleId});
+            _sut.On(new HandleHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _handleId });
+
+            var h = _writer.FindOneById(_documentHandle);
+            Assert.That(h.Attachments, Is.EquivalentTo(new [] { _attachmentHandle }));
         }
 
         [Test]
@@ -99,7 +117,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             var expectedDocumentId = new DocumentId(expectedDocId);
             _writer.Promise(_documentHandle, 10);
-            _writer.LinkDocument(_documentHandle, Document_2, projectedAt);
+            _writer.LinkDocument(_documentHandle, _document2, projectedAt);
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.NotNull(h);
@@ -148,9 +166,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             // act
             _writer.Delete(_documentHandle, 20);
-            _writer.LinkDocument(_documentHandle, Document_2, 15);
+            _writer.LinkDocument(_documentHandle, _document2, 15);
             var h2 = _writer.FindOneById(_documentHandle);
-            _writer.LinkDocument(_documentHandle, Document_2, 55);
+            _writer.LinkDocument(_documentHandle, _document2, 55);
             var h3 = _writer.FindOneById(_documentHandle);
 
             // assert

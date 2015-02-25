@@ -25,6 +25,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected DocumentsController Controller;
         protected IBlobStore BlobStore;
         protected IIdentityGenerator IdentityGenerator;
+        protected ICounterService CounterService;
         protected IReader<DocumentReadModel, DocumentId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
         IHandleWriter _handleWriter;
@@ -37,6 +38,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             _handleWriter = Substitute.For<IHandleWriter>();
             DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
             QueueDispatcher= Substitute.For<IQueueDispatcher>();
+            CounterService = Substitute.For<ICounterService>();
             var bus = Substitute.For<IInProcessCommandBus>();
 
             Controller = new DocumentsController(
@@ -46,7 +48,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 DocumentReader, 
                 bus, 
                 _handleWriter,
-                QueueDispatcher)
+                QueueDispatcher,
+                CounterService)
             {
                 Request = new HttpRequestMessage
                 {

@@ -557,7 +557,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return;
                 } 
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout * 2);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("documents not unzipped correctly");
         }

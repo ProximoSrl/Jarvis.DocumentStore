@@ -42,6 +42,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
         private MongoCollection<DocumentReadModel> _documents;
+        private MongoCollection<HandleReadModel> _handles;
         private ITriggerProjectionsUpdate _projections;
 
         private void UpdateAndWait()
@@ -65,6 +66,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<HandleReadModel>("rm.Handle");
         }
 
         [TearDown]
@@ -288,17 +290,44 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             UpdateAndWait();
 
-            var childHandle = new DocumentHandle("child");
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPdf, fatherHandle, childHandle, "test");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
 
             // wait background projection polling
             UpdateAndWait();
 
-            var formats = await _documentStoreClient.GetFormatsAsync(fatherHandle);
-            Assert.NotNull(formats);
+            var document = _documents.Find(Query.EQ("Handles", "zip_1")).SingleOrDefault();
+            Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
-            var document = _documents.Find(Query.EQ("Handles", "child@father")).SingleOrDefault();
-            Assert.That(document, Is.Not.Null, "Document with child@father handle was not find.");
+            var handle = _handles.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
+            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Jarvis.DocumentStore.Core.Model.DocumentHandle("zip_1") }));
+        }
+
+        [Test]
+        public async void add_multiple_attachment_to_existing_handle()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            var document = _documents.Find(Query.EQ("Handles", "zip_1")).SingleOrDefault();
+            Assert.That(document, Is.Not.Null, "Document with first child handle was not find.");
+
+            document = _documents.Find(Query.EQ("Handles", "zip_2")).SingleOrDefault();
+            Assert.That(document, Is.Not.Null, "Document with second child handle was not find.");
+
+            var handle = _handles.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
+            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("zip_1"), new Core.Model.DocumentHandle("zip_2") }));
         }
 
         [Test]
@@ -311,8 +340,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             UpdateAndWait();
 
-            var childHandle = new DocumentHandle("child");
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, childHandle, "test");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
 
             // wait background projection polling
             UpdateAndWait();
@@ -320,8 +348,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments, Has.Count.EqualTo(1));
-            Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("child@father"));
-            Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/child@father"));
+            Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("source_1"));
+            Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
         }
 
         private async Task CompareDownloadedStreamToFile(string pathToFileToCompare, DocumentFormatReader documentFormatReader)

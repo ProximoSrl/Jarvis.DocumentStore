@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
         public static readonly HandleCustomData CustomData_2 = new HandleCustomData();
         public static readonly HandleCustomData CustomData_3 = new HandleCustomData(){{"a", "b"}};
         public static readonly DocumentHandle DocumentHandle = new DocumentHandle("this_is_an_handle");
-        public static readonly DocumentHandle FatherDocumentHandle = new DocumentHandle("this_is_a_Father_handle");
+        public static readonly DocumentHandle AttachmentDocumentHandle = new DocumentHandle("this_is_the_attachment");
 
         public static Handle HandleAggregate { get { return Aggregate; }}
     }
@@ -53,26 +53,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
             State.LinkedDocument.ShouldBeNull();
     }
 
-    [Subject("with a uninitialized handle")]
-    public class when_creating_an_handle_as_attach : HandleSpecification
-    {
-        Establish context = () => Create();
-        Because of = () => HandleAggregate.InitializeAsAttachment(HandleId_1, FatherDocumentHandle, DocumentHandle);
-
-        It handle_initilized_event_should_be_raised = () =>
-            EventHasBeenRaised<HandleInitialized>().ShouldBeTrue();
-
-        It handle_initialized_event_should_have_id_handle_and_father_id = () =>
-        {
-            var e = RaisedEvent<HandleInitialized>();
-            e.Handle.ShouldBeTheSameAs(DocumentHandle);
-            e.Id.ShouldBeLike(HandleId_1);
-            e.FatherHandle.ShouldEqual(FatherDocumentHandle);
-        };
-
-        It linked_document_should_be_null = () =>
-            State.LinkedDocument.ShouldBeNull();
-    }
+   
 
     public abstract class with_an_initialized_handle : HandleSpecification
     {
@@ -97,6 +78,44 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.HandleSpecs
 
         It event_should_have_old_document_id = () =>
             RaisedEvent<HandleLinked>().PreviousDocumentId.ShouldBeNull();
+    }
+
+    [Subject("Attachments")]
+    public class when_adding_an_attach_to_handle : with_an_initialized_handle
+    {
+        Because of = () => HandleAggregate.AddAttachment(AttachmentDocumentHandle);
+
+        It handle_has_new_attachment_should_be_raised = () =>
+            EventHasBeenRaised<HandleHasNewAttachment>().ShouldBeTrue();
+
+        It handle_has_new_attachment_should_contains_attachment = () =>
+        {
+            var e = RaisedEvent<HandleHasNewAttachment>();
+            e.Attachment.ShouldBeTheSameAs(AttachmentDocumentHandle);
+            e.Handle.ShouldBeTheSameAs(DocumentHandle);
+        };
+
+        It state_should_contains_new_attachment = () =>
+            State.Attachments.ShouldContainOnly(AttachmentDocumentHandle);
+    }
+
+    [Subject("Attachments")]
+    public class when_adding_same_handle_multiple_time_as_attachment : with_an_initialized_handle
+    {
+        Establish context = () =>
+        {
+            var state = new HandleState(HandleId_1, DocumentHandle);
+            state.AddAttachment(AttachmentDocumentHandle);
+            SetUp(state);
+        };
+
+        Because of = () => HandleAggregate.AddAttachment(AttachmentDocumentHandle);
+
+        It handle_has_new_attachment_should_not_be_raised = () =>
+            EventHasBeenRaised<HandleHasNewAttachment>().ShouldBeFalse();
+
+        It state_should_contains_only_one_instance_of_attachment = () =>
+           State.Attachments.ShouldContainOnly(AttachmentDocumentHandle);
     }
 
     [Subject("with an handle wihout file name")]

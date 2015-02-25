@@ -32,17 +32,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             RaiseEvent(new HandleInitialized(id, handle));
         }
 
-        public void InitializeAsAttachment(HandleId id, DocumentHandle fatherHandle, DocumentHandle handle)
-        {
-            if (HasBeenCreated)
-                throw new DomainException((IIdentity)id, "handle already initialized");
-            ThrowIfDeleted();
-            if (fatherHandle == null)
-                throw new DomainException((IIdentity)id, "cannot create an attach of an null handle");
-
-            RaiseEvent(new HandleInitialized(id, fatherHandle, handle));
-        }
-
         public void Link(DocumentId documentId)
         {
             ThrowIfDeleted();
@@ -82,13 +71,23 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
                 RaiseEvent(new HandleDeleted(InternalState.Handle, InternalState.LinkedDocument));
         }
 
+        public void AddAttachment(DocumentHandle attachmentDocumentHandle)
+        {
+            ThrowIfDeleted();
+
+            if (InternalState.Attachments.Contains(attachmentDocumentHandle))
+                return;
+
+            RaiseEvent(new HandleHasNewAttachment(InternalState.Handle, attachmentDocumentHandle));
+        }
+
         void ThrowIfDeleted()
         {
             if (InternalState.HasBeenDeleted)
                 throw new DomainException((IIdentity)Id, "Handle has been deleted");
         }
 
-      
+
 
     }
 }

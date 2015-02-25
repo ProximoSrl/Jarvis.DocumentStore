@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Handle.Events;
 using Jarvis.DocumentStore.Core.Model;
@@ -7,7 +9,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
 {
     public class HandleState : AggregateState
     {
-        public HandleState(HandleId handleId, DocumentHandle handle)
+        public HandleState(HandleId handleId, DocumentHandle handle) : this()
         {
             this.AggregateId = handleId;
             this.Handle = handle;
@@ -15,6 +17,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
 
         public HandleState()
         {
+            _attachments = new List<DocumentHandle>();
         }
 
         void When(HandleInitialized e)
@@ -43,6 +46,11 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
             Link(e.DocumentId);
         }
 
+        void When(HandleHasNewAttachment e)
+        {
+            AddAttachment(e.Attachment);
+        }
+
         public void Link(DocumentId documentId)
         {
             this.LinkedDocument = documentId;
@@ -59,6 +67,22 @@ namespace Jarvis.DocumentStore.Core.Domain.Handle
         public HandleCustomData CustomData { get; private set; }
         public DocumentHandle Handle { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
+
+        public IEnumerable<DocumentHandle> Attachments {
+            get { return _attachments.AsReadOnly(); }
+        }
+
+        private List<DocumentHandle> _attachments;
+
+        public void AddAttachment(DocumentHandle attachment)
+        {
+            _attachments.Add(attachment);
+        }
+
+        public void RemoveAttachment(DocumentHandle attachment)
+        {
+            _attachments.Remove(attachment);
+        }
 
         public void SetCustomData(HandleCustomData data)
         {

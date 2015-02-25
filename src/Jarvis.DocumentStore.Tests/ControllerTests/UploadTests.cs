@@ -34,13 +34,6 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         }
 
         [Test]
-        public async void calling_upload_with_handle_containing_at_char_return_bad_request()
-        {
-            var response = await InnerUploadFile("Document@otherhandle");
-            Assert.AreEqual(HttpStatusCode.BadRequest, response.Response.StatusCode);
-        }
-
-        [Test]
         public async void calling_upload_with_unsupported_file_type_should_return_BadRequest()
         {
             var response = await upload_file(TestConfig.PathToInvalidFile, "Document_1");

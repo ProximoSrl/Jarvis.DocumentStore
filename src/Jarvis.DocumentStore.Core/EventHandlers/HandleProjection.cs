@@ -62,7 +62,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _writer.CreateIfMissing(
                 e.Handle,
-                e.FatherHandle,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
         }
@@ -84,6 +83,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 (DocumentId)e.AggregateId,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
+        }
+
+        public void On(HandleHasNewAttachment e)
+        {
+            _writer.AddAttachment(
+                e.Handle,
+                e.Attachment);
         }
     }
 }
