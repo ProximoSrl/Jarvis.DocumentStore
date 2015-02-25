@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         {
             _handleWriter
                 .FindOneById(handleInfo.Handle)
-                .Returns(info => new HandleReadModel(handleInfo.Handle, documentId, handleInfo.FileName));
+                .Returns(info => new DocumentReadModel(handleInfo.Handle, documentId, handleInfo.FileName));
         }
     }
 }

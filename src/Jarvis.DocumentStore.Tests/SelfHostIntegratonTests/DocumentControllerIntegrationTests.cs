@@ -43,7 +43,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
         private MongoCollection<DocumentDescriptorReadModel> _documents;
-        private MongoCollection<HandleReadModel> _handles;
+        private MongoCollection<DocumentReadModel> _handles;
         private ITriggerProjectionsUpdate _projections;
 
         private void UpdateAndWait()
@@ -67,7 +67,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
-            _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<HandleReadModel>("rm.Handle");
+            _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Handle");
         }
 
         [TearDown]

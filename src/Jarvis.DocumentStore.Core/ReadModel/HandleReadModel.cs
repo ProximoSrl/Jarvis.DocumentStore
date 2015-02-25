@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
-    public class HandleReadModel : IReadModel
+    public class DocumentReadModel : IReadModel
     {
         [BsonId]
         public DocumentHandle Handle { get; private set; }
@@ -28,17 +28,17 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public DocumentCustomData CustomData { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
 
-        public HandleReadModel(DocumentHandle handle) : this(handle, null, null, null)
+        public DocumentReadModel(DocumentHandle handle) : this(handle, null, null, null)
         {
 
         }
 
-        public HandleReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName)
+        public DocumentReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName)
             : this(handle, documentid, fileName, null)
         {
         }
 
-        public HandleReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName, DocumentCustomData customData)
+        public DocumentReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName, DocumentCustomData customData)
         {
             Handle = handle;
             DocumentId = documentid;
@@ -55,13 +55,13 @@ namespace Jarvis.DocumentStore.Core.ReadModel
     public interface IHandleWriter
     {
         void Promise(DocumentHandle handle, long createdAt);
-        HandleReadModel FindOneById(DocumentHandle handle);
+        DocumentReadModel FindOneById(DocumentHandle handle);
         void Drop();
         void Init();
         void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt);
         void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
-        IQueryable<HandleReadModel> AllSortedByHandle { get;}
+        IQueryable<DocumentReadModel> AllSortedByHandle { get;}
         void CreateIfMissing(DocumentHandle handle, long createdAt);
         void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
         long Count();
@@ -77,12 +77,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             set { _logger = value; }
         }
 
-        readonly MongoCollection<HandleReadModel> _collection;
+        readonly MongoCollection<DocumentReadModel> _collection;
         private ILogger _logger = NullLogger.Instance;
 
         public HandleWriter(MongoDatabase readModelDb)
         {
-            _collection = readModelDb.GetCollection<HandleReadModel>(CollectionNames.GetCollectionName<HandleReadModel>());
+            _collection = readModelDb.GetCollection<DocumentReadModel>(CollectionNames.GetCollectionName<DocumentReadModel>());
         }
 
         public void Promise(DocumentHandle handle, long createdAt)
@@ -91,10 +91,10 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             var args = new FindAndModifyArgs
             {
                 Query = Query.And(
-                    Query<HandleReadModel>.EQ(x => x.Handle, handle),
-                    Query<HandleReadModel>.LT(x => x.ProjectedAt, createdAt)
+                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
+                    Query<DocumentReadModel>.LT(x => x.ProjectedAt, createdAt)
                 ),
-                Update = Update<HandleReadModel>
+                Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .Set(x => x.DocumentId, null)
@@ -127,10 +127,10 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             var args = new FindAndModifyArgs
             {
                 Query = Query.And(
-                    Query<HandleReadModel>.EQ(x => x.Handle, handle),
-                    Query<HandleReadModel>.LTE(x => x.CreatetAt, projectedAt)
+                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
+                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
                 ),
-                Update = Update<HandleReadModel>
+                Update = Update<DocumentReadModel>
                     .Set(x => x.FileName, fileName)
                     .Set(x => x.ProjectedAt, projectedAt)
             };
@@ -149,10 +149,10 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             var args = new FindAndModifyArgs
             {
                 Query = Query.And(
-                    Query<HandleReadModel>.EQ(x => x.Handle, handle),
-                    Query<HandleReadModel>.LTE(x => x.CreatetAt, projectedAt)
+                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
+                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
                 ),
-                Update = Update<HandleReadModel>
+                Update = Update<DocumentReadModel>
                     .Set(x => x.DocumentId, id)
                     .Set(x => x.ProjectedAt, projectedAt),
                 VersionReturned = FindAndModifyDocumentVersion.Modified
@@ -172,9 +172,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             var args = new FindAndModifyArgs
             {
                 Query = Query.And(
-                    Query<HandleReadModel>.EQ(x => x.Handle, handle)
+                    Query<DocumentReadModel>.EQ(x => x.Handle, handle)
                 ),
-                Update = Update<HandleReadModel>
+                Update = Update<DocumentReadModel>
                     .Set(x => x.CustomData, customData)
             };
             _collection.FindAndModify(args);            
@@ -186,14 +186,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             var args = new FindAndRemoveArgs()
             {
                 Query = Query.And(
-                    Query<HandleReadModel>.EQ(x => x.Handle, handle),
-                    Query<HandleReadModel>.LTE(x => x.CreatetAt, projectedAt)
+                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
+                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
                 )
             };
             _collection.FindAndRemove(args);
         }
 
-        public IQueryable<HandleReadModel> AllSortedByHandle {
+        public IQueryable<DocumentReadModel> AllSortedByHandle {
             get { return _collection.AsQueryable().OrderBy(x => x.Handle); }
         }
 
@@ -202,9 +202,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             Logger.DebugFormat("CreateIfMissing on handle {0} [{1}]", handle, createdAt);
             var args = new FindAndModifyArgs
             {
-                Query = Query<HandleReadModel>
+                Query = Query<DocumentReadModel>
                     .EQ(x => x.Handle, handle),
-                Update = Update<HandleReadModel>
+                Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .SetOnInsert(x => x.DocumentId, null)
@@ -220,16 +220,16 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
             var args = new FindAndModifyArgs
             {
-                Query = Query<HandleReadModel>
+                Query = Query<DocumentReadModel>
                     .EQ(x => x.Handle, fatherHandle),
-                Update = Update<HandleReadModel>
+                Update = Update<DocumentReadModel>
                     .AddToSet(x => x.Attachments, attachmentHandle),
                 Upsert = false
             };
             _collection.FindAndModify(args);
         }
 
-        public HandleReadModel FindOneById(DocumentHandle handle)
+        public DocumentReadModel FindOneById(DocumentHandle handle)
         {
             return _collection.FindOneById(BsonValue.Create(handle));
         }
@@ -241,12 +241,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void Init()
         {
-            _collection.CreateIndex(IndexKeys<HandleReadModel>.Ascending(x => x.Handle, x => x.CreatetAt));
+            _collection.CreateIndex(IndexKeys<DocumentReadModel>.Ascending(x => x.Handle, x => x.CreatetAt));
         }
 
         public void Create(DocumentHandle documentHandle)
         {
-            _collection.Insert(new HandleReadModel(documentHandle));
+            _collection.Insert(new DocumentReadModel(documentHandle));
         }
 
 

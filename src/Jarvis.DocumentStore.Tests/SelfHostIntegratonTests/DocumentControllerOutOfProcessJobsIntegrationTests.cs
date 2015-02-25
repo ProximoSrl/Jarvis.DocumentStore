@@ -84,7 +84,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.ServerAddress,
                 TestConfig.Tenant
             );
-            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.Document");
+            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
@@ -163,7 +163,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Tika document not found");
         }
 
-  
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""), 
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase 
+    {
+        OutOfProcessTikaNetJob sut;
+
         [Test]
         public async void verify_tika_set_content()
         {
@@ -205,8 +220,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
                     return;
                 }
-    
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 50000);
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("Tika document not found");
         }
@@ -274,7 +289,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return; //test is good
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("Thumb small not found");
         }
@@ -332,6 +347,28 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Assert.Fail("expected formats not found");
         }
+
+        HtmlToPdfOutOfProcessJobOld _htmlSut;
+
+        protected override void OnStop()
+        {
+            base.OnStop();
+            if (_htmlSut != null) _htmlSut.Stop();
+        }
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("email", "", "eml|msg"),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        AnalyzeEmailOutOfProcessJob sut;
 
         HtmlToPdfOutOfProcessJobOld _htmlSut;
 
@@ -524,7 +561,61 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
     [TestFixture]
     [Category("integration_full")]
-    public class integration_attachments_queue : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    public class integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+   
+
+        [Test]
+        public async void verify_nested_zip_count_file_verification()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("verify_nested_zip");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFileThatContainsOtherZip,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );  
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("Pdf");
+            var docCount = 0;
+            do
+            {
+                UpdateAndWait();
+                docCount = _documents.AsQueryable().Count();
+                if (docCount >= 7)
+                {
+                    //all attachment are unzipped correctly
+
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("documents not unzipped correctly I'm expecting more than 7 documetns but we find " + docCount);
+        }
+
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_attachments_queue_singleZip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
 
         [Test]
@@ -547,58 +638,24 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
             var format = new DocumentFormat("Pdf");
+            Int32 docCount;
             do
             {
                 UpdateAndWait();
-                var docCount = _documents.AsQueryable().Count();
+                docCount = _documents.AsQueryable().Count();
                 if (docCount == 4)
                 {
                     //all attachment are unzipped correctly
-                    
-                    return;
-                } 
-
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
-
-            Assert.Fail("documents not unzipped correctly");
-        }
-
-        [Test]
-        public async void verify_nested_zip_count_file_verification()
-        {
-
-            _sutBase = new AttachmentOutOfProcessJob();
-            PrepareJob();
-
-            var handleClient = DocumentHandle.FromString("verify_nested_zip");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
-            await _documentStoreClient.UploadAsync(
-               TestConfig.PathToZipFileThatContainsOtherZip,
-               handleClient,
-               new Dictionary<string, object>{
-                    { "callback", "http://localhost/demo"}
-                }
-            );  
-
-            DateTime startWait = DateTime.Now;
-            DocumentDescriptorReadModel documentDescriptor;
-            var format = new DocumentFormat("Pdf");
-            do
-            {
-                UpdateAndWait();
-                var docCount = _documents.AsQueryable().Count();
-                if (docCount >= 7)
-                {
-                    //all attachment are unzipped correctly
 
                     return;
                 }
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
-            Assert.Fail("documents not unzipped correctly");
+            Assert.Fail("documents not unzipped correctly, I'm expecting 4 documetns but projection contains " + docCount + " documents");
         }
 
+   
 
         protected override QueueInfo[] OnGetQueueInfo()
         {

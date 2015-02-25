@@ -1,34 +1,25 @@
-﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+﻿using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
-using Jarvis.Framework.Kernel.ProjectionEngine;
-using MongoDB.Driver.Builders;
+using NEventStore;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
-    public class DocumentProjection : AbstractProjection,
-        IEventHandler<DocumentDescriptorCreated>,
-        IEventHandler<FormatAddedToDocumentDescriptor>,
-        IEventHandler<DocumentDescriptorDeleted>,
-        IEventHandler<DocumentHandleAttached>,
-        IEventHandler<DocumentHandleDetached>,
-        IEventHandler<DocumentFormatHasBeenUpdated>
+    public class DocumentProjection : AbstractProjection
+        ,IEventHandler<DocumentInitialized>
+        ,IEventHandler<DocumentLinked>
+        ,IEventHandler<DocumentFileNameSet>
+        ,IEventHandler<DocumentCustomDataSet>
+        ,IEventHandler<DocumentDeleted>
+        ,IEventHandler<DocumentDescriptorHasBeenDeduplicated>
     {
-        private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documents;
-        private IHandleWriter _handleWriter;
-        public DocumentProjection(
-            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documents, IHandleWriter handleWriter)
+        readonly IHandleWriter _writer;
+
+        public DocumentProjection(IHandleWriter writer)
         {
-            _documents = documents;
-            _handleWriter = handleWriter;
-
-            _documents.Attach(this, false);
-
-            _documents.OnSave = d =>
-            {
-                d.FormatsCount = d.Formats.Count;
-            };
+            _writer = writer;
         }
 
         public override int Priority
@@ -38,53 +29,60 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override void Drop()
         {
-            _documents.Drop();
+            _writer.Drop();
         }
 
         public override void SetUp()
         {
-            _documents.CreateIndex(IndexKeys<DocumentDescriptorReadModel>.Ascending(x => x.Hash));
+            _writer.Init();
         }
 
-        public void On(DocumentDescriptorCreated e)
+        public void On(DocumentLinked e)
         {
-            var document = new DocumentDescriptorReadModel((DocumentDescriptorId)e.AggregateId, e.BlobId)
-            {
-                Hash = e.Hash
-            };
-
-            _documents.Insert(e, document);
+            _writer.LinkDocument(
+                e.Handle, 
+                e.DocumentId, 
+                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+            );
         }
 
-        public void On(FormatAddedToDocumentDescriptor e)
+        public void On(DocumentCustomDataSet e)
         {
-            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
-            {
-                d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
-            });
+            _writer.UpdateCustomData(e.Handle, e.CustomData);
         }
 
-        public void On(DocumentDescriptorDeleted e)
+        public void On(DocumentInitialized e)
         {
-            _documents.Delete(e, (DocumentDescriptorId)e.AggregateId);
+            _writer.CreateIfMissing(
+                e.Handle,
+                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+            );
         }
 
-        public void On(DocumentHandleAttached e)
+        public void On(DocumentDeleted e)
         {
-            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d => d.AddHandle(e.Handle));
+            _writer.Delete(e.Handle, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
         }
 
-        public void On(DocumentHandleDetached e)
+        public void On(DocumentFileNameSet e)
         {
-            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d => d.Remove(e.Handle));
+            _writer.SetFileName(e.Handle, e.FileName, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
         }
 
-        public void On(DocumentFormatHasBeenUpdated e)
+        public void On(DocumentDescriptorHasBeenDeduplicated e)
         {
-            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
-            {
-                d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
-            });
+            _writer.LinkDocument(
+                e.Handle,
+                (DocumentDescriptorId)e.AggregateId,
+                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+            );
+        }
+
+        public void On(DocumentHasNewAttachment e)
+        {
+            _writer.AddAttachment(
+                e.Handle,
+                e.Attachment);
         }
     }
 }

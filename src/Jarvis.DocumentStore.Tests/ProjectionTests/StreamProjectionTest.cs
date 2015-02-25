@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         private IBlobStore _blobStore;
         private List<StreamReadModel> rmStream;
         private List<DocumentDescriptorReadModel> rmDocuments;
-        private HandleReadModel handle;
+        private DocumentReadModel handle;
 
         [SetUp]
         public void SetUp()
@@ -172,7 +172,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                 {"handle1" , "test"},
                 {"handle2" , new { isComplex = true, theTruth = 42} },
             };
-            handle = new HandleReadModel(
+            handle = new DocumentReadModel(
                     new DocumentHandle("rev_1"),
                     new DocumentDescriptorId(1),
                     new FileNameWithExtension("test.txt"),
