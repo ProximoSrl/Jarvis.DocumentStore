@@ -162,12 +162,14 @@
     <Compile Include="Controllers\ConfigController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\DocumentsController.cs" />
+    <Compile Include="Controllers\EventStreamController.cs" />
     <Compile Include="Controllers\ITenantController.cs" />
     <Compile Include="Controllers\LogController.cs" />
     <Compile Include="Controllers\QueueController.cs" />
     <Compile Include="Controllers\SchedulerController.cs" />
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
     <Compile Include="Model\AddFormatToDocument.cs" />
+    <Compile Include="Model\EventStreamModel.cs" />
     <Compile Include="Model\UploadedDocumentResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
