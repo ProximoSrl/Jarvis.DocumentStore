@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.PipelineTests;
@@ -51,7 +52,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
         private async Task<InnerUploadFileResponse> InnerUploadFile(String documentHandle)
         {
-            IdentityGenerator.New<DocumentId>().Returns(new DocumentId(1));
+            IdentityGenerator.New<DocumentDescriptorId>().Returns(new DocumentDescriptorId(1));
             var descriptor = Substitute.For<IBlobDescriptor>();
             descriptor.Hash.Returns(new FileHash("abc"));
             BlobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(descriptor);

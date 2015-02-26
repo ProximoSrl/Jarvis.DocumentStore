@@ -1,5 +1,5 @@
 using System.Net;
-using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 new FileNameWithExtension("a.file")
                 );
             var format = new DocumentFormat("any_format");
-            SetupDocumentHandle(info, new DocumentId(1));
+            SetupDocumentHandle(info, new DocumentDescriptorId(1));
 
             // act
             var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
@@ -55,8 +55,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             
             var format = new DocumentFormat("missing");
 
-            var doc = new DocumentReadModel(
-                new DocumentId(1),
+            var doc = new DocumentDescriptorReadModel(
+                new DocumentDescriptorId(1),
                 new BlobId("file_1")
                 );
 
@@ -82,8 +82,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var format = new DocumentFormat("original");
 
             var blobId = new BlobId("file_1");
-            var doc = new DocumentReadModel(
-                new DocumentId(1),
+            var doc = new DocumentDescriptorReadModel(
+                new DocumentDescriptorId(1),
                 blobId
                 );
 
@@ -113,8 +113,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var format = new DocumentFormat("original");
 
             var blobId = new BlobId("file_1");
-            var doc = new DocumentReadModel(
-                new DocumentId(1),
+            var doc = new DocumentDescriptorReadModel(
+                new DocumentDescriptorId(1),
                 blobId
             );
 
@@ -145,8 +145,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var format = new DocumentFormat("pdf");
             var pdfBlobId = new BlobId("pdf");
 
-            var doc = new DocumentReadModel(
-                new DocumentId(1),
+            var doc = new DocumentDescriptorReadModel(
+                new DocumentDescriptorId(1),
                 new BlobId("file_1")
                 );
 

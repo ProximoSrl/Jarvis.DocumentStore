@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.Support;
@@ -35,7 +36,7 @@ namespace Jarvis.DocumentStore.Tests
             try
             {
                 var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
-                mngr.RegisterIdentitiesFromAssembly(typeof (DocumentId).Assembly);
+                mngr.RegisterIdentitiesFromAssembly(typeof (DocumentDescriptorId).Assembly);
                 mngr.RegisterIdentitiesFromAssembly(typeof (TenantId).Assembly);
                 mngr.RegisterIdentitiesFromAssembly(typeof (QueuedJobId).Assembly);
 

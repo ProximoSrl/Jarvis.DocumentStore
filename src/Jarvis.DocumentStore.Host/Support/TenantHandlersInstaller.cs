@@ -1,15 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
-using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Host.Commands;
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.MultitenantSupport;
@@ -36,7 +31,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .DependsOn(Dependency.OnValue<IWindsorContainer>(container))
                     .DependsOn(Dependency.OnValue<Assembly[]>(new[]
                         {
-                            typeof (Document).Assembly,
+                            typeof (DocumentDescriptor).Assembly,
                         }))
                     .StartUsingMethod(x => x.Register),
                 Component
@@ -44,7 +39,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .ImplementedBy<HandleMapper>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(sysDb)),
                 Classes
-                    .FromAssemblyContaining<Document>()
+                    .FromAssemblyContaining<DocumentDescriptor>()
                     .BasedOn(typeof(ICommandHandler<>))
                     .WithServiceFirstInterface()
                     .LifestyleTransient()

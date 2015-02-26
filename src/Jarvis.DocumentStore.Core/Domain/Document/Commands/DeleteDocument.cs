@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Model;
+﻿using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
-    public class DeleteDocument : DocumentCommand
+    public class DeleteDocument : Command
     {
-        public DeleteDocument(DocumentId aggregateId, DocumentHandle handle) 
-            : base(aggregateId)
+        public DeleteDocument(DocumentHandle handle)
         {
             Handle = handle;
         }

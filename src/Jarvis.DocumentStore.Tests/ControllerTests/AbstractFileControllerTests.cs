@@ -4,8 +4,7 @@ using System.Web.Http;
 using System.Web.Http.Hosting;
 using System.Web.Http.Routing;
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
@@ -26,17 +25,17 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected IBlobStore BlobStore;
         protected IIdentityGenerator IdentityGenerator;
         protected ICounterService CounterService;
-        protected IReader<DocumentReadModel, DocumentId> DocumentReader;
+        protected IReader<DocumentDescriptorReadModel, DocumentDescriptorId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
-        IHandleWriter _handleWriter;
+        IDocumentWriter _handleWriter;
         protected IQueueDispatcher QueueDispatcher;
         [SetUp]
         public void SetUp()
         {
             BlobStore = Substitute.For<IBlobStore>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
-            _handleWriter = Substitute.For<IHandleWriter>();
-            DocumentReader = Substitute.For<IReader<DocumentReadModel, DocumentId>>();
+            _handleWriter = Substitute.For<IDocumentWriter>();
+            DocumentReader = Substitute.For<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
             QueueDispatcher= Substitute.For<IQueueDispatcher>();
             CounterService = Substitute.For<ICounterService>();
             var bus = Substitute.For<IInProcessCommandBus>();
@@ -49,7 +48,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 bus, 
                 _handleWriter,
                 QueueDispatcher,
-                CounterService)
+                CounterService,
+                null)
             {
                 Request = new HttpRequestMessage
                 {
@@ -70,16 +70,16 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             Controller.Request.Properties.Add(HttpPropertyKeys.HttpConfigurationKey, new HttpConfiguration());
         }
 
-        protected void SetupDocumentModel(DocumentReadModel doc)
+        protected void SetupDocumentModel(DocumentDescriptorReadModel doc)
         {
             this.DocumentReader.FindOneById(doc.Id).Returns(info => doc);
         }
 
-        protected void SetupDocumentHandle(DocumentHandleInfo handleInfo, DocumentId documentId)
+        protected void SetupDocumentHandle(DocumentHandleInfo handleInfo, DocumentDescriptorId documentId)
         {
             _handleWriter
                 .FindOneById(handleInfo.Handle)
-                .Returns(info => new HandleReadModel(handleInfo.Handle, documentId, handleInfo.FileName));
+                .Returns(info => new DocumentReadModel(handleInfo.Handle, documentId, handleInfo.FileName));
         }
     }
 }

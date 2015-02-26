@@ -257,23 +257,23 @@
     <Compile Include="ControllerTests\DownloadTests.cs" />
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\UploadTests.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\DocumentSpecifications.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\document_with_xml_format.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\DocumentDescriptorSpecifications.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\document_with_xml_format.cs" />
     <Compile Include="DomainSpecs\BlobIdTests.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_created_with_known_format.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_filename_is_created.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_deduplicated_document_is_deleted.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_created.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_created_twice.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_deduplicated.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_deleted.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_document_is_deleted_with_wrong_handle.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_filename_with_surrounding_quotes_is_created.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_a_format_is_added_to_a_document.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_document_format_deleted_will_be_deleted.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_document_format_has_been_deleted.cs" />
-    <Compile Include="DomainSpecs\DocumentSpecs\when_trying_to_delete_with_a_wrong_handle.cs" />
-    <Compile Include="DomainSpecs\HandleSpecs\HandleSpecification.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_created_with_known_format.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_filename_is_created.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_deduplicated_documentDescriptor_is_deleted.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_created.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_created_twice.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_deduplicated.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_deleted.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_deleted_with_wrong_handle.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_filename_with_surrounding_quotes_is_created.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_format_is_added_to_a_document.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_document_format_deleted_will_be_deleted.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_document_format_has_been_deleted.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_trying_to_delete_with_a_wrong_handle.cs" />
+    <Compile Include="DomainSpecs\DocumentSpecs\DocumentSpecification.cs" />
     <Compile Include="DomainSpecs\SerializationIdTests.cs" />
     <Compile Include="GlobalSetupFixture.cs" />
     <Compile Include="JobsHostTest\Support\ClientPasswordSetTests.cs" />
@@ -293,10 +293,10 @@
     <Compile Include="PipelineTests\ThumbnailFromPdfExtractionTest.cs" />
     <Compile Include="PipelineTests\TikaNetHtmlExtractionTest.cs" />
     <Compile Include="ProjectionTests\BsonClassMapHelper.cs" />
+    <Compile Include="ProjectionTests\DocumentDescriptorProjectionTests.cs" />
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
-    <Compile Include="ProjectionTests\HandleProjectionTests.cs" />
     <Compile Include="ProjectionTests\StreamProjectionTest.cs" />
-    <Compile Include="ProjectionTests\HandleWriterTests.cs" />
+    <Compile Include="ProjectionTests\DocumentWriterTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerOutOfProcessJobsIntegrationTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -314,6 +314,12 @@
     <None Include="Docs\Architecture_files\css" />
     <None Include="Docs\Document_copy.pdf" />
     <None Include="Docs\Lorem ipsum.pdf" />
+    <None Include="Docs\Mail with attachments.msg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\mailWithcomplexAttachments.msg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Docs\Multilanguage.docx" />
     <None Include="Docs\Multilanguage.pdf" />
     <None Include="Docs\Multipage Word.docx" />

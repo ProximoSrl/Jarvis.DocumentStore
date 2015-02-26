@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -186,8 +187,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                             foreach (var qh in _queueHandlers)
                             {
                                 //In this version we are interested only in event for new formats
-                                if (streamData.EventType != HandleStreamEventTypes.HandleHasNewFormat &&
-                                    streamData.EventType != HandleStreamEventTypes.HandleFormatUpdated) continue;
+                                if (streamData.EventType != HandleStreamEventTypes.DocumentHasNewFormat &&
+                                    streamData.EventType != HandleStreamEventTypes.DocumentFormatUpdated) continue;
 
                                 qh.Value.Handle(streamData, info.TenantId);
                             }

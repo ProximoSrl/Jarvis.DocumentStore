@@ -1,4 +1,5 @@
-﻿using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Tests.Support;
@@ -15,10 +16,10 @@ using MongoDB.Driver.Linq;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using MongoDB.Bson;
-using Jarvis.DocumentStore.Core.Domain.Handle;
 using Jarvis.DocumentStore.Core.Jobs;
 using MongoDB.Bson.Serialization;
 using Jarvis.DocumentStore.Core;
+using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -69,7 +70,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     BlobId = new BlobId("blob.1"),
                     PipelineId = new PipelineId("thumbnail"),
                 },
-                DocumentId = new DocumentId("Document_1"),
+                DocumentId = new DocumentDescriptorId(1),
                 Handle = new DocumentHandle("Revision_2"),
             };
             sut.Handle(rm, new TenantId("test_tenant"));
@@ -78,7 +79,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var job = collection.AsQueryable().Single();
             Assert.That(job.BlobId, Is.EqualTo(new BlobId("blob.1")));
             Assert.That(job.TenantId, Is.EqualTo(new TenantId("test_tenant")));
-            Assert.That(job.DocumentId, Is.EqualTo(new DocumentId("Document_1")));
+            Assert.That(job.DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
             Assert.That(job.Handle.ToString(), Is.EqualTo(rm.Handle));
             Assert.That(job.Id.ToString(), Is.Not.Contains("blob.1"), "Id should not contains internal concempts like blob id");
             Assert.That(job.Id.ToString(), Is.Not.Contains("tenant"), "Id should not contains internal concempts like tenant id");
@@ -102,7 +103,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     BlobId = new BlobId("blob.1"),
                     PipelineId = new PipelineId("thumbnail"),
                 },
-                DocumentId = new DocumentId("Document_1"),
+                DocumentId = new DocumentDescriptorId(1),
             };
             sut.Handle(rm, new TenantId("test_tenant"));
             var collection = _db.GetCollection<QueuedJob>("queue.test");
@@ -176,7 +177,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice"),
@@ -197,7 +198,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice")
@@ -233,14 +234,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 Id = 1L,
                 Handle = "FirstHandle",
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice"),
                     DocumentFormat = new DocumentFormat("office"),
                     BlobId = new BlobId("soffice.1")
                 },
-                DocumentId = new DocumentId(1),
+                DocumentId = new DocumentDescriptorId(1),
             };
 
             sut.Handle(rm, new TenantId("test"));
@@ -259,7 +260,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         {
             var info = new QueueInfo("test", "", "pdf|docx");
             QueueHandler sut = new QueueHandler(info, _db);
-            var customData = new Core.Domain.Handle.HandleCustomData() 
+            var customData = new DocumentCustomData() 
                 {
                     {"test" , "value"},
                     {"complex" , 42},
@@ -269,15 +270,15 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 Id = 1L,
                 Handle = "FirstHandle",
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("soffice"),
                     DocumentFormat = new DocumentFormat("office"),
                     BlobId = new BlobId("soffice.1")
                 },
-                DocumentId = new DocumentId(1),
-                HandleCustomData = customData,
+                DocumentId = new DocumentDescriptorId(1),
+                DocumentCustomData = customData,
             };
 
             sut.Handle(rm, new TenantId("test"));
@@ -416,14 +417,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                EventType = HandleStreamEventTypes.HandleHasNewFormat,
+                EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
                     PipelineId = new PipelineId("tika"),
                     DocumentFormat = new DocumentFormat("tika"),
                     BlobId = new BlobId("tika." + lastBlobId++)
                 },
-                HandleCustomData = new HandleCustomData(customData ?? new Dictionary<String,Object>()),
+                DocumentCustomData = new DocumentCustomData(customData ?? new Dictionary<String,Object>()),
             };
             sut.Handle(rm, new TenantId(tenant));
         }

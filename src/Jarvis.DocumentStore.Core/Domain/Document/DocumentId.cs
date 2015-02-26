@@ -1,4 +1,4 @@
-using Jarvis.Framework.Shared.IdentitySupport;
+﻿using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.Framework.Shared.Domain;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using MongoDB.Bson.Serialization.Attributes;

@@ -6,7 +6,7 @@ using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using MongoDB.Driver.GridFS;
-using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {

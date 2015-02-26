@@ -37,6 +37,8 @@ using ContainerAccessor = Jarvis.DocumentStore.Host.Support.ContainerAccessor;
 using Jarvis.DocumentStore.Jobs.Office;
 using Jarvis.DocumentStore.Jobs.Attachments;
 using Jarvis.DocumentStore.Core;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
+using MongoDB.Bson;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -52,11 +54,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     //[Explicit("This integration test is slow because it wait for polling")]
     public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public const int MaxTimeout = 10000;
+        public const int MaxTimeout = 60000;
 
         protected DocumentStoreBootstrapper _documentStoreService;
         protected DocumentStoreServiceClient _documentStoreClient;
-        protected MongoCollection<DocumentReadModel> _documents;
+        protected MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
+        protected MongoCollection<DocumentReadModel> _documentCollection;
         protected DocumentStoreTestConfigurationForPollQueue _config;
         protected JobsHostConfiguration _jobsHostConfiguration;
         protected IBlobStore _blobStore;
@@ -67,7 +70,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected void UpdateAndWait()
         {
             _projections.UpdateAndWait();
-            Thread.Sleep(500); //update and wait returns immediately if there are no other stuff to dispatch.
+            Thread.Sleep(1000); //update and wait returns immediately if there are no other stuff to dispatch.
         }
 
         [TestFixtureSetUp]
@@ -83,7 +86,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.ServerAddress,
                 TestConfig.Tenant
             );
-            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
+            _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
@@ -137,18 +141,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var format = new Core.Domain.Document.DocumentFormat("tika");
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("tika");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(handleCore));
-                if (document != null &&
-                    document.Formats.ContainsKey(format))
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(handleCore));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
-                    var formatInfo = document.Formats[format];
+                    var formatInfo = documentDescriptor.Formats[format];
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
                         blob.FileNameWithExtension.ToString(), 
@@ -162,7 +166,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Tika document not found");
         }
 
-  
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""), 
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase 
+    {
+        OutOfProcessTikaNetJob sut;
+
         [Test]
         public async void verify_tika_set_content()
         {
@@ -179,15 +198,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var format = new Core.Domain.Document.DocumentFormat("content");
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("content");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
-                if (document != null &&
-                    document.Formats.ContainsKey(format))
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
                 {
                     //now we want to verify if content is set correctly
                     var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
@@ -195,7 +214,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     Assert.That(content.Pages.Length, Is.EqualTo(1));
                     Assert.That(content.Pages[0].Content, Contains.Substring("word document").IgnoreCase);
 
-                    var formatInfo = document.Formats[format];
+                    var formatInfo = documentDescriptor.Formats[format];
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
                         blob.FileNameWithExtension.ToString(),
@@ -204,8 +223,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
                     return;
                 }
-    
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 50000);
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("Tika document not found");
         }
@@ -240,20 +259,20 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var thumbSmallFormat = new Core.Domain.Document.DocumentFormat("thumb.small");
-            var thumbLargeFormat = new Core.Domain.Document.DocumentFormat("thumb.large");
+            DocumentDescriptorReadModel documentDescriptor;
+            var thumbSmallFormat = new DocumentFormat("thumb.small");
+            var thumbLargeFormat = new DocumentFormat("thumb.large");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
-                if (document != null &&
-                    document.Formats.ContainsKey(thumbSmallFormat) &&
-                    document.Formats.ContainsKey(thumbLargeFormat))
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(thumbSmallFormat) &&
+                    documentDescriptor.Formats.ContainsKey(thumbLargeFormat))
                 {
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(TestConfig.PathToDocumentPng);
-                    var blobId = document.Formats[thumbSmallFormat].BlobId;
+                    var blobId = documentDescriptor.Formats[thumbSmallFormat].BlobId;
                     var file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".small.png"));
                     var downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
@@ -262,7 +281,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                         Assert.That(image.Height, Is.EqualTo(200));
                     }
 
-                     blobId = document.Formats[thumbLargeFormat].BlobId;
+                     blobId = documentDescriptor.Formats[thumbLargeFormat].BlobId;
                     file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".large.png"));
                     downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
@@ -273,7 +292,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     return; //test is good
                 }
 
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < 5000);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("Thumb small not found");
         }
@@ -313,15 +332,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var emailFormat = new Core.Domain.Document.DocumentFormat("email");
+            DocumentDescriptorReadModel documentDescriptor;
+            var emailFormat = new DocumentFormat("email");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
-                if (document != null &&
-                    document.Formats.ContainsKey(emailFormat))
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(emailFormat))
                 {
                    
                     return; //test is good
@@ -331,6 +350,28 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Assert.Fail("expected formats not found");
         }
+
+        HtmlToPdfOutOfProcessJobOld _htmlSut;
+
+        protected override void OnStop()
+        {
+            base.OnStop();
+            if (_htmlSut != null) _htmlSut.Stop();
+        }
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("email", "", "eml|msg"),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        AnalyzeEmailOutOfProcessJob sut;
 
         HtmlToPdfOutOfProcessJobOld _htmlSut;
 
@@ -353,17 +394,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var emailFormat = new Core.Domain.Document.DocumentFormat("email");
-            var pdfFormat = new Core.Domain.Document.DocumentFormat("Pdf");
+            DocumentDescriptorReadModel documentDescriptor;
+            var emailFormat = new DocumentFormat("email");
+            var pdfFormat = new DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
-                if (document != null &&
-                    document.Formats.ContainsKey(emailFormat) &&
-                    document.Formats.ContainsKey(pdfFormat))
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(emailFormat) &&
+                    documentDescriptor.Formats.ContainsKey(pdfFormat))
                 {
 
                     return; //test is good
@@ -371,15 +412,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
-            if (document == null)
+            if (documentDescriptor == null)
                 Assert.Fail("Missing document");
 
-            Debug.WriteLine("document:\n{0}", (object)JsonConvert.SerializeObject(document, Formatting.Indented));
+            Debug.WriteLine("document:\n{0}", (object)JsonConvert.SerializeObject(documentDescriptor, Formatting.Indented));
 
-            if (!document.Formats.ContainsKey(emailFormat))
+            if (!documentDescriptor.Formats.ContainsKey(emailFormat))
                 Assert.Fail("Missing format: {0}", emailFormat);
 
-            if (!document.Formats.ContainsKey(pdfFormat))
+            if (!documentDescriptor.Formats.ContainsKey(pdfFormat))
                 Assert.Fail("Missing format: {0}", pdfFormat);
         }
 
@@ -421,15 +462,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
+            DocumentDescriptorReadModel documentDescriptor;
             var pdfFormat = DocumentFormats.Pdf;
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
-                if (document != null &&
-                    document.Formats.ContainsKey(pdfFormat))
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(pdfFormat))
                 {
 
                     return true; //test is good
@@ -486,18 +527,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("Pdf");
             do
             {
                 UpdateAndWait();
-                document = _documents.AsQueryable()
-                    .SingleOrDefault(d => d.Handles.Contains(handleServer));
-                if (document != null &&
-                    document.Formats.ContainsKey(format))
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(handleServer));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
-                    var formatInfo = document.Formats[format];
+                    var formatInfo = documentDescriptor.Formats[format];
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
                         blob.FileNameWithExtension.ToString(),
@@ -523,7 +564,61 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
     [TestFixture]
     [Category("integration_full")]
-    public class integration_attachments_queue : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    public class integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+   
+
+        [Test]
+        public async void verify_nested_zip_count_file_verification()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("verify_nested_zip");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFileThatContainsOtherZip,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );  
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("Pdf");
+            var docCount = 0;
+            do
+            {
+                UpdateAndWait();
+                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                if (docCount >= 7)
+                {
+                    //all attachment are unzipped correctly
+
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("documents not unzipped correctly I'm expecting more than 7 documetns but we find " + docCount);
+        }
+
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_attachments_queue_singleZip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
 
         [Test]
@@ -544,66 +639,149 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var format = new Core.Domain.Document.DocumentFormat("Pdf");
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("Pdf");
+            Int32 docCount;
             do
             {
                 UpdateAndWait();
-                var docCount = _documents.AsQueryable().Count();
+                docCount = _documentDescriptorCollection.AsQueryable().Count();
                 if (docCount == 4)
                 {
-                    //all attachment are unzipped correctly
-                    
-                    return;
-                } 
-
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
-
-            Assert.Fail("documents not unzipped correctly");
-        }
-
-        [Test]
-        public async void verify_nested_zip_count_file_verification()
-        {
-
-            _sutBase = new AttachmentOutOfProcessJob();
-            PrepareJob();
-
-            var handleClient = DocumentHandle.FromString("verify_nested_zip");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
-            await _documentStoreClient.UploadAsync(
-               TestConfig.PathToZipFileThatContainsOtherZip,
-               handleClient,
-               new Dictionary<string, object>{
-                    { "callback", "http://localhost/demo"}
-                }
-            );  
-
-            DateTime startWait = DateTime.Now;
-            DocumentReadModel document;
-            var format = new Core.Domain.Document.DocumentFormat("Pdf");
-            do
-            {
-                UpdateAndWait();
-                var docCount = _documents.AsQueryable().Count();
-                if (docCount >= 7)
-                {
-                    //all attachment are unzipped correctly
-
+                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
+                        new Core.Model.DocumentHandle("attachment_zip_1"),
+                        new Core.Model.DocumentHandle("attachment_zip_2"),
+                        new Core.Model.DocumentHandle("attachment_zip_3")
+                    }));
                     return;
                 }
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
-            Assert.Fail("documents not unzipped correctly");
+            Assert.Fail("documents not unzipped correctly, I'm expecting 4 documetns but projection contains " + docCount + " documents");
         }
 
+   
 
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
             {
                 new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
+            };
+        }
+    }
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_attachments_mail_with_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        [Test]
+        public async void verify_email_count_file_verification()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("verify_eml");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_eml");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToMsgWithAttachment,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            Int32 docCount;
+            do
+            {
+                UpdateAndWait();
+                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                if (docCount == 2)
+                {
+                    //all attachment are unzipped correctly
+                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("attachment_email_1") }));
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("file from email not extracted correctly, I'm expecting 2 documetns but projection contains " + docCount + " documents");
+        }
+
+
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : 
+                    MimeTypes.GetMimeTypeByExtension("zip") + "|" +
+                    MimeTypes.GetMimeTypeByExtension("msg") + "|" +
+                    MimeTypes.GetMimeTypeByExtension("eml")),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_attachments_mail_with_zip_and_other_mail : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        [Test]
+        public async void verify_email_count_file_verification()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("verify_eml");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_eml");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToMsgWithComplexAttachment,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            Int32 docCount;
+            do
+            {
+                UpdateAndWait();
+                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                if (docCount == 11)
+                {
+                    //all attachment are unzipped correctly
+                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    Assert.That(doc.Attachments, Has.Count.EqualTo(11));
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("file from email not extracted correctly, I'm expecting 2 documetns but projection contains " + docCount + " documents");
+        }
+
+
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : 
+                    MimeTypes.GetMimeTypeByExtension("zip") + "|" +
+                    MimeTypes.GetMimeTypeByExtension("msg") + "|" +
+                    MimeTypes.GetMimeTypeByExtension("eml")),
             };
         }
     }

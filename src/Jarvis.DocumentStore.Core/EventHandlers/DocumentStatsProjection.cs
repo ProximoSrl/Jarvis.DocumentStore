@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.Framework.Kernel.Events;
@@ -12,8 +12,8 @@ using Jarvis.Framework.Kernel.ProjectionEngine;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentStatsProjection : AbstractProjection,
-        IEventHandler<DocumentCreated>,
-        IEventHandler<DocumentDeleted>
+        IEventHandler<DocumentDescriptorCreated>,
+        IEventHandler<DocumentDescriptorDeleted>
     {
         readonly ICollectionWrapper<DocumentStats, string> _collection;
         readonly IBlobStore _blobStore;
@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
         }
 
-        public void On(DocumentCreated e)
+        public void On(DocumentDescriptorCreated e)
         {
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             if (descriptor != null)
@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             }
         }
 
-        public void On(DocumentDeleted e)
+        public void On(DocumentDescriptorDeleted e)
         {
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             if (descriptor != null)

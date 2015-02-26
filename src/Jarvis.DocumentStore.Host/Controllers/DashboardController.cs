@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
     {
         public IBlobStore BlobStore { get; set; }
         public IMongoDbReader<DocumentStats, string> DocStats { get; set; }
-        public IHandleWriter Handles { get; set; }
+        public IDocumentWriter Handles { get; set; }
 
         public DashboardController(IBlobStore blobStore, IMongoDbReader<DocumentStats, string> docStats)
         {

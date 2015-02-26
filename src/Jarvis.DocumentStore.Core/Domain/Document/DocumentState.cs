@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 
@@ -8,71 +8,94 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 {
     public class DocumentState : AggregateState
     {
-        private readonly HashSet<DocumentHandle> _handles = new Quartz.Collection.HashSet<DocumentHandle>();
-
-        public DocumentState(params KeyValuePair<DocumentFormat, BlobId>[] formats)
-            : this()
+        public DocumentState(DocumentId documentId, DocumentHandle handle) : this()
         {
-            foreach (var keyValuePair in formats)
-            {
-                Formats.Add(keyValuePair);
-            }
+            this.AggregateId = documentId;
+            this.Handle = handle;
         }
 
         public DocumentState()
         {
-            Formats = new Dictionary<DocumentFormat, BlobId>();
+            _attachments = new List<DocumentHandle>();
         }
 
-        public IDictionary<DocumentFormat, BlobId> Formats { get; private set; }
-        public BlobId BlobId { get; private set; }
+        void When(DocumentInitialized e)
+        {
+            this.AggregateId = e.Id;
+            this.Handle = e.Handle;
+        }
+
+        void When(DocumentDeleted e)
+        {
+            MarkAsDeleted();
+        }
+
+        void When(DocumentCustomDataSet e)
+        {
+            this.CustomData = e.CustomData;
+        }
+
+        void When(DocumentFileNameSet e)
+        {
+            this.FileName = e.FileName;
+        }
+
+        void When(DocumentLinked e)
+        {
+            Link(e.DocumentId);
+        }
+
+        void When(DocumentHasNewAttachment e)
+        {
+            AddAttachment(e.Attachment);
+        }
+
+        void When(AttachmentDeleted e)
+        {
+            RemoveAttachment(e.Handle);
+        }
+
+        public void Link(DocumentDescriptorId documentId)
+        {
+            this.LinkedDocument = documentId;
+        }
+
+        public DocumentDescriptorId LinkedDocument { get; private set; }
+
+        public void MarkAsDeleted()
+        {
+            this.HasBeenDeleted = true;
+        }
 
         public bool HasBeenDeleted { get; private set; }
+        public DocumentCustomData CustomData { get; private set; }
+        public DocumentHandle Handle { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
 
-        private void When(DocumentDeleted e)
-        {
-            HasBeenDeleted = true;
+        public IEnumerable<DocumentHandle> Attachments {
+            get { return _attachments.AsReadOnly(); }
         }
 
-        private void When(DocumentCreated e)
+        private List<DocumentHandle> _attachments;
+
+        public void AddAttachment(DocumentHandle attachment)
         {
-            AggregateId = e.AggregateId;
-            BlobId = e.BlobId;
+            _attachments.Add(attachment);
         }
 
-        private void When(FormatAddedToDocument e)
+        public void RemoveAttachment(DocumentHandle attachment)
         {
-            Formats.Add(e.DocumentFormat, e.BlobId);
+            if (_attachments.Contains(attachment)) _attachments.Remove(attachment);
         }
 
-        private void When(DocumentFormatHasBeenDeleted e)
+        public void SetCustomData(DocumentCustomData data)
         {
-            Formats.Remove(e.DocumentFormat);
+            this.CustomData = data;
         }
 
-        private void When(DocumentHandleAttached e)
+        public void SetFileName(FileNameWithExtension fileNameWithExtension)
         {
-            _handles.Add(e.Handle);
-        }
-
-        private void When(DocumentHandleDetached e)
-        {
-            _handles.Remove(e.Handle);
-        }
-
-        public bool HasFormat(DocumentFormat documentFormat)
-        {
-            return Formats.ContainsKey(documentFormat);
-        }
-
-        public bool IsValidHandle(DocumentHandle handle)
-        {
-            return _handles.Contains(handle);
-        }
-
-        public bool HasActiveHandles()
-        {
-            return _handles.Any();
+            this.FileName = fileNameWithExtension;
         }
     }
 }

@@ -1,5 +1,5 @@
 using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
@@ -10,17 +10,17 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     {
         public ILogger Logger { get; set; }
         private readonly ConfigService _configService;
-        private readonly DocumentByHashReader _hashReader;
+        private readonly DocumentDescriptorByHashReader _hashReader;
         private readonly IBlobStore _blobStore;
-        public DeduplicationHelper(ConfigService configService, DocumentByHashReader hashReader, IBlobStore blobStore)
+        public DeduplicationHelper(ConfigService configService, DocumentDescriptorByHashReader hashReader, IBlobStore blobStore)
         {
             _configService = configService;
             _hashReader = hashReader;
             _blobStore = blobStore;
         }
 
-        public DocumentId FindDuplicateDocumentId(
-            DocumentId sourceDocumentId, 
+        public DocumentDescriptorId FindDuplicateDocumentId(
+            DocumentDescriptorId sourceDocumentId, 
             FileHash sourceHash,
             BlobId sourceBlobId 
             )

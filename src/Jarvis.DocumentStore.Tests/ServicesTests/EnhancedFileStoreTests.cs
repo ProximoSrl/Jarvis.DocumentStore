@@ -9,7 +9,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using NSubstitute;
 using NUnit.Framework;
-using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 
 namespace Jarvis.DocumentStore.Tests.ServicesTests
 {

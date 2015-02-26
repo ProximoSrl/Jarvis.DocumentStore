@@ -36,6 +36,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             String workingFolder)
         {
             Boolean result;
+            var contentFileName = Path.ChangeExtension(parameters.FileName, ".content");
             if (!_formats.Contains(parameters.FileExtension))
             {
                 Logger.DebugFormat("Document for job Id {0} has an extension not supported, setting null content", parameters.JobId);
@@ -43,8 +44,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                     this.QueueName,
                     parameters.JobId,
                     new DocumentFormat(DocumentFormats.Content), 
-                    DocumentContent.NullContent, 
-                    parameters.FileName,
+                    DocumentContent.NullContent,
+                    contentFileName,
                     new Dictionary<string, object>());
                 return result;
             }
@@ -109,7 +110,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 {
                     documentContent.AddMetadata(DocumentContent.MedatataLanguage, lang);
                 }
-                var contentFileName = Path.ChangeExtension(parameters.FileName, ".content");
+                
                 result = await AddFormatToDocumentFromObject(
                       parameters.TenantId,
                       this.QueueName,

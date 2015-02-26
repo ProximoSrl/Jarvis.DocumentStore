@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Host.Support;
@@ -41,8 +42,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
-        private MongoCollection<DocumentReadModel> _documents;
-        private MongoCollection<HandleReadModel> _handles;
+        private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
+        private MongoCollection<DocumentReadModel> _documentCollection;
         private ITriggerProjectionsUpdate _projections;
 
         private void UpdateAndWait()
@@ -65,8 +66,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
-            _documents = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
-            _handles = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<HandleReadModel>("rm.Handle");
+            _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
+            _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
         }
 
         [TearDown]
@@ -203,6 +204,33 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void can_add_new_format_with_api_and_automatic_format_detection()
+        {
+            //Upload original
+            var handle = new DocumentHandle("Add_Format_Test");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            //now add format to document.
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
+            model.DocumentHandle = handle;
+            model.PathToFile = TestConfig.PathToDocumentPdf;
+            model.CreatedById = "office";
+            model.Format = null; //NO FORMAT, I want document store to be able to detect format
+            await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
+
+            // wait background projection polling
+            UpdateAndWait();
+            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            Assert.NotNull(formats);
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("pdf")));
+            Assert.That(formats, Has.Count.EqualTo(2));
+        }
+
+        [Test]
         public async void can_add_new_format_with_api_from_object()
         {
             //Upload original
@@ -295,10 +323,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             UpdateAndWait();
 
-            var document = _documents.Find(Query.EQ("Handles", "zip_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
-            var handle = _handles.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Jarvis.DocumentStore.Core.Model.DocumentHandle("zip_1") }));
         }
@@ -309,25 +337,67 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-
-            // wait background projection polling
             UpdateAndWait();
 
+            //upload attachments
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
-
-            // wait background projection polling
             UpdateAndWait();
 
-            var document = _documents.Find(Query.EQ("Handles", "zip_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with first child handle was not find.");
 
-            document = _documents.Find(Query.EQ("Handles", "zip_2")).SingleOrDefault();
+            document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_2")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with second child handle was not find.");
 
-            var handle = _handles.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("zip_1"), new Core.Model.DocumentHandle("zip_2") }));
+        }
+
+        [Test]
+        public async void add_multiple_attachment_to_existing_handle_then_delete_by_source()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+            UpdateAndWait();
+
+            //upload attachments
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourcea");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceb");
+            UpdateAndWait();
+
+            await _documentStoreClient.DeleteAttachmentsAsync(fatherHandle, "sourceb");
+            UpdateAndWait();
+
+            var handle = _documentCollection.Find(Query.EQ("_id", "sourcea_1")).SingleOrDefault();
+            Assert.That(handle, Is.Not.Null, "SourceA attachment should not be deleted.");
+
+            handle = _documentCollection.Find(Query.EQ("_id", "sourceb_1")).SingleOrDefault();
+            Assert.That(handle, Is.Null, "SourceB attachment should be deleted.");
+        }
+
+        [Test]
+        public async void add_multiple_attachment_to_existing_handle_then_delete_handle()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+            UpdateAndWait();
+
+            //upload attachments
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
+            UpdateAndWait();
+
+            await _documentStoreClient.DeleteAsync(fatherHandle);
+            UpdateAndWait();
+
+            Assert.That(_documentDescriptorCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
+            Assert.That(_documentCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
+
+           
         }
 
         [Test]
@@ -419,7 +489,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // check readmodel
             var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
             var tenant = tenantAccessor.GetTenant(new TenantId(TestConfig.Tenant));
-            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentReadModel, DocumentId>>();
+            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
 
             var allDocuments = docReader.AllUnsorted.Count();
             Assert.AreEqual(0, allDocuments);

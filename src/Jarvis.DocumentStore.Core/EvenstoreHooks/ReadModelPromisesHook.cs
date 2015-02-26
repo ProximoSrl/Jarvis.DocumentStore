@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Events;
+﻿using System.Linq;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using NEventStore;
 
@@ -12,10 +8,10 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
 {
     public class ReadModelPromisesHook : PipelineHookBase
     {
-        private readonly IHandleWriter _handleWriter;
-        private static readonly string DocumentTypeName = typeof (Document).FullName;
+        private readonly IDocumentWriter _handleWriter;
+        private static readonly string DocumentTypeName = typeof (DocumentDescriptor).FullName;
 
-        public ReadModelPromisesHook(IHandleWriter handleWriter)
+        public ReadModelPromisesHook(IDocumentWriter handleWriter)
         {
             _handleWriter = handleWriter;
         }
@@ -35,8 +31,8 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
         void HandleDocumentCreation(ICommit committed)
         {
             var docCreated = committed.Events
-                .Where(x => x.Body is DocumentCreated)
-                .Select(x => (DocumentCreated) x.Body)
+                .Where(x => x.Body is DocumentDescriptorCreated)
+                .Select(x => (DocumentDescriptorCreated) x.Body)
                 .FirstOrDefault();
 
             if (docCreated != null)

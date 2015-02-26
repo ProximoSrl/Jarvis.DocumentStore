@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Castle.MicroKernel.Registration;
+﻿using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using CommonDomain;
 using CommonDomain.Core;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Handle;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
 using Jarvis.Framework.Kernel.Engine.Snapshots;
 using Jarvis.Framework.Kernel.MultitenantSupport;
-using Jarvis.Framework.Kernel.Store;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.MultitenantSupport;
@@ -51,11 +43,11 @@ namespace Jarvis.DocumentStore.Host.Support
 
             EnableFlatIdMapping(identityManager);
 
-            MessagesRegistration.RegisterAssembly(typeof(Document).Assembly);
-            SnapshotRegistration.AutomapAggregateState(typeof(DocumentState).Assembly);
+            MessagesRegistration.RegisterAssembly(typeof(DocumentDescriptor).Assembly);
+            SnapshotRegistration.AutomapAggregateState(typeof(DocumentDescriptorState).Assembly);
 
-            identityManager.RegisterIdentitiesFromAssembly(typeof(DocumentId).Assembly);
-            IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentId).Assembly);
+            identityManager.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
+            IdentitiesRegistration.RegisterFromAssembly(typeof(DocumentDescriptorId).Assembly);
 
             BsonClassMap.LookupClassMap(typeof(BlobId));
             BsonClassMap.LookupClassMap(typeof(DocumentHandle));
@@ -78,7 +70,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
                 tenant1.Container.Register(
                     Classes
-                        .FromAssemblyContaining<Document>()
+                        .FromAssemblyContaining<DocumentDescriptor>()
                         .BasedOn<IPipelineHook>()
                         .WithServiceAllInterfaces(),
                     Component
@@ -127,7 +119,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     .For<IIdentityManager, IIdentityGenerator, IIdentityConverter, IdentityManager>()
                     .ImplementedBy<IdentityManager>(),
                 Classes
-                    .FromAssemblyContaining<Document>()
+                    .FromAssemblyContaining<DocumentDescriptor>()
                     .BasedOn<AggregateBase>()
                     .WithService.Self()
                     .LifestyleTransient()

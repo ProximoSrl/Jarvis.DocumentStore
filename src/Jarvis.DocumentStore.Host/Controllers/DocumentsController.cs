@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Principal;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-using Jarvis.DocumentStore.Core.Domain.Handle;
-using Jarvis.DocumentStore.Core.Domain.Handle.Commands;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
@@ -28,12 +23,12 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using Newtonsoft.Json;
-using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
-using DocumentFormat = Jarvis.DocumentStore.Core.Domain.Document.DocumentFormat;
+using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Jarvis.Framework.Shared.Commands;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -43,15 +38,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly ConfigService _configService;
         readonly IIdentityGenerator _identityGenerator;
         private readonly ICounterService _counterService;
+        private IDocumentFormatTranslator _documentFormatTranslator;
 
-        readonly IReader<DocumentReadModel, DocumentId> _documentReader;
+        readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
         readonly IQueueDispatcher _queueDispatcher;
 
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
-        readonly IHandleWriter _handleWriter;
+        readonly IDocumentWriter _handleWriter;
 
-        HandleCustomData _customData;
+        DocumentCustomData _customData;
         FileNameWithExtension _fileName;
         BlobId _blobId;
 
@@ -59,19 +55,21 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IBlobStore blobStore,
             ConfigService configService,
             IIdentityGenerator identityGenerator,
-            IReader<DocumentReadModel, DocumentId> documentReader,
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,
-            IHandleWriter handleWriter,
-            IQueueDispatcher queueDispatcher, ICounterService counterService)
+            IDocumentWriter handleWriter,
+            IQueueDispatcher queueDispatcher, 
+            ICounterService counterService,
+            IDocumentFormatTranslator documentFormatTranslator)
         {
             _blobStore = blobStore;
             _configService = configService;
             _identityGenerator = identityGenerator;
-            _documentReader = documentReader;
+            _documentDescriptorReader = documentDescriptorReader;
             _handleWriter = handleWriter;
             _queueDispatcher = queueDispatcher;
             _counterService = counterService;
-
+            _documentFormatTranslator = documentFormatTranslator;
             CommandBus = commandBus;
         }
 
@@ -134,7 +132,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle, DocumentHandle fatherHandle = null)
         {
-            var documentId = _identityGenerator.New<DocumentId>();
+            var documentId = _identityGenerator.New<DocumentDescriptorId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
             var errorMessage = await UploadFromHttpContent(Request.Content);
@@ -184,7 +182,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             String queueName = _customData[AddFormatToDocumentParameters.QueueName] as String;
             String jobId = _customData[AddFormatToDocumentParameters.JobId] as String;
-            DocumentId documentId;
+            DocumentDescriptorId documentId;
             if (String.IsNullOrEmpty(queueName))
             {
                 //user ask for handle, we need to grab the handle
@@ -223,11 +221,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 Logger.DebugFormat("Add format {0} to job id {1} and document id {2}", format, job.Id, documentId);
             }
 
-            var documentFormat = new DocumentFormat(_customData[AddFormatToDocumentParameters.Format] as String);
+            if (format == "null") 
+            {
+                var formatFromFileName = _documentFormatTranslator.GetFormatFromFileName(_fileName);
+                if (formatFromFileName == null)
+                {
+                    String error = "Format not specified and no known format for file: " + _fileName;
+                    Logger.Error(error);
+                    return Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        error
+                    );
+                }
+                format = new DocumentFormat(formatFromFileName); 
+            }
+
             var createdById = new PipelineId(_customData[AddFormatToDocumentParameters.CreatedBy] as String);
             Logger.DebugFormat("Incoming new format for documentId {0}", documentId);
-           
-            var command = new AddFormatToDocument(documentId, documentFormat, _blobId, createdById);
+
+            var command = new AddFormatToDocumentDescriptor(documentId, format, _blobId, createdById);
             CommandBus.Send(command, "api");
 
             return Request.CreateResponse(
@@ -261,7 +273,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (provider.FormData["custom-data"] != null)
             {
-                _customData = JsonConvert.DeserializeObject<HandleCustomData>(provider.FormData["custom-data"]);
+                _customData = JsonConvert.DeserializeObject<DocumentCustomData>(provider.FormData["custom-data"]);
             }
 
             _fileName = provider.Filename;
@@ -288,7 +300,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (provider.FormData["custom-data"] != null)
             {
-                _customData = JsonConvert.DeserializeObject<HandleCustomData>(provider.FormData["custom-data"]);
+                _customData = JsonConvert.DeserializeObject<DocumentCustomData>(provider.FormData["custom-data"]);
             }
 
             _fileName = provider.Filename;
@@ -364,7 +376,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (mapping == null)
                 return DocumentNotFound(handle);
 
-            var document = _documentReader.FindOneById(mapping.DocumentId);
+            var document = _documentDescriptorReader.FindOneById(mapping.DocumentId);
 
             if (document == null)
             {
@@ -462,7 +474,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (document == null)
                 return DocumentNotFound(handle);
 
-            CommandBus.Send(new DeleteHandle(handle), "api");
+            CommandBus.Send(new DeleteDocument(handle), "api");
 
             return Request.CreateResponse(
                 HttpStatusCode.Accepted,
@@ -470,14 +482,32 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
+        [HttpDelete]
+        [Route("{tenantId}/documents/attachments/{fatherHandle}/{source}")]
+        public HttpResponseMessage DeleteAttachments(TenantId tenantId, DocumentHandle fatherHandle, String source)
+        {
+            var document = GetDocumentByHandle(fatherHandle);
+            if (document == null)
+                return DocumentNotFound(fatherHandle);
+
+            //find all the attachments belonging to this source
+            CommandBus.Send(new DeleteAttachments(fatherHandle, source), "api");
+
+            return Request.CreateResponse(
+                HttpStatusCode.Accepted,
+                string.Format("Attachment of handle {0} with source {1} marked for deletion!", fatherHandle, source)
+            );
+        }
+
+
 
         private void CreateDocument(
-            DocumentId documentId,
+            DocumentDescriptorId documentId,
             BlobId blobId,
             DocumentHandle handle,
             DocumentHandle fatherHandle,
             FileNameWithExtension fileName,
-            HandleCustomData customData
+            DocumentCustomData customData
         )
         {
             
@@ -487,22 +517,22 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (fatherHandle == null)
             {
                 
-                createDocument = new CreateDocument(documentId, blobId, handleInfo, descriptor.Hash, fileName);
+                createDocument = new CreateDocumentDescriptor(documentId, blobId, handleInfo, descriptor.Hash, fileName);
             }
             else
             {
-                createDocument = new CreateDocumentAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
+                createDocument = new CreateDocumentDescriptorAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
             }
             CommandBus.Send(createDocument, "api");
         }
 
-        DocumentReadModel GetDocumentByHandle(DocumentHandle handle)
+        DocumentDescriptorReadModel GetDocumentByHandle(DocumentHandle handle)
         {
             var mapping = _handleWriter.FindOneById(handle);
             if (mapping == null)
                 return null;
 
-            return _documentReader.FindOneById(mapping.DocumentId);
+            return _documentDescriptorReader.FindOneById(mapping.DocumentId);
         }
     }
 

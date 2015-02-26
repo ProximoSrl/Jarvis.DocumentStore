@@ -1,32 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Handle;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.Framework.Shared.ReadModel;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
     public class StreamReadModel : AbstractReadModel<Int64>
     {
-        //public TenantId TenantId { get; set; }
+        public String Handle { get; internal set; }
 
-        public String Handle { get; set; }
+        public FormatInfo FormatInfo { get; internal set; }
 
-        public FormatInfo FormatInfo { get; set; }
+        public DocumentDescriptorId DocumentId { get; internal set; }
 
-        public DocumentId DocumentId { get; set; }
+        public FileNameWithExtension Filename { get; internal set; }
 
-        public FileNameWithExtension Filename { get; set; }
+        public HandleStreamEventTypes EventType { get; internal set; }
 
-        public HandleStreamEventTypes EventType { get; set; }
+        public DocumentCustomData DocumentCustomData { get; internal set; }
 
-        public HandleCustomData HandleCustomData { get; set; }
+        /// <summary>
+        /// With attachment we need to store concept of attachment father
+        /// and child. This dictionary contains all data that could be needed
+        /// for a complete description of the event.
+        /// </summary>
+        public Dictionary<String, Object> EventData { get; private set; }
 
+        public void AddEventData(String key, Object value)
+        {
+            if (EventData == null) EventData = new Dictionary<string, object>();
+            EventData.Add(key, value);
+        }
     }
 
     public class FormatInfo
@@ -38,13 +45,5 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public BlobId BlobId { get; set; }
     }
 
-    public enum HandleStreamEventTypes
-    {
-        Unknown = 0,
-        HandleInitialized = 1,
-        HandleDeleted = 2,
-        HandleHasNewFormat = 3,
-        HandleFileNameSet = 4,
-        HandleFormatUpdated = 5,
-    }
+
 }

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
-using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.NEventStoreEx.CommonDomainEx;
 using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 
@@ -13,99 +11,101 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 {
     public class Document : AggregateRoot<DocumentState>
     {
+        public Document()
+        {
+        }
+
         public Document(DocumentState initialState)
             : base(initialState)
         {
         }
 
-        public Document()
+        public void Initialize(DocumentId id, DocumentHandle handle)
         {
-        }
-
-        public IDocumentFormatTranslator DocumentFormatTranslator { get; set; }
-
-        public void Create(DocumentId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
-        {
-            ThrowIfDeleted();
-
             if (HasBeenCreated)
-                throw new DomainException((IIdentity)id, "Already created");
+                throw new DomainException((IIdentity)id, "handle already initialized");
+            ThrowIfDeleted();
 
-            RaiseEvent(new DocumentCreated(id, blobId, handleInfo, hash));
-
-            var knownFormat = DocumentFormatTranslator.GetFormatFromFileName(fileName);
-            if (knownFormat != null)
-                RaiseEvent(new FormatAddedToDocument(knownFormat, blobId, null));
+            RaiseEvent(new DocumentInitialized(id, handle));
         }
 
-        public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
+        public void Link(DocumentDescriptorId documentId)
         {
             ThrowIfDeleted();
-            if (InternalState.HasFormat(documentFormat))
-            {
-                RaiseEvent(new DocumentFormatHasBeenUpdated(documentFormat, blobId, createdBy));
-            }
-            else
-            {
-                RaiseEvent(new FormatAddedToDocument(documentFormat, blobId, createdBy));
-            }
-        }
 
-        public void DeleteFormat(DocumentFormat documentFormat)
-        {
-            ThrowIfDeleted();
-            if (InternalState.HasFormat(documentFormat))
-            {
-                RaiseEvent(new DocumentFormatHasBeenDeleted(documentFormat));
-            }
-        }
-
-        void Attach(DocumentHandle handle)
-        {
-            if (!InternalState.IsValidHandle(handle))
-                RaiseEvent(new DocumentHandleAttached(handle));
-        }
-
-        public void Delete(DocumentHandle handle)
-        {
-            if (handle != DocumentHandle.Empty)
-            {
-                if (!InternalState.IsValidHandle(handle))
-                {
-                    throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
-                }
-
-                RaiseEvent(new DocumentHandleDetached(handle));
-            }
-
-            if (!InternalState.HasActiveHandles())
-            {
-                RaiseEvent(new DocumentDeleted(
-                    InternalState.BlobId,
-                    InternalState.Formats.Select(x => x.Value).ToArray()
+            if (InternalState.LinkedDocument != documentId){
+                RaiseEvent(new DocumentLinked(
+                    InternalState.Handle, 
+                    documentId, 
+                    InternalState.LinkedDocument,
+                    InternalState.FileName
                 ));
             }
         }
 
-        public void Deduplicate(DocumentId otherDocumentId, DocumentHandle handle, FileNameWithExtension fileName)
+        public void SetFileName(FileNameWithExtension fileName)
         {
             ThrowIfDeleted();
-            RaiseEvent(new DocumentHasBeenDeduplicated(otherDocumentId, handle, fileName));
-            Attach(handle);
+            if (InternalState.FileName == fileName)
+                return;
+
+            RaiseEvent(new DocumentFileNameSet(InternalState.Handle, fileName));
+        }
+
+        public void SetCustomData(DocumentCustomData customData)
+        {
+            ThrowIfDeleted();
+
+            if (DocumentCustomData.IsEquals(InternalState.CustomData, customData))
+                return;
+
+            RaiseEvent(new DocumentCustomDataSet(InternalState.Handle, customData));
+        }
+
+        public void Delete()
+        {
+            if (!InternalState.HasBeenDeleted)
+            {
+                if (InternalState.Attachments != null)
+                {
+                    foreach (var attachment in InternalState.Attachments.ToList())
+                    {
+                        RaiseEvent(new AttachmentDeleted(attachment));
+                    }
+                }
+                RaiseEvent(new DocumentDeleted(InternalState.Handle, InternalState.LinkedDocument));
+            }
+        }
+
+        public void DeleteAttachment(DocumentHandle attachmentHandle)
+        {
+            ThrowIfDeleted();
+
+            if (!InternalState.Attachments.Contains(attachmentHandle))
+                throw new DomainException(Id, "Cannot remove attachment " + attachmentHandle + ". Not found!");
+
+            RaiseEvent(new AttachmentDeleted(attachmentHandle));
+        }
+
+        public void AddAttachment(DocumentHandle attachmentDocumentHandle)
+        {
+            ThrowIfDeleted();
+
+            if (InternalState.Attachments.Contains(attachmentDocumentHandle))
+                return;
+
+            RaiseEvent(new DocumentHasNewAttachment(InternalState.Handle, attachmentDocumentHandle));
         }
 
         void ThrowIfDeleted()
         {
             if (InternalState.HasBeenDeleted)
-                throw new DomainException(this.Id, "Document has been deleted");
-        }
-
-        public void Process(DocumentHandle handle)
-        {
-            RaiseEvent(new DocumentQueuedForProcessing(InternalState.BlobId, handle));
-            Attach(handle);
+                throw new DomainException((IIdentity)Id, "Handle has been deleted");
         }
 
 
+
+
+       
     }
 }

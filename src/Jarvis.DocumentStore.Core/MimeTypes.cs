@@ -492,6 +492,7 @@ namespace Jarvis.DocumentStore.Core
                 { "mseed", "application/vnd.fdsn.mseed" },
                 { "mseq", "application/vnd.mseq" },
                 { "msf", "application/vnd.epson.msf" },
+                { "msg", "application/vnd.ms-outlook" },
                 { "msh", "model/mesh" },
                 { "msi", "application/x-msdownload" },
                 { "msl", "application/vnd.mobius.msl" },

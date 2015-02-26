@@ -280,7 +280,8 @@ namespace Jarvis.DocumentStore.Client
                         var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
                         content.Add(stringContent, "custom-data");
 
-                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + model.Format);
+                        var modelFormat = model.Format == null ? "null" : model.Format.ToString();
+                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + modelFormat);
 
                         using (var message = await client.PostAsync(endPoint, content))
                         {
@@ -409,6 +410,21 @@ namespace Jarvis.DocumentStore.Client
         public async Task DeleteAsync(DocumentHandle handle)
         {
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle);
+            using (var client = new HttpClient())
+            {
+                await client.DeleteAsync(resourceUri);
+            }
+        }
+
+        /// <summary>
+        /// Delete all attachment of a given handle, specifying the source.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public async Task DeleteAttachmentsAsync(DocumentHandle handle, String source)
+        {
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments/" + handle + "/" + source);
             using (var client = new HttpClient())
             {
                 await client.DeleteAsync(resourceUri);

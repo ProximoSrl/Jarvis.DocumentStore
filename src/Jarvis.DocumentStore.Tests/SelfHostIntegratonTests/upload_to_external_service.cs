@@ -49,9 +49,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_zipped_file()
+        public void zipped_file_upload()
         {
             _docs.UploadAsync(TestConfig.PathToZipFile, DocumentHandle.FromString("zipsimple")).Wait();
+        }
+
+        [Test]
+        public void zipped_file_delete()
+        {
+            _docs.DeleteAsync(DocumentHandle.FromString("zipsimple")).Wait();
         }
 
         [Test]
@@ -145,7 +151,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _docs.AddFormatToDocument(model, null).Wait();
         }
 
-        
+
         [Test]
         public void upload_same_doc_100_times_with_unique_handle()
         {

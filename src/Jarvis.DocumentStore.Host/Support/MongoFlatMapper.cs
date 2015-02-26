@@ -1,20 +1,15 @@
 ﻿using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Handle;
-using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Shared.Domain;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using Jarvis.Framework.Shared.Events;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.MultitenantSupport;
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -31,8 +26,8 @@ namespace Jarvis.DocumentStore.Host.Support
                 map.AutoMap();
                 map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
             });
+            EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
-            EventStoreIdentityCustomBsonTypeMapper.Register<HandleId>();
             StringValueCustomBsonTypeMapper.Register<BlobId>();
             StringValueCustomBsonTypeMapper.Register<TenantId>();
             StringValueCustomBsonTypeMapper.Register<DocumentHandle>();
