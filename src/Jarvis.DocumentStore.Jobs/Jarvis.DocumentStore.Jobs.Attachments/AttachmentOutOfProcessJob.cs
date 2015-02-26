@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                 foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
                 {
                     if ((Path.GetExtension(file) == ".htm" || Path.GetExtension(file) == ".html") && 
-                        Path.GetFileName(file).StartsWith(Path.GetFileName(parameters.FileName)))
+                        Path.GetFileNameWithoutExtension(file).StartsWith(Path.GetFileNameWithoutExtension(parameters.FileName)))
                         continue;
 
                     var relativeFileName = file.Substring(unzippingDirectory.Length);
