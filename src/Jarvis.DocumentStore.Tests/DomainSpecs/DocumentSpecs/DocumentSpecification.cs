@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 
     public abstract class WithAnInitializedDocument : DocumentSpecification
     {
-        Establish context = () => SetUp(new DocumentState(DocumentId1, DocumentHandle),DocumentId1);
+        Establish context = () => SetUp(new DocumentState(DocumentHandle),DocumentId1);
     }
 
     [Subject(typeof(WithAnInitializedDocument))]
@@ -105,7 +105,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     {
         Establish context = () =>
         {
-            var state = new DocumentState(DocumentId1, DocumentHandle);
+            var state = new DocumentState(DocumentHandle);
             state.AddAttachment(AttachmentDocumentHandle);
             SetUp(state, DocumentId1);
         };
@@ -152,7 +152,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     {
         Establish context = () =>
         {
-            var handleState = new DocumentState(DocumentId1, DocumentHandle);
+            var handleState = new DocumentState(DocumentHandle);
             handleState.Link(Document_1);
             SetUp(handleState, DocumentId1);
         };

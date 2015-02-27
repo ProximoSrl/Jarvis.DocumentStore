@@ -15,9 +15,6 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         It DocumentDescriptorCreatedEvent_should_have_been_raised = () =>
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorCreated>().ShouldBeTrue();
 
-        It DocumentDescriptorId_should_be_assigned = () =>
-            ShouldExtensionMethods.ShouldBeTheSameAs(DocumentDescriptor.Id, _id);
-
         It created_event_should_store_relevant_info = () =>
         {
             var e = AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.RaisedEvent<DocumentDescriptorCreated>();

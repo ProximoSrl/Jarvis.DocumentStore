@@ -36,7 +36,6 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         private void When(DocumentDescriptorCreated e)
         {
-            AggregateId = e.AggregateId;
             BlobId = e.BlobId;
         }
 

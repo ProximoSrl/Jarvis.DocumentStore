@@ -8,9 +8,8 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 {
     public class DocumentState : AggregateState
     {
-        public DocumentState(DocumentId documentId, DocumentHandle handle) : this()
+        public DocumentState(DocumentHandle handle) : this()
         {
-            this.AggregateId = documentId;
             this.Handle = handle;
         }
 
@@ -21,7 +20,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         void When(DocumentInitialized e)
         {
-            this.AggregateId = e.Id;
             this.Handle = e.Handle;
         }
 
