@@ -1,0 +1,51 @@
+﻿<div class="row">
+    <div class="col-xs-12">
+        <form role="form" ng-submit="stream.search()">
+            <div class="input-group">
+                <input type="text" ng-model="stream.streamId" class="form-control" placeholder="insert stream id..." autofocus />
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-flat"><i class="fa fa-search"></i></button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+<br />
+<ul class="timeline">
+    <li class="time-label" ng-repeat-start="commit in stream.commits">
+        <span class="bg-red">
+            [{{commit.Sequence}}] {{commit.Date}}
+        </span>
+    </li>
+
+    <li>
+        <i class="fa fa-envelope bg-blue"></i>
+        <div class="timeline-item">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="header in commit.Headers">
+                        <td>{{header[0]}}</td>
+                        <td>{{header[1]}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </li>
+
+    <li ng-repeat-end>
+        <i class="fa fa-envelope bg-orange"></i>
+        <div class="timeline-item">
+            <ul>
+                <li ng-repeat="evt in commit.Events">
+                    <pre>{{ evt | json}}</pre>
+                </li>
+            </ul>
+        </div>
+    </li>
+</ul>

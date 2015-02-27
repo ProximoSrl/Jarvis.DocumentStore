@@ -31,6 +31,12 @@
                 controller:"LogsController as logs",
                 data : { pageTitle: 'Logs', description: 'what\'s happening...' }
             })
+            .state('stream', {
+                url: "/stream",
+                templateUrl: "stream/stream.html",
+                controller: "StreamController as stream",
+                data : { pageTitle: 'Stream', description: 'inspect stream history' }
+            })
             .state('scheduler', {
                 url: "/scheduler",
                 templateUrl: "scheduler/scheduler.html",

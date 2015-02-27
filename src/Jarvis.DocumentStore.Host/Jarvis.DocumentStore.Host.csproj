@@ -1368,6 +1368,10 @@
     <Content Include="app\shared\sharedModule.js" />
     <Content Include="app\shared\configService.js" />
     <Content Include="app\shared\updateTitle.js" />
+    <Content Include="app\stream\streamModule.js" />
+    <Content Include="app\stream\stream.html" />
+    <Content Include="app\stream\StreamController.js" />
+    <Content Include="app\stream\streamData.js" />
     <Content Include="DocumentStore.ico" />
   </ItemGroup>
   <ItemGroup>

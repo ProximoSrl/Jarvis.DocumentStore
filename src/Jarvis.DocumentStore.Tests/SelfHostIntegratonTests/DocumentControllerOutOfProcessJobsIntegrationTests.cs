@@ -7,12 +7,9 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs;
 using Jarvis.DocumentStore.Core.ReadModel;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Jobs.Email;
-
 using Jarvis.DocumentStore.Jobs.HtmlZipOld;
 using Jarvis.DocumentStore.Jobs.ImageResizer;
 using Jarvis.DocumentStore.Jobs.Tika;
@@ -685,7 +682,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("verify_eml");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_eml");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToMsgWithAttachment,
                handleClient,
@@ -695,7 +691,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentDescriptorReadModel documentDescriptor;
             Int32 docCount;
             do
             {
@@ -742,7 +737,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("verify_eml");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_eml");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToMsgWithComplexAttachment,
                handleClient,
@@ -752,7 +746,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentDescriptorReadModel documentDescriptor;
             Int32 docCount;
             do
             {
