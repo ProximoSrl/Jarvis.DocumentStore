@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         protected static readonly BlobId XmlBlobId = new BlobId("xml");
         protected static readonly PipelineId XmlPiplePipelineId = new PipelineId("xml");
 
-        Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState() { });
+        Establish context = () => SetUp(new DocumentDescriptorState(),_id);
 
         Because of = () => DocumentDescriptor.AddFormat(XmlDocumentFormat, XmlBlobId, XmlPiplePipelineId);
 

@@ -22,14 +22,14 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         public IDocumentFormatTranslator DocumentFormatTranslator { get; set; }
 
-        public void Create(DocumentDescriptorId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
+        public void Create(BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
         {
             ThrowIfDeleted();
 
             if (HasBeenCreated)
-                throw new DomainException((IIdentity)id, "Already created");
+                throw new DomainException(Id, "Already created");
 
-            RaiseEvent(new DocumentDescriptorCreated(id, blobId, handleInfo, hash));
+            RaiseEvent(new DocumentDescriptorCreated(blobId, handleInfo, hash));
 
             var knownFormat = DocumentFormatTranslator.GetFormatFromFileName(fileName);
             if (knownFormat != null)

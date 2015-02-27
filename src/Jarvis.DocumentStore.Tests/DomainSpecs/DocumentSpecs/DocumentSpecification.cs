@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 
     public abstract class WithAnInitializedDocument : DocumentSpecification
     {
-        Establish context = () => SetUp(new DocumentState(DocumentId1, DocumentHandle));
+        Establish context = () => SetUp(new DocumentState(DocumentId1, DocumentHandle),DocumentId1);
     }
 
     [Subject(typeof(WithAnInitializedDocument))]
@@ -107,7 +107,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         {
             var state = new DocumentState(DocumentId1, DocumentHandle);
             state.AddAttachment(AttachmentDocumentHandle);
-            SetUp(state);
+            SetUp(state, DocumentId1);
         };
 
         Because of = () => DocumentAggregate.AddAttachment(AttachmentDocumentHandle);
@@ -154,7 +154,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         {
             var handleState = new DocumentState(DocumentId1, DocumentHandle);
             handleState.Link(Document_1);
-            SetUp(handleState);
+            SetUp(handleState, DocumentId1);
         };
     }
 

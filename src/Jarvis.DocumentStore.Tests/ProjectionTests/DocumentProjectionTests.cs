@@ -13,6 +13,7 @@ using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
+using Jarvis.Framework.TestHelpers;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
@@ -93,8 +94,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void add_attachment()
         {
-            _sut.On(new DocumentInitialized(_documentId1, _documentHandle) {AggregateId =  _documentId1});
-            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _documentId1 });
+            _sut.On(new DocumentInitialized(_documentId1, _documentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId1));
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.That(h.Attachments, Is.EquivalentTo(new [] { _attachmentHandle }));
@@ -103,9 +104,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void add_attachment_then_delete()
         {
-            _sut.On(new DocumentInitialized(_documentId1, _documentHandle) { AggregateId = _documentId1 });
-            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _documentId2 });
-            _sut.On(new DocumentDeleted(_attachmentHandle, _document2) { AggregateId = _documentId1 });
+            _sut.On(new DocumentInitialized(_documentId1, _documentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId2));
+            _sut.On(new DocumentDeleted(_attachmentHandle, _document2).AssignIdForTest(_documentId1));
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.That(h.Attachments, Is.Empty);
@@ -114,12 +115,12 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void add_attachment_nested()
         {
-            _sut.On(new DocumentInitialized(_documentId1, _documentHandle) { AggregateId = _documentId1 });
-            _sut.On(new DocumentInitialized(_documentId2, _documentHandle) { AggregateId = _documentId2 });
-            _sut.On(new DocumentInitialized(_documentId3, _documentHandle) { AggregateId = _documentId3 });
+            _sut.On(new DocumentInitialized(_documentId1, _documentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentInitialized(_documentId2, _documentHandle).AssignIdForTest(_documentId2));
+            _sut.On(new DocumentInitialized(_documentId3, _documentHandle).AssignIdForTest(_documentId3));
 
-            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle) { AggregateId = _documentId1 });
-            _sut.On(new DocumentHasNewAttachment(_attachmentHandle, _attachmentNestedHandle) { AggregateId = _documentId1 });
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest( _documentId1 ));
+            _sut.On(new DocumentHasNewAttachment(_attachmentHandle, _attachmentNestedHandle).AssignIdForTest(_documentId1));
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.That(h.Attachments, Is.EquivalentTo(new[] { _attachmentHandle, _attachmentNestedHandle }));

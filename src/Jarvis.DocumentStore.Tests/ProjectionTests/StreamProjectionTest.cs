@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Fasterflect;
+using javax.swing.@event;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
@@ -20,6 +21,8 @@ using NSubstitute;
 using NUnit.Framework;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.Framework.TestHelpers;
+using org.objectweb.asm;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
@@ -180,7 +183,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRmAttach.AddHandle(new DocumentHandle("rev_2"));
             rmDocuments.Add(docRmAttach);
             CreateSut();
-            var evt = new DocumentHasNewAttachment(rev1, new DocumentHandle("rev_2")) { AggregateId = new DocumentId(1) };
+            var evt = new DocumentHasNewAttachment(rev1, new DocumentHandle("rev_2")).AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewAttachment));
@@ -282,7 +285,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var evtFormat = new FormatAddedToDocumentDescriptor(new DocumentFormat("blah"), new BlobId("test"),
                 new PipelineId("tika"));
-            evtFormat.AggregateId = new DocumentDescriptorId(1);
+            evtFormat.AssignIdForTest(new DocumentDescriptorId(1));
             _sut.Handle(evtFormat, false); //format is linked to document.
 
             Assert.That(rmStream, Has.Count.EqualTo(2));
@@ -318,11 +321,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _sut.Handle(evt, false); //Handle is linked to document.
 
             var evtFormat = new FormatAddedToDocumentDescriptor(new DocumentFormat("blah"), new BlobId("test.1"), new PipelineId("tika"));
-            evtFormat.AggregateId = new DocumentDescriptorId(1);
+            evtFormat.AssignIdForTest(new DocumentDescriptorId(1));
              _sut.Handle(evtFormat, false); //format is linked to document.
 
              var evtFormatUpdated = new DocumentFormatHasBeenUpdated(new DocumentFormat("blah"), new BlobId("test.2"), new PipelineId("tika"));
-             evtFormatUpdated.AggregateId = new DocumentDescriptorId(1);
+             evtFormatUpdated.AssignIdForTest(new DocumentDescriptorId(1));
              _sut.Handle(evtFormatUpdated, false); //format is linked to document.
 
             Assert.That(rmStream, Has.Count.EqualTo(3));

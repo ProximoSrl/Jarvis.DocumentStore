@@ -14,8 +14,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         protected static readonly DocumentFormat XmlDocumentFormatId1 = new DocumentFormat("xml");
         protected static readonly BlobId XmlBlobId1 = new BlobId("xml1");
 
-        Establish context =
-            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState(new KeyValuePair<DocumentFormat, BlobId>(XmlDocumentFormatId1, XmlBlobId1)));
+        Establish context =() => SetUp(
+            new DocumentDescriptorState(new KeyValuePair<DocumentFormat, BlobId>(XmlDocumentFormatId1, XmlBlobId1)),
+            _id
+        );
 
         Because of = () => DocumentDescriptor.DeleteFormat(XmlDocumentFormatId1);
 

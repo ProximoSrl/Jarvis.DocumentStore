@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 
         Because of = () =>
         {
-            DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
+            DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
             Exception = Catch.Exception(() => DocumentDescriptor.Delete(new DocumentHandle("not_this_one")));
         };
 

@@ -19,9 +19,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 
         public class when_xml_format_is_added : documentDescriptor_with_xml_format
         {
-            Establish context = () => SetUp(new DocumentDescriptorState(
-                new KeyValuePair<DocumentFormat, BlobId>(XmlDocumentFormatId1, XmlBlobId1))
-                );
+            Establish context = () => SetUp(
+                new DocumentDescriptorState(new KeyValuePair<DocumentFormat, BlobId>(XmlDocumentFormatId1, XmlBlobId1)),
+                _id
+            );
 
             Because of = () => DocumentDescriptor.AddFormat(XmlDocumentFormatId2, XmlBlobId2, XmlPiplePipelineId);
 

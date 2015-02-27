@@ -85,9 +85,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         /// <param name="e"></param>
         public void On(DocumentHasNewAttachment e)
         {
-            _writer.AddAttachment(
-                e.Handle,
-                e.Attachment);
+            _writer.AddAttachment(e.Handle,e.Attachment);
         }
     }
 }

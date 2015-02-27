@@ -10,7 +10,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
     {
         Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
 
-        Because of = () => DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
+        Because of = () => DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
 
         It DocumentDescriptorCreatedEvent_should_have_been_raised = () =>
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorCreated>().ShouldBeTrue();

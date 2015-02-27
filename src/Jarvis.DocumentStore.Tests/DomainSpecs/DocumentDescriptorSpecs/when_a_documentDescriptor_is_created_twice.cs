@@ -14,10 +14,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         Establish context = () =>
         {
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
-            DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
+            DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
         };
 
-        Because of = () => _ex = Catch.Exception(() => DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName));
+        Because of = () => _ex = Catch.Exception(() => DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName));
 
         It a_domain_exception_should_be_thrown = () =>
         {

@@ -9,14 +9,11 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events
         public DocumentHandleInfo HandleInfo { get; private set; }
         public FileHash Hash { get; private set; }
 
-        public DocumentDescriptorCreated(DocumentDescriptorId id, BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash)
+        public DocumentDescriptorCreated(BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash)
         {
             Hash = hash;
             HandleInfo = handleInfo;
             BlobId = blobId;
-            this.AggregateId = id;
         }
-
-
     }
 }

@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
             new FileNameWithExtension("Another.document")
             );
 
-        Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.SetUp(new DocumentDescriptorState());
+        Establish context = () => SetUp(new DocumentDescriptorState(),_id);
 
         Because of = () => DocumentDescriptor.Deduplicate(_otherDocumentId, _otherHandleInfo.Handle,_fname);
 

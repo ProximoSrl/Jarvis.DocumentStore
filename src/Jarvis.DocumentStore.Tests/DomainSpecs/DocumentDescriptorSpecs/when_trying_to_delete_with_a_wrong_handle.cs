@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         Establish context = () =>
         {
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
-            DocumentDescriptor.Create(_id, _blobId, _handleInfo, _fileHash, _fileName);
+            DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
         };
 
         Because of = () =>
