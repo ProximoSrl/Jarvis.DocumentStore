@@ -65,6 +65,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             if (customParameters.ContainsKey("location")) jobsLauncherFileExe = customParameters["location"];
             FileInfo fi = new FileInfo(jobsLauncherFileExe);
             Logger.InfoFormat("Launching external job process {0} for queue {1}", fi.FullName,  queueId);
+            if (!fi.Exists)
+                throw new ApplicationException("Unable to find executable for Office queue in location " + fi.FullName);
             Process process = GetLocalProcessForQueue(queueId, jobsLauncherFileExe);
             if (process == null)
             {
