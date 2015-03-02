@@ -1,6 +1,6 @@
 ﻿using Castle.MicroKernel.Registration;
 
-namespace Jarvis.DocumentStore.Jobs.Office
+namespace Jarvis.DocumentStore.Jobs.LibreOffice
 {
     public class WindsorInstaller : IWindsorInstaller
     {

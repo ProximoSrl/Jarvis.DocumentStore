@@ -4,10 +4,11 @@ using System.IO;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Services;
-using Jarvis.DocumentStore.Jobs.Office;
+
 using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
+using Jarvis.DocumentStore.Jobs.LibreOffice;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {

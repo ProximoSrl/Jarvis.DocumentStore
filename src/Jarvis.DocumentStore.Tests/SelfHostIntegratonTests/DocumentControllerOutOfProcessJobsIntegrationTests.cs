@@ -31,11 +31,11 @@ using Jarvis.DocumentStore.Tests.ProjectionTests;
 using Newtonsoft.Json;
 using System.Threading;
 using ContainerAccessor = Jarvis.DocumentStore.Host.Support.ContainerAccessor;
-using Jarvis.DocumentStore.Jobs.Office;
 using Jarvis.DocumentStore.Jobs.Attachments;
 using Jarvis.DocumentStore.Core;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using MongoDB.Bson;
+using Jarvis.DocumentStore.Jobs.LibreOffice;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests

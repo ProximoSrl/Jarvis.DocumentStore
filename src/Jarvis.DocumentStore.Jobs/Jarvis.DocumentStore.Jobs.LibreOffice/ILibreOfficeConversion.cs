@@ -1,4 +1,4 @@
-namespace Jarvis.DocumentStore.Jobs.Office
+namespace Jarvis.DocumentStore.Jobs.LibreOffice
 {
     public interface ILibreOfficeConversion
     {
