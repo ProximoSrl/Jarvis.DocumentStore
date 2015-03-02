@@ -13,7 +13,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
     public class when_a_documentDescriptor_is_deleted_with_wrong_handle : DocumentDescriptorSpecifications
     {
         private static Exception Exception { get; set; }
-        Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
+        Establish context = () => Create(_id);
 
         Because of = () =>
         {

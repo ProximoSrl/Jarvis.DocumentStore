@@ -10,9 +10,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     public class when_a_documentDescriptor_is_created_with_known_format : DocumentDescriptorSpecifications
     {
+
         Establish context = () =>
         {
-            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create(_id);
             DocumentDescriptor.DocumentFormatTranslator.GetFormatFromFileName(Arg.Any<String>()).Returns(new DocumentFormat("pdf"));
         };
 

@@ -11,11 +11,6 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     public class DocumentDescriptor : AggregateRoot<DocumentDescriptorState>
     {
-        public DocumentDescriptor(DocumentDescriptorState initialState)
-            : base(initialState)
-        {
-        }
-
         public DocumentDescriptor()
         {
         }

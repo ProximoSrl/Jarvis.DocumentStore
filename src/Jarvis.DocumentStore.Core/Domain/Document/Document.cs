@@ -15,18 +15,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public Document(DocumentState initialState)
-            : base(initialState)
-        {
-        }
-
         public void Initialize(DocumentId id, DocumentHandle handle)
         {
-            if (HasBeenCreated)
-                throw new DomainException((IIdentity)id, "handle already initialized");
+
             ThrowIfDeleted();
 
-            RaiseEvent(new DocumentInitialized(id, handle));
+            RaiseEvent(new DocumentInitialized(handle));
         }
 
         public void Link(DocumentDescriptorId documentId)

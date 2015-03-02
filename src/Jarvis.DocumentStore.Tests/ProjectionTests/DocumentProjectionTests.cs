@@ -94,7 +94,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void add_attachment()
         {
-            _sut.On(new DocumentInitialized(_documentId1, _documentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId1));
             _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId1));
 
             var h = _writer.FindOneById(_documentHandle);
@@ -104,7 +104,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void add_attachment_then_delete()
         {
-            _sut.On(new DocumentInitialized(_documentId1, _documentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId1));
             _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId2));
             _sut.On(new DocumentDeleted(_attachmentHandle, _document2).AssignIdForTest(_documentId1));
 
@@ -115,11 +115,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void add_attachment_nested()
         {
-            _sut.On(new DocumentInitialized(_documentId1, _documentHandle).AssignIdForTest(_documentId1));
-            _sut.On(new DocumentInitialized(_documentId2, _documentHandle).AssignIdForTest(_documentId2));
-            _sut.On(new DocumentInitialized(_documentId3, _documentHandle).AssignIdForTest(_documentId3));
+            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId2));
+            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId3));
 
-            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest( _documentId1 ));
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId1));
             _sut.On(new DocumentHasNewAttachment(_attachmentHandle, _attachmentNestedHandle).AssignIdForTest(_documentId1));
 
             var h = _writer.FindOneById(_documentHandle);

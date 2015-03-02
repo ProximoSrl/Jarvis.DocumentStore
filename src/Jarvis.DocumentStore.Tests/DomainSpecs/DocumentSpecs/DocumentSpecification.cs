@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     [Subject("with a uninitialized document")]
     public class WhenCreatingAnDocument : DocumentSpecification
     {
-        Establish context = () => Create();
+        Establish context = () => Create(DocumentId1);
         Because of = () => DocumentAggregate.Initialize(DocumentId1, DocumentHandle);
 
         It document_initilized_event_should_be_raised = () =>
@@ -47,7 +47,6 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         {
             var e = RaisedEvent<DocumentInitialized>();
             e.Handle.ShouldBeTheSameAs(DocumentHandle);
-            e.Id.ShouldBeLike(DocumentId1);
         };
 
         It linked_document_should_be_null = () =>

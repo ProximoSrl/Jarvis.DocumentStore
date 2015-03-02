@@ -25,9 +25,9 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
             () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentFormatHasBeenDeleted>().ShouldBeTrue();
 
         It document_format_do_not_contain_deleted_format =
-            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Aggregate.InternalState.Formats.ContainsKey(XmlDocumentFormatId1).ShouldBeFalse();
+            () => State.Formats.ContainsKey(XmlDocumentFormatId1).ShouldBeFalse();
 
         It document_format_do_not_contain_blobId =
-            () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Aggregate.InternalState.Formats.Values.ShouldNotContain(XmlBlobId1);
+            () => State.Formats.Values.ShouldNotContain(XmlBlobId1);
     }
 }

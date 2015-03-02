@@ -8,7 +8,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     public class when_a_documentDescriptor_is_created : DocumentDescriptorSpecifications
     {
-        Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
+        Establish context = () => AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create(_id);
 
         Because of = () => DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
 

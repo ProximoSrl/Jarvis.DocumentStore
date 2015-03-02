@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
     {
         Establish context = () =>
         {
-            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create(_id);
             DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
         };
 

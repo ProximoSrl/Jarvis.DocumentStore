@@ -78,7 +78,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_id_when_empty_projection()
         {
             CreateSut();
-            var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("Rev_1"));
+            var evt = new DocumentInitialized(new DocumentHandle("Rev_1"))
+                .AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].Id, Is.EqualTo(1));
@@ -108,7 +109,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_handle_initialized()
         {
             CreateSut();
-            var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("rev_1"));
+            var evt = new DocumentInitialized( new DocumentHandle("rev_1")).AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentInitialized));
@@ -218,7 +219,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             rmStream.Add(new StreamReadModel() { Id = 41 });
             CreateSut();
-            var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("rev_1"));
+            var evt = new DocumentInitialized(new DocumentHandle("rev_1")).AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(2));
             Assert.That(rmStream[1].Id, Is.EqualTo(42));

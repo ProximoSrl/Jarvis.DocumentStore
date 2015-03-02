@@ -5,12 +5,12 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Events
 {
     public class DocumentInitialized : DomainEvent
     {
-        public DocumentId Id { get; private set; }
+
         public DocumentHandle Handle { get; private set; }
 
-        public DocumentInitialized(DocumentId id, DocumentHandle handle)
+        public DocumentInitialized( DocumentHandle handle)
         {
-            Id = id;
+
             Handle = handle;
         }
 
