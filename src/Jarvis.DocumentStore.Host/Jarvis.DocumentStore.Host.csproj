@@ -171,7 +171,7 @@
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
     <Compile Include="Model\AddFormatToDocument.cs" />
     <Compile Include="Model\EventStreamModel.cs" />
-    <Compile Include="Model\FeedModel.cs" />
+    <Compile Include="Model\FeedForStreamReadModel.cs" />
     <Compile Include="Model\UploadedDocumentResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

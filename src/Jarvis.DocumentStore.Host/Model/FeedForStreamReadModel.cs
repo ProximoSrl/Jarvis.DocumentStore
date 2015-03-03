@@ -9,7 +9,7 @@ using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Host.Model
 {
-    public class FeedModel
+    public class FeedForStreamReadModel
     {
         public String Handle { get; set; }
 
@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Host.Model
 
 
 
-        public FeedModel(StreamReadModel original)
+        public FeedForStreamReadModel(StreamReadModel original)
         {
             Handle = original.Handle;
             EventType = original.EventType;

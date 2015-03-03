@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             var result = baseQuery.Take(numOfResults)
-                .Select(rm => new FeedModel(rm))
+                .Select(rm => new FeedForStreamReadModel(rm))
                 .ToList();
             var sc = new StringContent(JsonConvert.SerializeObject(result));
             sc.Headers.ContentType = new MediaTypeHeaderValue("application/json");
