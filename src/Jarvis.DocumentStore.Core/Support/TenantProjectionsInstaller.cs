@@ -125,7 +125,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     .ImplementedBy<ConcurrentProjectionsEngine>()
                     .LifestyleSingleton()
                     .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
-                    .StartUsingMethod(x => x.StartWithManualPoll)
+                    .StartUsingMethod(x => x.Start)
                     .StopUsingMethod(x => x.Stop)
                 );
 
