@@ -24,7 +24,6 @@ namespace Jarvis.DocumentStore.Host.Support
             BsonClassMap.RegisterClassMap<DomainEvent>(map =>
             {
                 map.AutoMap();
-                map.MapProperty(x => x.AggregateId).SetSerializer(new EventStoreIdentityBsonSerializer());
             });
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();
