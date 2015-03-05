@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-using GraphicsMagick;
+
+using ImageMagick;
 
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
@@ -55,9 +56,10 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
             {
                 var settings = new MagickReadSettings
                 {
-                    Density = new MagickGeometry(createPdfImageTaskParams.Dpi, createPdfImageTaskParams.Dpi)
+                    Density = new PointD(createPdfImageTaskParams.Dpi, createPdfImageTaskParams.Dpi)
                 };
-
+                settings.FrameIndex = 0; // First page
+                settings.FrameCount = 1; // Number of pages
                 MagickFormat imageFormat = TranslateFormat(createPdfImageTaskParams.Format);
 
                 Logger.DebugFormat("Image format is {0}", imageFormat.ToString());
