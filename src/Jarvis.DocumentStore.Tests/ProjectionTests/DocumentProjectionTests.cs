@@ -112,23 +112,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(h.Attachments, Is.Empty);
         }
 
-        [Test]
-        public void add_attachment_nested()
-        {
-            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId1));
-            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId2));
-            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId3));
-
-            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId1));
-            _sut.On(new DocumentHasNewAttachment(_attachmentHandle, _attachmentNestedHandle).AssignIdForTest(_documentId1));
-
-            var h = _writer.FindOneById(_documentHandle);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _attachmentHandle, _attachmentNestedHandle }));
-
-            h = _writer.FindOneById(_attachmentHandle);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _attachmentNestedHandle }));
-        }
-
+     
         [Test]
         public void update_custom_data()
         {

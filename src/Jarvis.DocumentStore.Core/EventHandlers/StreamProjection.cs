@@ -214,8 +214,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             };
             var handle = _documentWriter.FindOneById(e.Attachment);
             streamReadModel.AddEventData(StreamReadModelEventDataKeys.FatherHandle, e.Handle);
-            var rootAttachment = handle.AttachmentPath.Split('/').FirstOrDefault();
-            streamReadModel.AddEventData(StreamReadModelEventDataKeys.RootAttachmentHandle, rootAttachment);
+            //var rootAttachment = handle.AttachmentPath.Split('/').FirstOrDefault();
+            //streamReadModel.AddEventData(StreamReadModelEventDataKeys.RootAttachmentHandle, rootAttachment);
             _streamReadModelCollection.Insert(e, streamReadModel);
 
         }

@@ -61,6 +61,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void zip_with_nested_zip_file_upload()
+        {
+            _docs.UploadAsync(TestConfig.PathToZipFileThatContainsOtherZip, DocumentHandle.FromString("zipchain")).Wait();
+        }
+
+        [Test]
         public void zipped_file_delete()
         {
             _docs.DeleteAsync(DocumentHandle.FromString("zipsimple")).Wait();

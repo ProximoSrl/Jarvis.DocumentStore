@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using com.sun.tools.javah;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -51,7 +52,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     //[Explicit("This integration test is slow because it wait for polling")]
     public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public const int MaxTimeout = 60000;
+        public const int MaxTimeout = 10000;
 
         protected DocumentStoreBootstrapper _documentStoreService;
         protected DocumentStoreServiceClient _documentStoreClient;
@@ -660,6 +661,91 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
    
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
+            };
+        }
+    }
+
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_attachment_then_same_attach_inside_externa_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        [Test]
+        public async void verify_attachment_chains()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("child_zip");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("child_zip");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFile,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            Int32 docCount;
+            do
+            {
+                UpdateAndWait();
+                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                if (docCount == 4)
+                {
+                    break;
+                }
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout || docCount == 4);
+
+            //now all attachment are unzipped.
+             handleClient = DocumentHandle.FromString("containing_zip");
+             handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("containing_zip");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFileThatContainsOtherZip,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+             startWait = DateTime.Now;
+            do
+            {
+                UpdateAndWait();
+                docCount = _documentCollection.AsQueryable().Count();
+                if (docCount == 8)
+                {
+                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
+                        new Core.Model.DocumentHandle("attachment_zip_4"),
+                        new Core.Model.DocumentHandle("attachment_zip_5"),
+                        new Core.Model.DocumentHandle("attachment_zip_6")
+                    }));
+
+                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
+                        new Core.Model.DocumentHandle("attachment_zip_1"),
+                        new Core.Model.DocumentHandle("attachment_zip_2"),
+                        new Core.Model.DocumentHandle("attachment_zip_3"),
+                        new Core.Model.DocumentHandle("attachment_zip_4"),
+                        new Core.Model.DocumentHandle("attachment_zip_5")
+                    }));
+                    return;
+                }
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout || docCount == 4);
+
+            Assert.Fail("documents not unzipped correctly, I'm expecting correct chain of doucments");
+        }
+
+
 
         protected override QueueInfo[] OnGetQueueInfo()
         {

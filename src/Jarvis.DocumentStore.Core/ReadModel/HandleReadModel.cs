@@ -21,10 +21,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public HashSet<DocumentHandle> Attachments { get; private set; }
 
-        public HashSet<DocumentHandle> DirectAttachments { get; private set; }
-
-        public string AttachmentPath { get; private set; }
-
         public DocumentDescriptorId DocumentId { get; private set; }
 
         public long CreatetAt { get; private set; }
@@ -105,7 +101,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
-                    .SetOnInsert(x => x.AttachmentPath, handle)
                     .Set(x => x.DocumentId, null)
                     .Set(x => x.CreatetAt, createdAt)
                     .Set(x => x.FileName, null),
@@ -201,15 +196,13 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             };
             _collection.FindAndRemove(args);
 
-            //once a document is deleted it should be removed from every other document that can have this document as attachment.
             _collection.Update(
                 Query<DocumentReadModel>
                     .EQ(x => x.Attachments, handle),
                 Update<DocumentReadModel>
-                    .Pull(x => x.Attachments, handle)
-                    .Pull(x => x.DirectAttachments, handle),
+                    .Pull(x => x.Attachments, handle),
                 UpdateFlags.Multi
-                );
+            );
         }
 
         public IQueryable<DocumentReadModel> AllSortedByHandle
@@ -226,7 +219,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .EQ(x => x.Handle, handle),
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
-                    .SetOnInsert(x => x.AttachmentPath, handle)
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .SetOnInsert(x => x.DocumentId, null)
                     .SetOnInsert(x => x.CreatetAt, createdAt)
@@ -239,8 +231,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle)
         {
             Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
-            var fatherRm = _collection.FindOneById(BsonValue.Create(fatherHandle));
-            var allFathers = fatherRm.AttachmentPath.Split('/')
+
+            var allFathers = _collection.AsQueryable()
+                .Where(d => d.Attachments.Contains(fatherHandle))
                 .ToList();
 
             _collection.Update
@@ -248,29 +241,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Query<DocumentReadModel>
                     .EQ(x => x.Handle, fatherHandle),
                 Update<DocumentReadModel>
-                    .AddToSet(x => x.DirectAttachments, attachmentHandle),
-                UpdateFlags.Multi
-            );
-
-            _collection.Update
-            (
-                Query<DocumentReadModel>
-                    .In(x => x.Handle, allFathers),
-                Update<DocumentReadModel>
                     .AddToSet(x => x.Attachments, attachmentHandle),
                 UpdateFlags.Multi
             );
-
-            var newPath = fatherRm.AttachmentPath + "/" + attachmentHandle;
-            FindAndModifyArgs args = new FindAndModifyArgs
-            {
-                Query = Query<DocumentReadModel>
-                    .EQ(x => x.Handle, attachmentHandle),
-                Update = Update<DocumentReadModel>
-                    .Set(x => x.AttachmentPath, newPath),
-                Upsert = true
-            };
-            _collection.FindAndModify(args);
         }
 
         public DocumentReadModel FindOneById(DocumentHandle handle)

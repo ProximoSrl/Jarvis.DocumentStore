@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var baseQuery = _streamReadModel.AllUnsorted
                 .Where(s => s.Id >= startId);
 
-            if (types != null)
+            if (types != null && types.Count > 0)
             {
                 var listOfTypes = types.ToList();
                 baseQuery = baseQuery.Where(r => listOfTypes.Contains((Int32) r.EventType));

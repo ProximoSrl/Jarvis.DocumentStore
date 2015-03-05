@@ -189,7 +189,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewAttachment));
             Assert.That(rmStream[0].EventData[StreamReadModelEventDataKeys.FatherHandle], Is.EqualTo(rev1));
-            Assert.That(rmStream[0].EventData[StreamReadModelEventDataKeys.RootAttachmentHandle], Is.EqualTo("rev_1"));
         }
 
         private void SetHandleToReturn()
@@ -205,7 +204,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
                     new FileNameWithExtension("test.txt"),
                     customData
                 );
-            handle.SetPropertyValue("AttachmentPath", "rev_1");
             _handleWriter
                 .FindOneById(Arg.Any<DocumentHandle>())
                 .Returns(handle);
