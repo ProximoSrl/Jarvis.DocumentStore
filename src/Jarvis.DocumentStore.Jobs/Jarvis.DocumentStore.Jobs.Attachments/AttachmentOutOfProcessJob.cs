@@ -2,6 +2,7 @@
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using MsgReader;
+using MsgReader.Outlook;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -51,7 +52,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         });
                 }
             }
-            if (extension == ".eml" || extension == ".msg") 
+            else if (extension == ".eml") 
             {
                 var reader = new Reader();
                 reader.ExtractToFolder(localFile, unzippingDirectory);
@@ -83,6 +84,33 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                 }
 
             }
+            else if (extension == ".msg")
+            {
+                using (var stream = File.Open(localFile, FileMode.Open, FileAccess.Read))
+                using (var message = new Storage.Message(stream)) 
+                {
+                    foreach (Storage.Attachment attachment in message.Attachments.OfType < Storage.Attachment>())
+                    {
+                        if (attachment.IsInline)
+                            continue; //no need to uncompress inline attqach
+
+                        String fileName = Path.Combine(unzippingDirectory, attachment.FileName);
+                        File.WriteAllBytes(fileName, attachment.Data);
+
+                        await AddAttachmentToHandle(
+                            parameters.TenantId,
+                            parameters.JobId,
+                            fileName,
+                            "attachment_email",
+                            new Dictionary<string, object>()
+                        {
+                            {JobsConstants.AttachmentRelativePath, attachment.FileName}   
+                        });
+                    }
+                }
+            }
+           
+
             return true;
         }
     }
