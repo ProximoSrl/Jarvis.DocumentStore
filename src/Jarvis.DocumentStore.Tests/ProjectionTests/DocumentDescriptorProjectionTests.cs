@@ -102,8 +102,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.AreEqual(new DocumentHandle("handle"), list[0].Handle);
             Assert.AreEqual(new DocumentHandle("handle_bis"), list[1].Handle);
 
-            Assert.AreEqual(new DocumentDescriptorId(1), list[0].DocumentId);
-            Assert.AreEqual(new DocumentDescriptorId(1), list[1].DocumentId);
+            Assert.AreEqual(new DocumentDescriptorId(1), list[0].DocumentDescriptorId);
+            Assert.AreEqual(new DocumentDescriptorId(1), list[1].DocumentDescriptorId);
         }
 
         [Test]
@@ -154,7 +154,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.IsNull(copy2);
             
             Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(9));
+            Assert.AreEqual(handle.DocumentDescriptorId, new DocumentDescriptorId(9));
         }       
         
         [Test]
@@ -169,7 +169,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(1));
+            Assert.AreEqual(handle.DocumentDescriptorId, new DocumentDescriptorId(1));
 
             var copy = _documentReader.FindOneById(new DocumentDescriptorId(2));
             Assert.IsNull(copy);
@@ -186,7 +186,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);
-            Assert.AreEqual(handle.DocumentId, new DocumentDescriptorId(1));
+            Assert.AreEqual(handle.DocumentDescriptorId, new DocumentDescriptorId(1));
         }
 
         [Test]

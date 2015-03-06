@@ -153,7 +153,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     var formatInfo = documentDescriptor.Formats[format];
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
-                        blob.FileNameWithExtension.ToString(), 
+                        blob.FileNameWithExtension.ToString(),
                         Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToWordDocument) + ".tika.html"),
                         "File name is wrong, we expect the same file name with extension .tika.html");
                     return;
@@ -176,7 +176,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
     [TestFixture]
     [Category("integration_full")]
-    public class integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase 
+    public class integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         OutOfProcessTikaNetJob sut;
 
@@ -238,7 +238,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
     [TestFixture]
     [Category("integration_full")]
-    public class integration_out_of_process_image  : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    public class integration_out_of_process_image : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         [Test]
         public async void verify_image_resizer_job()
@@ -274,12 +274,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     var file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".small.png"));
                     var downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
-                    using (var image = Image.FromFile(downloadedImage)) 
+                    using (var image = Image.FromFile(downloadedImage))
                     {
                         Assert.That(image.Height, Is.EqualTo(200));
                     }
 
-                     blobId = documentDescriptor.Formats[thumbLargeFormat].BlobId;
+                    blobId = documentDescriptor.Formats[thumbLargeFormat].BlobId;
                     file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".large.png"));
                     downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
@@ -317,8 +317,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void verify_chain_for_email()
         {
-             _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
-             PrepareJob();
+            _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
+            PrepareJob();
 
             DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_email");
             await _documentStoreClient.UploadAsync(
@@ -340,7 +340,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (documentDescriptor != null &&
                     documentDescriptor.Formats.ContainsKey(emailFormat))
                 {
-                   
+
                     return; //test is good
                 }
 
@@ -565,7 +565,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     public class integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
 
-   
+
 
         [Test]
         public async void verify_nested_zip_count_file_verification()
@@ -582,7 +582,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
                 }
-            );  
+            );
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
@@ -591,7 +591,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             do
             {
                 UpdateAndWait();
-                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                docCount = _documentCollection.AsQueryable().Count();
                 if (docCount >= 7)
                 {
                     //all attachment are unzipped correctly
@@ -643,7 +643,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             do
             {
                 UpdateAndWait();
-                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 4)
                 {
                     var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
@@ -660,7 +660,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("documents not unzipped correctly, I'm expecting 4 documetns but projection contains " + docCount + " documents");
         }
 
-   
+
 
         protected override QueueInfo[] OnGetQueueInfo()
         {
@@ -704,7 +704,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 {
                     break;
                 }
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout || docCount == 4);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             //now all attachment are unzipped.
              handleClient = DocumentHandle.FromString("containing_zip");
@@ -724,23 +724,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 8)
                 {
-                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
-                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
-                        new Core.Model.DocumentHandle("attachment_zip_4"),
-                        new Core.Model.DocumentHandle("attachment_zip_5"),
-                        new Core.Model.DocumentHandle("attachment_zip_6")
-                    }));
+                    var doc = _documentCollection.FindAll();
+                    //now I'm expeting to find three documents with attachments
+                    Assert.That(doc.Count(d => d.Attachments != null && d.Attachments.Count > 0), Is.EqualTo(3));
 
-                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
-                        new Core.Model.DocumentHandle("attachment_zip_1"),
-                        new Core.Model.DocumentHandle("attachment_zip_2"),
-                        new Core.Model.DocumentHandle("attachment_zip_3"),
-                        new Core.Model.DocumentHandle("attachment_zip_4"),
-                        new Core.Model.DocumentHandle("attachment_zip_5")
-                    }));
                     return;
                 }
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout || docCount == 4);
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("documents not unzipped correctly, I'm expecting correct chain of doucments");
         }
@@ -799,7 +789,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected override QueueInfo[] OnGetQueueInfo()
         {
-            
+
             return new QueueInfo[]
             {
                 new QueueInfo("attachments", mimeTypes : 

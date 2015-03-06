@@ -188,7 +188,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 //user ask for handle, we need to grab the handle
                 var documentHandle = new DocumentHandle(_customData[AddFormatToDocumentParameters.DocumentHandle] as String);
                 var handle = _handleWriter.FindOneById(documentHandle);
-                documentId = handle.DocumentId;
+                documentId = handle.DocumentDescriptorId;
                 if (documentId == null)
                 {
                     Logger.ErrorFormat("Trying to add a format for Handle {0} with a null DocumentId", documentHandle);
@@ -376,7 +376,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (mapping == null)
                 return DocumentNotFound(handle);
 
-            var document = _documentDescriptorReader.FindOneById(mapping.DocumentId);
+            var document = _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
 
             if (document == null)
             {
@@ -532,7 +532,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (mapping == null)
                 return null;
 
-            return _documentDescriptorReader.FindOneById(mapping.DocumentId);
+            return _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
         }
     }
 

@@ -21,7 +21,13 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public HashSet<DocumentHandle> Attachments { get; private set; }
 
-        public DocumentDescriptorId DocumentId { get; private set; }
+        /// <summary>
+        /// A DeDuplicated document is a document that was deduplicated, this
+        /// is an info needed to handle attachments.
+        /// </summary>
+        public Boolean DeDuplicated { get; set; }
+
+        public DocumentDescriptorId DocumentDescriptorId { get; private set; }
 
         public long CreatetAt { get; private set; }
 
@@ -45,7 +51,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public DocumentReadModel(DocumentHandle handle, DocumentDescriptorId documentid, FileNameWithExtension fileName, DocumentCustomData customData)
         {
             Handle = handle;
-            DocumentId = documentid;
+            DocumentDescriptorId = documentid;
             FileName = fileName;
             CustomData = customData;
         }
@@ -62,7 +68,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         DocumentReadModel FindOneById(DocumentHandle handle);
         void Drop();
         void Init();
+
         void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt);
+
+        void DocumentDeDuplicated(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt);
+
         void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<DocumentReadModel> AllSortedByHandle { get; }
@@ -101,7 +111,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
-                    .Set(x => x.DocumentId, null)
+                    .Set(x => x.DocumentDescriptorId, null)
                     .Set(x => x.CreatetAt, createdAt)
                     .Set(x => x.FileName, null),
                 Upsert = true,
@@ -148,6 +158,65 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt)
         {
+            InnerCreateLinkToDocument(handle, id, false, projectedAt);
+        }
+
+        public void DocumentDeDuplicated(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt)
+        {
+            InnerCreateLinkToDocument(handle, id, true, projectedAt);
+
+            //need to manage attachments, first step, find the original handle that belong to that descriptor
+            CopyAttachmentFromPrimaryHandle(handle, id, oldId, projectedAt);
+        }
+
+        private void CopyAttachmentFromPrimaryHandle(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt)
+        {
+            var primaryAttachHandleList = _collection.Find(
+                Query.And(
+                    Query<DocumentReadModel>.EQ(x => x.DeDuplicated, false),
+                    Query<DocumentReadModel>.EQ(x => x.DocumentDescriptorId, id))
+                ).Take(2);
+            if (primaryAttachHandleList.Count() == 0)
+            {
+                Logger.ErrorFormat("Unable to find original DocumentId for handle {0} with new DocumentDescriptorId {1} and old DocumentDescriptorId {2} [{3}]",
+                    handle, id, oldId, projectedAt);
+            }
+            else if (primaryAttachHandleList.Count() > 1)
+            {
+                var aggregateList = primaryAttachHandleList
+                       .Select(h => h.Handle.ToString())
+                       .Aggregate((s1, s2) => s1 + ", " + s2);
+                Logger.ErrorFormat("Multiple original DocumentId found ({4})for handle {0} with new DocumentDescriptorId {1} and old DocumentDescriptorId {2} [{3}]",
+                   handle, id, oldId, projectedAt, aggregateList);
+            }
+            else
+            {
+                var primaryAttachHandle = primaryAttachHandleList.Single();
+                if (primaryAttachHandle.Attachments != null && primaryAttachHandle.Attachments.Count > 0)
+                {
+                    //inherit attachments to de-duplicated handle
+                    var args = new FindAndModifyArgs
+                    {
+                        Query = Query.And(
+                            Query<DocumentReadModel>.EQ(x => x.Handle, handle)
+                        ),
+                        Update = Update<DocumentReadModel>
+                            .Set(x => x.Attachments, primaryAttachHandle.Attachments)
+                    };
+                    _collection.FindAndModify(args);
+
+                    if (Logger.IsDebugEnabled)
+                    {
+                        Logger.DebugFormat("Inherited Attachment: handle {0} for descriptorid {1} and primary Handle {2} [{3}]", 
+                            handle, id, primaryAttachHandle.Handle, projectedAt);
+                    }
+                }
+            }
+        }
+
+
+        private void InnerCreateLinkToDocument(DocumentHandle handle, DocumentDescriptorId id, Boolean deDuplication, long projectedAt)
+        {
             Logger.DebugFormat("LinkDocument on handle {0} [{1}]", handle, projectedAt);
 
             var args = new FindAndModifyArgs
@@ -157,8 +226,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
                 ),
                 Update = Update<DocumentReadModel>
-                    .Set(x => x.DocumentId, id)
-                    .Set(x => x.ProjectedAt, projectedAt),
+                    .Set(x => x.DocumentDescriptorId, id)
+                    .Set(x => x.ProjectedAt, projectedAt)
+                    .Set(x => x.DeDuplicated, deDuplication),
                 VersionReturned = FindAndModifyDocumentVersion.Modified
             };
             var result = _collection.FindAndModify(args);
@@ -169,6 +239,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     result.ModifiedDocument != null ? result.ModifiedDocument.ToJson() : "null");
             }
         }
+
+        
 
         public void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData)
         {
@@ -220,7 +292,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
-                    .SetOnInsert(x => x.DocumentId, null)
+                    .SetOnInsert(x => x.DocumentDescriptorId, null)
                     .SetOnInsert(x => x.CreatetAt, createdAt)
                     .SetOnInsert(x => x.FileName, null),
                 Upsert = true
@@ -232,14 +304,14 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
 
-            var allFathers = _collection.AsQueryable()
-                .Where(d => d.Attachments.Contains(fatherHandle))
-                .ToList();
+            //if attachment is added to secondary handle it has no meaning, is an attach that is duplicated
+            var handle = _collection.FindOneById(BsonValue.Create(fatherHandle));
+            if (handle.DeDuplicated) return;
 
             _collection.Update
             (
                 Query<DocumentReadModel>
-                    .EQ(x => x.Handle, fatherHandle),
+                    .EQ(x => x.DocumentDescriptorId, handle.DocumentDescriptorId),
                 Update<DocumentReadModel>
                     .AddToSet(x => x.Attachments, attachmentHandle),
                 UpdateFlags.Multi
