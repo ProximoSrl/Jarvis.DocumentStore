@@ -62,7 +62,15 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         Path.GetFileNameWithoutExtension(file).StartsWith(Path.GetFileNameWithoutExtension(parameters.FileName)))
                         continue;
 
+                    if (Path.GetExtension(file) == ".htm")
+                        continue;
+
                     var relativeFileName = file.Substring(unzippingDirectory.Length);
+                    if (Logger.IsDebugEnabled) 
+                    {
+                        Logger.DebugFormat("Found attachment for file {0} - file {1}",
+                            Path.GetFileName(localFile), relativeFileName);
+                    }
                     await AddAttachmentToHandle(
                         parameters.TenantId,
                         parameters.JobId,
