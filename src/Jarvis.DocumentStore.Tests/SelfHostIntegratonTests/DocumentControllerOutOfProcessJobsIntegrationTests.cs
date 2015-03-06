@@ -648,9 +648,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 {
                     var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
                     Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
-                        new Core.Model.DocumentHandle("attachment_zip_1"),
-                        new Core.Model.DocumentHandle("attachment_zip_2"),
-                        new Core.Model.DocumentHandle("attachment_zip_3")
+                        new Core.Model.DocumentHandle("content_zip_1"),
+                        new Core.Model.DocumentHandle("content_zip_2"),
+                        new Core.Model.DocumentHandle("content_zip_3")
                     }));
                     return;
                 }

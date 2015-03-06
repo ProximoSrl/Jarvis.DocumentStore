@@ -348,21 +348,63 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentHandle handle
         )
         {
-            var mapping = _handleWriter.FindOneById(handle);
+            var document = _handleWriter.FindOneById(handle);
 
-            if (mapping == null)
+            if (document == null)
             {
                 return DocumentNotFound(handle);
             }
 
-            if (mapping.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+            if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
 
-            var attachments = mapping.Attachments.ToDictionary(x =>
+            var attachments = document.Attachments.ToDictionary(x =>
                 x,
                 x => Url.Content("/" + tenantId + "/documents/" + x)
             );
             return Request.CreateResponse(HttpStatusCode.OK, attachments);
         }
+
+        /// <summary>
+        /// Retrieve all attachments for the document
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="handle"></param>
+        /// <returns></returns>
+        [Route("{tenantId}/documents/attachments_fat/{handle}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetAttachmentFat(
+            TenantId tenantId,
+            DocumentHandle handle
+        )
+        {
+            var document = _handleWriter.FindOneById(handle);
+
+            if (document == null)
+            {
+                return DocumentNotFound(handle);
+            }
+
+            if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+            Dictionary<String, String> fat = new Dictionary<string, string>();
+
+            ScanAttachments(tenantId, document, fat, "");
+
+            return Request.CreateResponse(HttpStatusCode.OK, fat);
+        }
+
+        private void ScanAttachments(TenantId tenantId, DocumentReadModel document, Dictionary<String, String> fat, String path)
+        {
+            foreach (var attachment in document.Attachments)
+            {
+                var thisPath = path + "/" + attachment;
+                fat[thisPath] = Url.Content("/" + tenantId + "/documents/" + attachment);
+                var attachmentDocument = _handleWriter.FindOneById(attachment);
+                if (attachmentDocument.Attachments != null && attachmentDocument.Attachments.Count > 0)
+                    ScanAttachments(tenantId, attachmentDocument, fat, thisPath);
+            }
+        }
+
+        
 
         [Route("{tenantId}/documents/{handle}/{format}")]
         [HttpGet]

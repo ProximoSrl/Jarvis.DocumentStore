@@ -43,7 +43,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         parameters.TenantId,
                         parameters.JobId,
                         file,
-                        "attachment_zip",
+                        "content_zip",
                         new Dictionary<string, object>()
                         {
                             {"RelativePath", relativeFileName}   

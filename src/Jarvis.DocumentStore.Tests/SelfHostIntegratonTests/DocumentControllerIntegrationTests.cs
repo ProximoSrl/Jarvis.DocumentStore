@@ -46,9 +46,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private MongoCollection<DocumentReadModel> _documentCollection;
         private ITriggerProjectionsUpdate _projections;
 
-        private void UpdateAndWait()
+        private async void UpdateAndWait()
         {
-            _projections.UpdateAndWait();
+            await _projections.UpdateAndWait();
         }
 
         [SetUp]
@@ -318,17 +318,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             UpdateAndWait();
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content");
 
             // wait background projection polling
             UpdateAndWait();
 
-            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
             var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
-            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Jarvis.DocumentStore.Core.Model.DocumentHandle("zip_1") }));
+            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1") }));
         }
 
         [Test]
@@ -340,19 +340,19 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             UpdateAndWait();
 
             //upload attachments
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Content");
             UpdateAndWait();
 
-            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with first child handle was not find.");
 
-            document = _documentDescriptorCollection.Find(Query.EQ("Documents", "zip_2")).SingleOrDefault();
+            document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_2")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with second child handle was not find.");
 
             var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
-            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("zip_1"), new Core.Model.DocumentHandle("zip_2") }));
+            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("content_1"), new Core.Model.DocumentHandle("content_2") }));
         }
 
         [Test]
@@ -420,6 +420,64 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(attachments.Attachments, Has.Count.EqualTo(1));
             Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("source_1"));
             Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
+        }
+
+        [Test]
+        public async void attachments_not_retrieve_nested_attachment()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, new DocumentHandle("source_1"), "nested");
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
+            Assert.NotNull(attachments);
+            Assert.That(attachments.Attachments, Has.Count.EqualTo(1));
+            Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("source_1"));
+            Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
+        }
+
+        [Test]
+        public async void attachments_fat_retrieve_nested_attachment()
+        {
+            //Upload father
+            var fatherHandle = new DocumentHandle("father");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToExcelDocument, new DocumentHandle("source_1"), "nested");
+
+            // wait background projection polling
+            UpdateAndWait();
+
+            var attachments = await _documentStoreClient.GetAttachmentsFatAsync(fatherHandle);
+            Assert.NotNull(attachments);
+            Assert.That(attachments.Attachments, Has.Count.EqualTo(2));
+            Assert.That(attachments.Attachments.Select(a => a.Key), Is.EquivalentTo(new [] {"/source_1", "/source_1/nested_1"}));
+            Assert.That(attachments.Attachments.Select(a => a.Value), 
+                Is.EquivalentTo(new [] {
+                    new Uri("http://localhost:5123/tests/documents/source_1"), 
+                    new Uri("http://localhost:5123/tests/documents/nested_1")
+            }));
         }
 
         private async Task CompareDownloadedStreamToFile(string pathToFileToCompare, DocumentFormatReader documentFormatReader)
