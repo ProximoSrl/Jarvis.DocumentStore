@@ -464,7 +464,7 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new HttpClient())
             {
                 var json = await client.GetStringAsync(resourceUri);
-                var d = await FromJsonAsync<List<Jarvis.DocumentStore.Client.Model.DocumentAttachmentsFat.AttachmentInfo>>(json);
+                var d = await FromJsonAsync<List<DocumentAttachmentsFat.AttachmentInfo>>(json);
                 return new DocumentAttachmentsFat(d);
             }
         }

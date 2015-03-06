@@ -472,7 +472,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var attachments = await _documentStoreClient.GetAttachmentsFatAsync(fatherHandle);
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments, Has.Count.EqualTo(2));
-            Assert.That(attachments.Attachments.Select(a => a.AttachmentPath), Is.EquivalentTo(new [] {"/source_1", "/source_1/nested_1"}));
+            Assert.That(attachments.Attachments.Select(a => a.FileName), Is.EquivalentTo(new [] {
+                Path.GetFileName(TestConfig.PathToDocumentPng), 
+                Path.GetFileName(TestConfig.PathToExcelDocument)
+            }));
             Assert.That(attachments.Attachments.Select(a => a.Uri), 
                 Is.EquivalentTo(new [] {
                     new Uri("http://localhost:5123/tests/documents/source_1"), 

@@ -22,6 +22,11 @@ namespace Jarvis.DocumentStore.Client.Model
 
         public class AttachmentInfo 
         {
+            public AttachmentInfo()
+            {
+
+            }
+
             public AttachmentInfo(String uri, String fileName, String attachmentPath)
                 : this(uri, fileName, attachmentPath, "")
             {
@@ -36,13 +41,13 @@ namespace Jarvis.DocumentStore.Client.Model
                 RelativeFileName = relativePath + "/" + fileName;
             }
 
-            public String Uri { get; private set; }
+            public String Uri { get;  set; }
 
-            public String FileName { get; private set; }
+            public String FileName { get;  set; }
 
-            public String RelativeFileName { get; private set; }
+            public String RelativeFileName { get;  set; }
 
-            public String AttachmentPath { get; private set; }
+            public String AttachmentPath { get;  set; }
         }
     }
 }
