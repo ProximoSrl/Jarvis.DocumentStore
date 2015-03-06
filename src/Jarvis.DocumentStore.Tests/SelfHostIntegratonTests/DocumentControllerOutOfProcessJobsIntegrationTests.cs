@@ -826,18 +826,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             do
             {
                 UpdateAndWait();
-                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 11)
                 {
                     //all attachment are unzipped correctly
                     var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
-                    Assert.That(doc.Attachments, Has.Count.EqualTo(11));
+                    Assert.That(doc.Attachments, Has.Count.EqualTo(3), "primary document has wrong number of attachments");
                     return;
                 }
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
-            Assert.Fail("file from email not extracted correctly, I'm expecting 2 documetns but projection contains " + docCount + " documents");
+            Assert.Fail("file from email not extracted correctly, I'm expecting 11 documetns but projection contains " + docCount + " documents");
         }
 
 
