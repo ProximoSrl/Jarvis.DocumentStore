@@ -65,10 +65,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         private ITriggerProjectionsUpdate _projections;
 
-        protected void UpdateAndWait()
+        protected async Task UpdateAndWait()
         {
-            _projections.UpdateAndWait();
-            Thread.Sleep(1000); //update and wait returns immediately if there are no other stuff to dispatch.
+            await _projections.UpdateAndWait();
         }
 
         [TestFixtureSetUp]
@@ -143,7 +142,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var format = new DocumentFormat("tika");
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
                 if (documentDescriptor != null &&
@@ -200,7 +199,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var format = new DocumentFormat("content");
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
                 if (documentDescriptor != null &&
@@ -262,7 +261,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var thumbLargeFormat = new DocumentFormat("thumb.large");
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
                 if (documentDescriptor != null &&
@@ -334,7 +333,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var emailFormat = new DocumentFormat("email");
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
                 if (documentDescriptor != null &&
@@ -397,7 +396,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var pdfFormat = new DocumentFormat("Pdf");
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
                 if (documentDescriptor != null &&
@@ -464,7 +463,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var pdfFormat = DocumentFormats.Pdf;
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
                 if (documentDescriptor != null &&
@@ -529,7 +528,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var format = new DocumentFormat("Pdf");
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleServer));
                 if (documentDescriptor != null &&
@@ -590,7 +589,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var docCount = 0;
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 docCount = _documentCollection.AsQueryable().Count();
                 if (docCount >= 7)
                 {
@@ -642,7 +641,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Int32 docCount;
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 4)
                 {
@@ -698,7 +697,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Int32 docCount;
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 docCount = _documentDescriptorCollection.AsQueryable().Count();
                 if (docCount == 4)
                 {
@@ -720,7 +719,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
              startWait = DateTime.Now;
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 8)
                 {
@@ -770,7 +769,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Int32 docCount;
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 docCount = _documentDescriptorCollection.AsQueryable().Count();
                 if (docCount == 2)
                 {
@@ -825,19 +824,19 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Int32 docCount;
             do
             {
-                UpdateAndWait();
+                await UpdateAndWait();
                 docCount = _documentCollection.AsQueryable().Count();
-                if (docCount == 11)
+                if (docCount == 10)
                 {
                     //all attachment are unzipped correctly
                     var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
-                    Assert.That(doc.Attachments, Has.Count.EqualTo(3), "primary document has wrong number of attachments");
+                    Assert.That(doc.Attachments, Has.Count.EqualTo(2), "primary document has wrong number of attachments");
                     return;
                 }
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
-            Assert.Fail("file from email not extracted correctly, I'm expecting 11 documetns but projection contains " + docCount + " documents");
+            Assert.Fail("file from email not extracted correctly, I'm expecting 10 documetns but projection contains " + docCount + " documents");
         }
 
 

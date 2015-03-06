@@ -65,6 +65,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             get { return Path.Combine(DocumentsFolder, "MailWithMultipleAttach.msg"); }
         }
+
+        public static string PathToEmlWithComplexAttachmentAndZipFileWithFolders
+        {
+            get { return Path.Combine(DocumentsFolder, "MailWithMultipleAttach.eml"); }
+        }
         
         public static string PathToMsg
         {

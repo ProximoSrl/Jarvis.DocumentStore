@@ -73,9 +73,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void email_with_zip_with_folders_upload()
+        public void email_msg_with_zip_with_folders_upload()
         {
             _docs.UploadAsync(TestConfig.PathToMsgWithComplexAttachmentAndZipFileWithFolders, DocumentHandle.FromString("msg_with_zip_folder")).Wait();
+        }
+
+        [Test]
+        public void email_eml_with_zip_with_folders_upload()
+        {
+            _docs.UploadAsync(TestConfig.PathToEmlWithComplexAttachmentAndZipFileWithFolders, DocumentHandle.FromString("eml_with_zip_folder")).Wait();
         }
 
         [Test]

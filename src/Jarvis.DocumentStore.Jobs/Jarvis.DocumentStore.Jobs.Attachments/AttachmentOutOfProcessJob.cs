@@ -54,34 +54,39 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
             }
             else if (extension == ".eml") 
             {
-                var reader = new Reader();
-                reader.ExtractToFolder(localFile, unzippingDirectory);
-      
-                foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
+                using (var stream = File.Open(localFile, FileMode.Open, FileAccess.Read))
                 {
-                    if ((Path.GetExtension(file) == ".htm" || Path.GetExtension(file) == ".html") && 
-                        Path.GetFileNameWithoutExtension(file).StartsWith(Path.GetFileNameWithoutExtension(parameters.FileName)))
-                        continue;
-
-                    if (Path.GetExtension(file) == ".htm")
-                        continue;
-
-                    var relativeFileName = file.Substring(unzippingDirectory.Length);
-                    if (Logger.IsDebugEnabled) 
+                    var message = MsgReader.Mime.Message.Load(stream);
+                    var bodyPart = message.HtmlBody ?? message.TextBody;
+                    String body = "";
+                    if (bodyPart != null) body = bodyPart.GetBodyAsText();
+                    foreach (MsgReader.Mime.MessagePart attachment in message.Attachments.OfType<MsgReader.Mime.MessagePart>())
                     {
-                        Logger.DebugFormat("Found attachment for file {0} - file {1}",
-                            Path.GetFileName(localFile), relativeFileName);
-                    }
-                    await AddAttachmentToHandle(
-                        parameters.TenantId,
-                        parameters.JobId,
-                        file,
-                        "attachment_email",
-                        new Dictionary<string, object>()
+                        if (!String.IsNullOrEmpty(attachment.ContentId) &&
+                            body.Contains(attachment.ContentId)) 
                         {
-                            {JobsConstants.AttachmentRelativePath, relativeFileName}   
+                            if (Logger.IsDebugEnabled) 
+                            {
+                                Logger.DebugFormat("Attachment cid {0} name {1} discharded because it is inline", attachment.ContentId, attachment.FileName);
+                                continue;
+                            }
+                        }
+
+                        String fileName = Path.Combine(unzippingDirectory, attachment.FileName);
+                        File.WriteAllBytes(fileName, attachment.Body);
+                        await AddAttachmentToHandle(
+                            parameters.TenantId,
+                            parameters.JobId,
+                            fileName,
+                            "attachment_email",
+                            new Dictionary<string, object>()
+                        {
+                            {JobsConstants.AttachmentRelativePath, attachment.FileName}   
                         });
+                    }
                 }
+      
+               
 
             }
             else if (extension == ".msg")

@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         public virtual bool IsActive { get { return true; } }
 
-        public ILogger Logger { get; set; }
+        public IExtendedLogger Logger { get; set; }
 
         public JobsHostConfiguration JobsHostConfiguration { get; set; }
 
@@ -173,6 +173,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                     System.Threading.Interlocked.Decrement(ref _numOfPollerTaskActive);
                     return;
                 }
+                Logger.ThreadProperties["job-id"] = nextJob.Id;
                 var baseParameters = ExtractJobParameters(nextJob);
                 //remember to enter the right tenant.
                 workingFolder = Path.Combine(
@@ -205,6 +206,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 finally
                 {
                     DeleteWorkingFolder(workingFolder);
+                    Logger.ThreadProperties["job-id"] = null;
                 }
             } while (true); //Exit is in the internal loop
         }
