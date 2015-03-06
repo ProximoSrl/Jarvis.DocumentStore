@@ -1,5 +1,6 @@
 ﻿using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
+using Jarvis.DocumentStore.Shared.Jobs;
 using MsgReader;
 using System;
 using System.Collections.Generic;
@@ -46,7 +47,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         "content_zip",
                         new Dictionary<string, object>()
                         {
-                            {"RelativePath", relativeFileName}   
+                            {JobsConstants.AttachmentRelativePath, relativeFileName}   
                         });
                 }
             }
@@ -69,7 +70,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         "attachment_email",
                         new Dictionary<string, object>()
                         {
-                            {"RelativePath", relativeFileName}   
+                            {JobsConstants.AttachmentRelativePath, relativeFileName}   
                         });
                 }
 

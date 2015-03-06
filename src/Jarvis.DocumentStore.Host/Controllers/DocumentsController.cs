@@ -29,6 +29,7 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -385,22 +386,41 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
-            Dictionary<String, String> fat = new Dictionary<string, string>();
+            List<DocumentAttachmentsFat.AttachmentInfo> fat = new List<DocumentAttachmentsFat.AttachmentInfo>();
 
             ScanAttachments(tenantId, document, fat, "");
 
             return Request.CreateResponse(HttpStatusCode.OK, fat);
         }
 
-        private void ScanAttachments(TenantId tenantId, DocumentReadModel document, Dictionary<String, String> fat, String path)
+        private void ScanAttachments(TenantId tenantId, DocumentReadModel document, List<DocumentAttachmentsFat.AttachmentInfo> fat, String attachmentPath)
         {
             foreach (var attachment in document.Attachments)
             {
-                var thisPath = path + "/" + attachment;
-                fat[thisPath] = Url.Content("/" + tenantId + "/documents/" + attachment);
                 var attachmentDocument = _handleWriter.FindOneById(attachment);
+                String relativePath = "";
+                if (attachmentDocument.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
+                {
+                    relativePath = attachmentDocument.CustomData[JobsConstants.AttachmentRelativePath] as String;
+                    relativePath = relativePath.TrimStart('\\').Replace("\\", "/");
+                    if (attachmentDocument.FileName != null)
+                    {
+                        if (relativePath.EndsWith(attachmentDocument.FileName))
+                        {
+                            relativePath = relativePath.Substring(0, relativePath.Length - attachmentDocument.FileName.ToString().Length)
+                                .TrimEnd('/');
+                        }
+                    }
+                }
+                fat.Add(new DocumentAttachmentsFat.AttachmentInfo(
+                        Url.Content("/" + tenantId + "/documents/" + attachment),
+                        attachmentDocument.FileName,
+                        attachmentPath,
+                        relativePath
+                    ));
+               
                 if (attachmentDocument.Attachments != null && attachmentDocument.Attachments.Count > 0)
-                    ScanAttachments(tenantId, attachmentDocument, fat, thisPath);
+                    ScanAttachments(tenantId, attachmentDocument, fat, attachmentPath + "/" + attachmentDocument.FileName);
             }
         }
 

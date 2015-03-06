@@ -46,7 +46,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private MongoCollection<DocumentReadModel> _documentCollection;
         private ITriggerProjectionsUpdate _projections;
 
-        private async void UpdateAndWait()
+        private async Task UpdateAndWaitAsync()
         {
             await _projections.UpdateAndWait();
         }
@@ -89,7 +89,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // waits for storage
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             using (var reader = _documentStoreClient.OpenRead(DocumentHandle.FromString("Pdf_2")))
             {
@@ -136,7 +136,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.AreEqual("md5", response.HashType);
             Assert.AreEqual("http://localhost:5123/tests/documents/pdf_1", response.Uri);
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var customData = await _documentStoreClient.GetCustomDataAsync(DocumentHandle.FromString("Pdf_1"));
             Assert.NotNull(customData);
@@ -170,7 +170,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -184,7 +184,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -195,7 +195,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -211,7 +211,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -222,7 +222,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -238,7 +238,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             DocumentContent content = new DocumentContent(new DocumentContent.DocumentPage[]
             {
@@ -254,7 +254,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -275,7 +275,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -286,7 +286,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             //now add same format with different content.
             model = new AddFormatFromFileToDocumentModel();
@@ -297,7 +297,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -316,12 +316,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content");
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
@@ -337,12 +337,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             //upload attachments
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content");
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Content");
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with first child handle was not find.");
@@ -361,15 +361,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             //upload attachments
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourcea");
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceb");
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.DeleteAttachmentsAsync(fatherHandle, "sourceb");
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var handle = _documentCollection.Find(Query.EQ("_id", "sourcea_1")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "SourceA attachment should not be deleted.");
@@ -384,15 +384,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             //upload attachments
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.DeleteAsync(fatherHandle);
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             Assert.That(_documentDescriptorCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
             Assert.That(_documentCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
@@ -408,12 +408,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
             Assert.NotNull(attachments);
@@ -430,17 +430,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, new DocumentHandle("source_1"), "nested");
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
             Assert.NotNull(attachments);
@@ -457,23 +457,23 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToExcelDocument, new DocumentHandle("source_1"), "nested");
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var attachments = await _documentStoreClient.GetAttachmentsFatAsync(fatherHandle);
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments, Has.Count.EqualTo(2));
-            Assert.That(attachments.Attachments.Select(a => a.Key), Is.EquivalentTo(new [] {"/source_1", "/source_1/nested_1"}));
-            Assert.That(attachments.Attachments.Select(a => a.Value), 
+            Assert.That(attachments.Attachments.Select(a => a.AttachmentPath), Is.EquivalentTo(new [] {"/source_1", "/source_1/nested_1"}));
+            Assert.That(attachments.Attachments.Select(a => a.Uri), 
                 Is.EquivalentTo(new [] {
                     new Uri("http://localhost:5123/tests/documents/source_1"), 
                     new Uri("http://localhost:5123/tests/documents/nested_1")
@@ -529,13 +529,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // wait background projection polling
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var data = await _documentStoreClient.GetCustomDataAsync(handle);
 
             await _documentStoreClient.DeleteAsync(handle);
 
-            UpdateAndWait();
+            await UpdateAndWaitAsync();
 
             var ex = Assert.Throws<HttpRequestException>(async () =>
             {

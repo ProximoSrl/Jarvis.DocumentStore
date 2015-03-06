@@ -60,6 +60,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             get { return Path.Combine(DocumentsFolder, "mailWithcomplexAttachments.msg"); }
         }
+
+        public static string PathToMsgWithComplexAttachmentAndZipFileWithFolders
+        {
+            get { return Path.Combine(DocumentsFolder, "MailWithMultipleAttach.msg"); }
+        }
         
         public static string PathToMsg
         {
@@ -141,6 +146,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "zipped.zip"); }
         }
 
+        public static string PathToZipFileWithFolders
+        {
+            get { return Path.Combine(DocumentsFolder, "ZipWithFolders.zip"); }
+        }
+        
         public static string PathToZipFileThatContainsOtherZip
         {
             get { return Path.Combine(DocumentsFolder, "ZipWithNestedZip.zip"); }

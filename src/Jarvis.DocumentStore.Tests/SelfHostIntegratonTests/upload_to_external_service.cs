@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void drop_all_tenants()
+        public void _drop_all_tenants()
         {
             MongoDbTestConnectionProvider.DropAll();
         }
@@ -58,6 +58,24 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void zipped_file_upload()
         {
             _docs.UploadAsync(TestConfig.PathToZipFile, DocumentHandle.FromString("zipsimple")).Wait();
+        }
+
+        [Test]
+        public void zipped_file_withFolders_upload()
+        {
+            _docs.UploadAsync(TestConfig.PathToZipFileWithFolders, DocumentHandle.FromString("zip_with_folders")).Wait();
+        }
+
+        [Test]
+        public void attachment_complex_email_upload()
+        {
+            _docs.UploadAsync(TestConfig.PathToMsgWithComplexAttachment, DocumentHandle.FromString("msg_with_complex_attach")).Wait();
+        }
+
+        [Test]
+        public void email_with_zip_with_folders_upload()
+        {
+            _docs.UploadAsync(TestConfig.PathToMsgWithComplexAttachmentAndZipFileWithFolders, DocumentHandle.FromString("msg_with_zip_folder")).Wait();
         }
 
         [Test]
