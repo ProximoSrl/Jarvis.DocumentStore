@@ -9,6 +9,7 @@ using Quartz;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Metrics;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -23,20 +24,26 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("queue/getnextjob")]
         public QueuedJobDto GetNextJob(GetNextJobParameter parameter)
         {
-            if (QueueDispatcher == null) return null;
-            return QueueDispatcher.GetNextJob(
-                parameter.QueueName, 
-                parameter.Identity,
-                parameter.Handle, 
-                new TenantId(parameter.TenantId), 
-                parameter.CustomData);
+            using (Metric.Timer("queue-nextjob", Unit.Requests).NewContext(parameter.QueueName))
+            {
+                if (QueueDispatcher == null) return null;
+                return QueueDispatcher.GetNextJob(
+                    parameter.QueueName,
+                    parameter.Identity,
+                    parameter.Handle,
+                    new TenantId(parameter.TenantId),
+                    parameter.CustomData);
+            }
         }
 
         [HttpPost]
         [Route("queue/setjobcomplete")]
         public Boolean SetComplete(FinishedJobParameter parameter)
         {
-            return QueueDispatcher.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
+            using (Metric.Timer("queue-complete", Unit.Requests).NewContext(parameter.QueueName))
+            {
+                return QueueDispatcher.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
+            }
         }
     }
 
