@@ -1,3 +1,4 @@
+using System;
 using System.Configuration;
 using Castle.Facilities.Logging;
 using Castle.Services.Logging.Log4netIntegration;
@@ -28,6 +29,11 @@ namespace Jarvis.DocumentStore.Tests.Support
         public override void CreateLoggingFacility(LoggingFacility f)
         {
             f.LogUsing<ExtendedConsoleLoggerFactory>();
+        }
+
+        public void SetTestAddress(Uri serverAddress)
+        {
+            AddServerAddress(serverAddress);
         }
     }
 

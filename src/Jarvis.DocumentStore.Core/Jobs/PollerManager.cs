@@ -71,7 +71,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
                         clientJobHandle = _pollerJobManagers[poller.Name].Start(
                             queueInfo.Name,
                             poller.Parameters,
-                            new List<String>() { _configuration.ServerAddress.AbsoluteUri });
+                            //@@TODO: allow multiple bindings to same service?
+                            new List<String>() { _configuration.ServerAddresses.First().AbsoluteUri });
                     }
                     catch (Exception ex)
                     {

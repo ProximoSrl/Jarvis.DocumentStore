@@ -50,7 +50,17 @@ namespace Jarvis.DocumentStore.Host.Support
             QueueInfoList = queueInfoList.ToArray();
 
             //App.config configuration
-            ServerAddress = new Uri(ConfigurationManager.AppSettings["endPoint"]);
+            var apiBindings = ConfigurationServiceClient.Instance.GetStructuredSetting("api-bindings");
+            foreach (var binding in apiBindings)
+            {
+                AddServerAddress(new Uri((string)binding));
+            }
+
+            var metersOptions = ConfigurationServiceClient.Instance.GetStructuredSetting("meters");
+            foreach (var binding in metersOptions)
+            {
+                AddMetersOptions((string)binding.Name, (string)binding.Value);
+            }
         }
 
         private static void FillQueueList(List<QueueInfo> queueInfoList)

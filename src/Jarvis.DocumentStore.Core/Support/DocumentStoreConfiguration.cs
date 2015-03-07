@@ -5,6 +5,8 @@ using Castle.Services.Logging.Log4netIntegration;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using System.Collections;
+using System.Linq;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Newtonsoft.Json;
 
 
@@ -19,11 +21,20 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public bool IsApiServer { get; protected set; }
         public bool IsWorker { get; protected set; }
+        
+        public bool HasMetersEnabled {
+            get { return MetersOptions.Any(); }
+        }
+        private readonly IList<Uri> _addresses = new List<Uri>();
+        public readonly IDictionary<string,string> MetersOptions = new Dictionary<string, string>();
 
-        public System.Uri ServerAddress { get; set; }
+        public Uri[] ServerAddresses
+        {
+            get { return _addresses.ToArray(); }
+        }
 
         public JobModes JobMode { get; protected set; }
-        
+
         public bool IsReadmodelBuilder { get; protected set; }
         public bool IsQueueManager { get; protected set; }
         public QueueInfo[] QueueInfoList { get; protected set; }
@@ -42,6 +53,30 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public JobsManagementConfiguration JobsManagement { get; set; }
 
+        protected Uri Expand(Uri address)
+        {
+            if (address.Host == "machine_name")
+            {
+                var builder = new UriBuilder(address) { Host = Environment.MachineName };
+                address = builder.Uri;
+            }
+
+            return address;
+        }
+
+        protected void AddServerAddress(Uri address)
+        {
+            _addresses.Add(Expand(address));
+        }
+
+        protected void AddMetersOptions(string name, string value)
+        {
+            if (value.Contains("machine_name"))
+                value = value.Replace("machine_name", Environment.MachineName);
+            
+            MetersOptions.Add(name, value);
+        }
+
         public static void ParseQueueList(List<QueueInfo> queueInfoList, dynamic queueList)
         {
             foreach (dynamic queue in (IEnumerable)queueList)
@@ -57,7 +92,7 @@ namespace Jarvis.DocumentStore.Core.Support
         public Boolean WindowVisible { get; set; }
     }
 
-    public enum JobModes 
+    public enum JobModes
     {
         Unknown = 0,
         Quartz = 1,

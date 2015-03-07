@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             var config = new DocumentStoreTestConfiguration();
             MongoDbTestConnectionProvider.DropTestsTenant();
-            config.ServerAddress = TestConfig.ServerAddress;
+            config.SetTestAddress(TestConfig.ServerAddress);
             _documentStoreService = new DocumentStoreBootstrapper();
             _documentStoreService.Start(config);
 

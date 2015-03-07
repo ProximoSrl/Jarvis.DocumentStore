@@ -37,7 +37,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
             _config = config;
             new List<String>() 
             {
-                config.ServerAddress.AbsoluteUri
+                //@@TODO: Multiple bindings?
+                config.ServerAddresses.First().AbsoluteUri
             };
             Logger = NullLogger.Instance;
         }

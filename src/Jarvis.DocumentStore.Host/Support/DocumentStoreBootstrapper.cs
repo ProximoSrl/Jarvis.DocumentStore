@@ -18,19 +18,18 @@ using Jarvis.Framework.Shared.MultitenantSupport;
 using Microsoft.Owin.Hosting;
 using Rebus.Logging;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Metrics;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreBootstrapper
     {
         IDisposable _webApplication;
-        Uri _serverAddress;
         IWindsorContainer _container;
         ILogger _logger;
 
         public void Start(DocumentStoreConfiguration config)
         {
-            _serverAddress = config.ServerAddress;
             BuildContainer(config);
 
             _logger.DebugFormat(
@@ -52,12 +51,31 @@ namespace Jarvis.DocumentStore.Host.Support
 
             _logger.Debug("Configured Scheduler");
 
+            if (config.HasMetersEnabled)
+            {
+                //@@TODO: https://github.com/etishor/Metrics.NET/wiki/ElasticSearch
+                var binding = config.MetersOptions["http-endpoint"];
+                _logger.DebugFormat("Meters available on {0}", binding);
+                
+                Metric
+                    .Config
+                    .WithHttpEndpoint(binding)
+                    .WithAllCounters();
+            }
+
             if (config.IsApiServer)
             {
                 installers.Add(new ApiInstaller());
-                
-                _webApplication = WebApp.Start<DocumentStoreApplication>(_serverAddress.AbsoluteUri);
-                _logger.InfoFormat("Started server @ {0}", _serverAddress.AbsoluteUri);
+
+                var options = new StartOptions();
+                foreach (var uri in config.ServerAddresses)
+                {
+                    _logger.InfoFormat("Binding to @ {0}", uri.AbsoluteUri);
+                    options.Urls.Add(uri.AbsoluteUri);
+                }
+
+                _webApplication = WebApp.Start<DocumentStoreApplication>(options);
+                _logger.InfoFormat("Server started");
             }
 
             _container.Install(installers.ToArray());

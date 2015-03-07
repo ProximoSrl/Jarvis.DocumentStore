@@ -7,6 +7,7 @@ using System.Web.Http.ExceptionHandling;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Host.Logging;
 using Jarvis.Framework.Shared.Domain.Serialization;
+using Metrics;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using Newtonsoft.Json.Serialization;
@@ -22,6 +23,7 @@ namespace Jarvis.DocumentStore.Host.Support
             ConfigureApi(application);
             ConfigureAdmin(application);
         }
+
 
         void ConfigureAdmin(IAppBuilder application)
         {
