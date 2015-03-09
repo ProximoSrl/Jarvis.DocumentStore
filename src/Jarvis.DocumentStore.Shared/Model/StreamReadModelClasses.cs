@@ -19,7 +19,6 @@ namespace Jarvis.DocumentStore.Shared.Model
 
     public static class StreamReadModelEventDataKeys
     {
-        public const String RootAttachmentHandle = "RootAttachmentHandle";
         public const String FatherHandle = "FatherHandle";
     }
 }

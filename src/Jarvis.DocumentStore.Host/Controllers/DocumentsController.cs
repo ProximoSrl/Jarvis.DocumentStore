@@ -29,6 +29,7 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -188,7 +189,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 //user ask for handle, we need to grab the handle
                 var documentHandle = new DocumentHandle(_customData[AddFormatToDocumentParameters.DocumentHandle] as String);
                 var handle = _handleWriter.FindOneById(documentHandle);
-                documentId = handle.DocumentId;
+                documentId = handle.DocumentDescriptorId;
                 if (documentId == null)
                 {
                     Logger.ErrorFormat("Trying to add a format for Handle {0} with a null DocumentId", documentHandle);
@@ -348,21 +349,82 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentHandle handle
         )
         {
-            var mapping = _handleWriter.FindOneById(handle);
+            var document = _handleWriter.FindOneById(handle);
 
-            if (mapping == null)
+            if (document == null)
             {
                 return DocumentNotFound(handle);
             }
 
-            if (mapping.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+            if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
 
-            var attachments = mapping.Attachments.ToDictionary(x =>
+            var attachments = document.Attachments.ToDictionary(x =>
                 x,
                 x => Url.Content("/" + tenantId + "/documents/" + x)
             );
             return Request.CreateResponse(HttpStatusCode.OK, attachments);
         }
+
+        /// <summary>
+        /// Retrieve all attachments for the document
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="handle"></param>
+        /// <returns></returns>
+        [Route("{tenantId}/documents/attachments_fat/{handle}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetAttachmentFat(
+            TenantId tenantId,
+            DocumentHandle handle
+        )
+        {
+            var document = _handleWriter.FindOneById(handle);
+
+            if (document == null)
+            {
+                return DocumentNotFound(handle);
+            }
+
+            if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+            List<DocumentAttachmentsFat.AttachmentInfo> fat = new List<DocumentAttachmentsFat.AttachmentInfo>();
+
+            ScanAttachments(tenantId, document, fat, "");
+
+            return Request.CreateResponse(HttpStatusCode.OK, fat);
+        }
+
+        private void ScanAttachments(TenantId tenantId, DocumentReadModel document, List<DocumentAttachmentsFat.AttachmentInfo> fat, String attachmentPath)
+        {
+            foreach (var attachment in document.Attachments)
+            {
+                var attachmentDocument = _handleWriter.FindOneById(attachment);
+                String relativePath = "";
+                if (attachmentDocument.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
+                {
+                    relativePath = attachmentDocument.CustomData[JobsConstants.AttachmentRelativePath] as String;
+                    relativePath = relativePath.TrimStart('\\').Replace("\\", "/");
+                    if (attachmentDocument.FileName != null)
+                    {
+                        if (relativePath.EndsWith(attachmentDocument.FileName))
+                        {
+                            relativePath = relativePath.Substring(0, relativePath.Length - attachmentDocument.FileName.ToString().Length)
+                                .TrimEnd('/');
+                        }
+                    }
+                }
+                fat.Add(new DocumentAttachmentsFat.AttachmentInfo(
+                        Url.Content("/" + tenantId + "/documents/" + attachment),
+                        attachmentDocument.FileName,
+                        attachmentPath,
+                        relativePath
+                    ));
+               
+                if (attachmentDocument.Attachments != null && attachmentDocument.Attachments.Count > 0)
+                    ScanAttachments(tenantId, attachmentDocument, fat, attachmentPath + "/" + attachmentDocument.FileName);
+            }
+        }
+
+        
 
         [Route("{tenantId}/documents/{handle}/{format}")]
         [HttpGet]
@@ -376,7 +438,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (mapping == null)
                 return DocumentNotFound(handle);
 
-            var document = _documentDescriptorReader.FindOneById(mapping.DocumentId);
+            var document = _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
 
             if (document == null)
             {
@@ -532,7 +594,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (mapping == null)
                 return null;
 
-            return _documentDescriptorReader.FindOneById(mapping.DocumentId);
+            return _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
         }
     }
 

@@ -72,9 +72,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDescriptorHasBeenDeduplicated e)
         {
-            _writer.LinkDocument(
+            _writer.DocumentDeDuplicated(
                 e.Handle,
                 (DocumentDescriptorId)e.AggregateId,
+                e.OtherDocumentId,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
         }

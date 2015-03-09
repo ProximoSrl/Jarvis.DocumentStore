@@ -18,11 +18,10 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
-            String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
-            Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
-            if (File.Exists(fileName)) File.Delete(fileName);
-            File.Copy(pathToFile, fileName);
-            var converter = new HtmlToPdfConverterFromDiskFileOld(fileName, base.JobsHostConfiguration)
+            if (Logger.IsDebugEnabled)
+                Logger.DebugFormat("Conversion of HtmlZip to PDF: file {0}", pathToFile);
+
+            var converter = new HtmlToPdfConverterFromDiskFileOld(pathToFile, base.JobsHostConfiguration)
             {
                 Logger = Logger
             };

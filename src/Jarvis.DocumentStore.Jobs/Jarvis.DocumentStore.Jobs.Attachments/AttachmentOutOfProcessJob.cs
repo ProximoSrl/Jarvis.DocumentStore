@@ -1,6 +1,8 @@
 ﻿using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
+using Jarvis.DocumentStore.Shared.Jobs;
 using MsgReader;
+using MsgReader.Outlook;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,37 +45,77 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         parameters.TenantId,
                         parameters.JobId,
                         file,
-                        "attachment_zip",
+                        "content_zip",
                         new Dictionary<string, object>()
                         {
-                            {"RelativePath", relativeFileName}   
+                            {JobsConstants.AttachmentRelativePath, relativeFileName}   
                         });
                 }
             }
-            if (extension == ".eml" || extension == ".msg") 
+            else if (extension == ".eml") 
             {
-                var reader = new Reader();
-                reader.ExtractToFolder(localFile, unzippingDirectory);
-      
-                foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
+                using (var stream = File.Open(localFile, FileMode.Open, FileAccess.Read))
                 {
-                    if ((Path.GetExtension(file) == ".htm" || Path.GetExtension(file) == ".html") && 
-                        Path.GetFileNameWithoutExtension(file).StartsWith(Path.GetFileNameWithoutExtension(parameters.FileName)))
-                        continue;
-
-                    var relativeFileName = file.Substring(unzippingDirectory.Length);
-                    await AddAttachmentToHandle(
-                        parameters.TenantId,
-                        parameters.JobId,
-                        file,
-                        "attachment_email",
-                        new Dictionary<string, object>()
+                    var message = MsgReader.Mime.Message.Load(stream);
+                    var bodyPart = message.HtmlBody ?? message.TextBody;
+                    String body = "";
+                    if (bodyPart != null) body = bodyPart.GetBodyAsText();
+                    foreach (MsgReader.Mime.MessagePart attachment in message.Attachments.OfType<MsgReader.Mime.MessagePart>())
+                    {
+                        if (!String.IsNullOrEmpty(attachment.ContentId) &&
+                            body.Contains(attachment.ContentId)) 
                         {
-                            {"RelativePath", relativeFileName}   
+                            if (Logger.IsDebugEnabled) 
+                            {
+                                Logger.DebugFormat("Attachment cid {0} name {1} discharded because it is inline", attachment.ContentId, attachment.FileName);
+                                continue;
+                            }
+                        }
+
+                        String fileName = Path.Combine(unzippingDirectory, attachment.FileName);
+                        File.WriteAllBytes(fileName, attachment.Body);
+                        await AddAttachmentToHandle(
+                            parameters.TenantId,
+                            parameters.JobId,
+                            fileName,
+                            "attachment_email",
+                            new Dictionary<string, object>()
+                        {
+                            {JobsConstants.AttachmentRelativePath, attachment.FileName}   
                         });
+                    }
                 }
+      
+               
 
             }
+            else if (extension == ".msg")
+            {
+                using (var stream = File.Open(localFile, FileMode.Open, FileAccess.Read))
+                using (var message = new Storage.Message(stream)) 
+                {
+                    foreach (Storage.Attachment attachment in message.Attachments.OfType < Storage.Attachment>())
+                    {
+                        if (attachment.IsInline)
+                            continue; //no need to uncompress inline attqach
+
+                        String fileName = Path.Combine(unzippingDirectory, attachment.FileName);
+                        File.WriteAllBytes(fileName, attachment.Data);
+
+                        await AddAttachmentToHandle(
+                            parameters.TenantId,
+                            parameters.JobId,
+                            fileName,
+                            "attachment_email",
+                            new Dictionary<string, object>()
+                        {
+                            {JobsConstants.AttachmentRelativePath, attachment.FileName}   
+                        });
+                    }
+                }
+            }
+           
+
             return true;
         }
     }

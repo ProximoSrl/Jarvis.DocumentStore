@@ -320,6 +320,12 @@
     <None Include="Docs\mailWithcomplexAttachments.msg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Docs\MailWithMultipleAttach.eml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\MailWithMultipleAttach.msg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Docs\Multilanguage.docx" />
     <None Include="Docs\Multilanguage.pdf" />
     <None Include="Docs\Multipage Word.docx" />
@@ -341,7 +347,13 @@
     <None Include="Docs\Zipped.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Docs\ZipWithFolders.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Docs\ZipWithNestedZip.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Docs\ZipWithNestedZipWithFolders.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="job_scheduling_data_2_0.xsd">

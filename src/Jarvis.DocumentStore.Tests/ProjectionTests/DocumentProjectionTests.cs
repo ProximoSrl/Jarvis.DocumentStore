@@ -62,7 +62,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var h = _writer.FindOneById(_documentHandle);
             Assert.NotNull(h);
-            Assert.IsNull(h.DocumentId);
+            Assert.IsNull(h.DocumentDescriptorId);
             Assert.AreEqual(0, h.ProjectedAt);
             Assert.AreEqual(1, h.CreatetAt);
             Assert.IsNull(h.FileName);
@@ -75,7 +75,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var h = _writer.FindOneById(_documentHandle);
 
             Assert.NotNull(h);
-            Assert.IsNull(h.DocumentId);
+            Assert.IsNull(h.DocumentDescriptorId);
             Assert.AreEqual(0, h.ProjectedAt);
             Assert.AreEqual(0, h.CreatetAt);
         }
@@ -111,24 +111,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var h = _writer.FindOneById(_documentHandle);
             Assert.That(h.Attachments, Is.Empty);
         }
-
-        [Test]
-        public void add_attachment_nested()
-        {
-            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId1));
-            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId2));
-            _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId3));
-
-            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId1));
-            _sut.On(new DocumentHasNewAttachment(_attachmentHandle, _attachmentNestedHandle).AssignIdForTest(_documentId1));
-
-            var h = _writer.FindOneById(_documentHandle);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _attachmentHandle, _attachmentNestedHandle }));
-
-            h = _writer.FindOneById(_attachmentHandle);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _attachmentNestedHandle }));
-        }
-
+     
         [Test]
         public void update_custom_data()
         {
@@ -158,7 +141,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             if (h.ProjectedAt >= h.CreatetAt)
             {
-                Assert.AreEqual(expectedDocumentId, h.DocumentId);
+                Assert.AreEqual(expectedDocumentId, h.DocumentDescriptorId);
                 Assert.AreEqual(projectedAt, h.ProjectedAt);
             }
 
