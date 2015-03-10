@@ -9,7 +9,7 @@ namespace Jarvis.DocumentStore.Shared.Model
     public enum HandleStreamEventTypes
     {
         Unknown = 0,
-        DocumentInitialized = 1,
+        DocumentCreated = 1,
         DocumentDeleted = 2,
         DocumentHasNewFormat = 3,
         DocumentFileNameSet = 4,

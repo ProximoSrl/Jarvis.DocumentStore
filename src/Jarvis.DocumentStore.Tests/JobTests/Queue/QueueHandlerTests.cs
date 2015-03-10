@@ -137,7 +137,6 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         public void verify_filtering_on_mime_types()
         {
             var mimeTypeDocx = MimeTypes.GetMimeTypeByExtension("docx");
-            var mimeTypePdf = MimeTypes.GetMimeTypeByExtension("pdf");
             var info = new QueueInfo("test", mimeTypes: mimeTypeDocx);
             QueueHandler sut = new QueueHandler(info, _db);
             StreamReadModel rm = new StreamReadModel()

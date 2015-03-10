@@ -15,7 +15,8 @@ using Jarvis.DocumentStore.Shared.Model;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class StreamProjection : AbstractProjection,
-         IEventHandler<DocumentInitialized>,
+         IEventHandler<DocumentDescriptorCreated>,
+         IEventHandler<DocumentDescriptorHasBeenDeduplicated>,
          IEventHandler<DocumentDeleted>,
          IEventHandler<DocumentLinked>,
          IEventHandler<FormatAddedToDocumentDescriptor>,
@@ -27,9 +28,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         private readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReadModel;
         private readonly IDocumentWriter _documentWriter;
         private readonly IBlobStore _blobStore;
-        
-        private Int64 _lastCheckpointValue = -1;
-        private Int32 _sequential = 0;
+
         private Int64 _lastId;
 
         public StreamProjection(
@@ -73,14 +72,29 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         }
 
-        public void On(DocumentInitialized e)
+        public void On(DocumentDescriptorCreated e)
         {
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                //TenantId = this.TenantId,
                 Handle = e.Handle,
-                EventType = HandleStreamEventTypes.DocumentInitialized,
+                EventType = HandleStreamEventTypes.DocumentCreated,
+            });
+        }
+
+        /// <summary>
+        /// Logically speaking, when a document is deduplicated, we should have a 
+        /// handlestream of document created, because the handle is assigned to
+        /// the correct <see cref="DocumentDescriptor"/>
+        /// </summary>
+        /// <param name="e"></param>
+        public void On(DocumentDescriptorHasBeenDeduplicated e)
+        {
+            _streamReadModelCollection.Insert(e, new StreamReadModel()
+            {
+                Id = GetNewId(),
+                Handle = e.Handle,
+                EventType = HandleStreamEventTypes.DocumentCreated,
             });
         }
 
@@ -90,7 +104,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                //TenantId = this.TenantId,
                 Handle = e.Handle,
                 DocumentCustomData = handle.CustomData,
                 EventType = HandleStreamEventTypes.DocumentFileNameSet
@@ -102,7 +115,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                //TenantId = this.TenantId,
                 Handle = e.Handle,
                 EventType = HandleStreamEventTypes.DocumentDeleted
             });
@@ -118,7 +130,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
-                    //TenantId = this.TenantId,
                     Handle = e.Handle,
                     Filename = descriptor.FileNameWithExtension,
                     DocumentId = e.DocumentId,
@@ -150,7 +161,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
-                    //TenantId = this.TenantId,
                     Handle = handle,
                     Filename = descriptor.FileNameWithExtension,
                     DocumentId = (DocumentDescriptorId)e.AggregateId,
@@ -180,7 +190,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
-                    //TenantId = this.TenantId,
                     Handle = handle,
                     Filename = descriptor.FileNameWithExtension,
                     DocumentId = (DocumentDescriptorId)e.AggregateId,
@@ -206,18 +215,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var streamReadModel = new StreamReadModel()
             {
                 Id = GetNewId(),
-                //TenantId = this.TenantId,
                 Handle = e.Attachment,
                 DocumentId = attachmentDescriptor.Id,
                
                 EventType = HandleStreamEventTypes.DocumentHasNewAttachment,
             };
-            var handle = _documentWriter.FindOneById(e.Attachment);
             streamReadModel.AddEventData(StreamReadModelEventDataKeys.FatherHandle, e.Handle);
-            //var rootAttachment = handle.AttachmentPath.Split('/').FirstOrDefault();
-            //streamReadModel.AddEventData(StreamReadModelEventDataKeys.RootAttachmentHandle, rootAttachment);
             _streamReadModelCollection.Insert(e, streamReadModel);
-
         }
     }
 }

@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_id_when_empty_projection()
         {
             CreateSut();
-            var evt = new DocumentInitialized(new DocumentHandle("Rev_1"))
+            var evt = new DocumentDescriptorCreated(new BlobId("original.1"),  new DocumentHandle("Rev_1"))
                 .AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
@@ -106,25 +106,36 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public void verify_handle_initialized()
+        public void verify_document_descriptor_initialized_not_generates_record()
         {
             CreateSut();
             var evt = new DocumentInitialized( new DocumentHandle("rev_1")).AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
+            Assert.That(rmStream, Has.Count.EqualTo(0), "Document Initialized is raised when document descriptor still is not de-duplicated.");
+        }
+
+        [Test]
+        public void verify_document_descriptor_created_generates_record()
+        {
+            CreateSut();
+            var evt = new DocumentDescriptorCreated(new BlobId("original.1"), new DocumentHandle("rev_1")).AssignIdForTest(new DocumentDescriptorId(1));
+            _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
-            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentInitialized));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentCreated));
             Assert.That(rmStream[0].Handle, Is.EqualTo("rev_1"));
         }
 
-        //[Test]
-        //public void verify_stream_events_have_tenant()
-        //{
-        //    CreateSut();
-        //    var evt = new DocumentInitialized(new DocumentId(1), new DocumentHandle("rev_1"));
-        //    _sut.Handle(evt, false);
-        //    Assert.That(rmStream, Has.Count.EqualTo(1));
-        //    Assert.That(rmStream[0].TenantId.ToString(), Is.EqualTo("test-tenant"));
-        //}
+        [Test]
+        public void verify_document_descriptor_de_duplicated_generates_record()
+        {
+            CreateSut();
+            var evt = new DocumentDescriptorHasBeenDeduplicated(new DocumentDescriptorId(2),  new DocumentHandle("rev_2"), new FileNameWithExtension("test.pdf"))
+                .AssignIdForTest(new DocumentDescriptorId(1));
+            _sut.Handle(evt, false);
+            Assert.That(rmStream, Has.Count.EqualTo(1));
+            Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentCreated));
+            Assert.That(rmStream[0].Handle, Is.EqualTo("rev_2"));
+        }
 
         [Test]
         public void verify_stream_events_have_fileName()
@@ -217,7 +228,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             rmStream.Add(new StreamReadModel() { Id = 41 });
             CreateSut();
-            var evt = new DocumentInitialized(new DocumentHandle("rev_1")).AssignIdForTest(new DocumentId(1));
+            var evt = new DocumentDescriptorCreated(new BlobId("blob.1"), new  DocumentHandle("rev_1")).AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(2));
             Assert.That(rmStream[1].Id, Is.EqualTo(42));
