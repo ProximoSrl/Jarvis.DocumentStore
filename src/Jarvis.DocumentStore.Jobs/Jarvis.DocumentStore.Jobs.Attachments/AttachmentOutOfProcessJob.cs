@@ -30,6 +30,16 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                  parameters.FileName,
                  workingFolder);
 
+            String[] permittedExtension = null;
+            if (parameters.All.ContainsKey("extensions"))
+            {
+                var extensionsPermitted = parameters.All["extensions"];
+                if (extensionsPermitted != "*")
+                {
+                    permittedExtension = extensionsPermitted.Split('|');
+                }
+            }
+
             var extension = Path.GetExtension(localFile);
             var unzippingDirectory = Path.Combine(workingFolder, Guid.NewGuid().ToString());
             if (!Directory.Exists(unzippingDirectory)) Directory.CreateDirectory(unzippingDirectory);
@@ -40,6 +50,15 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                 ZipFile.ExtractToDirectory(localFile, unzippingDirectory);
                 foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
                 {
+                    var attachmentExtension = Path.GetExtension(file).Trim('.');
+                    if (permittedExtension != null &&
+                        !permittedExtension.Contains(attachmentExtension, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Logger.DebugFormat("job: {0} File {1} attachment is discharded because extension {2} is not permitted",
+                            parameters.JobId, file, extension);
+                        continue;
+                        ;
+                    }
                     var relativeFileName = file.Substring(unzippingDirectory.Length);
                     await AddAttachmentToHandle(
                         parameters.TenantId,
