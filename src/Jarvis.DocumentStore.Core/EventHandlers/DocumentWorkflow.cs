@@ -11,9 +11,9 @@ using Jarvis.Framework.Shared.Commands;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentWorkflow : AbstractProjection,
-        IEventHandler<DocumentQueuedForProcessing>,
-        IEventHandler<DocumentDescriptorHasBeenDeduplicated>,
         IEventHandler<DocumentDescriptorCreated>,
+        IEventHandler<DocumentDescriptorHasBeenDeduplicated>,
+        IEventHandler<DocumentDescriptorInitialized>,
         IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<DocumentDeleted>,
         IEventHandler<AttachmentDeleted>,
@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
         }
 
-        public void On(DocumentQueuedForProcessing e)
+        public void On(DocumentDescriptorCreated e)
         {
             if (IsReplay) return;
 
@@ -73,7 +73,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             Logger.DebugFormat("Next conversion step for document {0} {1}", e.BlobId, descriptor.FileNameWithExtension);
         }
 
-        public void On(DocumentDescriptorCreated e)
+        public void On(DocumentDescriptorInitialized e)
         {
             if (IsReplay)
                 return;
@@ -94,7 +94,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             }
             else
             {
-                _commandBus.Send(new ProcessDocumentDescriptor(thisDocumentId, e.HandleInfo.Handle)
+                _commandBus.Send(new CreateDocumentDescriptor(thisDocumentId, e.HandleInfo.Handle)
                     .WithDiagnosticTriggeredByInfo(e)                        
                 );
             }

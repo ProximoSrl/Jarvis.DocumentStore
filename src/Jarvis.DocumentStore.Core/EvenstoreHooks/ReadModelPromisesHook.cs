@@ -31,8 +31,8 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
         void HandleDocumentCreation(ICommit committed)
         {
             var docCreated = committed.Events
-                .Where(x => x.Body is DocumentDescriptorCreated)
-                .Select(x => (DocumentDescriptorCreated) x.Body)
+                .Where(x => x.Body is DocumentDescriptorInitialized)
+                .Select(x => (DocumentDescriptorInitialized) x.Body)
                 .FirstOrDefault();
 
             if (docCreated != null)

@@ -8,7 +8,7 @@ using MongoDB.Driver.Builders;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentDescriptorProjection : AbstractProjection,
-        IEventHandler<DocumentDescriptorCreated>,
+        IEventHandler<DocumentDescriptorInitialized>,
         IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<DocumentDescriptorDeleted>,
         IEventHandler<DocumentHandleAttached>,
@@ -46,7 +46,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.CreateIndex(IndexKeys<DocumentDescriptorReadModel>.Ascending(x => x.Hash));
         }
 
-        public void On(DocumentDescriptorCreated e)
+        public void On(DocumentDescriptorInitialized e)
         {
             var document = new DocumentDescriptorReadModel((DocumentDescriptorId)e.AggregateId, e.BlobId)
             {

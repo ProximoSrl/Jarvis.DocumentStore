@@ -579,11 +579,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (fatherHandle == null)
             {
                 
-                createDocument = new CreateDocumentDescriptor(documentId, blobId, handleInfo, descriptor.Hash, fileName);
+                createDocument = new InitializeDocumentDescriptor(documentId, blobId, handleInfo, descriptor.Hash, fileName);
             }
             else
             {
-                createDocument = new CreateDocumentDescriptorAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
+                createDocument = new InitializeDocumentDescriptorAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
             }
             CommandBus.Send(createDocument, "api");
         }

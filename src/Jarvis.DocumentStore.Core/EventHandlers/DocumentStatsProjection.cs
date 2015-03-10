@@ -12,7 +12,7 @@ using Jarvis.Framework.Kernel.ProjectionEngine;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentStatsProjection : AbstractProjection,
-        IEventHandler<DocumentDescriptorCreated>,
+        IEventHandler<DocumentDescriptorInitialized>,
         IEventHandler<DocumentDescriptorDeleted>
     {
         readonly ICollectionWrapper<DocumentStats, string> _collection;
@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
         }
 
-        public void On(DocumentDescriptorCreated e)
+        public void On(DocumentDescriptorInitialized e)
         {
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             if (descriptor != null)

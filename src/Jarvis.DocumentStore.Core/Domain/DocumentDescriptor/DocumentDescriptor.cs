@@ -17,14 +17,14 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         public IDocumentFormatTranslator DocumentFormatTranslator { get; set; }
 
-        public void Create(BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
+        public void Initialize(BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
         {
             ThrowIfDeleted();
 
             if (HasBeenCreated)
-                throw new DomainException(Id, "Already created");
+                throw new DomainException(Id, "Already initialized");
 
-            RaiseEvent(new DocumentDescriptorCreated(blobId, handleInfo, hash));
+            RaiseEvent(new DocumentDescriptorInitialized(blobId, handleInfo, hash));
 
             var knownFormat = DocumentFormatTranslator.GetFormatFromFileName(fileName);
             if (knownFormat != null)
@@ -93,9 +93,11 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
                 throw new DomainException(this.Id, "Document has been deleted");
         }
 
-        public void Process(DocumentHandle handle)
+        public void Create(DocumentHandle handle)
         {
-            RaiseEvent(new DocumentQueuedForProcessing(InternalState.BlobId, handle));
+            if (InternalState.Created)
+                throw new DomainException(this.Id, "Already created");
+            RaiseEvent(new DocumentDescriptorCreated(InternalState.BlobId, handle));
             Attach(handle);
         }
 

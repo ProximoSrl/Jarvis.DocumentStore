@@ -64,7 +64,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             var fname = Path.GetFileName(pathToFile);
             var info = new DocumentHandleInfo(new DocumentHandle(handle), new FileNameWithExtension(fname));
-            _bus.Send(new CreateDocumentDescriptor(
+            _bus.Send(new InitializeDocumentDescriptor(
                 new DocumentDescriptorId(id),
                 _filestore.Upload(DocumentFormats.Original, pathToFile),
                 info,

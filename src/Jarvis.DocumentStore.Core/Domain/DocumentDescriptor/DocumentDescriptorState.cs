@@ -28,15 +28,21 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
         public BlobId BlobId { get; private set; }
 
         public bool HasBeenDeleted { get; private set; }
+        public bool Created { get; private set; }
 
         private void When(DocumentDescriptorDeleted e)
         {
             HasBeenDeleted = true;
         }
 
-        private void When(DocumentDescriptorCreated e)
+        private void When(DocumentDescriptorInitialized e)
         {
             BlobId = e.BlobId;
+        }
+
+        private void When(DocumentDescriptorCreated e)
+        {
+            Created = true;
         }
 
         private void When(FormatAddedToDocumentDescriptor e)

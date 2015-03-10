@@ -14,8 +14,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         Establish context = () =>
         {
             Create(_id);
-            DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
-            DocumentDescriptor.Process(Handle);
+            DocumentDescriptor.Initialize(_blobId, _handleInfo, _fileHash, _fileName);
+            DocumentDescriptor.Create(Handle);
             DocumentDescriptor.Deduplicate(new DocumentDescriptorId(2), _otherHandle, _fname);
         };
 

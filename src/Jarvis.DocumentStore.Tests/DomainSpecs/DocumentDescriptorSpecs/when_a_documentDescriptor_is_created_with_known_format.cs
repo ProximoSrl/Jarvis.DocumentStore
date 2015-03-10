@@ -1,6 +1,7 @@
 using System;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
@@ -8,7 +9,7 @@ using NSubstitute;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
-    public class when_a_documentDescriptor_is_created_with_known_format : DocumentDescriptorSpecifications
+    public class when_a_documentDescriptor_is_initialized_with_known_format : DocumentDescriptorSpecifications
     {
 
         Establish context = () =>
@@ -17,10 +18,10 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
             DocumentDescriptor.DocumentFormatTranslator.GetFormatFromFileName(Arg.Any<String>()).Returns(new DocumentFormat("pdf"));
         };
 
-        Because of = () => DocumentDescriptor.Create(_blobId, _handleInfo,_fileHash, _fileName);
+        Because of = () => DocumentDescriptor.Initialize(_blobId, _handleInfo,_fileHash, _fileName);
 
         It DocumentDescriptorCreatedEvent_should_have_been_raised = () =>
-            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorCreated>().ShouldBeTrue();
+            AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorInitialized>().ShouldBeTrue();
 
         It FormatAddedToDocumentDescriptorEvent_should_have_been_raised = () =>
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<FormatAddedToDocumentDescriptor>().ShouldBeTrue();
@@ -33,4 +34,6 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
             e.CreatedBy.ShouldEqual(null);
         };
     }
+
+   
 }

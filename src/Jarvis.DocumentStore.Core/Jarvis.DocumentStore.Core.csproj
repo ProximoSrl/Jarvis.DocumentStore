@@ -104,24 +104,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandHandlers\DocumentHandlers\AddFormatToDocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentDescriptorAsAttachCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\InitializeDocumentDescriptorAsAttachCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\InitializeDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DeduplicateDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\ProcessDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\DeleteAttachmentsCommandHandler.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\DeleteDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\HandleMapper.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\IHandleMapper.cs" />
     <Compile Include="CommandHandlers\HandleHandlers\LinkHandleToDocumentCommandHandler.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\AddFormatToDocumentDescriptor.cs" />
-    <Compile Include="Domain\DocumentDescriptor\Commands\CreateDocumentDescriptorAsAttach.cs" />
-    <Compile Include="Domain\DocumentDescriptor\Commands\CreateDocumentDescriptor.cs" />
+    <Compile Include="Domain\DocumentDescriptor\Commands\InitializeDocumentDescriptorAsAttach.cs" />
+    <Compile Include="Domain\DocumentDescriptor\Commands\InitializeDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\DeduplicateDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\DeleteDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\DocumentDescriptorCommand.cs" />
-    <Compile Include="Domain\DocumentDescriptor\Commands\ProcessDocumentDescriptor.cs" />
+    <Compile Include="Domain\DocumentDescriptor\Commands\CreateDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentHandleInfo.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentAttached.cs" />
@@ -129,11 +129,11 @@
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorHasBeenDeduplicated.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentDescriptorId.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentDescriptorState.cs" />
-    <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorCreated.cs" />
+    <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorInitialized.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorDeleted.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentFormatHasBeenDeleted.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentFormatHasBeenUpdated.cs" />
-    <Compile Include="Domain\DocumentDescriptor\Events\DocumentQueuedForProcessing.cs" />
+    <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorCreated.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\FormatAddedToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentFormat.cs" />
     <Compile Include="Domain\Document\Commands\DeleteAttachments.cs" />

@@ -7,6 +7,8 @@ using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System;
+using System.Threading;
+
 
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
@@ -202,10 +204,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void upload_pdf_with_handleA_and_handleB()
         {
-            Task.WaitAll(
-                _docs.UploadAsync(TestConfig.PathToDocumentCopyPdf, DocumentHandle.FromString("a")),
-                _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("b"))
-            );
+            List<Task> tasks = new List<Task>();
+            tasks.Add(_docs.UploadAsync(TestConfig.PathToDocumentCopyPdf, DocumentHandle.FromString("a")));
+            Thread.Sleep(500);
+            tasks.Add( _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("b")));
+            Task.WaitAll(tasks.ToArray());
         }
 
         [Test]

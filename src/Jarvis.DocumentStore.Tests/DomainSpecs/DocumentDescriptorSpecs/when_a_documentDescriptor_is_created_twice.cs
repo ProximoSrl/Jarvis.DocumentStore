@@ -1,29 +1,31 @@
 using System;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
 using Jarvis.Framework.TestHelpers;
-using Jarvis.NEventStoreEx.CommonDomainEx.Core;
 using Machine.Specifications;
+using NSubstitute;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
     public class when_a_documentDescriptor_is_created_twice : DocumentDescriptorSpecifications
     {
-        static Exception _ex;
-
+        private static Exception exception;
         Establish context = () =>
         {
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create(_id);
-            DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName);
+            State.Apply(new DocumentDescriptorInitialized(_blobId, _handleInfo, _fileHash));
+            State.Apply(new DocumentDescriptorCreated(_blobId, _handleInfo.Handle));
+            DocumentDescriptor.DocumentFormatTranslator.GetFormatFromFileName(Arg.Any<String>()).Returns(new DocumentFormat("pdf"));
         };
 
-        Because of = () => _ex = Catch.Exception(() => DocumentDescriptor.Create(_blobId, _handleInfo, _fileHash, _fileName));
-
-        It a_domain_exception_should_be_thrown = () =>
+        Because of = () =>
         {
-            _ex.ShouldNotBeNull();
-            _ex.ShouldBeAssignableTo<DomainException>();
-            _ex.ShouldContainErrorMessage("Already created");
+            exception = Catch.Exception(() => DocumentDescriptor.Create(_handleInfo.Handle));
         };
+
+        It Exception_should_have_been_raised = () => exception.ShouldNotBeNull();
+            
+
     }
 }
