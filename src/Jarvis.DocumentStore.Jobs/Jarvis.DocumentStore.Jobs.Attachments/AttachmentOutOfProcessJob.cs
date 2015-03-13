@@ -55,7 +55,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         !permittedExtension.Contains(attachmentExtension, StringComparer.OrdinalIgnoreCase))
                     {
                         Logger.DebugFormat("job: {0} File {1} attachment is discharded because extension {2} is not permitted",
-                            parameters.JobId, file, extension);
+                            parameters.JobId, file, attachmentExtension);
                         continue;
                         ;
                     }
