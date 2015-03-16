@@ -51,7 +51,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Jarvis.Framework.MongoAppender.1.0.11\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.Framework.UdpAppender">
+    <Reference Include="Jarvis.Framework.UdpAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Jarvis.Framework.UdpAppender.1.0.9\lib\NET45\Jarvis.Framework.UdpAppender.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
@@ -60,6 +61,12 @@
     </Reference>
     <Reference Include="Magick.NET-x86">
       <HintPath>..\..\packages\Magick.NET-Q8-x86.7.0.0.0010\lib\net40-client\Magick.NET-x86.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\..\packages\mongocsharpdriver.1.10.0\lib\net35\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\..\packages\mongocsharpdriver.1.10.0\lib\net35\MongoDB.Driver.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
