@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentDescriptorCreated e)
         {
             if (IsReplay) return;
-
+            
             _commandBus.Send(new LinkDocumentToDocumentDescriptor(e.Handle, (DocumentDescriptorId)e.AggregateId)
                 .WithDiagnosticTriggeredByInfo(e, "Queued for processing of " + e.AggregateId)
             );

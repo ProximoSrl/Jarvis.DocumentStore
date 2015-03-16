@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
             _documents.Attach(this, false);
 
-            _documents.OnSave = d =>
+            _documents.OnSave = (d, e) =>
             {
                 d.FormatsCount = d.Formats.Count;
             };

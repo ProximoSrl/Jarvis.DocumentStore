@@ -76,7 +76,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
         IQueryable<DocumentReadModel> AllSortedByHandle { get; }
-        void CreateIfMissing(DocumentHandle handle, long createdAt);
+        void CreateIfMissing(DocumentHandle handle, DocumentDescriptorId documentDescriptorId, long createdAt);
         void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
         long Count();
 
@@ -158,15 +158,50 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt)
         {
-            InnerCreateLinkToDocument(handle, id, false, projectedAt);
+            InnerCreateLinkToDocument(handle, id, null, projectedAt);
         }
 
         public void DocumentDeDuplicated(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt)
         {
-            InnerCreateLinkToDocument(handle, id, true, projectedAt);
+            var linkChanged = InnerCreateLinkToDocument(handle, id, true, projectedAt);
 
-            //need to manage attachments, first step, find the original handle that belong to that descriptor
-            CopyAttachmentFromPrimaryHandle(handle, id, oldId, projectedAt);
+            if (linkChanged)
+            {
+                //need to manage attachments, first step, find the original handle that belong to that descriptor
+                CopyAttachmentFromPrimaryHandle(handle, id, oldId, projectedAt);
+            }
+        }
+
+        private Boolean InnerCreateLinkToDocument(DocumentHandle handle, DocumentDescriptorId id, Boolean? deDuplication, long projectedAt)
+        {
+            Logger.DebugFormat("LinkDocument on handle {0} [{1}]", handle, projectedAt);
+            var update = Update<DocumentReadModel>
+                    .Set(x => x.DocumentDescriptorId, id)
+                    .Set(x => x.ProjectedAt, projectedAt);
+            if (deDuplication.HasValue)
+            {
+                update = update.Set(x => x.DeDuplicated, deDuplication.Value);
+            }
+
+            var query = Query.And(
+                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
+                    Query<DocumentReadModel>.NE(x => x.DocumentDescriptorId, id),
+                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
+                );
+            var args = new FindAndModifyArgs
+            {
+                Query = query,
+                Update = update,
+                VersionReturned = FindAndModifyDocumentVersion.Modified
+            };
+            var result = _collection.FindAndModify(args);
+            
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.DebugFormat("LinkDocument on handle {0} [{1}] : {2}", handle, projectedAt,
+                    result.ModifiedDocument != null ? result.ModifiedDocument.ToJson() : "null");
+            }
+            return result.ModifiedDocument != null;
         }
 
         private void CopyAttachmentFromPrimaryHandle(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt)
@@ -214,34 +249,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             }
         }
 
-
-        private void InnerCreateLinkToDocument(DocumentHandle handle, DocumentDescriptorId id, Boolean deDuplication, long projectedAt)
-        {
-            Logger.DebugFormat("LinkDocument on handle {0} [{1}]", handle, projectedAt);
-
-            var args = new FindAndModifyArgs
-            {
-                Query = Query.And(
-                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
-                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
-                ),
-                Update = Update<DocumentReadModel>
-                    .Set(x => x.DocumentDescriptorId, id)
-                    .Set(x => x.ProjectedAt, projectedAt)
-                    .Set(x => x.DeDuplicated, deDuplication),
-                VersionReturned = FindAndModifyDocumentVersion.Modified
-            };
-            var result = _collection.FindAndModify(args);
-
-            if (Logger.IsDebugEnabled)
-            {
-                Logger.DebugFormat("LinkDocument on handle {0} [{1}] : {2}", handle, projectedAt,
-                    result.ModifiedDocument != null ? result.ModifiedDocument.ToJson() : "null");
-            }
-        }
-
-        
-
         public void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData)
         {
             Logger.DebugFormat("UpdateCustomData on handle {0}", handle);
@@ -282,7 +289,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             get { return _collection.AsQueryable().OrderBy(x => x.Handle); }
         }
 
-        public void CreateIfMissing(DocumentHandle handle, long createdAt)
+        public void CreateIfMissing(DocumentHandle handle, DocumentDescriptorId documentDescriptorId, long createdAt)
         {
             Logger.DebugFormat("CreateIfMissing on handle {0} [{1}]", handle, createdAt);
             var args = new FindAndModifyArgs
@@ -292,8 +299,9 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Update = Update<DocumentReadModel>
                     .SetOnInsert(x => x.CustomData, null)
                     .SetOnInsert(x => x.ProjectedAt, 0)
-                    .SetOnInsert(x => x.DocumentDescriptorId, null)
+                    .SetOnInsert(x => x.DocumentDescriptorId, documentDescriptorId)
                     .SetOnInsert(x => x.CreatetAt, createdAt)
+                    .SetOnInsert(x => x.DeDuplicated, false)
                     .SetOnInsert(x => x.FileName, null),
                 Upsert = true
             };

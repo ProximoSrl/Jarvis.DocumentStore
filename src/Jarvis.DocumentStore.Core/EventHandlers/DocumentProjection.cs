@@ -9,12 +9,13 @@ using NEventStore;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentProjection : AbstractProjection
-        ,IEventHandler<DocumentInitialized>
-        ,IEventHandler<DocumentLinked>
-        ,IEventHandler<DocumentFileNameSet>
-        ,IEventHandler<DocumentCustomDataSet>
-        ,IEventHandler<DocumentDeleted>
-        ,IEventHandler<DocumentDescriptorHasBeenDeduplicated>
+        , IEventHandler<DocumentInitialized>
+        , IEventHandler<DocumentLinked>
+        , IEventHandler<DocumentFileNameSet>
+        , IEventHandler<DocumentCustomDataSet>
+        , IEventHandler<DocumentDeleted>
+        , IEventHandler<DocumentDescriptorHasBeenDeduplicated>
+        , IEventHandler<DocumentDescriptorInitialized>
     {
         readonly IDocumentWriter _writer;
 
@@ -41,10 +42,21 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentLinked e)
         {
             _writer.LinkDocument(
-                e.Handle, 
-                e.DocumentId, 
+                e.Handle,
+                e.DocumentId,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
+        }
+
+        public void On(DocumentDescriptorInitialized e)
+        {
+            //need eager association with descriptor to correctly manage association
+            //with attachment.
+            _writer.CreateIfMissing(
+                 e.HandleInfo.Handle,
+                 e.Id,
+                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
+             );
         }
 
         public void On(DocumentCustomDataSet e)
@@ -56,6 +68,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             _writer.CreateIfMissing(
                 e.Handle,
+                null,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
         }
@@ -86,7 +99,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         /// <param name="e"></param>
         public void On(DocumentHasNewAttachment e)
         {
-            _writer.AddAttachment(e.Handle,e.Attachment);
+            _writer.AddAttachment(e.Handle, e.Attachment);
         }
     }
 }

@@ -9,6 +9,9 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events
     /// </summary>
     public class DocumentDescriptorInitialized : DomainEvent
     {
+
+        public DocumentDescriptorId Id { get { return (DocumentDescriptorId)AggregateId; } }
+
         public BlobId BlobId { get; private set; }
         public DocumentHandleInfo HandleInfo { get; private set; }
         public FileHash Hash { get; private set; }

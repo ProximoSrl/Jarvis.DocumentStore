@@ -55,7 +55,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void with_promise_and_create_handle_should_be_linked_to_document_1()
         {
             _writer.Promise(_handle1, 1);
-            _writer.CreateIfMissing(_handle1, 1);
+            _writer.CreateIfMissing(_handle1, null, 1);
             _writer.LinkDocument(_handle1, _doc1, 2);
 
             var h = _writer.FindOneById(_handle1);
@@ -65,7 +65,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void with_create_and_promise_handle_should_be_linked_to_document_1()
         {
-            _writer.CreateIfMissing(_handle1, 1);
+            _writer.CreateIfMissing(_handle1, null, 1);
             _writer.Promise(_handle1, 1);
             _writer.LinkDocument(_handle1, _doc1, 2);
         
@@ -76,7 +76,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void with_link_and_promise_handle_should_be_linked_to_document_1()
         {
-            _writer.CreateIfMissing(_handle1, 1);
+            _writer.CreateIfMissing(_handle1, null, 1);
             _writer.LinkDocument(_handle1, _doc1, 2);
             _writer.Promise(_handle1, 1);
         
@@ -87,8 +87,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void de_duplication_set_handle_as_de_duplicated()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handle2, 3);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handle2, null, 3);
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.DocumentDeDuplicated(_handle2, _doc1, null, 6);
 
@@ -99,8 +99,8 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_collection_of_attachments()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handleAttach1, 1);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handleAttach1, null, 1);
             _writer.AddAttachment(_handle1, _handleAttach1);
 
             var h = _writer.FindOneById(_handle1);
@@ -110,9 +110,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_attachment_de_duplication()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handleAttach1, 2);
-            _writer.CreateIfMissing(_handle2, 3);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handleAttach1, null, 2);
+            _writer.CreateIfMissing(_handle2, null, 3);
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.AddAttachment(_handle1, _handleAttach1);
             //_handle2 is de_duplicated, it should gain all attachment of the original doc.
@@ -125,32 +125,47 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_de_duplication_then_attach()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handle2, 3);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handle2, null, 3);
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.DocumentDeDuplicated(_handle2, _doc1, null, 6);
 
             //after de duplication the worker started adding attachments to handle1
-            _writer.CreateIfMissing(_handleAttach1, 2);
+            _writer.CreateIfMissing(_handleAttach1, null, 2);
             _writer.AddAttachment(_handle1, _handleAttach1);
 
             var h = _writer.FindOneById(_handle2);
             Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach1 }), "When an attachment is added to handle, all duplicated handle should have same attachment");
         }
 
+        /// <summary>
+        /// caller upload 2 times the same file with the same handle
+        /// </summary>
+        [Test]
+        public void verify_de_duplication_of_same_handle()
+        {
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.LinkDocument(_handle1, _doc1, 5);
+            //same handle is re-uploaded so we have a de_duplication
+            _writer.DocumentDeDuplicated(_handle1, _doc1, null, 6);
+
+            var h = _writer.FindOneById(_handle1);
+            Assert.That(h.DeDuplicated, Is.EqualTo(false), "Deduplication of same handle should not set de-duplicated");
+        }
+
         [Test]
         public void verify_de_duplication_then__multiple_attach()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handle2, 3);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handle2, null, 3);
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.DocumentDeDuplicated(_handle2, _doc1, null, 6);
 
             //after de duplication the worker started adding attachments to handle1
-            _writer.CreateIfMissing(_handleAttach1, 7);
+            _writer.CreateIfMissing(_handleAttach1, null, 7);
             _writer.AddAttachment(_handle1, _handleAttach1);
 
-            _writer.CreateIfMissing(_handleAttach2, 8);
+            _writer.CreateIfMissing(_handleAttach2, null, 8);
             _writer.AddAttachment(_handle2, _handleAttach2);
 
             var h = _writer.FindOneById(_handle2);
@@ -160,9 +175,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_delete_of_attachments()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handleAttach1, 2);
-            _writer.CreateIfMissing(_handleAttach2, 3);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handleAttach1, null, 2);
+            _writer.CreateIfMissing(_handleAttach2, null, 3);
             _writer.AddAttachment(_handle1, _handleAttach1);
             _writer.AddAttachment(_handle1, _handleAttach2);
 
@@ -175,10 +190,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_delete_of_attachments_nested()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handleAttach1, 2);
-            _writer.CreateIfMissing(_handleAttach2, 3);
-            _writer.CreateIfMissing(_handleAttach3, 4);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handleAttach1, null, 2);
+            _writer.CreateIfMissing(_handleAttach2, null, 3);
+            _writer.CreateIfMissing(_handleAttach3, null, 4);
 
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.LinkDocument(_handleAttach1, _doc2, 6);
@@ -201,10 +216,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_delete_of_attachments_nested_cascade()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handleAttach1, 2);
-            _writer.CreateIfMissing(_handleAttach2, 3);
-            _writer.CreateIfMissing(_handleAttach3, 4);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handleAttach1, null, 2);
+            _writer.CreateIfMissing(_handleAttach2, null, 3);
+            _writer.CreateIfMissing(_handleAttach3, null, 4);
 
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.LinkDocument(_handleAttach1, _doc2, 6);
@@ -225,10 +240,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void verify_delete_of_attachments_nested_intermediate()
         {
-            _writer.CreateIfMissing(_handle1, 1);
-            _writer.CreateIfMissing(_handleAttach1, 2);
-            _writer.CreateIfMissing(_handleAttach2, 3);
-            _writer.CreateIfMissing(_handleAttach3, 4);
+            _writer.CreateIfMissing(_handle1, null, 1);
+            _writer.CreateIfMissing(_handleAttach1, null, 2);
+            _writer.CreateIfMissing(_handleAttach2, null, 3);
+            _writer.CreateIfMissing(_handleAttach3, null, 4);
 
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.LinkDocument(_handleAttach1, _doc2, 6);
@@ -249,7 +264,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [Test]
         public void promise_should_set_document_id_equals_to_null()
         {
-            _writer.CreateIfMissing(_handle1, 1);
+            _writer.CreateIfMissing(_handle1, null, 1);
             _writer.LinkDocument(_handle1, _doc1, 2);
             _writer.Promise(_handle1, 1);
 
