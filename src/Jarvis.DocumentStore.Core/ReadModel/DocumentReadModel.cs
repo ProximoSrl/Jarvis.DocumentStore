@@ -113,6 +113,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .Set(x => x.DocumentDescriptorId, null)
                     .Set(x => x.CreatetAt, createdAt)
+                    .Set(x => x.DeDuplicated, false)
                     .Set(x => x.FileName, null),
                 Upsert = true,
                 VersionReturned = FindAndModifyDocumentVersion.Modified
