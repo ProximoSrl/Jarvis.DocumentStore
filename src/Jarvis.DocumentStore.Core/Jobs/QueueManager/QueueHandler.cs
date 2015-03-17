@@ -191,8 +191,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             return _collection.Aggregate(_aggregation)
                 .Select(x => new QueueStatInfo(
-                    (QueuedJobExecutionStatus)x["_id"].AsInt32,
-                     x["c"].AsInt32)
+                    (QueuedJobExecutionStatus)Convert.ToInt32(x["_id"]),
+                     Convert.ToInt32(x["c"]))
             ).OrderBy(x => x.Status);
         }
 
