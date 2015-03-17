@@ -591,7 +591,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         DocumentDescriptorReadModel GetDocumentByHandle(DocumentHandle handle)
         {
             var mapping = _handleWriter.FindOneById(handle);
-            if (mapping == null)
+            //check if handle is not present, or if the handle still missing descriptor (still not deduplicated)
+            if (mapping == null || mapping.DocumentDescriptorId == null)
                 return null;
 
             return _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
