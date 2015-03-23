@@ -33,7 +33,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             Logger.DebugFormat("Running cleanup on {0}", context.JobDetail.JobDataMap.GetString(JobKeys.TenantId));
 
             var list = RecycleBin.Slots
-                .Where(x => x.Id.StreamId.StartsWith("Document_"))
+                .Where(x => x.Id.StreamId.StartsWith("DocumentDescriptor_"))
                 .Take(200)
                 .ToArray();
 
