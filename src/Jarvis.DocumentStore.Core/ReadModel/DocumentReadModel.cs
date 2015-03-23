@@ -71,7 +71,19 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt);
 
-        void DocumentDeDuplicated(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="primaryHandle">Is the <see cref="DocumentHandle"/> of the primary 
+        /// handle associated at the <see cref="DocumentDescriptorId"/> <param name="id"></param></param>
+        /// <param name="id">The id of the destination DocumentDescriptor</param>
+        /// <param name="projectedAt"></param>
+        void DocumentDeDuplicated(
+            DocumentHandle handle,  
+            DocumentHandle primaryHandle, 
+            DocumentDescriptorId id, 
+            long projectedAt);
 
         void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData);
         void Delete(DocumentHandle handle, long projectedAt);
@@ -162,14 +174,18 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             InnerCreateLinkToDocument(handle, id, null, projectedAt);
         }
 
-        public void DocumentDeDuplicated(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt)
+        public void DocumentDeDuplicated(
+            DocumentHandle handle,
+            DocumentHandle primaryHandle,
+            DocumentDescriptorId id,
+            long projectedAt)
         {
             var linkChanged = InnerCreateLinkToDocument(handle, id, true, projectedAt);
 
             if (linkChanged)
             {
                 //need to manage attachments, first step, find the original handle that belong to that descriptor
-                CopyAttachmentFromPrimaryHandle(handle, id, oldId, projectedAt);
+                CopyAttachmentFromPrimaryHandle(handle, primaryHandle, projectedAt);
             }
         }
 
@@ -196,7 +212,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 VersionReturned = FindAndModifyDocumentVersion.Modified
             };
             var result = _collection.FindAndModify(args);
-            
+
             if (Logger.IsDebugEnabled)
             {
                 Logger.DebugFormat("LinkDocument on handle {0} [{1}] : {2}", handle, projectedAt,
@@ -205,47 +221,30 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             return result.ModifiedDocument != null;
         }
 
-        private void CopyAttachmentFromPrimaryHandle(DocumentHandle handle, DocumentDescriptorId id, DocumentDescriptorId oldId, long projectedAt)
+        private void CopyAttachmentFromPrimaryHandle(
+            DocumentHandle handle,
+            DocumentHandle primaryHandle,
+            long projectedAt)
         {
-            var primaryAttachHandleList = _collection.Find(
-                Query.And(
-                    Query<DocumentReadModel>.EQ(x => x.DeDuplicated, false),
-                    Query<DocumentReadModel>.EQ(x => x.DocumentDescriptorId, id))
-                ).Take(2);
-            if (primaryAttachHandleList.Count() == 0)
-            {
-                Logger.ErrorFormat("Unable to find original DocumentId for handle {0} with new DocumentDescriptorId {1} and old DocumentDescriptorId {2} [{3}]",
-                    handle, id, oldId, projectedAt);
-            }
-            else if (primaryAttachHandleList.Count() > 1)
-            {
-                var aggregateList = primaryAttachHandleList
-                       .Select(h => h.Handle.ToString())
-                       .Aggregate((s1, s2) => s1 + ", " + s2);
-                Logger.ErrorFormat("Multiple original DocumentId found ({4})for handle {0} with new DocumentDescriptorId {1} and old DocumentDescriptorId {2} [{3}]",
-                   handle, id, oldId, projectedAt, aggregateList);
-            }
-            else
-            {
-                var primaryAttachHandle = primaryAttachHandleList.Single();
-                if (primaryAttachHandle.Attachments != null && primaryAttachHandle.Attachments.Count > 0)
-                {
-                    //inherit attachments to de-duplicated handle
-                    var args = new FindAndModifyArgs
-                    {
-                        Query = Query.And(
-                            Query<DocumentReadModel>.EQ(x => x.Handle, handle)
-                        ),
-                        Update = Update<DocumentReadModel>
-                            .Set(x => x.Attachments, primaryAttachHandle.Attachments)
-                    };
-                    _collection.FindAndModify(args);
+            var primaryAttachHandle = _collection.FindOneById(BsonValue.Create(primaryHandle));
 
-                    if (Logger.IsDebugEnabled)
-                    {
-                        Logger.DebugFormat("Inherited Attachment: handle {0} for descriptorid {1} and primary Handle {2} [{3}]", 
-                            handle, id, primaryAttachHandle.Handle, projectedAt);
-                    }
+            if (primaryAttachHandle.Attachments != null && primaryAttachHandle.Attachments.Count > 0)
+            {
+                //inherit attachments to de-duplicated handle
+                var args = new FindAndModifyArgs
+                {
+                    Query = Query.And(
+                        Query<DocumentReadModel>.EQ(x => x.Handle, handle)
+                    ),
+                    Update = Update<DocumentReadModel>
+                        .Set(x => x.Attachments, primaryAttachHandle.Attachments)
+                };
+                _collection.FindAndModify(args);
+
+                if (Logger.IsDebugEnabled)
+                {
+                    Logger.DebugFormat("Inherited Attachment: handle {0} for descriptorid {1} and primary Handle {2} [{3}]",
+                        handle, primaryAttachHandle.DocumentDescriptorId, primaryAttachHandle.Handle, projectedAt);
                 }
             }
         }

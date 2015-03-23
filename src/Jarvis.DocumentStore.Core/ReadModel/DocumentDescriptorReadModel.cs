@@ -28,14 +28,27 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public IDictionary<DocumentFormat, FormatInfo> Formats { get; private set; }
         public HashSet<DocumentHandle> Documents { get; private set; }
 
+        /// <summary>
+        /// This represent the original DocumentHandle that created the Descriptor
+        /// is needed to distinquish in <see cref="Documents"/> collection which are
+        /// the duplicated handles attaced to this descriptor and which is the original
+        /// one.
+        /// </summary>
+        public DocumentHandle OriginalDocument { get; set; }
+
         public FileHash Hash { get; set; }        
         public int FormatsCount { get; set; }
         public long SequenceNumber { get; set; }
 
-        public DocumentDescriptorReadModel(DocumentDescriptorId id, BlobId blobId)
+
+        public DocumentDescriptorReadModel(
+            DocumentDescriptorId id, 
+            BlobId blobId, 
+            DocumentHandle originalHandle)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
             this.Documents = new HashSet<DocumentHandle>();
+            this.OriginalDocument = originalHandle;
             this.Id = id;
             this.SequenceNumber = id.Id;
             AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), blobId);

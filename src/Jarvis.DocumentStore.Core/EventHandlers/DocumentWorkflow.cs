@@ -88,7 +88,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
             if (duplicatedId != null)
             {
-                _commandBus.Send(new DeduplicateDocumentDescriptor(duplicatedId, thisDocumentId, e.HandleInfo.Handle)
+                _commandBus.Send(new DeduplicateDocumentDescriptor(duplicatedId, thisDocumentId, e.HandleInfo.Handle, e.HandleInfo.FileName)
                     .WithDiagnosticTriggeredByInfo(e)                        
                 );
             }

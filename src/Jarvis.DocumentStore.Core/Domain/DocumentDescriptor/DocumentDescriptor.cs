@@ -80,10 +80,18 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
             }
         }
 
-        public void Deduplicate(DocumentDescriptorId otherDocumentId, DocumentHandle handle, FileNameWithExtension fileName)
+        /// <summary>
+        /// This DocumentDescriptor has the same content of another <see cref="DocumentDescriptor"/>
+        /// this operation mark the current document as owner of the handle of duplicated document
+        /// descriptor
+        /// </summary>
+        /// <param name="otherDocumentDescriptorId"></param>
+        /// <param name="handle"></param>
+        /// <param name="fileName"></param>
+        public void Deduplicate(DocumentDescriptorId otherDocumentDescriptorId, DocumentHandle handle, FileNameWithExtension fileName)
         {
             ThrowIfDeleted();
-            RaiseEvent(new DocumentDescriptorHasBeenDeduplicated(otherDocumentId, handle, fileName));
+            RaiseEvent(new DocumentDescriptorHasBeenDeduplicated(otherDocumentDescriptorId, handle, fileName));
             Attach(handle);
         }
 

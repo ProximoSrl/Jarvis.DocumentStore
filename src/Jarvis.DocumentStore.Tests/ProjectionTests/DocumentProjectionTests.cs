@@ -10,6 +10,7 @@ using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
@@ -52,7 +53,11 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             StringValueCustomBsonTypeMapper.Register<FileHash>();
 
             _writer = new DocumentWriter(MongoDbTestConnectionProvider.ReadModelDb);
-            _sut = new DocumentProjection(_writer);
+            var _documentDescriptorCollection = new CollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId>
+                (
+                new MongoStorageFactory(MongoDbTestConnectionProvider.ReadModelDb, 
+                    new RebuildContext(true)), null);
+            _sut = new DocumentProjection(_writer, _documentDescriptorCollection);
         }
 
         [Test]

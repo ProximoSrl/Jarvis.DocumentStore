@@ -176,13 +176,14 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }     
         
         [Test]
-        public async void should_create_a_document()
+        public async void should_create_a_documentDescriptor()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
 
             var original = _documentReader.FindOneById(new DocumentDescriptorId(1));
             Assert.IsNotNull(original);
+            Assert.That(original.OriginalDocument, Is.EqualTo(new DocumentHandle("handle")));
 
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);

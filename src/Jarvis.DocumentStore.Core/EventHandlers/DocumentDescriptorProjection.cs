@@ -48,7 +48,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDescriptorInitialized e)
         {
-            var document = new DocumentDescriptorReadModel((DocumentDescriptorId)e.AggregateId, e.BlobId)
+            var document = new DocumentDescriptorReadModel((DocumentDescriptorId)e.AggregateId, e.BlobId, e.HandleInfo.Handle)
             {
                 Hash = e.Hash
             };

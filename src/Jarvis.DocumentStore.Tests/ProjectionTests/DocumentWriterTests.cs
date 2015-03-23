@@ -90,7 +90,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.CreateIfMissing(_handle1, null, 1);
             _writer.CreateIfMissing(_handle2, null, 3);
             _writer.LinkDocument(_handle1, _doc1, 5);
-            _writer.DocumentDeDuplicated(_handle2, _doc1, null, 6);
+            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
 
             var h = _writer.FindOneById(_handle2);
             Assert.That(h.DeDuplicated, Is.EqualTo(true));
@@ -116,7 +116,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.LinkDocument(_handle1, _doc1, 5);
             _writer.AddAttachment(_handle1, _handleAttach1);
             //_handle2 is de_duplicated, it should gain all attachment of the original doc.
-            _writer.DocumentDeDuplicated(_handle2, _doc1, null, 6);
+            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
 
             var h = _writer.FindOneById(_handle2);
             Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach1 }), "When an attachment is de duplicated it should gain all attachment of the previous handle");
@@ -128,7 +128,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.CreateIfMissing(_handle1, null, 1);
             _writer.CreateIfMissing(_handle2, null, 3);
             _writer.LinkDocument(_handle1, _doc1, 5);
-            _writer.DocumentDeDuplicated(_handle2, _doc1, null, 6);
+            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
 
             //after de duplication the worker started adding attachments to handle1
             _writer.CreateIfMissing(_handleAttach1, null, 2);
@@ -147,7 +147,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.CreateIfMissing(_handle1, null, 1);
             _writer.LinkDocument(_handle1, _doc1, 5);
             //same handle is re-uploaded so we have a de_duplication
-            _writer.DocumentDeDuplicated(_handle1, _doc1, null, 6);
+            _writer.DocumentDeDuplicated(_handle1, _handle1, _doc1, 6);
 
             var h = _writer.FindOneById(_handle1);
             Assert.That(h.DeDuplicated, Is.EqualTo(false), "Deduplication of same handle should not set de-duplicated");
@@ -159,7 +159,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.CreateIfMissing(_handle1, null, 1);
             _writer.CreateIfMissing(_handle2, null, 3);
             _writer.LinkDocument(_handle1, _doc1, 5);
-            _writer.DocumentDeDuplicated(_handle2, _doc1, null, 6);
+            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
 
             //after de duplication the worker started adding attachments to handle1
             _writer.CreateIfMissing(_handleAttach1, null, 7);

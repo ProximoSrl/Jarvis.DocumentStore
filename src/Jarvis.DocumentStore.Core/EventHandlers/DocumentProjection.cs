@@ -1,9 +1,11 @@
-﻿using Jarvis.DocumentStore.Core.Domain.Document.Events;
+﻿using System.Linq;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
+using Jarvis.Framework.Kernel.ProjectionEngine;
 using NEventStore;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
@@ -18,10 +20,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         , IEventHandler<DocumentDescriptorInitialized>
     {
         readonly IDocumentWriter _writer;
+        private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorCollectionWrapper;
 
-        public DocumentProjection(IDocumentWriter writer)
+        public DocumentProjection(IDocumentWriter writer, ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorCollectionWrapper)
         {
             _writer = writer;
+            _documentDescriptorCollectionWrapper = documentDescriptorCollectionWrapper;
         }
 
         public override int Priority
@@ -85,10 +89,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDescriptorHasBeenDeduplicated e)
         {
+            var originalDocumentDescriptor = _documentDescriptorCollectionWrapper.All.Single(d => d.Id == e.AggregateId); 
             _writer.DocumentDeDuplicated(
                 e.Handle,
+                originalDocumentDescriptor.OriginalDocument,
                 (DocumentDescriptorId)e.AggregateId,
-                e.OtherDocumentId,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
         }
