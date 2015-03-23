@@ -26,6 +26,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
         {
             RecycleBin = recycleBin;
             BlobStore = blobStore;
+            Logger = NullLogger.Instance;
         }
 
         public void Execute(IJobExecutionContext context)

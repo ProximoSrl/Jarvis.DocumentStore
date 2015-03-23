@@ -30,9 +30,15 @@ using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using System;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
+using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
+using NSubstitute;
+using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -45,6 +51,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
         private MongoCollection<DocumentReadModel> _documentCollection;
         private ITriggerProjectionsUpdate _projections;
+        private ITenant _tenant;
 
         private async Task UpdateAndWaitAsync()
         {
@@ -63,8 +70,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.ServerAddress,
                 TestConfig.Tenant
             );
-            var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
-            _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
+            _tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
+            _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
         }
@@ -419,6 +426,31 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(attachments.Attachments, Has.Count.EqualTo(1));
             Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("source_1"));
             Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
+        }
+
+        [Test]
+        public async void verify_de_duplication_delete_original_blob()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
+            // wait background projection polling
+            await UpdateAndWaitAsync();
+
+            //now we need to wait cleanupJobs to start 
+            var store = _tenant.Container.Resolve<IBlobStore>();
+            CleanupJob job = _tenant.Container.Resolve<CleanupJob>();
+            IJobExecutionContext context = NSubstitute.Substitute.For<IJobExecutionContext>();
+            IJobDetail jobDetail = NSubstitute.Substitute.For<IJobDetail>();
+            IDictionary<string, object> mapd = new Dictionary<string, object>() { { JobKeys.TenantId.ToString(), _tenant.Id.ToString() } };
+            JobDataMap map = new JobDataMap(mapd);
+            jobDetail.JobDataMap.Returns(map);
+            context.JobDetail.Returns(jobDetail);
+            job.Execute(context);
+
+            //verify that blob
+            Assert.That(store.GetDescriptor(new BlobId("original.1")), Is.Not.Null);
+
+            Assert.Throws<Exception>(() => store.GetDescriptor(new BlobId("original.2")));
         }
 
         [Test]
