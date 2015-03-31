@@ -58,6 +58,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected DocumentStoreServiceClient _documentStoreClient;
         protected MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
         protected MongoCollection<DocumentReadModel> _documentCollection;
+        protected MongoCollection<StreamReadModel> _streamCollection;
+        protected MongoCollection<QueuedJob> _tikaQueue;
+        protected MongoCollection<StreamCheckpoint> _queueCheckpoint;
         protected DocumentStoreTestConfigurationForPollQueue _config;
         protected JobsHostConfiguration _jobsHostConfiguration;
         protected IBlobStore _blobStore;
@@ -85,6 +88,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _streamCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<StreamReadModel>("rm.Stream");
+
+            _tikaQueue = MongoDbTestConnectionProvider.QueueDb.GetCollection<QueuedJob>("queue.tika");
+            _queueCheckpoint = MongoDbTestConnectionProvider.QueueDb.GetCollection<StreamCheckpoint>("stream.checkpoints");
+
             TenantContext.Enter(new TenantId(TestConfig.Tenant));
             var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
@@ -161,6 +169,71 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             Assert.Fail("Tika document not found");
+        }
+
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""), 
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_no_multiple_schedule : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        OutOfProcessTikaNetJob sut;
+
+        /// <summary>
+        /// When duplicate document is added to DS it generates two record in the StreamReadModel
+        /// but <see cref="QueueManager" /> needs to generate only one job. 
+        /// </summary>
+        [Test]
+        public async void verify_no_multiple_schedule_for_de_duplicated_document()
+        {
+            _sutBase = sut = new OutOfProcessTikaNetJob();
+            PrepareJob();
+
+            var handleClient1 = new DocumentHandle("verify_tika_job1");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToWordDocument,
+               handleClient1,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            var handleClient2 = new DocumentHandle("verify_tika_job2");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToWordDocument,
+               handleClient2,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+           
+            await UpdateAndWait();
+            var allStream = _streamCollection.FindAll();
+            var maxCheckpoint = allStream.Select(s => s.Id).Max();
+            StreamCheckpoint checkpoint;
+            DateTime startWait = DateTime.Now;
+            do
+            {
+                checkpoint = _queueCheckpoint.FindOneById(BsonValue.Create(TestConfig.Tenant));
+                if (checkpoint == null || checkpoint.Checkpoint < maxCheckpoint) 
+                {
+                    Thread.Sleep(200); //wait for queue manager to read all stream
+                }
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            if (checkpoint == null || checkpoint.Checkpoint < maxCheckpoint)
+            {
+                Assert.Fail("Queue Manager unable to process all stream readmodel record!!");
+            }
+            Assert.That(_tikaQueue.Count(), Is.EqualTo(1), "Job generated for duplicate document, error");
         }
 
 
@@ -706,8 +779,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
             //now all attachment are unzipped.
-             handleClient = DocumentHandle.FromString("containing_zip");
-             handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("containing_zip");
+            handleClient = DocumentHandle.FromString("containing_zip");
+            handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("containing_zip");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFileThatContainsOtherZip,
                handleClient,
@@ -716,7 +789,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 }
             );
 
-             startWait = DateTime.Now;
+            startWait = DateTime.Now;
             do
             {
                 await UpdateAndWait();

@@ -50,6 +50,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private DocumentStoreServiceClient _documentStoreClient;
         private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
         private MongoCollection<DocumentReadModel> _documentCollection;
+        private MongoCollection<StreamReadModel> _streamCollection;
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
 
@@ -74,6 +75,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _streamCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<StreamReadModel>("rm.Stream");
         }
 
         [TearDown]
@@ -181,6 +183,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
         }
+
+       
 
         [Test]
         public async void can_add_new_format_with_api()
