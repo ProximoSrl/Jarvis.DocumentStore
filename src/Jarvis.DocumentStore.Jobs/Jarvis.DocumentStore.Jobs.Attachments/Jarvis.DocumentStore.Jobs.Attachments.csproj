@@ -38,9 +38,9 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\..\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.Framework.MongoAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Jarvis.Framework.MongoAppender, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Jarvis.Framework.MongoAppender.1.0.11\lib\NET45\Jarvis.Framework.MongoAppender.dll</HintPath>
+      <HintPath>..\..\packages\Jarvis.Framework.MongoAppender.1.1.19\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.Framework.UdpAppender">
       <HintPath>..\..\packages\Jarvis.Framework.UdpAppender.1.0.9\lib\NET45\Jarvis.Framework.UdpAppender.dll</HintPath>
