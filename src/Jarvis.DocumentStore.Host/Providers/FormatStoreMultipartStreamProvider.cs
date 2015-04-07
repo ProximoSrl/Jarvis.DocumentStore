@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 
 namespace Jarvis.DocumentStore.Host.Providers

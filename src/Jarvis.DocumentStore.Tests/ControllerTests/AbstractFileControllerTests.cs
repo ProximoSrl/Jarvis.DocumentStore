@@ -6,7 +6,6 @@ using System.Web.Http.Routing;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.ReadModel;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Controllers;
 using Jarvis.Framework.Kernel.Commands;
@@ -16,6 +15,7 @@ using Jarvis.Framework.Shared.ReadModel;
 using NSubstitute;
 using NUnit.Framework;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Jarvis.DocumentStore.Tests.Support;
 
 namespace Jarvis.DocumentStore.Tests.ControllerTests
 {
@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             Controller = new DocumentsController(
                 BlobStore, 
-                new ConfigService(), 
+                new DocumentStoreTestConfiguration(), 
                 IdentityGenerator, 
                 DocumentReader, 
                 bus, 

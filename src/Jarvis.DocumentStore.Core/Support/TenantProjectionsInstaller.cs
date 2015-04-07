@@ -19,12 +19,14 @@ namespace Jarvis.DocumentStore.Core.Support
     public class TenantProjectionsInstaller<TNotifier> : IWindsorInstaller where TNotifier : INotifyToSubscribers
     {
         readonly ITenant _tenant;
-        readonly bool _enableProjections;
+        readonly DocumentStoreConfiguration _config;
 
-        public TenantProjectionsInstaller(ITenant tenant, bool enableProjections)
+        public TenantProjectionsInstaller(
+            ITenant tenant, 
+            DocumentStoreConfiguration config)
         {
             _tenant = tenant;
-            _enableProjections = enableProjections;
+            _config = config;
         }
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
@@ -35,11 +37,11 @@ namespace Jarvis.DocumentStore.Core.Support
             var config = new ProjectionEngineConfig
             {
                 EventStoreConnectionString = _tenant.GetConnectionString("events"),
-                Slots = ConfigurationManager.AppSettings["engine-slots"].Split(','),
-                PollingMsInterval = int.Parse(ConfigurationManager.AppSettings["polling-interval-ms"]),
-                ForcedGcSecondsInterval = int.Parse(ConfigurationManager.AppSettings["memory-collect-seconds"]),
+                Slots = _config.EngineSlots,
+                PollingMsInterval = _config.PollingMsInterval,
+                ForcedGcSecondsInterval = _config.ForcedGcSecondsInterval,
                 TenantId = _tenant.Id,
-                DelayedStartInMilliseconds = int.Parse(ConfigurationManager.AppSettings["poller-delayed-start"]),
+                DelayedStartInMilliseconds = _config.DelayedStartInMilliseconds,
             };
 
             var readModelDb = _tenant.Get<MongoDatabase>("readmodel.db");
@@ -56,7 +58,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
             );
             
-            if (!_enableProjections)
+            if (!_config.IsReadmodelBuilder)
                 return;
 
             container.Register(
@@ -97,7 +99,7 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<IPollingClient>()
                     .ImplementedBy<PollingClientWrapper>()
-                    .DependsOn(Dependency.OnConfigValue("boost", ConfigurationManager.AppSettings["engine-multithread"])),
+                    .DependsOn(Dependency.OnConfigValue("boost", _config.Boost)),
                 Component
                     .For<IRebuildContext>()
                     .ImplementedBy<RebuildContext>()

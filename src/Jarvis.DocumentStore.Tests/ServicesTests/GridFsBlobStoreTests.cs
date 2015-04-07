@@ -9,7 +9,6 @@ using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Tests.PipelineTests;

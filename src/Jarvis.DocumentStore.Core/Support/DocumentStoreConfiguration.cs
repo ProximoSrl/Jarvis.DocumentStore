@@ -8,6 +8,7 @@ using System.Collections;
 using System.Linq;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Newtonsoft.Json;
+using Jarvis.DocumentStore.Core.Model;
 
 
 namespace Jarvis.DocumentStore.Core.Support
@@ -18,6 +19,8 @@ namespace Jarvis.DocumentStore.Core.Support
         {
             TenantSettings = new List<TenantSettings>();
         }
+
+        #region BasicSettings
 
         public bool IsApiServer { get; protected set; }
         public bool IsWorker { get; protected set; }
@@ -33,6 +36,22 @@ namespace Jarvis.DocumentStore.Core.Support
             get { return _addresses.ToArray(); }
         }
 
+        public bool IsDeduplicationActive { get; protected set; }
+
+        public String[] AllowedFileTypes { get; protected set; }
+
+         public bool IsFileAllowed(FileNameWithExtension filename)
+        {
+            if (AllowedFileTypes == null)
+                return true;
+
+            return AllowedFileTypes.Contains(filename.Extension);
+        }
+
+        #endregion
+
+        #region Queue Management
+
         public JobModes JobMode { get; protected set; }
 
         public bool IsReadmodelBuilder { get; protected set; }
@@ -43,6 +62,26 @@ namespace Jarvis.DocumentStore.Core.Support
         public int QueueStreamPollInterval { get; protected set; }
 
         public int QueueJobsPollInterval { get; protected set; }
+
+        #endregion
+
+        #region Projections
+
+        public Boolean Rebuild { get; set; }
+
+        public String[] EngineSlots { get; set; }
+
+        public Boolean NitroMode { get; set; }
+
+        public Int32 PollingMsInterval { get; set; }
+
+        public Int32 ForcedGcSecondsInterval { get; set; }
+
+        public Int32 DelayedStartInMilliseconds { get; set; }
+
+        public String Boost { get; set; }
+
+        #endregion
 
         public IList<TenantSettings> TenantSettings { get; private set; }
 

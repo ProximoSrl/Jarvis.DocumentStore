@@ -188,7 +188,7 @@
     <Compile Include="Support\DocumentStoreApplication.cs" />
     <Compile Include="Support\DocumentStoreTenantSettings.cs" />
     <Compile Include="Support\EventstoreInstaller.cs" />
-    <Compile Include="Support\DocumentStoreConfiguration.cs" />
+    <Compile Include="Support\RemoteDocumentStoreConfiguration.cs" />
     <Compile Include="Support\JsonContentNegotiator.cs" />
     <Compile Include="Support\TenantContextHandler.cs" />
     <Compile Include="Support\WindsorDependencyScope.cs" />

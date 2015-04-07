@@ -84,7 +84,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\ClientPasswordSet.cs" />
     <Compile Include="Support\ContainerAccessor.cs" />
-    <Compile Include="Support\DocumentStoreTenantSettings.cs" />
     <Compile Include="Support\JobsHostConfiguration.cs" />
     <Compile Include="Support\DocumentStoreSingleQueueClientBootstrapper.cs" />
   </ItemGroup>

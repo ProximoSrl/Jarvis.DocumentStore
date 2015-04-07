@@ -93,7 +93,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     tenantInstallers.Add(new TenantApiInstaller())                    ;
                 }
 
-                tenantInstallers.Add(new TenantProjectionsInstaller<NotifyReadModelChanges>(tenant, config.IsReadmodelBuilder));
+                tenantInstallers.Add(new TenantProjectionsInstaller<NotifyReadModelChanges>(tenant, config));
                 _logger.DebugFormat("Configured Projections for tenant {0}", tenant.Id);
                 
                 tenant.Container.Install(tenantInstallers.ToArray());

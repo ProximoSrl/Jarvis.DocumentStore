@@ -14,7 +14,6 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Model;
 using Jarvis.DocumentStore.Host.Providers;
@@ -36,7 +35,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
     public class DocumentsController : ApiController, ITenantController
     {
         readonly IBlobStore _blobStore;
-        readonly ConfigService _configService;
+        readonly DocumentStoreConfiguration _configService;
         readonly IIdentityGenerator _identityGenerator;
         private readonly ICounterService _counterService;
         private IDocumentFormatTranslator _documentFormatTranslator;
@@ -54,7 +53,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public DocumentsController(
             IBlobStore blobStore,
-            ConfigService configService,
+            DocumentStoreConfiguration configService,
             IIdentityGenerator identityGenerator,
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,

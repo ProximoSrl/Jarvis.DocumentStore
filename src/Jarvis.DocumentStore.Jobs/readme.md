@@ -16,6 +16,10 @@ Project Jarvis.DocumentStore.JobsHost is the host pre-configured to run a poller
 
 	/dsuris:http://localhost:5123 /queue:pdfThumb /handle:manual-execution
 
+Hosts loads log4net.config file for logging configuration from two location. It checks if there is a log4net.config file in parent folder of the tool. This permits to use a single log4net file for every job putting a global log4net.config file in jobs directory. If this global log4net.config file is not found, the host loads log4net.config file from main directory.
+
+Hosts does not use configuration manager to get configuration.
+
 ###Passwords
 
 Some file are password protected. Tika is enabled to use password. The real password is stored in client running jobs. The setting is in environment variable

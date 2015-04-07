@@ -91,7 +91,18 @@ namespace Jarvis.DocumentStore.JobsHost.Support
 
         public virtual void CreateLoggingFacility(LoggingFacility f)
         {
-            f.LogUsing(new ExtendedLog4netFactory("log4net.config"));
+            //Check log4net.config location, we can accept a local log4net.config
+            //or a general one located in parent folder of the job
+            var parentLog4net = new FileInfo("..\\log4net.config");
+            if (parentLog4net.Exists) 
+            {
+                f.LogUsing(new ExtendedLog4netFactory(parentLog4net.FullName));
+            }
+            else
+            {
+                f.LogUsing(new ExtendedLog4netFactory("log4net.config"));
+            }
+            
         }
     }
 }

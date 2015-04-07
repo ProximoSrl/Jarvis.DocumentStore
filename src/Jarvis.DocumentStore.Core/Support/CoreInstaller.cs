@@ -2,7 +2,6 @@
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.Framework.Shared.IoC;
@@ -25,11 +24,6 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<ICommandBus, IInProcessCommandBus>()
                     .ImplementedBy<MultiTenantInProcessCommandBus>()
                 );
-
-            container.Register(
-                Component
-                    .For<ConfigService>()
-            );
 
             container.Register(
                 Component

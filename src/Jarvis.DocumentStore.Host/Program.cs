@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Host
 
             LoadConfiguration();
 
-            ConfigureRebuild();
+            ConfigureRebuild(_documentStoreConfiguration);
 
             var exitCode = HostFactory.Run(host =>
             {
@@ -83,24 +83,10 @@ namespace Jarvis.DocumentStore.Host
 
         static void LoadConfiguration()
         {
-            var roles = ConfigurationManager.AppSettings["roles"];
-            bool isApiServer = false;
-            bool isWorker = false;
-            bool isReadmodelBuilder = false;
-
-            if (roles != null)
-            {
-                var roleArray = roles.Split(',').Select(x => x.Trim().ToLowerInvariant()).ToArray();
-
-                isApiServer = roleArray.Contains("api");
-                isWorker = roleArray.Contains("worker");
-                isReadmodelBuilder = roleArray.Contains("projections");
-            }
-
             _documentStoreConfiguration = new RemoteDocumentStoreConfiguration();
         }
 
-        static void ConfigureRebuild()
+        static void ConfigureRebuild(DocumentStoreConfiguration config)
         {
             if (!Environment.UserInteractive)
                 return;
@@ -110,10 +96,7 @@ namespace Jarvis.DocumentStore.Host
 
             Banner();
 
-            RebuildSettings.Init(
-                ConfigurationManager.AppSettings["rebuild"] == "true",
-                ConfigurationManager.AppSettings["nitro-mode"] == "true"
-            );
+            RebuildSettings.Init(config.Rebuild, config.NitroMode);
 
             if (RebuildSettings.ShouldRebuild)
             {

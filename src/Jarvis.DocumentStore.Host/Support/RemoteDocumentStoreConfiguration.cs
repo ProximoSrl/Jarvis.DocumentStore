@@ -29,6 +29,11 @@ namespace Jarvis.DocumentStore.Host.Support
                 TenantSettings.Add(new DocumentStoreTenantSettings(tenant));
             }
 
+            IsDeduplicationActive = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("deduplication-active", "true"), StringComparison.OrdinalIgnoreCase);
+            var allowedFileList = ConfigurationServiceClient.Instance.GetSetting("allowed-file-types", "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip");
+
+            AllowedFileTypes = allowedFileList != "*" ? allowedFileList.Split('|') : null;
+
             QuartzConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-quartz");
             QueueConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-queues");
             IsApiServer = GetBool("api");
@@ -61,6 +66,16 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 AddMetersOptions((string)binding.Name, (string)binding.Value);
             }
+
+            Rebuild = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("rebuild", "false"), StringComparison.OrdinalIgnoreCase);
+            NitroMode = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("nitro-mode", "false"), StringComparison.OrdinalIgnoreCase);
+            EngineSlots = ConfigurationServiceClient.Instance.GetSetting("engine-slots", "*").Split(',');
+        
+            PollingMsInterval = Int32.Parse(ConfigurationServiceClient.Instance.GetSetting("polling-interval-ms", "1000"));
+            ForcedGcSecondsInterval = Int32.Parse(ConfigurationServiceClient.Instance.GetSetting("memory-collect-seconds", "0"));
+            DelayedStartInMilliseconds = Int32.Parse(ConfigurationServiceClient.Instance.GetSetting("poller-delayed-start", "2000"));
+
+            Boost = ConfigurationServiceClient.Instance.GetSetting("engine-multithread", "false");
         }
 
         private static void FillQueueList(List<QueueInfo> queueInfoList)

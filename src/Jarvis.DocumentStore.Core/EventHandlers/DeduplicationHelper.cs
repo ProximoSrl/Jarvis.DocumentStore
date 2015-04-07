@@ -1,20 +1,24 @@
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Services;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DeduplicationHelper
     {
         public ILogger Logger { get; set; }
-        private readonly ConfigService _configService;
+        private readonly DocumentStoreConfiguration _config;
         private readonly DocumentDescriptorByHashReader _hashReader;
         private readonly IBlobStore _blobStore;
-        public DeduplicationHelper(ConfigService configService, DocumentDescriptorByHashReader hashReader, IBlobStore blobStore)
+
+        public DeduplicationHelper(
+            DocumentStoreConfiguration config, 
+            DocumentDescriptorByHashReader hashReader, 
+            IBlobStore blobStore)
         {
-            _configService = configService;
+            _config = config;
             _hashReader = hashReader;
             _blobStore = blobStore;
         }
@@ -25,7 +29,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             BlobId sourceBlobId 
             )
         {
-            if (!_configService.IsDeduplicationActive)
+            if (!_config.IsDeduplicationActive)
                 return null;
 
             var original = _blobStore.GetDescriptor(sourceBlobId);
