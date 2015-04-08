@@ -37,6 +37,7 @@ using Jarvis.DocumentStore.Core;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using MongoDB.Bson;
 using Jarvis.DocumentStore.Jobs.LibreOffice;
+using Jarvis.DocumentStore.Jobs.Tika.Filters;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -132,7 +133,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void verify_tika_job()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob();
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
             PrepareJob();
 
             var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
@@ -194,7 +197,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void verify_no_multiple_schedule_for_de_duplicated_document()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob();
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
             PrepareJob();
 
             var handleClient1 = new DocumentHandle("verify_tika_job1");
@@ -255,7 +260,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void verify_tika_set_content()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob();
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
             PrepareJob();
 
             var handle = DocumentHandle.FromString("verify_tika_job");

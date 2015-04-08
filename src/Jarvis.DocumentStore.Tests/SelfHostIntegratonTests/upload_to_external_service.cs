@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System;
 using System.Threading;
+using System.IO;
 
 
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -48,6 +49,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload__temp_pdf()
         {
             _docs.UploadAsync(@"c:\temp\temppdf.pdf", DocumentHandle.FromString("temp_pdf")).Wait();
+        }
+
+        [Test]
+        public void upload_list_files_in_temp()
+        {
+            var fileList = File.ReadAllText(@"c:\temp\filelist.txt");
+            foreach (var line in fileList.Split('\n'))
+            {
+                FileInfo finfo = new FileInfo(line);
+                _docs.UploadAsync(finfo.FullName, DocumentHandle.FromString(finfo.Name)).Wait();
+            }
+            
         }
 
         [Test]

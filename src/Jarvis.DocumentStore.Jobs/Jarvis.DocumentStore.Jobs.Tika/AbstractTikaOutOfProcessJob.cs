@@ -7,6 +7,7 @@ using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.DocumentStore.Jobs.Tika.Filters;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
@@ -14,8 +15,16 @@ namespace Jarvis.DocumentStore.Jobs.Tika
     {
         readonly string[] _formats;
 
-        public AbstractTikaOutOfProcessJob()
+        private ContentFormatBuilder _builder;
+
+        private ContentFilterManager _filterManager;
+
+        public AbstractTikaOutOfProcessJob(
+            ContentFormatBuilder builder,
+            ContentFilterManager filterManager)
         {
+            _builder = builder;
+            _filterManager = filterManager;
             _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt".Split('|');
             base.PipelineId = "tika";
             base.QueueName = "tika";
@@ -80,7 +89,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
             }
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
-
+            
             var tikaFileName = Path.Combine(workingFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".tika.html");
             File.WriteAllText(tikaFileName, content);
             result =  await AddFormatToDocumentFromFile(
@@ -93,7 +102,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
             if (!string.IsNullOrWhiteSpace(content))
             {
-                var documentContent = ContentFormatBuilder.CreateFromTikaPlain(content);
+                var documentContent = _builder.CreateFromTikaPlain(content);
                 var pages = documentContent.Pages.Count();
                 string lang = null;
                 if (pages > 1)
@@ -129,6 +138,13 @@ namespace Jarvis.DocumentStore.Jobs.Tika
     public class OutOfProcessTikaJob : AbstractTikaOutOfProcessJob
     {
 
+        public OutOfProcessTikaJob(
+            ContentFormatBuilder builder,
+            ContentFilterManager filterManager)
+            : base(builder, filterManager)
+        { 
+        }
+
         protected override ITikaAnalyzer BuildAnalyzer()
         {
             return new TikaAnalyzer(JobsHostConfiguration)
@@ -145,6 +161,13 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
     public class OutOfProcessTikaNetJob : AbstractTikaOutOfProcessJob
     {
+        public OutOfProcessTikaNetJob(
+            ContentFormatBuilder builder,
+            ContentFilterManager filterManager)
+            : base(builder, filterManager)
+        { 
+        }
+
         protected override ITikaAnalyzer BuildAnalyzer()
         {
             return new TikaNetAnalyzer();

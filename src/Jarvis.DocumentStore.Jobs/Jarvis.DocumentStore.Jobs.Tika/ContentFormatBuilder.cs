@@ -3,12 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using AngleSharp;
 using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.DocumentStore.Jobs.Tika.Filters;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
-    public static class ContentFormatBuilder
+    public class ContentFormatBuilder
     {
-        public static DocumentContent CreateFromTikaPlain(String tikaFullContent)
+
+        private ContentFilterManager _filterManager;
+
+        public ContentFormatBuilder(ContentFilterManager filterManager)
+        {
+            _filterManager = filterManager;
+        }
+
+        public DocumentContent CreateFromTikaPlain(String tikaFullContent)
         {
             if (String.IsNullOrEmpty(tikaFullContent)) return DocumentContent.NullContent;
 
@@ -37,7 +46,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             for (int i = 0; i < pages.Length; i++)
             {
                 var page = pages[i];
-                pagesList.Add(new DocumentContent.DocumentPage(i+1, page.TextContent));
+                var content = _filterManager.Filter(page.TextContent);
+                pagesList.Add(new DocumentContent.DocumentPage(i + 1, content));
             }
 
             if (pages.Length == 0)
@@ -46,7 +56,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 var documentContent = doc.QuerySelector("body").TextContent;
                 if (!String.IsNullOrEmpty(documentContent))
                 {
-                    pagesList.Add(new DocumentContent.DocumentPage(1, documentContent));
+                    var content = _filterManager.Filter(documentContent);
+                    pagesList.Add(new DocumentContent.DocumentPage(1, content));
                 }
             }
 

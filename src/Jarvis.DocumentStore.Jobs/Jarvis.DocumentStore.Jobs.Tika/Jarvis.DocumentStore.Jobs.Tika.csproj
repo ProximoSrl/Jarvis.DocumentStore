@@ -165,11 +165,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractTikaOutOfProcessJob.cs" />
+    <Compile Include="ContentFilterManager.cs" />
     <Compile Include="ContentFormatBuilder.cs" />
+    <Compile Include="Filters\IFilter.cs" />
     <Compile Include="LanguageDetector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TikaAnalyzer.cs" />
     <Compile Include="TikaNetAnalyzer.cs" />
+    <Compile Include="WindsorInstaller.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">

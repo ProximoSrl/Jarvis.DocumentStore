@@ -71,6 +71,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{A00F4E0A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Shell", "Tools\Jarvis.DocumentStore.Tools\Jarvis.DocumentStore.Shell.csproj", "{A030755A-936D-4808-B1E1-FD94B4BB1DDF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extra", "Extra", "{52D0F625-04DB-48F8-AB17-99D33F93CD82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.TikaBaseFilters", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.TikaBaseFilters\Jarvis.DocumentStore.Jobs.TikaBaseFilters.csproj", "{CA9AD683-00E1-4CB4-B2B0-8BAB5019024A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -169,6 +173,10 @@ Global
 		{A030755A-936D-4808-B1E1-FD94B4BB1DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A030755A-936D-4808-B1E1-FD94B4BB1DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A030755A-936D-4808-B1E1-FD94B4BB1DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA9AD683-00E1-4CB4-B2B0-8BAB5019024A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA9AD683-00E1-4CB4-B2B0-8BAB5019024A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA9AD683-00E1-4CB4-B2B0-8BAB5019024A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA9AD683-00E1-4CB4-B2B0-8BAB5019024A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -192,5 +200,7 @@ Global
 		{ABAED052-E89A-4DE7-B1EA-EF53F549DD17} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{9B18CF88-8758-44E9-BED8-E5FD53504C8B} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{A030755A-936D-4808-B1E1-FD94B4BB1DDF} = {A00F4E0A-4A37-45E1-8927-191DF081135E}
+		{52D0F625-04DB-48F8-AB17-99D33F93CD82} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
+		{CA9AD683-00E1-4CB4-B2B0-8BAB5019024A} = {52D0F625-04DB-48F8-AB17-99D33F93CD82}
 	EndGlobalSection
 EndGlobal

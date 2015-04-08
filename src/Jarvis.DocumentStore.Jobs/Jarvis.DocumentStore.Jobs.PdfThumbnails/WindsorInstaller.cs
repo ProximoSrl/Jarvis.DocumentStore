@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
                      .For<Func<CreateImageFromPdfTask>>()
                      .Instance(() => container.Resolve<CreateImageFromPdfTask>())
                      );
-            var check = container.Resolve<CreateImageFromPdfTask>();
+            //var check = container.Resolve<CreateImageFromPdfTask>();
         }
     }
 }
