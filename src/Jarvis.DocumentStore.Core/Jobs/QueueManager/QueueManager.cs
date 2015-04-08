@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.Framework.Kernel.Events;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -40,7 +41,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// <summary>
     /// Creates and maintain all configured queues.
     /// </summary>
-    public class QueueManager : IQueueDispatcher
+    public class QueueManager : IQueueDispatcher, IObserveProjection
     {
         private DocumentStoreConfiguration _configuration;
         private ITenantAccessor _tenantAccessor;
@@ -156,7 +157,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 catch (Exception ex)
                 {
                     Logger.ErrorFormat(ex, "Error in executing command: {0}", command.Command);
-                    throw;
                 }
                 finally
                 {
@@ -209,7 +209,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         private void TimerCallback(object sender, System.Timers.ElapsedEventArgs e)
         {
-            PollNow();
+            if (!_isRebuilding)  PollNow();
         }
 
         public QueuedJob GetNextJob(String queueName, String identity, String handle, TenantId tenant, Dictionary<String, Object> customData)
@@ -240,7 +240,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return executor(qh);
         }
 
-        
 
+        private Boolean _isRebuilding = false;
+
+        public void RebuildStarted()
+        {
+            _isRebuilding = true;
+        }
+
+        public void RebuildEnded()
+        {
+            _isRebuilding = false;
+        }
     }
 }

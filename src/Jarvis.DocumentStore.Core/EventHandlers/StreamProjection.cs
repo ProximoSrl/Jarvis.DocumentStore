@@ -11,6 +11,8 @@ using Jarvis.Framework.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -35,8 +37,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             ICollectionWrapper<StreamReadModel, Int64> streamReadModelCollection,
             IDocumentWriter documentWriter,
             IBlobStore blobStore,
+            IQueueDispatcher queueDispatcher,
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReadModel)
         {
+            if (queueDispatcher is IObserveProjection)
+                Observe(queueDispatcher as IObserveProjection);
             _streamReadModelCollection = streamReadModelCollection;
             _documentDescriptorReadModel = documentDescriptorReadModel;
             _documentWriter = documentWriter;
