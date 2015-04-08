@@ -17,9 +17,14 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             _filterManager = filterManager;
         }
 
-        public DocumentContent CreateFromTikaPlain(String tikaFullContent)
+        public ContentFormatBuilderResult CreateFromTikaPlain(String tikaFullContent)
         {
-            if (String.IsNullOrEmpty(tikaFullContent)) return DocumentContent.NullContent;
+            if (String.IsNullOrEmpty(tikaFullContent)) 
+                return new ContentFormatBuilderResult() 
+                {
+                    Content = DocumentContent.NullContent,
+                    SanitizedTikaContent = tikaFullContent,
+                };
 
             var doc = DocumentBuilder.Html(tikaFullContent);
 
@@ -46,22 +51,39 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             for (int i = 0; i < pages.Length; i++)
             {
                 var page = pages[i];
-                var content = _filterManager.Filter(page.TextContent);
-                pagesList.Add(new DocumentContent.DocumentPage(i + 1, content));
+                var filteredContent = _filterManager.Filter(page.TextContent);
+                pagesList.Add(new DocumentContent.DocumentPage(i + 1, filteredContent));
+                page.TextContent = filteredContent;
             }
 
             if (pages.Length == 0)
             {
-                meta.Add(new DocumentContent.MetadataHeader(DocumentContent.MetadataWithoutPageInfo,"true"));
-                var documentContent = doc.QuerySelector("body").TextContent;
+                meta.Add(new DocumentContent.MetadataHeader(DocumentContent.MetadataWithoutPageInfo, "true"));
+                var body = doc.QuerySelector("body");
+                var documentContent = body.TextContent;
                 if (!String.IsNullOrEmpty(documentContent))
                 {
-                    var content = _filterManager.Filter(documentContent);
-                    pagesList.Add(new DocumentContent.DocumentPage(1, content));
+                    var filteredContent = _filterManager.Filter(documentContent);
+                    pagesList.Add(new DocumentContent.DocumentPage(1, filteredContent));
+                    body.TextContent = filteredContent;
                 }
             }
 
-            return new DocumentContent(pagesList.ToArray(), meta.ToArray());
+            var content = new DocumentContent(pagesList.ToArray(), meta.ToArray());
+            var sanitized = doc.ToHtml();
+            return new ContentFormatBuilderResult()
+            {
+                Content = content,
+                SanitizedTikaContent = sanitized,
+            };
         }
+
+    }
+
+    public class ContentFormatBuilderResult
+    {
+        public DocumentContent Content { get; set; }
+
+        public String SanitizedTikaContent { get; set; }
     }
 }

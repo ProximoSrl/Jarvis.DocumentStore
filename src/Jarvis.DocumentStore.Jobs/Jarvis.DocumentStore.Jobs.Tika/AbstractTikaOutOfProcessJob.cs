@@ -89,20 +89,12 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
             }
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
-            
-            var tikaFileName = Path.Combine(workingFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".tika.html");
-            File.WriteAllText(tikaFileName, content);
-            result =  await AddFormatToDocumentFromFile(
-                parameters.TenantId,
-                parameters.JobId,
-                new DocumentFormat(DocumentFormats.Tika), 
-                tikaFileName, 
-                new Dictionary<string, object>());
-            Logger.DebugFormat("Added format {0} to jobId {1}, result: {2}", DocumentFormats.Tika, parameters.JobId, result);
-
+            String sanitizedContent = content;
             if (!string.IsNullOrWhiteSpace(content))
             {
-                var documentContent = _builder.CreateFromTikaPlain(content);
+                var resultContent = _builder.CreateFromTikaPlain(content);
+                var documentContent = resultContent.Content;
+                sanitizedContent = resultContent.SanitizedTikaContent;
                 var pages = documentContent.Pages.Count();
                 string lang = null;
                 if (pages > 1)
@@ -130,6 +122,18 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                       new Dictionary<string, object>());
                 Logger.DebugFormat("Added format {0} to jobId {1}, result: {2}", DocumentFormats.Content, parameters.JobId, result);
             }
+
+            var tikaFileName = Path.Combine(workingFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".tika.html");
+            File.WriteAllText(tikaFileName, sanitizedContent);
+            result = await AddFormatToDocumentFromFile(
+                parameters.TenantId,
+                parameters.JobId,
+                new DocumentFormat(DocumentFormats.Tika),
+                tikaFileName,
+                new Dictionary<string, object>());
+            Logger.DebugFormat("Added format {0} to jobId {1}, result: {2}", DocumentFormats.Tika, parameters.JobId, result);
+
+
             return true;
         }
 
