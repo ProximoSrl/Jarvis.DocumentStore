@@ -16,7 +16,6 @@ namespace Jarvis.DocumentStore.Tests.Support
             IsWorker = false;
             IsReadmodelBuilder = true;
 
-            QuartzConnectionString = ConfigurationManager.ConnectionStrings["ds.quartz"].ConnectionString;
             QueueConnectionString = ConfigurationManager.ConnectionStrings["ds.queue"].ConnectionString;
             QueueInfoList = new Core.Jobs.QueueManager.QueueInfo[] { };
 

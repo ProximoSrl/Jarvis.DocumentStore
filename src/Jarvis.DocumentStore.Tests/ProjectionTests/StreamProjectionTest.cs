@@ -64,7 +64,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
         private void CreateSut()
         {
-            _sut = new StreamProjection(_collectionWrapper, _handleWriter, _blobStore, _readerDocumentReadModel);
+            _sut = new StreamProjection(_collectionWrapper, _handleWriter, _blobStore, null, _readerDocumentReadModel);
             _sut.TenantId = new TenantId("test-tenant");
         }
 

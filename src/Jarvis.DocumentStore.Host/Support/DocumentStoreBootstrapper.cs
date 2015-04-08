@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 new CoreInstaller(config),
                 new EventStoreInstaller(manager),
-                new SchedulerInstaller(config.QuartzConnectionString, false),
+                new SchedulerInstaller(false),
                 new QueueInfrasctructureInstaller(config.QueueConnectionString, config.QueueInfoList),
             };
 

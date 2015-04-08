@@ -34,7 +34,6 @@ namespace Jarvis.DocumentStore.Host.Support
 
             AllowedFileTypes = allowedFileList != "*" ? allowedFileList.Split('|') : null;
 
-            QuartzConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-quartz");
             QueueConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-queues");
             IsApiServer = GetBool("api");
             IsWorker = GetBool("worker");

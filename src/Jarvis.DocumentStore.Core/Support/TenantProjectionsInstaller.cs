@@ -14,6 +14,7 @@ using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Jobs;
 
 namespace Jarvis.DocumentStore.Core.Support
 {

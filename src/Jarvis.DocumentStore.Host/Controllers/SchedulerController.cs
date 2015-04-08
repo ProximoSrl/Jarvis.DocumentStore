@@ -17,7 +17,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
     public class SchedulerController : ApiController
     {
         public IScheduler Scheduler { get; set; }
-        public JobStats JobStats { get; set; }
 
         public QueuedJobStatus QueuedJobStats { get; set; }
 
@@ -57,9 +56,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             if (Config.JobMode == JobModes.Quartz)
             {
-                var triggerStats = this.JobStats.GetTriggerStats();
-
-                return triggerStats;
+                return new Object();
             }
             else
             {

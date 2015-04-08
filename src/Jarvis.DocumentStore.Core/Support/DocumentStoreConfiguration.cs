@@ -57,7 +57,7 @@ namespace Jarvis.DocumentStore.Core.Support
         public bool IsReadmodelBuilder { get; protected set; }
         public bool IsQueueManager { get; protected set; }
         public QueueInfo[] QueueInfoList { get; protected set; }
-        public string QuartzConnectionString { get; protected set; }
+
         public string QueueConnectionString { get; protected set; }
         public int QueueStreamPollInterval { get; protected set; }
 
@@ -134,6 +134,7 @@ namespace Jarvis.DocumentStore.Core.Support
     public enum JobModes
     {
         Unknown = 0,
+        [Obsolete("Quartz scheduling is not used anymore!")]
         Quartz = 1,
         Queue = 2,
     }
