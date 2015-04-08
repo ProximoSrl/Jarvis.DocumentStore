@@ -24,6 +24,14 @@ namespace Jarvis.DocumentStore.Tests.Support
             QueueStreamPollInterval = 1000;
             IsQueueManager = false;
             TenantSettings.Add(new TestTenantSettings());
+
+            Boost = "true";
+            DelayedStartInMilliseconds = 1000;
+            ForcedGcSecondsInterval = 0;
+            EngineSlots = new String[] { "*" };
+            PollingMsInterval = 100;
+            AllowedFileTypes = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip".Split('|');
+            IsDeduplicationActive = true;
         }
 
         public override void CreateLoggingFacility(LoggingFacility f)

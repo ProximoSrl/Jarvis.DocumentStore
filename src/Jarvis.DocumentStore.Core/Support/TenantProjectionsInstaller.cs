@@ -13,6 +13,7 @@ using Jarvis.Framework.Shared.Messages;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver;
+using Castle.Core.Logging;
 
 namespace Jarvis.DocumentStore.Core.Support
 {

@@ -39,10 +39,10 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             QueueDispatcher= Substitute.For<IQueueDispatcher>();
             CounterService = Substitute.For<ICounterService>();
             var bus = Substitute.For<IInProcessCommandBus>();
-
+            var configuration =  new DocumentStoreTestConfiguration();
             Controller = new DocumentsController(
-                BlobStore, 
-                new DocumentStoreTestConfiguration(), 
+                BlobStore,
+               configuration, 
                 IdentityGenerator, 
                 DocumentReader, 
                 bus, 
