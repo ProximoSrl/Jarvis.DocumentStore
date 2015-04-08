@@ -88,7 +88,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 }
                 process.StartInfo.RedirectStandardOutput = false;
-                process.EnableRaisingEvents = true;
                 Boolean started = process.Start();
                 Logger.DebugFormat("Started process for queue {0} with ProcessId {1}.", queueId, process.Id);
             }
@@ -96,6 +95,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             {
                 Logger.DebugFormat("Reattached process for queue {0} with ProcessId {1}.", queueId, process.Id);
             }
+            process.EnableRaisingEvents = true;
             process.Exited += process_Exited;
 
             var info = new ProcessInfo()
