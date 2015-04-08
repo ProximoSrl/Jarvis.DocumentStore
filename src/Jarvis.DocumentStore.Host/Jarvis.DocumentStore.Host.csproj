@@ -158,7 +158,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\JobHandlersRegistration.cs" />
     <Compile Include="Controllers\ConfigController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\FeedController.cs" />

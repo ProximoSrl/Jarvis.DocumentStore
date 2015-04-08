@@ -8,7 +8,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     public class DocumentDescriptorState : AggregateState
     {
-        private readonly HashSet<DocumentHandle> _handles = new Quartz.Collection.HashSet<DocumentHandle>();
+        private readonly HashSet<DocumentHandle> _handles = new HashSet<DocumentHandle>();
 
         public DocumentDescriptorState(params KeyValuePair<DocumentFormat, BlobId>[] formats)
             : this()

@@ -170,10 +170,8 @@
     <Compile Include="Jobs\QueueManager\QueueInfo.cs" />
     <Compile Include="Jobs\QueueManager\QueueManager.cs" />
     <Compile Include="Jobs\CleanupJob.cs" />
-    <Compile Include="Jobs\CommandRunnerJob.cs" />
     <Compile Include="Jobs\ISystemJob.cs" />
     <Compile Include="Jobs\ITenantJob.cs" />
-    <Compile Include="Jobs\JobDataMapExtensions.cs" />
     <Compile Include="MimeTypes.cs" />
     <Compile Include="Model\DocumentHandle.cs" />
     <Compile Include="Model\FileHash.cs" />

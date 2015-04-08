@@ -5,7 +5,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Host.Commands;
+
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver;
@@ -26,14 +26,6 @@ namespace Jarvis.DocumentStore.Host.Support
             var sysDb = _tenant.Get<MongoDatabase>("system.db");
             
             container.Register(
-                Component
-                    .For<JobHandlersRegistration>()
-                    .DependsOn(Dependency.OnValue<IWindsorContainer>(container))
-                    .DependsOn(Dependency.OnValue<Assembly[]>(new[]
-                        {
-                            typeof (DocumentDescriptor).Assembly,
-                        }))
-                    .StartUsingMethod(x => x.Register),
                 Component
                     .For<IHandleMapper>()
                     .ImplementedBy<HandleMapper>()
