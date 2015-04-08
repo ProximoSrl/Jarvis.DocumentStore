@@ -52,8 +52,6 @@ namespace Jarvis.DocumentStore.Core.Support
 
         #region Queue Management
 
-        public JobModes JobMode { get; protected set; }
-
         public bool IsReadmodelBuilder { get; protected set; }
         public bool IsQueueManager { get; protected set; }
         public QueueInfo[] QueueInfoList { get; protected set; }
@@ -131,11 +129,4 @@ namespace Jarvis.DocumentStore.Core.Support
         public Boolean WindowVisible { get; set; }
     }
 
-    public enum JobModes
-    {
-        Unknown = 0,
-        [Obsolete("Quartz scheduling is not used anymore!")]
-        Quartz = 1,
-        Queue = 2,
-    }
 }

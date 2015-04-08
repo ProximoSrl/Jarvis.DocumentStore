@@ -54,16 +54,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("scheduler/stats")]
         public object Stats()
         {
-            if (Config.JobMode == JobModes.Quartz)
-            {
-                return new Object();
-            }
-            else
-            {
                 var queueStats = this.QueuedJobStats.GetQueuesStatus();
                 return queueStats;
-            }
-
         }
     }
 }

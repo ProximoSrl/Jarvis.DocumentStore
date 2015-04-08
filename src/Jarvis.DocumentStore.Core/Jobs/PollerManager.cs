@@ -50,7 +50,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void Start()
         {
-            if (_configuration.JobMode != JobModes.Queue) return; //different job mode
             if (!_configuration.IsWorker) return; //I'm not a worker configuration.
 
             foreach (var queueInfo in _configuration.QueueInfoList.Where(info => info.PollersInfo != null))
@@ -94,7 +93,6 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void Stop()
         {
-            if (_configuration.JobMode != JobModes.Queue) return; //different job mode
             if (_configuration.IsWorker == false) return;
 
             foreach (var queueInfo in queueClients.ToList())

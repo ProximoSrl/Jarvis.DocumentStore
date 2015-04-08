@@ -23,8 +23,7 @@ namespace Jarvis.DocumentStore.Core.Support
             if (_config.IsQueueManager)
                 _queueManager.Start();
 
-            if (_config.JobMode == JobModes.Queue)
-                _pollerManager.Start();
+            _pollerManager.Start();
         }
     }
 
@@ -46,8 +45,7 @@ namespace Jarvis.DocumentStore.Core.Support
             if (_config.IsQueueManager)
                 _queueManager.Stop();
 
-            if (_config.JobMode == JobModes.Queue)
-                _pollerManager.Stop();
+            _pollerManager.Stop();
         }
     }
 }
