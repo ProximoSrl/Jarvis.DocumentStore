@@ -17,6 +17,8 @@ namespace Jarvis.DocumentStore.Tests.Support
             IsReadmodelBuilder = true;
 
             QueueConnectionString = ConfigurationManager.ConnectionStrings["ds.queue"].ConnectionString;
+            LogsConnectionString = ConfigurationManager.ConnectionStrings["log"].ConnectionString;
+
             QueueInfoList = new Core.Jobs.QueueManager.QueueInfo[] { };
 
             QueueJobsPollInterval = 100; //poll each 100 milliseconds.

@@ -136,7 +136,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
             var errorMessage = await UploadFromHttpContent(Request.Content);
-            Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage);
+            Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage ?? "OK");
 
             if (errorMessage != null)
             {
@@ -563,7 +563,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
 
         private void CreateDocument(
-            DocumentDescriptorId documentId,
+            DocumentDescriptorId documentDescriptorId,
             BlobId blobId,
             DocumentHandle handle,
             DocumentHandle fatherHandle,
@@ -571,18 +571,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentCustomData customData
         )
         {
-            
             var descriptor = _blobStore.GetDescriptor(blobId);
             ICommand createDocument;
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
             if (fatherHandle == null)
             {
-                
-                createDocument = new InitializeDocumentDescriptor(documentId, blobId, handleInfo, descriptor.Hash, fileName);
+                if (Logger.IsDebugEnabled) Logger.DebugFormat("Initialize DocumentDescriptor {0} ", documentDescriptorId);
+                createDocument = new InitializeDocumentDescriptor(documentDescriptorId, blobId, handleInfo, descriptor.Hash, fileName);
             }
             else
             {
-                createDocument = new InitializeDocumentDescriptorAsAttach(documentId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
+                if (Logger.IsDebugEnabled) Logger.DebugFormat("Initialize DocumentDescriptor as attach {0} ", documentDescriptorId);
+                createDocument = new InitializeDocumentDescriptorAsAttach(documentDescriptorId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
             }
             CommandBus.Send(createDocument, "api");
         }

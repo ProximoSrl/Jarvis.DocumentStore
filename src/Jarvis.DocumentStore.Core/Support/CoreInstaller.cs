@@ -5,6 +5,8 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.Framework.Shared.IoC;
+using Jarvis.Framework.Shared.ReadModel;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -19,7 +21,15 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            var logUrl = new MongoUrl(_config.LogsConnectionString);
+            var logDb = new MongoClient(logUrl).GetServer().GetDatabase(logUrl.DatabaseName);
+          
+               
             container.Register(
+                 Component
+                    .For<IMessagesTracker>()
+                    .ImplementedBy<MongoDbMessagesTracker>()
+                    .DependsOn(Dependency.OnValue<MongoDatabase>(logDb)),
                 Component
                     .For<ICommandBus, IInProcessCommandBus>()
                     .ImplementedBy<MultiTenantInProcessCommandBus>()

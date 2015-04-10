@@ -35,6 +35,8 @@ namespace Jarvis.DocumentStore.Host.Support
             AllowedFileTypes = allowedFileList != "*" ? allowedFileList.Split('|') : null;
 
             QueueConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-queues");
+            LogsConnectionString = ConfigurationServiceClient.Instance.GetSetting("connectionStrings.ds-logs");
+
             IsApiServer = GetBool("api");
             IsWorker = GetBool("worker");
             IsReadmodelBuilder = GetBool("projections");

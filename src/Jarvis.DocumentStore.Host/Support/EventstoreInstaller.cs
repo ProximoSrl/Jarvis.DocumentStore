@@ -79,9 +79,13 @@ namespace Jarvis.DocumentStore.Host.Support
                         .UsingFactory<EventStoreFactory, IStoreEvents>(f =>
                         {
                             var hooks = tenant1.Container.ResolveAll<IPipelineHook>();
+                            var mpOption = new MongoPersistenceOptionWithLog()
+                            {
+                                ServerSideOptimisticLoop = true
+                            };
                             return f.BuildEventStore(
-                                tenant1.GetConnectionString("events"),
-                                hooks
+                                    tenant1.GetConnectionString("events"),
+                                    hooks
                                 );
                         })
                         .LifestyleSingleton(),

@@ -12,6 +12,7 @@ using Topshelf;
 using Jarvis.ConfigurationService.Client;
 using System.Threading;
 using System.Diagnostics;
+using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Host
 {
@@ -24,6 +25,7 @@ namespace Jarvis.DocumentStore.Host
             
             try
             {
+                CommandsExtensions.EnableDiagnostics = true;
                 Native.DisableWindowsErrorReporting();
                 MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
                 var executionExitCode = StandardDocumentStoreStart();

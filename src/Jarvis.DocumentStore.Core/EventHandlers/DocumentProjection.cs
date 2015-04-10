@@ -18,11 +18,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         , IEventHandler<DocumentDeleted>
         , IEventHandler<DocumentDescriptorHasBeenDeduplicated>
         , IEventHandler<DocumentDescriptorInitialized>
+        , IEventHandler<DocumentHasNewAttachment>
     {
         readonly IDocumentWriter _writer;
         private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorCollectionWrapper;
 
-        public DocumentProjection(IDocumentWriter writer, ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorCollectionWrapper)
+        public DocumentProjection(
+            IDocumentWriter writer, 
+            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorCollectionWrapper)
         {
             _writer = writer;
             _documentDescriptorCollectionWrapper = documentDescriptorCollectionWrapper;

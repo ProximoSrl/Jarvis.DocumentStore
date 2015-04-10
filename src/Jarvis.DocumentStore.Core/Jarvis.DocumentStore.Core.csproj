@@ -197,6 +197,7 @@
     <Compile Include="Storage\IBlobDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\IStartupActivity.cs" />
+    <Compile Include="Support\NotifyCommitHandled.cs" />
     <Compile Include="Support\QueueInfrasctructureInstaller.cs" />
     <Compile Include="Support\QueueManagerActivities.cs" />
     <Compile Include="Support\SchedulerStartup.cs" />

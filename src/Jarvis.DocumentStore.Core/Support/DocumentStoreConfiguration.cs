@@ -48,6 +48,8 @@ namespace Jarvis.DocumentStore.Core.Support
             return AllowedFileTypes.Contains(filename.Extension);
         }
 
+        public String LogsConnectionString { get; set; }
+
         #endregion
 
         #region Queue Management
