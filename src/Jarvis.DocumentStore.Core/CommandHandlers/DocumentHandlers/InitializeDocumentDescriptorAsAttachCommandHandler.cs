@@ -20,7 +20,10 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
             FindAndModify(
                 cmd.AggregateId,
-                doc => doc.Initialize(cmd.BlobId, cmd.HandleInfo, cmd.Hash, cmd.FileName),
+                doc => {
+                    if (!doc.HasBeenCreated)
+                        doc.Initialize(cmd.BlobId, cmd.HandleInfo, cmd.Hash, cmd.FileName);
+                },
                 true
             );
 
