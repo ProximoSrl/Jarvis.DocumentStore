@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
             var  handle = _documentWriter.FindOneById(cmd.FatherHandle);
             var allChild = handle.Attachments.ToList();
             var attachments = _documentWriter.AllSortedByHandle
-                .Where(d => allChild.Contains(d.Handle))
+                .Where(d => allChild.Any(c => c.Handle == d.Handle))
                 .ToList();
             var attachmentsOfSource = attachments
                 .Where(d => d.CustomData.Any(cd => cd.Key == "source" && cmd.Source.Equals(cd.Value) ))

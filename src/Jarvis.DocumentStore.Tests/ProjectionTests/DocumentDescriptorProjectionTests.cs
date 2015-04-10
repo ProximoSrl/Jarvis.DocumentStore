@@ -183,7 +183,6 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var original = _documentReader.FindOneById(new DocumentDescriptorId(1));
             Assert.IsNotNull(original);
-            Assert.That(original.OriginalDocument, Is.EqualTo(new DocumentHandle("handle")));
 
             var handle = _handleWriter.FindOneById(new DocumentHandle("handle"));
             Assert.IsNotNull(handle);

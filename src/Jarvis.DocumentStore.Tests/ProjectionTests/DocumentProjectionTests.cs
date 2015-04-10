@@ -100,16 +100,19 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void add_attachment()
         {
             _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId1));
-            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentInitialized(_attachmentHandle).AssignIdForTest(_document2));
+            _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle)
+                .AssignIdForTest(_documentId1));
 
             var h = _writer.FindOneById(_documentHandle);
-            Assert.That(h.Attachments, Is.EquivalentTo(new [] { _attachmentHandle }));
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new [] { _attachmentHandle }));
         }
 
         [Test]
         public void add_attachment_then_delete()
         {
             _sut.On(new DocumentInitialized(_documentHandle).AssignIdForTest(_documentId1));
+            _sut.On(new DocumentInitialized(_attachmentHandle).AssignIdForTest(_document2));
             _sut.On(new DocumentHasNewAttachment(_documentHandle, _attachmentHandle).AssignIdForTest(_documentId2));
             _sut.On(new DocumentDeleted(_attachmentHandle, _document2).AssignIdForTest(_documentId1));
 

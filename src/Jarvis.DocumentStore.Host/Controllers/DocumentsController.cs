@@ -396,7 +396,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             foreach (var attachment in document.Attachments)
             {
-                var attachmentDocument = _handleWriter.FindOneById(attachment);
+                var attachmentDocument = _handleWriter.FindOneById(attachment.Handle);
                 String relativePath = "";
                 if (attachmentDocument.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
                 {

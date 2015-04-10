@@ -57,8 +57,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             var doc = new DocumentDescriptorReadModel(
                 new DocumentDescriptorId(1),
-                new BlobId("file_1"),
-                new DocumentHandle("doc")
+                new BlobId("file_1")
                 );
 
             SetupDocumentHandle(info, doc.Id);
@@ -85,9 +84,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var blobId = new BlobId("file_1");
             var doc = new DocumentDescriptorReadModel(
                 new DocumentDescriptorId(1),
-                blobId,
-                new DocumentHandle("doc")
-                );
+                blobId);
 
             SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
@@ -117,9 +114,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var blobId = new BlobId("file_1");
             var doc = new DocumentDescriptorReadModel(
                 new DocumentDescriptorId(1),
-                blobId,
-                new DocumentHandle("doc")
-            );
+                blobId);
 
             SetupDocumentHandle(info, doc.Id);
             SetupDocumentModel(doc);
@@ -150,9 +145,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             var doc = new DocumentDescriptorReadModel(
                 new DocumentDescriptorId(1),
-                new BlobId("file_1"),
-                new DocumentHandle("doc")
-                );
+                new BlobId("file_1"));
 
             doc.AddFormat(new PipelineId("abc"), format, pdfBlobId);
 

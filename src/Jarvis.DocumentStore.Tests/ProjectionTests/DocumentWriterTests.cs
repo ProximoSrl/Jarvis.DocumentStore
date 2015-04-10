@@ -9,6 +9,9 @@ using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using NUnit.Framework;
+using System.Linq;
+using System.Collections.Generic;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
@@ -84,17 +87,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.AreEqual(_doc1, h.DocumentDescriptorId);
         }
 
-        [Test]
-        public void de_duplication_set_handle_as_de_duplicated()
-        {
-            _writer.CreateIfMissing(_handle1, null, 1);
-            _writer.CreateIfMissing(_handle2, null, 3);
-            _writer.LinkDocument(_handle1, _doc1, 5);
-            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
 
-            var h = _writer.FindOneById(_handle2);
-            Assert.That(h.DeDuplicated, Is.EqualTo(true));
-        }
 
         [Test]
         public void verify_collection_of_attachments()
@@ -104,74 +97,29 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.AddAttachment(_handle1, _handleAttach1);
 
             var h = _writer.FindOneById(_handle1);
-            Assert.That(h.Attachments, Is.EquivalentTo(new [] { _handleAttach1 }));
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { _handleAttach1 }));
         }
 
+
         [Test]
-        public void verify_attachment_de_duplication()
+        public void verify_attachment_get_path()
         {
             _writer.CreateIfMissing(_handle1, null, 1);
             _writer.CreateIfMissing(_handleAttach1, null, 2);
-            _writer.CreateIfMissing(_handle2, null, 3);
-            _writer.LinkDocument(_handle1, _doc1, 5);
+            _writer.UpdateCustomData(_handleAttach1, new DocumentCustomData(
+                    new Dictionary<String, Object>() 
+                    {
+                        {JobsConstants.AttachmentRelativePath, "Test.zip"}
+                    }
+                ));
             _writer.AddAttachment(_handle1, _handleAttach1);
-            //_handle2 is de_duplicated, it should gain all attachment of the original doc.
-            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
-
-            var h = _writer.FindOneById(_handle2);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach1 }), "When an attachment is de duplicated it should gain all attachment of the previous handle");
-        }
-
-        [Test]
-        public void verify_de_duplication_then_attach()
-        {
-            _writer.CreateIfMissing(_handle1, null, 1);
-            _writer.CreateIfMissing(_handle2, null, 3);
-            _writer.LinkDocument(_handle1, _doc1, 5);
-            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
-
-            //after de duplication the worker started adding attachments to handle1
-            _writer.CreateIfMissing(_handleAttach1, null, 2);
-            _writer.AddAttachment(_handle1, _handleAttach1);
-
-            var h = _writer.FindOneById(_handle2);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach1 }), "When an attachment is added to handle, all duplicated handle should have same attachment");
-        }
-
-        /// <summary>
-        /// caller upload 2 times the same file with the same handle
-        /// </summary>
-        [Test]
-        public void verify_de_duplication_of_same_handle()
-        {
-            _writer.CreateIfMissing(_handle1, null, 1);
-            _writer.LinkDocument(_handle1, _doc1, 5);
-            //same handle is re-uploaded so we have a de_duplication
-            _writer.DocumentDeDuplicated(_handle1, _handle1, _doc1, 6);
+            
 
             var h = _writer.FindOneById(_handle1);
-            Assert.That(h.DeDuplicated, Is.EqualTo(false), "Deduplication of same handle should not set de-duplicated");
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { _handleAttach1 }));
+            Assert.That(h.Attachments.Select(a => a.RelativePath), Is.EquivalentTo(new[] { "Test.zip" }));
         }
 
-        [Test]
-        public void verify_de_duplication_then__multiple_attach()
-        {
-            _writer.CreateIfMissing(_handle1, null, 1);
-            _writer.CreateIfMissing(_handle2, null, 3);
-            _writer.LinkDocument(_handle1, _doc1, 5);
-            _writer.DocumentDeDuplicated(_handle2, _handle1, _doc1, 6);
-
-            //after de duplication the worker started adding attachments to handle1
-            _writer.CreateIfMissing(_handleAttach1, null, 7);
-            _writer.AddAttachment(_handle1, _handleAttach1);
-
-            _writer.CreateIfMissing(_handleAttach2, null, 8);
-            _writer.AddAttachment(_handle2, _handleAttach2);
-
-            var h = _writer.FindOneById(_handle2);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach1 }), "When an attachment is added to secondary handle no need to attach again.");
-        }
-       
         [Test]
         public void verify_delete_of_attachments()
         {
@@ -184,7 +132,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.Delete(_handleAttach1, 3L);
 
             var h = _writer.FindOneById(_handle1);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach2 }));
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { _handleAttach2 }));
         }
 
         [Test]
@@ -207,10 +155,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.Delete(_handleAttach3, 9L);
 
             var h = _writer.FindOneById(_handle1);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach1, _handleAttach2 }));
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { _handleAttach1, _handleAttach2 }));
 
             h = _writer.FindOneById(_handleAttach1);
-            Assert.That(h.Attachments, Is.EquivalentTo(new DocumentHandle[] { }));
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new DocumentHandle[] { }));
         }
 
         [Test]
@@ -233,7 +181,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.Delete(_handleAttach1, 9L);
 
             var h = _writer.FindOneById(_handle1);
-            Assert.That(h.Attachments, Is.EquivalentTo(new[] { _handleAttach2 }));
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { _handleAttach2 }));
 
         }
 
@@ -257,7 +205,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.Delete(_handleAttach2, 9L);
 
             var h = _writer.FindOneById(_handle1);
-            Assert.That(h.Attachments, Is.EquivalentTo(new [] { _handleAttach1 }));
+            Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { _handleAttach1 }));
 
         }
 

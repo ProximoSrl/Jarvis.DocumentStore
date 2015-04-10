@@ -1,4 +1,5 @@
 using Castle.Core.Logging;
+using Jarvis.Framework.TestHelpers;
 
 namespace Jarvis.DocumentStore.Tests.Support
 {
@@ -6,7 +7,7 @@ namespace Jarvis.DocumentStore.Tests.Support
     {
         public ExtendedConsoleLogger(string name) : base(name)
         {
-            
+  
         }
         public ExtendedConsoleLogger(string name, LoggerLevel loggerLevel)
             :base(name,loggerLevel)
@@ -14,8 +15,22 @@ namespace Jarvis.DocumentStore.Tests.Support
             
         }
 
-        public IContextProperties GlobalProperties { get; private set; }
-        public IContextProperties ThreadProperties { get; private set; }
-        public IContextStacks ThreadStacks { get; private set; }
+        private TestLogger.TestThreadProperties _threadProperties = new TestLogger.TestThreadProperties();
+        private TestLogger.TestGlobalProperties _globalProperties = new TestLogger.TestGlobalProperties();
+        private TestLogger.TestContextStacks _contextStacks = new TestLogger.TestContextStacks();
+        public IContextProperties GlobalProperties
+        {
+            get { return _globalProperties; }
+        }
+
+        public IContextProperties ThreadProperties
+        {
+            get { return _threadProperties; }
+        }
+
+        public IContextStacks ThreadStacks
+        {
+            get { return _contextStacks; }
+        }
     }
 }

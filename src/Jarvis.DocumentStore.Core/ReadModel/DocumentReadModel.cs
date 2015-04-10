@@ -11,6 +11,7 @@ using MongoDB.Driver.Builders;
 using MongoDB.Driver.Linq;
 using System.Collections.Generic;
 using System;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
@@ -19,13 +20,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         [BsonId]
         public DocumentHandle Handle { get; private set; }
 
-        public HashSet<DocumentHandle> Attachments { get; private set; }
-
-        /// <summary>
-        /// A DeDuplicated document is a document that was deduplicated, this
-        /// is an info needed to handle attachments.
-        /// </summary>
-        public Boolean DeDuplicated { get; set; }
+        public HashSet<DocumentAttachmentReadModel> Attachments { get; private set; }
 
         public DocumentDescriptorId DocumentDescriptorId { get; private set; }
 
@@ -60,6 +55,31 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             return this.CreatetAt > this.ProjectedAt;
         }
+    }
+
+    public class DocumentAttachmentReadModel 
+    {
+
+        public DocumentAttachmentReadModel()
+        {
+
+        }
+
+        public DocumentAttachmentReadModel(DocumentHandle attachmentHandle, string attachmentPath)
+        {
+            Handle = attachmentHandle;
+            RelativePath = attachmentPath;
+        }
+
+        /// <summary>
+        /// Handle of the attachment.
+        /// </summary>
+        public DocumentHandle Handle { get; set; }
+
+        /// <summary>
+        /// Relative path of this attachment to the original handle
+        /// </summary>
+        public String RelativePath { get; set; }
     }
 
     public interface IDocumentWriter
@@ -125,7 +145,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .Set(x => x.DocumentDescriptorId, null)
                     .Set(x => x.CreatetAt, createdAt)
-                    .Set(x => x.DeDuplicated, false)
                     .Set(x => x.FileName, null),
                 Upsert = true,
                 VersionReturned = FindAndModifyDocumentVersion.Modified
@@ -182,11 +201,11 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             var linkChanged = InnerCreateLinkToDocument(handle, id, true, projectedAt);
 
-            if (linkChanged)
-            {
-                //need to manage attachments, first step, find the original handle that belong to that descriptor
-                CopyAttachmentFromPrimaryHandle(handle, primaryHandle, projectedAt);
-            }
+            //if (linkChanged)
+            //{
+            //    //need to manage attachments, first step, find the original handle that belong to that descriptor
+            //    CopyAttachmentFromPrimaryHandle(handle, primaryHandle, projectedAt);
+            //}
         }
 
         private Boolean InnerCreateLinkToDocument(DocumentHandle handle, DocumentDescriptorId id, Boolean? deDuplication, long projectedAt)
@@ -195,10 +214,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             var update = Update<DocumentReadModel>
                     .Set(x => x.DocumentDescriptorId, id)
                     .Set(x => x.ProjectedAt, projectedAt);
-            if (deDuplication.HasValue)
-            {
-                update = update.Set(x => x.DeDuplicated, deDuplication.Value);
-            }
 
             var query = Query.And(
                     Query<DocumentReadModel>.EQ(x => x.Handle, handle),
@@ -221,33 +236,33 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             return result.ModifiedDocument != null;
         }
 
-        private void CopyAttachmentFromPrimaryHandle(
-            DocumentHandle handle,
-            DocumentHandle primaryHandle,
-            long projectedAt)
-        {
-            var primaryAttachHandle = _collection.FindOneById(BsonValue.Create(primaryHandle));
+        //private void CopyAttachmentFromPrimaryHandle(
+        //    DocumentHandle handle,
+        //    DocumentHandle primaryHandle,
+        //    long projectedAt)
+        //{
+        //    var primaryAttachHandle = _collection.FindOneById(BsonValue.Create(primaryHandle));
 
-            if (primaryAttachHandle.Attachments != null && primaryAttachHandle.Attachments.Count > 0)
-            {
-                //inherit attachments to de-duplicated handle
-                var args = new FindAndModifyArgs
-                {
-                    Query = Query.And(
-                        Query<DocumentReadModel>.EQ(x => x.Handle, handle)
-                    ),
-                    Update = Update<DocumentReadModel>
-                        .Set(x => x.Attachments, primaryAttachHandle.Attachments)
-                };
-                _collection.FindAndModify(args);
+        //    if (primaryAttachHandle.Attachments != null && primaryAttachHandle.Attachments.Count > 0)
+        //    {
+        //        //inherit attachments to de-duplicated handle
+        //        var args = new FindAndModifyArgs
+        //        {
+        //            Query = Query.And(
+        //                Query<DocumentReadModel>.EQ(x => x.Handle, handle)
+        //            ),
+        //            Update = Update<DocumentReadModel>
+        //                .Set(x => x.Attachments, primaryAttachHandle.Attachments)
+        //        };
+        //        _collection.FindAndModify(args);
 
-                if (Logger.IsDebugEnabled)
-                {
-                    Logger.DebugFormat("Inherited Attachment: handle {0} for descriptorid {1} and primary Handle {2} [{3}]",
-                        handle, primaryAttachHandle.DocumentDescriptorId, primaryAttachHandle.Handle, projectedAt);
-                }
-            }
-        }
+        //        if (Logger.IsDebugEnabled)
+        //        {
+        //            Logger.DebugFormat("Inherited Attachment: handle {0} for descriptorid {1} and primary Handle {2} [{3}]",
+        //                handle, primaryAttachHandle.DocumentDescriptorId, primaryAttachHandle.Handle, projectedAt);
+        //        }
+        //    }
+        //}
 
         public void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData)
         {
@@ -276,10 +291,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             _collection.FindAndRemove(args);
 
             _collection.Update(
-                Query<DocumentReadModel>
-                    .EQ(x => x.Attachments, handle),
-                Update<DocumentReadModel>
-                    .Pull(x => x.Attachments, handle),
+                Query.EQ("Attachments.Handle", BsonValue.Create(handle)),
+                Update.Pull("Attachments", Query.EQ("Handle", BsonValue.Create(handle))),
                 UpdateFlags.Multi
             );
         }
@@ -301,7 +314,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                     .SetOnInsert(x => x.ProjectedAt, 0)
                     .SetOnInsert(x => x.DocumentDescriptorId, documentDescriptorId)
                     .SetOnInsert(x => x.CreatetAt, createdAt)
-                    .SetOnInsert(x => x.DeDuplicated, false)
                     .SetOnInsert(x => x.FileName, null),
                 Upsert = true
             };
@@ -311,18 +323,20 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle)
         {
             Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
-
-            //if attachment is added to secondary handle it has no meaning, is an attach that is duplicated
-            var handle = _collection.FindOneById(BsonValue.Create(fatherHandle));
-            if (handle.DeDuplicated) return;
-
+            var attachmentReadModel = this.FindOneById(attachmentHandle);
+            String path = "";
+            if (attachmentReadModel.CustomData != null &&
+                attachmentReadModel.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath)) 
+            {
+                path = attachmentReadModel.CustomData[JobsConstants.AttachmentRelativePath] as String;
+            }
             _collection.Update
             (
                 Query<DocumentReadModel>
-                    .EQ(x => x.DocumentDescriptorId, handle.DocumentDescriptorId),
+                    .EQ(x => x.Handle, fatherHandle),
                 Update<DocumentReadModel>
-                    .AddToSet(x => x.Attachments, attachmentHandle),
-                UpdateFlags.Multi
+                    .AddToSet(x => x.Attachments,
+                        new DocumentAttachmentReadModel(attachmentHandle, path))
             );
         }
 
