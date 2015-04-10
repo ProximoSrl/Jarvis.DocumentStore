@@ -117,7 +117,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
 
             var h = _writer.FindOneById(_handle1);
             Assert.That(h.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { _handleAttach1 }));
-            Assert.That(h.Attachments.Select(a => a.RelativePath), Is.EquivalentTo(new[] { "Test.zip" }));
+            Assert.That(h.Attachments.Select(a => a.RelativePath), Is.EquivalentTo(new[] { "/Test.zip" }));
         }
 
         [Test]
