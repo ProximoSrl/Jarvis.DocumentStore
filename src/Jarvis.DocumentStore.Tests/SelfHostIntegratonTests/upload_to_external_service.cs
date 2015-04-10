@@ -81,6 +81,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _docs.UploadAsync(TestConfig.PathToZipFileWithFolders, DocumentHandle.FromString("zip_with_folders")).Wait();
         }
 
+        /// <summary>
+        /// I load a document zipped, then another document that contains the first document
+        /// as zipped content, I want to be sure that de-duplication does not break attachment
+        /// chain
+        /// </summary>
+        [Test]
+        public void zipped_files_sequence_for_deduplication()
+        {
+            _docs.UploadAsync(TestConfig.PathToZipFile, DocumentHandle.FromString("zipfile")).Wait();
+            Thread.Sleep(4000); //Give time to attachment job to do its job, then upload
+            //a zip document that contains the first one.
+            _docs.UploadAsync(TestConfig.PathToZipFileThatContainsOtherZip, 
+                DocumentHandle.FromString("zipcontainer")).Wait();
+            
+        }
+
         [Test]
         public void attachment_complex_email_upload()
         {

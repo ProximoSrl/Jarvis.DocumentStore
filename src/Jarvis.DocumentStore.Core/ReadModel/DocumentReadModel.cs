@@ -330,6 +330,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             {
                 path = attachmentReadModel.CustomData[JobsConstants.AttachmentRelativePath] as String;
             }
+            //Normalize path wih slash and trailing slash
+            path = "/" + path.TrimStart('\\').Replace("\\", "/");
             _collection.Update
             (
                 Query<DocumentReadModel>

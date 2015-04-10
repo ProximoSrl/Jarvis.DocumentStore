@@ -1,9 +1,12 @@
-﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+﻿using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using MongoDB.Driver.Builders;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -13,7 +16,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentDescriptorDeleted>,
         IEventHandler<DocumentHandleAttached>,
         IEventHandler<DocumentHandleDetached>,
-        IEventHandler<DocumentFormatHasBeenUpdated>
+        IEventHandler<DocumentFormatHasBeenUpdated>,
+        IEventHandler<DocumentHasNewAttachment>
     {
         private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documents;
         private IDocumentWriter _handleWriter;
@@ -33,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override int Priority
         {
-            get { return 10; }
+            get { return 5; }
         }
 
         public override void Drop()
@@ -84,6 +88,18 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
             {
                 d.AddFormat(e.CreatedBy, e.DocumentFormat, e.BlobId);
+            });
+        }
+
+        /// <summary>
+        /// Need to maintain the chain of the attachment.
+        /// </summary>
+        /// <param name="e"></param>
+        public void On(DocumentHasNewAttachment e)
+        {
+            _documents.FindAndModify(e, dd => dd.Documents.Contains(e.Handle), d =>
+            {
+                d.AddAttachments(e.Attachment);
             });
         }
     }

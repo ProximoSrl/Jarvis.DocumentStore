@@ -804,9 +804,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 8)
                 {
                     var doc = _documentCollection.FindAll();
-                    //now I'm expeting to find three documents with attachments
-                    Assert.That(doc.Count(d => d.Attachments != null && d.Attachments.Count > 0), Is.EqualTo(3));
-
+                    //now I want to be sure that the whole set of attachments is correct
+                    var fat = await _documentStoreClient.GetAttachmentsFatAsync(handleClient);
+                    Assert.That(fat.Attachments, Has.Count.EqualTo(6));
                     return;
                 }
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);

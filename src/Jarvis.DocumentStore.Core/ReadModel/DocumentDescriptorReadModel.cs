@@ -7,6 +7,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Options;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
+using System;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
@@ -32,6 +33,10 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public int FormatsCount { get; set; }
         public long SequenceNumber { get; set; }
 
+        /// <summary>
+        /// This is needed to avoid losing attachmetn chain on de-duplication.
+        /// </summary>
+        public HashSet<DocumentHandle> Attachments { get; private set; }
 
         public DocumentDescriptorReadModel(
             DocumentDescriptorId id, 
@@ -71,6 +76,13 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public BlobId GetOriginalBlobId()
         {
             return GetFormatBlobId(DocumentFormats.Original);
+        }
+
+        internal void AddAttachments(DocumentHandle documentHandle)
+        {
+            if (Attachments == null) Attachments = new HashSet<DocumentHandle>();
+
+            Attachments.Add(documentHandle);
         }
     }
 }

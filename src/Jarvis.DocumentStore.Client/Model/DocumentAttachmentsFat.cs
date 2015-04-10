@@ -40,7 +40,7 @@ namespace Jarvis.DocumentStore.Client.Model
                 AttachmentPath = attachmentPath;
                 RelativeFileName = relativePath + "/" + fileName;
             }
-
+             
             public String Uri { get;  set; }
 
             public String FileName { get;  set; }

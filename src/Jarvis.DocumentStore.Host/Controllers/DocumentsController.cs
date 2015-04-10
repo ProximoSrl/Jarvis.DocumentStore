@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,
             IDocumentWriter handleWriter,
-            IQueueDispatcher queueDispatcher, 
+            IQueueDispatcher queueDispatcher,
             ICounterService counterService,
             IDocumentFormatTranslator documentFormatTranslator)
         {
@@ -201,9 +201,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
             else
             {
-                 var job = _queueDispatcher.GetJob(queueName, jobId);
+                var job = _queueDispatcher.GetJob(queueName, jobId);
 
-                if (job == null) {
+                if (job == null)
+                {
                     Logger.WarnFormat("Job id {0} not found in queue {1}", jobId, queueName);
                     return Request.CreateErrorResponse(
                         HttpStatusCode.BadRequest,
@@ -221,7 +222,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 Logger.DebugFormat("Add format {0} to job id {1} and document id {2}", format, job.Id, documentId);
             }
 
-            if (format == "null") 
+            if (format == "null")
             {
                 var formatFromFileName = _documentFormatTranslator.GetFormatFromFileName(_fileName);
                 if (formatFromFileName == null)
@@ -233,7 +234,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                         error
                     );
                 }
-                format = new DocumentFormat(formatFromFileName); 
+                format = new DocumentFormat(formatFromFileName);
             }
 
             var createdById = new PipelineId(_customData[AddFormatToDocumentParameters.CreatedBy] as String);
@@ -384,46 +385,55 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return DocumentNotFound(handle);
             }
 
-            if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+            if (document.Attachments == null || document.Attachments.Count == 0) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
             List<DocumentAttachmentsFat.AttachmentInfo> fat = new List<DocumentAttachmentsFat.AttachmentInfo>();
 
-            ScanAttachments(tenantId, document, fat, "");
+            ScanAttachments(tenantId, document.Attachments.Select(a => a.Handle), fat, "");
 
             return Request.CreateResponse(HttpStatusCode.OK, fat);
         }
 
-        private void ScanAttachments(TenantId tenantId, DocumentReadModel document, List<DocumentAttachmentsFat.AttachmentInfo> fat, String attachmentPath)
+        private void ScanAttachments(
+            TenantId tenantId, 
+            IEnumerable<DocumentHandle> attachments, 
+            List<DocumentAttachmentsFat.AttachmentInfo> fat, 
+            String rootAttachmentPath)
         {
-            foreach (var attachment in document.Attachments)
+            //grab in a single query all documents and descriptors for this data
+            var handles = attachments.ToList();
+            var allHandles = _handleWriter.AllSortedByHandle
+                .Where(h => handles.Contains(h.Handle))
+                .ToDictionary(h => h.Handle, h => h);
+            foreach (var handle in attachments)
             {
-                var attachmentDocument = _handleWriter.FindOneById(attachment.Handle);
-                String relativePath = "";
-                if (attachmentDocument.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
+                //grab all data for this attachment
+                var descriptor = _documentDescriptorReader.AllUnsorted.Single(d => d.Documents.Contains(handle));
+                var document = allHandles[handle];
+
+                String path = "";
+                if (document.CustomData != null &&
+                    document.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
                 {
-                    relativePath = attachmentDocument.CustomData[JobsConstants.AttachmentRelativePath] as String;
-                    relativePath = relativePath.TrimStart('\\').Replace("\\", "/");
-                    if (attachmentDocument.FileName != null)
-                    {
-                        if (relativePath.EndsWith(attachmentDocument.FileName))
-                        {
-                            relativePath = relativePath.Substring(0, relativePath.Length - attachmentDocument.FileName.ToString().Length)
-                                .TrimEnd('/');
-                        }
-                    }
+                    path = document.CustomData[JobsConstants.AttachmentRelativePath] as String;
                 }
+                //Normalize path wih slash and trailing slash
+                path = "/" + path.TrimStart('\\').Replace("\\", "/");
                 fat.Add(new DocumentAttachmentsFat.AttachmentInfo(
-                        Url.Content("/" + tenantId + "/documents/" + attachment),
-                        attachmentDocument.FileName,
-                        attachmentPath,
-                        relativePath
+                        Url.Content("/" + tenantId + "/documents/" + handle),
+                        document.FileName,
+                        path,
+                        rootAttachmentPath
                     ));
-               
-                if (attachmentDocument.Attachments != null && attachmentDocument.Attachments.Count > 0)
-                    ScanAttachments(tenantId, attachmentDocument, fat, attachmentPath + "/" + attachmentDocument.FileName);
+                var newRootAttachmentPath = rootAttachmentPath + "/" + document.FileName;
+                //we need to further scan attachment.
+                if (descriptor.Attachments != null && descriptor.Attachments.Count > 0) 
+                {
+                    ScanAttachments(tenantId, descriptor.Attachments, fat, newRootAttachmentPath);
+                }
             }
         }
 
-        
+
 
         [Route("{tenantId}/documents/{handle}/{format}")]
         [HttpGet]
@@ -483,7 +493,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         )
         {
             var job = _queueDispatcher.GetJob(queueName, jobId);
-            if (job == null) 
+            if (job == null)
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
                     string.Format("Job {0} not found", jobId)
