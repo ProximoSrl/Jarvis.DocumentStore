@@ -358,10 +358,21 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
 
-            var attachments = document.Attachments.ToDictionary(x =>
-                x,
-                x => Url.Content("/" + tenantId + "/documents/" + x)
-            );
+            var attachments = document.Attachments
+                .Select(a => {
+                    var attachment =new AttachmentInfo() 
+                    {
+                        Handle = Url.Content("/" + tenantId + "/documents/" + a.Handle),
+                        RelativePath = a.RelativePath
+                    };
+                    var hasAttachment = _documentDescriptorReader.AllUnsorted.Any(d => 
+                        d.Documents.Contains(a.Handle) &&
+                        d.Attachments.Count > 0);
+                    attachment.HasAttachments = hasAttachment;
+                    return attachment;
+                })
+                .ToList();
+
             return Request.CreateResponse(HttpStatusCode.OK, attachments);
         }
 
@@ -388,7 +399,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (document.Attachments == null || document.Attachments.Count == 0) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
             List<DocumentAttachmentsFat.AttachmentInfo> fat = new List<DocumentAttachmentsFat.AttachmentInfo>();
 
-            ScanAttachments(tenantId, document.Attachments.Select(a => a.Handle), fat, "");
+            ScanAttachments(tenantId, document.Attachments.Select(a => a.Handle), fat, "", 0, 5);
 
             return Request.CreateResponse(HttpStatusCode.OK, fat);
         }
@@ -397,7 +408,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             TenantId tenantId, 
             IEnumerable<DocumentHandle> attachments, 
             List<DocumentAttachmentsFat.AttachmentInfo> fat, 
-            String rootAttachmentPath)
+            String rootAttachmentPath,
+            Int32 actualDeepLevel,
+            Int32 maxLevel)
         {
             //grab in a single query all documents and descriptors for this data
             var handles = attachments.ToList();
@@ -410,14 +423,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 var descriptor = _documentDescriptorReader.AllUnsorted.Single(d => d.Documents.Contains(handle));
                 var document = allHandles[handle];
 
-                String path = "";
-                if (document.CustomData != null &&
-                    document.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
-                {
-                    path = document.CustomData[JobsConstants.AttachmentRelativePath] as String;
-                }
-                //Normalize path wih slash and trailing slash
-                path = "/" + path.TrimStart('\\').Replace("\\", "/");
+                String path = document.GetRelativePathFromCustomData();
+
                 fat.Add(new DocumentAttachmentsFat.AttachmentInfo(
                         Url.Content("/" + tenantId + "/documents/" + handle),
                         document.FileName,
@@ -426,9 +433,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     ));
                 var newRootAttachmentPath = rootAttachmentPath + "/" + document.FileName;
                 //we need to further scan attachment.
-                if (descriptor.Attachments != null && descriptor.Attachments.Count > 0) 
+                if (actualDeepLevel < maxLevel &&
+                    descriptor.Attachments != null && 
+                    descriptor.Attachments.Count > 0) 
                 {
-                    ScanAttachments(tenantId, descriptor.Attachments, fat, newRootAttachmentPath);
+                    ScanAttachments(tenantId, descriptor.Attachments, fat, newRootAttachmentPath, actualDeepLevel + 1, maxLevel);
                 }
             }
         }

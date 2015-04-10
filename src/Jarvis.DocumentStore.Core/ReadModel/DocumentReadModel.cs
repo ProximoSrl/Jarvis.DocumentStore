@@ -30,6 +30,18 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public DocumentCustomData CustomData { get; private set; }
 
+        public String GetRelativePathFromCustomData() 
+        {
+            String path = "";
+            if (CustomData != null &&
+                CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
+            {
+                path = CustomData[JobsConstants.AttachmentRelativePath] as String;
+            }
+            path = "/" + path.TrimStart('\\').Replace("\\", "/");
+            return path;
+        }
+
         public FileNameWithExtension FileName { get; private set; }
 
         public DocumentReadModel(DocumentHandle handle)
@@ -324,14 +336,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
             var attachmentReadModel = this.FindOneById(attachmentHandle);
-            String path = "";
-            if (attachmentReadModel.CustomData != null &&
-                attachmentReadModel.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath)) 
-            {
-                path = attachmentReadModel.CustomData[JobsConstants.AttachmentRelativePath] as String;
-            }
-            //Normalize path wih slash and trailing slash
-            path = "/" + path.TrimStart('\\').Replace("\\", "/");
+            String path = attachmentReadModel.GetRelativePathFromCustomData();
             _collection.Update
             (
                 Query<DocumentReadModel>
