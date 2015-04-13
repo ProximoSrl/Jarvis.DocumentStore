@@ -38,6 +38,7 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using MongoDB.Bson;
 using Jarvis.DocumentStore.Jobs.LibreOffice;
 using Jarvis.DocumentStore.Jobs.Tika.Filters;
+using MongoDB.Driver.Builders;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -723,8 +724,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 4)
                 {
-                    var doc = _documentDescriptorCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
-                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
+                    var doc = _documentDescriptorCollection.Find(
+                        Query.EQ("Documents", handleClient.ToString()))
+                        .Single();
+                    Assert.That(doc.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                         new Core.Model.DocumentHandle("content_zip_1"),
                         new Core.Model.DocumentHandle("content_zip_2"),
                         new Core.Model.DocumentHandle("content_zip_3")
@@ -926,8 +929,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 2)
                 {
                     //all attachment are unzipped correctly
-                    var doc = _documentDescriptorCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
-                    Assert.That(doc.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("attachment_email_1") }));
+                        var doc = _documentDescriptorCollection.Find(
+                        Query.EQ("Documents", handleClient.ToString()))
+                        .Single();
+                    Assert.That(doc.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
+                        new Core.Model.DocumentHandle("attachment_email_1") }));
                     return;
                 }
 
@@ -981,7 +987,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 10)
                 {
                     //all attachment are unzipped correctly
-                    var doc = _documentDescriptorCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    var doc = _documentDescriptorCollection.Find(
+                        Query.EQ("Documents", handleClient.ToString()))
+                        .Single();
                     Assert.That(doc.Attachments, Has.Count.EqualTo(2), "primary document has wrong number of attachments");
                     return;
                 }

@@ -44,7 +44,6 @@ using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture]
-    [Category("current")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
