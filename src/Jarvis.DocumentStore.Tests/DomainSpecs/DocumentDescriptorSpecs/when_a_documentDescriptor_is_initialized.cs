@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 
         Because of = () => DocumentDescriptor.Initialize(_blobId, _handleInfo, _fileHash, _fileName);
 
-        It DocumentDescriptorCreatedEvent_should_have_been_raised = () =>
+        It DocumentDescriptorInitializedEvent_should_have_been_raised = () =>
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorInitialized>().ShouldBeTrue();
 
         It DocumentAddedToFormat_should_not_have_been_raised = () =>

@@ -16,7 +16,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentDescriptorInitialized>,
         IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<DocumentDeleted>,
-        IEventHandler<AttachmentDeleted>,
+        IEventHandler<DocumentDescriptorDeleted>,
         IEventHandler<DocumentLinked>
     {
         private readonly ICommandBus _commandBus;
@@ -119,13 +119,22 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 );
         }
 
-        public void On(AttachmentDeleted e)
+        public void On(DocumentDescriptorDeleted e)
         {
             if (IsReplay) return;
 
-            _commandBus.Send(new DeleteDocument(e.Handle)
-                .WithDiagnosticTriggeredByInfo(e, "AttachmentDeleted deleted")
-            );
+            if (e.Attachments != null && e.Attachments.Length > 0) 
+            {
+                //delete all orphaned attachments
+                foreach (var attachment in e.Attachments)
+                {
+                    _commandBus.Send(new DeleteDocument(attachment)
+                        .WithDiagnosticTriggeredByInfo(e, string.Format("Delete orphaned attachment {0} belonging to dleted descriptor {1}", 
+                            attachment, e.AggregateId))
+                    );
+                }
+            }
+             
         }
     }
 }

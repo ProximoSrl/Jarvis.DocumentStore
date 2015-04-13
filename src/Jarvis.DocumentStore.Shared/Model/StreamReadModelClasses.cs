@@ -19,6 +19,6 @@ namespace Jarvis.DocumentStore.Shared.Model
 
     public static class StreamReadModelEventDataKeys
     {
-        public const String FatherHandle = "FatherHandle";
+        public const String ChildHandle = "ChildHandle";
     }
 }

@@ -20,8 +20,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         [BsonId]
         public DocumentHandle Handle { get; private set; }
 
-        public HashSet<DocumentAttachmentReadModel> Attachments { get; private set; }
-
         public DocumentDescriptorId DocumentDescriptorId { get; private set; }
 
         public long CreatetAt { get; private set; }
@@ -30,18 +28,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public DocumentCustomData CustomData { get; private set; }
 
-        public String GetRelativePathFromCustomData() 
-        {
-            String path = "";
-            if (CustomData != null &&
-                CustomData.ContainsKey(JobsConstants.AttachmentRelativePath))
-            {
-                path = CustomData[JobsConstants.AttachmentRelativePath] as String;
-            }
-            path = "/" + path.TrimStart('\\').Replace("\\", "/");
-            return path;
-        }
-
+      
         public FileNameWithExtension FileName { get; private set; }
 
         public DocumentReadModel(DocumentHandle handle)
@@ -67,31 +54,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             return this.CreatetAt > this.ProjectedAt;
         }
-    }
-
-    public class DocumentAttachmentReadModel 
-    {
-
-        public DocumentAttachmentReadModel()
-        {
-
-        }
-
-        public DocumentAttachmentReadModel(DocumentHandle attachmentHandle, string attachmentPath)
-        {
-            Handle = attachmentHandle;
-            RelativePath = attachmentPath;
-        }
-
-        /// <summary>
-        /// Handle of the attachment.
-        /// </summary>
-        public DocumentHandle Handle { get; set; }
-
-        /// <summary>
-        /// Relative path of this attachment to the original handle
-        /// </summary>
-        public String RelativePath { get; set; }
     }
 
     public interface IDocumentWriter
@@ -124,7 +86,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt);
         long Count();
 
-        void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle);
     }
 
     public class DocumentWriter : IDocumentWriter
@@ -212,12 +173,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             long projectedAt)
         {
             var linkChanged = InnerCreateLinkToDocument(handle, id, true, projectedAt);
-
-            //if (linkChanged)
-            //{
-            //    //need to manage attachments, first step, find the original handle that belong to that descriptor
-            //    CopyAttachmentFromPrimaryHandle(handle, primaryHandle, projectedAt);
-            //}
         }
 
         private Boolean InnerCreateLinkToDocument(DocumentHandle handle, DocumentDescriptorId id, Boolean? deDuplication, long projectedAt)
@@ -248,33 +203,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             return result.ModifiedDocument != null;
         }
 
-        //private void CopyAttachmentFromPrimaryHandle(
-        //    DocumentHandle handle,
-        //    DocumentHandle primaryHandle,
-        //    long projectedAt)
-        //{
-        //    var primaryAttachHandle = _collection.FindOneById(BsonValue.Create(primaryHandle));
+        
 
-        //    if (primaryAttachHandle.Attachments != null && primaryAttachHandle.Attachments.Count > 0)
-        //    {
-        //        //inherit attachments to de-duplicated handle
-        //        var args = new FindAndModifyArgs
-        //        {
-        //            Query = Query.And(
-        //                Query<DocumentReadModel>.EQ(x => x.Handle, handle)
-        //            ),
-        //            Update = Update<DocumentReadModel>
-        //                .Set(x => x.Attachments, primaryAttachHandle.Attachments)
-        //        };
-        //        _collection.FindAndModify(args);
-
-        //        if (Logger.IsDebugEnabled)
-        //        {
-        //            Logger.DebugFormat("Inherited Attachment: handle {0} for descriptorid {1} and primary Handle {2} [{3}]",
-        //                handle, primaryAttachHandle.DocumentDescriptorId, primaryAttachHandle.Handle, projectedAt);
-        //        }
-        //    }
-        //}
 
         public void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData)
         {
@@ -302,11 +232,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             };
             _collection.FindAndRemove(args);
 
-            _collection.Update(
-                Query.EQ("Attachments.Handle", BsonValue.Create(handle)),
-                Update.Pull("Attachments", Query.EQ("Handle", BsonValue.Create(handle))),
-                UpdateFlags.Multi
-            );
         }
 
         public IQueryable<DocumentReadModel> AllSortedByHandle
@@ -330,21 +255,6 @@ namespace Jarvis.DocumentStore.Core.ReadModel
                 Upsert = true
             };
             _collection.FindAndModify(args);
-        }
-
-        public void AddAttachment(DocumentHandle fatherHandle, DocumentHandle attachmentHandle)
-        {
-            Logger.DebugFormat("Adding attachment {1} on handle {0}", fatherHandle, attachmentHandle);
-            var attachmentReadModel = this.FindOneById(attachmentHandle);
-            String path = attachmentReadModel.GetRelativePathFromCustomData();
-            _collection.Update
-            (
-                Query<DocumentReadModel>
-                    .EQ(x => x.Handle, fatherHandle),
-                Update<DocumentReadModel>
-                    .AddToSet(x => x.Attachments,
-                        new DocumentAttachmentReadModel(attachmentHandle, path))
-            );
         }
 
         public DocumentReadModel FindOneById(DocumentHandle handle)

@@ -8,10 +8,16 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events
         public BlobId BlobId { get; private set; }
         public BlobId[] BlobFormatsId { get; private set; }
 
-        public DocumentDescriptorDeleted(BlobId blobId, BlobId[] formats)
+        public DocumentHandle[] Attachments { get; set; }
+
+        public DocumentDescriptorDeleted(
+            BlobId blobId, 
+            BlobId[] formats,
+            DocumentHandle[] attachments)
         {
             BlobId = blobId;
             BlobFormatsId = formats;
+            Attachments = attachments;
         }
     }
 }

@@ -191,15 +191,16 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             docRm.AddHandle(rev1);
             rmDocuments.Add(docRm);
 
+            var attachHandle = new DocumentHandle("rev_2");
             var docRmAttach = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_2"));
-            docRmAttach.AddHandle(new DocumentHandle("rev_2"));
+            docRmAttach.AddHandle(attachHandle);
             rmDocuments.Add(docRmAttach);
             CreateSut();
-            var evt = new DocumentHasNewAttachment(rev1, new DocumentHandle("rev_2")).AssignIdForTest(new DocumentId(1));
+            var evt = new DocumentDescriptorHasNewAttachment(attachHandle, "path.txt").AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewAttachment));
-            Assert.That(rmStream[0].EventData[StreamReadModelEventDataKeys.FatherHandle], Is.EqualTo(rev1));
+            Assert.That(rmStream[0].EventData[StreamReadModelEventDataKeys.ChildHandle], Is.EqualTo(attachHandle));
         }
 
         private void SetHandleToReturn()

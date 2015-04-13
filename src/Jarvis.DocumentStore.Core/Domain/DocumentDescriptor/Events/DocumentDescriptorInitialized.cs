@@ -16,7 +16,10 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events
         public DocumentHandleInfo HandleInfo { get; private set; }
         public FileHash Hash { get; private set; }
 
-        public DocumentDescriptorInitialized(BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash)
+        public DocumentDescriptorInitialized(
+            BlobId blobId, 
+            DocumentHandleInfo handleInfo, 
+            FileHash hash)
         {
             Hash = hash;
             HandleInfo = handleInfo;

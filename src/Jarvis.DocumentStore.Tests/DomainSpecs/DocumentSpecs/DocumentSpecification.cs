@@ -28,8 +28,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         public static readonly DocumentCustomData CustomData_2 = new DocumentCustomData();
         public static readonly DocumentCustomData CustomData_3 = new DocumentCustomData(){{"a", "b"}};
         public static readonly DocumentHandle DocumentHandle = new DocumentHandle("this_is_an_document");
-        public static readonly DocumentHandle AttachmentDocumentHandle = new DocumentHandle("this_is_the_attachment");
-        public static readonly DocumentHandle OtherAttachmentDocumentHandle = new DocumentHandle("this_is_the_other_attachment");
+
 
         public static Document DocumentAggregate { get { return Aggregate; }}
     }
@@ -78,44 +77,6 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 
         It event_should_have_old_document_id = () =>
             RaisedEvent<DocumentLinked>().PreviousDocumentId.ShouldBeNull();
-    }
-
-    [Subject("Attachments")]
-    public class WhenAddingAnAttachToDocument : WithAnInitializedDocument
-    {
-        Because of = () => DocumentAggregate.AddAttachment(AttachmentDocumentHandle);
-
-        It document_has_new_attachment_should_be_raised = () =>
-            EventHasBeenRaised<DocumentHasNewAttachment>().ShouldBeTrue();
-
-        It document_has_new_attachment_should_contains_attachment = () =>
-        {
-            var e = RaisedEvent<DocumentHasNewAttachment>();
-            e.Attachment.ShouldBeTheSameAs(AttachmentDocumentHandle);
-            e.Handle.ShouldBeTheSameAs(DocumentHandle);
-        };
-
-        It state_should_contains_new_attachment = () =>
-            State.Attachments.ShouldContainOnly(AttachmentDocumentHandle);
-    }
-
-    [Subject("Attachments")]
-    public class WhenAddingSameDocumentMultipleTimeAsAttachment : WithAnInitializedDocument
-    {
-        Establish context = () =>
-        {
-            var state = new DocumentState(DocumentHandle);
-            state.AddAttachment(AttachmentDocumentHandle);
-            SetUp(state, DocumentId1);
-        };
-
-        Because of = () => DocumentAggregate.AddAttachment(AttachmentDocumentHandle);
-
-        It document_has_new_attachment_should_not_be_raised = () =>
-            EventHasBeenRaised<DocumentHasNewAttachment>().ShouldBeFalse();
-
-        It state_should_contains_only_one_instance_of_attachment = () =>
-           State.Attachments.ShouldContainOnly(AttachmentDocumentHandle);
     }
 
     [Subject("with an document wihout file name")]
@@ -205,50 +166,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
             EventHasBeenRaised<DocumentDeleted>().ShouldBeFalse();
     }
 
-    [Subject("with a deleted document with attach")]
-    public class when_trying_to_delete_document_with_attachments : WithAnDocumentLinkedToDocument1
-    {
-        Establish context = () =>
-        {
-            State.AddAttachment(AttachmentDocumentHandle);
-            State.AddAttachment(OtherAttachmentDocumentHandle);
-        };
 
-        Because of = () => DocumentAggregate.Delete();
-
-        It HandleDeletedEvent_should_be_raised = () =>
-            EventHasBeenRaised<DocumentDeleted>().ShouldBeTrue();
-        It AttachmentDeletedEvent_should_be_raised_for_child = () =>
-           AllRaisedEvents<AttachmentDeleted>().Count().ShouldEqual(2);
-    }
-
-    [Subject("can delete an attachment")]
-    public class when_deleting_an_attachment : WithAnDocumentLinkedToDocument1
-    {
-        Establish context = () =>
-        {
-            State.AddAttachment(AttachmentDocumentHandle);
-            State.AddAttachment(OtherAttachmentDocumentHandle);
-        };
-
-        Because of = () => DocumentAggregate.DeleteAttachment(OtherAttachmentDocumentHandle);
-
-        It AttachmentDeletedEvent_should_be_raised = () =>
-            EventHasBeenRaised<AttachmentDeleted>().ShouldBeTrue();
-
-
-        It attachmentDeletedEvent_should_have_right_handle = () =>
-        {
-            var e = RaisedEvent<AttachmentDeleted>();
-            e.Handle.ShouldBeTheSameAs(OtherAttachmentDocumentHandle);
-        };
-
-        private It State_should_not_have_attachment_deleted = () =>
-        {
-            State.Attachments.ShouldNotContain(OtherAttachmentDocumentHandle);
-            State.Attachments.ShouldContain(AttachmentDocumentHandle);
-        };
-    }
 
     [Subject("with an initialized document")]
     public class when_customData_are_set : WithAnInitializedDocument

@@ -336,7 +336,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
-            var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentDescriptorCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1") }));
         }
@@ -360,7 +360,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_2")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with second child handle was not find.");
 
-            var handle = _documentCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentDescriptorCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("content_1"), new Core.Model.DocumentHandle("content_2") }));
         }

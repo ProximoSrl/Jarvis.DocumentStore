@@ -1,8 +1,10 @@
 using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
 using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Shared.Jobs;
 using System;
 
 namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
@@ -18,6 +20,13 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 
         protected override void Execute(InitializeDocumentDescriptorAsAttach cmd)
         {
+            if (cmd.HandleInfo.CustomData == null ||
+                !cmd.HandleInfo.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath)) 
+            {
+                throw new Exception(String.Format("Cannot initialize document as attach [{0}] without relative path. Missing CustomData key {1}",
+                    cmd.AggregateId, JobsConstants.AttachmentRelativePath));
+            }
+            var path = cmd.HandleInfo.CustomData[JobsConstants.AttachmentRelativePath].ToString();
             FindAndModify(
                 cmd.AggregateId,
                 doc => {
@@ -27,11 +36,12 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
                 true
             );
 
-            LinkHandleAndAddAttachment(cmd);
-
+            LinkHandleAndAddAttachment(cmd, path);
         }
 
-        private void LinkHandleAndAddAttachment(InitializeDocumentDescriptorAsAttach cmd)
+        private void LinkHandleAndAddAttachment(
+            InitializeDocumentDescriptorAsAttach cmd,
+            String attachmentRelativePath)
         {
             var docHandle = cmd.HandleInfo.Handle;
             var id = _mapper.Map(docHandle);
@@ -44,12 +54,11 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
             handle.SetFileName(cmd.FileName);
             handle.SetCustomData(cmd.HandleInfo.CustomData);
 
-            var fatherId = _mapper.Map(cmd.FatherHandle);
-            var fatherHandle = Repository.GetById<Document>(fatherId);
-            fatherHandle.AddAttachment(docHandle);
-
             Repository.Save(handle, cmd.MessageId, h => { });
-            Repository.Save(fatherHandle, cmd.MessageId, h => { });
+
+            var father = Repository.GetById<DocumentDescriptor>(cmd.FatherDocumentDescriptorId);
+            father.AddAttachment(cmd.HandleInfo.Handle, attachmentRelativePath);
+            Repository.Save(father, cmd.MessageId, h => { });
         }
 
     }

@@ -257,10 +257,13 @@
     <Compile Include="ControllerTests\DownloadTests.cs" />
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\UploadTests.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_adding_multiple_handle_as_attachment.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_adding_attachment_to_descriptor.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\DocumentDescriptorSpecifications.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\document_with_xml_format.cs" />
     <Compile Include="DomainSpecs\BlobIdTests.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_created_with_known_format.cs" />
+    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_deleted_with_attachments.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_documentDescriptor_is_initialized_twice.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_filename_is_created.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_deduplicated_documentDescriptor_is_deleted.cs" />
@@ -294,6 +297,7 @@
     <Compile Include="PipelineTests\ThumbnailFromPdfExtractionTest.cs" />
     <Compile Include="PipelineTests\TikaNetHtmlExtractionTest.cs" />
     <Compile Include="ProjectionTests\BsonClassMapHelper.cs" />
+    <Compile Include="ProjectionTests\DocumentDescriptorProjectionTestsWithEvents.cs" />
     <Compile Include="ProjectionTests\DocumentDescriptorProjectionTests.cs" />
     <Compile Include="ProjectionTests\DocumentProjectionTests.cs" />
     <Compile Include="ProjectionTests\StreamProjectionTest.cs" />

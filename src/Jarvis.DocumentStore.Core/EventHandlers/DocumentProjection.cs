@@ -18,7 +18,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         , IEventHandler<DocumentDeleted>
         , IEventHandler<DocumentDescriptorHasBeenDeduplicated>
         , IEventHandler<DocumentDescriptorInitialized>
-        , IEventHandler<DocumentHasNewAttachment>
     {
         readonly IDocumentWriter _writer;
         private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorCollectionWrapper;
@@ -99,15 +98,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 (DocumentDescriptorId)e.AggregateId,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
             );
-        }
-
-        /// <summary>
-        /// Need to maintain the chain of the attachment.
-        /// </summary>
-        /// <param name="e"></param>
-        public void On(DocumentHasNewAttachment e)
-        {
-            _writer.AddAttachment(e.Handle, e.Attachment);
         }
     }
 }

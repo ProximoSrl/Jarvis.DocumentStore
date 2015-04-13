@@ -77,7 +77,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> Upload(TenantId tenantId, DocumentHandle handle)
         {
-            return await InnerUploadDocument(tenantId, handle);
+            return await InnerUploadDocument(tenantId, handle, null, null);
         }
 
 
@@ -95,7 +95,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public async Task<HttpResponseMessage> UploadAttach(TenantId tenantId, DocumentHandle fatherHandle, DocumentHandle attachSource)
         {
             var realAttacHandle = GetAttachHandleFromAttachSource(attachSource);
-            return await InnerUploadDocument(tenantId, realAttacHandle, fatherHandle);
+            var fatherDescriptor = _documentDescriptorReader.AllUnsorted.SingleOrDefault(dd =>
+                  dd.Documents.Contains(fatherHandle));
+            if (fatherDescriptor == null)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("Handle {0} not found", fatherHandle)
+                );
+            }
+            return await InnerUploadDocument(tenantId, realAttacHandle, fatherHandle, fatherDescriptor.Id);
         }
 
         private DocumentHandle GetAttachHandleFromAttachSource(String attachSource)
@@ -116,7 +125,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// <returns></returns>
         [Route("{tenantId}/documents/jobs/attach/{queueName}/{jobId}/{attachSource}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> UploadAttachFromJob(TenantId tenantId, String queueName, String jobId, String attachSource)
+        public async Task<HttpResponseMessage> UploadAttachFromJob(
+            TenantId tenantId, 
+            String queueName, 
+            String jobId, 
+            String attachSource)
         {
             var job = _queueDispatcher.GetJob(queueName, jobId);
             if (job == null)
@@ -127,10 +140,34 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
             var realAttacHandle = GetAttachHandleFromAttachSource(attachSource);
-            return await InnerUploadDocument(tenantId, realAttacHandle, job.Handle);
+
+            var fatherDescriptor = _documentDescriptorReader.AllUnsorted.SingleOrDefault(dd =>
+                  dd.Documents.Contains(job.Handle));
+            if (fatherDescriptor == null)
+            {
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("Handle {0} referenced from job {1} has no descriptor", job.Handle, job.Id)
+                );
+            }
+            return await InnerUploadDocument(tenantId, realAttacHandle, job.Handle, fatherDescriptor.Id);
         }
 
-        private async Task<HttpResponseMessage> InnerUploadDocument(TenantId tenantId, DocumentHandle handle, DocumentHandle fatherHandle = null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="handle"></param>
+        /// <param name="fatherHandle">Different from null only when you want to upload
+        /// a document that is an attachment of another document</param>
+        /// <param name="fatherHandleDescriptorId">Descriptor id that contains reference
+        /// to <paramref name="fatherHandle"/></param>
+        /// <returns></returns>
+        private async Task<HttpResponseMessage> InnerUploadDocument(
+            TenantId tenantId, 
+            DocumentHandle handle, 
+            DocumentHandle fatherHandle,
+            DocumentDescriptorId fatherHandleDescriptorId)
         {
             var documentId = _identityGenerator.New<DocumentDescriptorId>();
 
@@ -146,7 +183,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            CreateDocument(documentId, _blobId, handle, fatherHandle, _fileName, _customData);
+            CreateDocument(documentId, _blobId, handle, fatherHandle, fatherHandleDescriptorId, _fileName, _customData);
 
             Logger.DebugFormat("File {0} uploaded as {1}", _blobId, documentId);
 
@@ -349,16 +386,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentHandle handle
         )
         {
-            var document = _handleWriter.FindOneById(handle);
+            var documentDescriptor = _documentDescriptorReader.AllUnsorted.SingleOrDefault(d =>
+                  d.Documents.Contains(handle));
 
-            if (document == null)
+            if (documentDescriptor == null)
             {
                 return DocumentNotFound(handle);
             }
 
-            if (document.Attachments == null) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
+            if (documentDescriptor.Attachments == null || documentDescriptor.Attachments.Count == 0) 
+                return Request.CreateResponse(HttpStatusCode.OK, new List<AttachmentInfo>());
 
-            var attachments = document.Attachments
+            var attachments = documentDescriptor.Attachments
                 .Select(a => {
                     var attachment =new AttachmentInfo() 
                     {
@@ -389,24 +428,32 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentHandle handle
         )
         {
-            var document = _handleWriter.FindOneById(handle);
+            var documentDescriptor = _documentDescriptorReader.AllUnsorted.SingleOrDefault(d =>
+                  d.Documents.Contains(handle));
 
-            if (document == null)
+            if (documentDescriptor == null)
             {
                 return DocumentNotFound(handle);
             }
 
-            if (document.Attachments == null || document.Attachments.Count == 0) return Request.CreateResponse(HttpStatusCode.OK, new Dictionary<DocumentHandle, Uri>());
             List<DocumentAttachmentsFat.AttachmentInfo> fat = new List<DocumentAttachmentsFat.AttachmentInfo>();
-
-            ScanAttachments(tenantId, document.Attachments.Select(a => a.Handle), fat, "", 0, 5);
+            if (documentDescriptor.Attachments != null && documentDescriptor.Attachments.Count > 0)
+            {
+                ScanAttachments(
+                    tenantId, 
+                    documentDescriptor.Attachments, 
+                    fat, 
+                    "", 
+                    0, 
+                    5);  
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, fat);
         }
 
         private void ScanAttachments(
             TenantId tenantId, 
-            IEnumerable<DocumentHandle> attachments, 
+            IEnumerable<DocumentAttachmentReadModel> attachments, 
             List<DocumentAttachmentsFat.AttachmentInfo> fat, 
             String rootAttachmentPath,
             Int32 actualDeepLevel,
@@ -414,24 +461,22 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             //grab in a single query all documents and descriptors for this data
             var handles = attachments.ToList();
-            var allHandles = _handleWriter.AllSortedByHandle
-                .Where(h => handles.Contains(h.Handle))
-                .ToDictionary(h => h.Handle, h => h);
-            foreach (var handle in attachments)
+
+            foreach (var attach in attachments)
             {
                 //grab all data for this attachment
-                var descriptor = _documentDescriptorReader.AllUnsorted.Single(d => d.Documents.Contains(handle));
-                var document = allHandles[handle];
-
-                String path = document.GetRelativePathFromCustomData();
+                var descriptor = _documentDescriptorReader.AllUnsorted
+                    .Single(d => d.Documents.Contains(attach.Handle));
+                var document = _handleWriter.FindOneById(attach.Handle);
 
                 fat.Add(new DocumentAttachmentsFat.AttachmentInfo(
-                        Url.Content("/" + tenantId + "/documents/" + handle),
+                        Url.Content("/" + tenantId + "/documents/" + attach.Handle),
                         document.FileName,
-                        path,
+                        attach.RelativePath,
                         rootAttachmentPath
                     ));
                 var newRootAttachmentPath = rootAttachmentPath + "/" + document.FileName;
+
                 //we need to further scan attachment.
                 if (actualDeepLevel < maxLevel &&
                     descriptor.Attachments != null && 
@@ -562,22 +607,22 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
-        [HttpDelete]
-        [Route("{tenantId}/documents/attachments/{fatherHandle}/{source}")]
-        public HttpResponseMessage DeleteAttachments(TenantId tenantId, DocumentHandle fatherHandle, String source)
-        {
-            var document = GetDocumentByHandle(fatherHandle);
-            if (document == null)
-                return DocumentNotFound(fatherHandle);
+        //[HttpDelete]
+        //[Route("{tenantId}/documents/attachments/{fatherHandle}/{source}")]
+        //public HttpResponseMessage DeleteAttachments(TenantId tenantId, DocumentHandle fatherHandle, String source)
+        //{
+        //    var document = GetDocumentByHandle(fatherHandle);
+        //    if (document == null)
+        //        return DocumentNotFound(fatherHandle);
 
-            //find all the attachments belonging to this source
-            CommandBus.Send(new DeleteAttachments(fatherHandle, source), "api");
+        //    //find all the attachments belonging to this source
+        //    CommandBus.Send(new DeleteAttachments(fatherHandle, source), "api");
 
-            return Request.CreateResponse(
-                HttpStatusCode.Accepted,
-                string.Format("Attachment of handle {0} with source {1} marked for deletion!", fatherHandle, source)
-            );
-        }
+        //    return Request.CreateResponse(
+        //        HttpStatusCode.Accepted,
+        //        string.Format("Attachment of handle {0} with source {1} marked for deletion!", fatherHandle, source)
+        //    );
+        //}
 
 
 
@@ -586,6 +631,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             BlobId blobId,
             DocumentHandle handle,
             DocumentHandle fatherHandle,
+            DocumentDescriptorId fatherDocumentDescriptorId,
             FileNameWithExtension fileName,
             DocumentCustomData customData
         )
@@ -601,7 +647,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             else
             {
                 if (Logger.IsDebugEnabled) Logger.DebugFormat("Initialize DocumentDescriptor as attach {0} ", documentDescriptorId);
-                createDocument = new InitializeDocumentDescriptorAsAttach(documentDescriptorId, blobId, handleInfo, fatherHandle, descriptor.Hash, fileName);
+                createDocument = new InitializeDocumentDescriptorAsAttach(
+                    documentDescriptorId,
+                    blobId,
+                    handleInfo, 
+                    fatherHandle, 
+                    fatherDocumentDescriptorId,
+                    descriptor.Hash, fileName);
             }
             CommandBus.Send(createDocument, "api");
         }

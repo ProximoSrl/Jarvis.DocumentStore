@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
 
         public DocumentState()
         {
-            _attachments = new List<DocumentHandle>();
+
         }
 
         void When(DocumentInitialized e)
@@ -43,16 +43,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
             Link(e.DocumentId);
         }
 
-        void When(DocumentHasNewAttachment e)
-        {
-            AddAttachment(e.Attachment);
-        }
-
-        void When(AttachmentDeleted e)
-        {
-            RemoveAttachment(e.Handle);
-        }
-
         public void Link(DocumentDescriptorId documentId)
         {
             this.LinkedDocument = documentId;
@@ -69,22 +59,6 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         public DocumentCustomData CustomData { get; private set; }
         public DocumentHandle Handle { get; private set; }
         public FileNameWithExtension FileName { get; private set; }
-
-        public IEnumerable<DocumentHandle> Attachments {
-            get { return _attachments.AsReadOnly(); }
-        }
-
-        private List<DocumentHandle> _attachments;
-
-        public void AddAttachment(DocumentHandle attachment)
-        {
-            _attachments.Add(attachment);
-        }
-
-        public void RemoveAttachment(DocumentHandle attachment)
-        {
-            if (_attachments.Contains(attachment)) _attachments.Remove(attachment);
-        }
 
         public void SetCustomData(DocumentCustomData data)
         {

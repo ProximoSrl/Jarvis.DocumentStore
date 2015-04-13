@@ -17,7 +17,11 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         public IDocumentFormatTranslator DocumentFormatTranslator { get; set; }
 
-        public void Initialize(BlobId blobId, DocumentHandleInfo handleInfo, FileHash hash, String fileName)
+        public void Initialize(
+            BlobId blobId, 
+            DocumentHandleInfo handleInfo, 
+            FileHash hash, 
+            String fileName)
         {
             ThrowIfDeleted();
 
@@ -75,7 +79,8 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
             {
                 RaiseEvent(new DocumentDescriptorDeleted(
                     InternalState.BlobId,
-                    InternalState.Formats.Select(x => x.Value).ToArray()
+                    InternalState.Formats.Select(x => x.Value).ToArray(),
+                    InternalState.Attachments.ToArray()
                 ));
             }
         }
@@ -109,6 +114,12 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
             Attach(handle);
         }
 
+        internal void AddAttachment(DocumentHandle attachmentDocumentHandle, String attachmentPath)
+        {
+            ThrowIfDeleted();
+            if (InternalState.Attachments.Contains(attachmentDocumentHandle)) return;
 
+            RaiseEvent(new DocumentDescriptorHasNewAttachment(attachmentDocumentHandle, attachmentPath));
+        }
     }
 }

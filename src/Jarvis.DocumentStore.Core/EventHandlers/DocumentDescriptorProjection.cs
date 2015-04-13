@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<DocumentHandleAttached>,
         IEventHandler<DocumentHandleDetached>,
         IEventHandler<DocumentFormatHasBeenUpdated>,
-        IEventHandler<DocumentHasNewAttachment>
+        IEventHandler<DocumentDescriptorHasNewAttachment>
     {
         private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documents;
         private IDocumentWriter _handleWriter;
@@ -95,11 +95,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         /// Need to maintain the chain of the attachment.
         /// </summary>
         /// <param name="e"></param>
-        public void On(DocumentHasNewAttachment e)
+        public void On(DocumentDescriptorHasNewAttachment e)
         {
-            _documents.FindAndModify(e, dd => dd.Documents.Contains(e.Handle), d =>
+            _documents.FindAndModify(e, (DocumentDescriptorId) e.AggregateId, d =>
             {
-                d.AddAttachments(e.Attachment);
+                d.AddAttachments(e.Attachment, e.AttachmentPath);
             });
         }
     }

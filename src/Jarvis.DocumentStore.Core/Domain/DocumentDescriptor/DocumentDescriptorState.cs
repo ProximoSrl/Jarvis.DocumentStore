@@ -22,6 +22,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
         public DocumentDescriptorState()
         {
             Formats = new Dictionary<DocumentFormat, BlobId>();
+            Attachments = new List<DocumentHandle>();
         }
 
         public IDictionary<DocumentFormat, BlobId> Formats { get; private set; }
@@ -29,6 +30,19 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         public bool HasBeenDeleted { get; private set; }
         public bool Created { get; private set; }
+
+        public IList<DocumentHandle> Attachments { get; private set; }
+
+
+        public void AddAttachment(DocumentHandle attachment)
+        {
+            Attachments.Add(attachment);
+        }
+
+        public void RemoveAttachment(DocumentHandle attachment)
+        {
+            if (Attachments.Contains(attachment)) Attachments.Remove(attachment);
+        }
 
         private void When(DocumentDescriptorDeleted e)
         {
@@ -78,6 +92,11 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
         public bool HasActiveHandles()
         {
             return _handles.Any();
+        }
+
+        private void When(DocumentDescriptorHasNewAttachment e)
+        {
+            AddAttachment(e.Attachment);
         }
     }
 }

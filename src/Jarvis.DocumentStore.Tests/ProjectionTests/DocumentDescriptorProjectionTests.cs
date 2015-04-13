@@ -34,6 +34,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         IDocumentWriter _handleWriter;
         IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentReader;
         private ITriggerProjectionsUpdate _projections;
+
         [SetUp]
         public void SetUp()
         {

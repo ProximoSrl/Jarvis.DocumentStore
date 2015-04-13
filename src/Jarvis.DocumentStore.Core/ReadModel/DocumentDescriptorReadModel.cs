@@ -33,10 +33,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public int FormatsCount { get; set; }
         public long SequenceNumber { get; set; }
 
-        /// <summary>
-        /// This is needed to avoid losing attachmetn chain on de-duplication.
-        /// </summary>
-        public HashSet<DocumentHandle> Attachments { get; private set; }
+        public HashSet<DocumentAttachmentReadModel> Attachments { get; private set; }
 
         public DocumentDescriptorReadModel(
             DocumentDescriptorId id, 
@@ -47,6 +44,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             this.Id = id;
             this.SequenceNumber = id.Id;
             AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), blobId);
+            Attachments = new HashSet<DocumentAttachmentReadModel>(
+                DocumentAttachmentReadModel.Comparer.Default);
         }
 
         public void AddFormat(PipelineId pipelineId, DocumentFormat format, BlobId blobId)
@@ -78,11 +77,57 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             return GetFormatBlobId(DocumentFormats.Original);
         }
 
-        internal void AddAttachments(DocumentHandle documentHandle)
+        internal void AddAttachments(DocumentHandle attachmentHandle, String attachmentPath)
         {
-            if (Attachments == null) Attachments = new HashSet<DocumentHandle>();
+            Attachments.Add(new DocumentAttachmentReadModel(attachmentHandle, attachmentPath));
+        }
+    }
 
-            Attachments.Add(documentHandle);
+    public class DocumentAttachmentReadModel
+    {
+
+        public DocumentAttachmentReadModel()
+        {
+
+        }
+
+        public DocumentAttachmentReadModel(DocumentHandle attachmentHandle, string attachmentPath)
+        {
+            Handle = attachmentHandle;
+            RelativePath = attachmentPath;
+        }
+
+        /// <summary>
+        /// Handle of the attachment.
+        /// </summary>
+        public DocumentHandle Handle { get; set; }
+
+        /// <summary>
+        /// Relative path of this attachment to the original handle
+        /// </summary>
+        public String RelativePath { get; set; }
+
+        public class Comparer : IEqualityComparer<DocumentAttachmentReadModel> 
+        {
+            public static Comparer Default;
+
+            static Comparer() 
+            {
+                Default = new Comparer();
+            }
+
+            public bool Equals(DocumentAttachmentReadModel x, DocumentAttachmentReadModel y)
+            {
+                if (x == null && y == null) return true;
+                if (x == null || y == null) return false;
+
+                return x.Handle.Equals(y.Handle);
+            }
+
+            public int GetHashCode(DocumentAttachmentReadModel obj)
+            {
+                return obj.GetHashCode();
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
          IEventHandler<FormatAddedToDocumentDescriptor>,
          IEventHandler<DocumentFileNameSet>,
          IEventHandler<DocumentFormatHasBeenUpdated>,
-         IEventHandler<DocumentHasNewAttachment>
+         IEventHandler<DocumentDescriptorHasNewAttachment>
     {
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
         private readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReadModel;
@@ -212,7 +212,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             }
         }
 
-        public void On(DocumentHasNewAttachment e)
+        public void On(DocumentDescriptorHasNewAttachment e)
         {
             var attachmentDescriptor = _documentDescriptorReadModel.AllUnsorted.SingleOrDefault(d => d.Documents.Contains(e.Attachment));
             if (attachmentDescriptor == null) return;
@@ -222,10 +222,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 Id = GetNewId(),
                 Handle = e.Attachment,
                 DocumentId = attachmentDescriptor.Id,
-               
-                EventType = HandleStreamEventTypes.DocumentHasNewAttachment,
+                EventType = HandleStreamEventTypes.DocumentHasNewAttachment,            
             };
-            streamReadModel.AddEventData(StreamReadModelEventDataKeys.FatherHandle, e.Handle);
+            streamReadModel.AddEventData(StreamReadModelEventDataKeys.ChildHandle, e.Attachment);
+           
             _streamReadModelCollection.Insert(e, streamReadModel);
         }
     }

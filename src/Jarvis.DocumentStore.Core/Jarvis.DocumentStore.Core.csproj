@@ -107,11 +107,11 @@
     <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\HandleHandlers\DeleteAttachmentsCommandHandler.cs" />
-    <Compile Include="CommandHandlers\HandleHandlers\DeleteDocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\HandleHandlers\HandleMapper.cs" />
-    <Compile Include="CommandHandlers\HandleHandlers\IHandleMapper.cs" />
-    <Compile Include="CommandHandlers\HandleHandlers\LinkHandleToDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeleteAttachmentsCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeleteDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\HandleMapper.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\IHandleMapper.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\LinkHandleToDocumentCommandHandler.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\AddFormatToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\InitializeDocumentDescriptorAsAttach.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\InitializeDocumentDescriptor.cs" />
@@ -122,6 +122,7 @@
     <Compile Include="Domain\DocumentDescriptor\DocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentHandleInfo.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentAttached.cs" />
+    <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorHasNewAttachment.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentHandleDetached.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorHasBeenDeduplicated.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentDescriptorId.cs" />

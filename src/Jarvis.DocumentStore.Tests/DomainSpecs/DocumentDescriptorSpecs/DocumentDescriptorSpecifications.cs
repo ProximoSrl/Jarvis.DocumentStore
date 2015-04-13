@@ -4,11 +4,13 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.TestHelpers;
 using NSubstitute;
 using Jarvis.DocumentStore.Core.Support;
+using Machine.Specifications;
 
 // ReSharper disable InconsistentNaming
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 {
+
     public abstract class DocumentDescriptorSpecifications : AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>
     {
         protected static readonly DocumentDescriptorId _id = new DocumentDescriptorId(1);
@@ -20,11 +22,16 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         protected static readonly DocumentHandleInfo _handleInfo = new DocumentHandleInfo(Handle, _fname);
         protected static readonly DocumentHandle _fatherHandle = new DocumentHandle("handle-to-father");
 
+        protected static readonly DocumentHandle _attachmentDocumentHandle = new DocumentHandle("this_is_the_attachment");
+        protected static readonly DocumentHandle _otherAttachmentDocumentHandle = new DocumentHandle("this_is_the_other_attachment");
+        protected static readonly String _attachmentPath = "Attach-path.txt";
+
         protected static DocumentDescriptor DocumentDescriptor
         {
-            get {
+            get
+            {
                 if (Aggregate.DocumentFormatTranslator == null) Aggregate.DocumentFormatTranslator = Substitute.For<IDocumentFormatTranslator>();
-                return Aggregate; 
+                return Aggregate;
             }
         }
     }

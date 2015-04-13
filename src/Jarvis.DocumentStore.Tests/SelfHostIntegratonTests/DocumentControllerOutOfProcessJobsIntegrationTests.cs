@@ -219,7 +219,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     { "callback", "http://localhost/demo"}
                 }
             );
-           
+
             await UpdateAndWait();
             var allStream = _streamCollection.FindAll();
             var maxCheckpoint = allStream.Select(s => s.Id).Max();
@@ -228,7 +228,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             do
             {
                 checkpoint = _queueCheckpoint.FindOneById(BsonValue.Create(TestConfig.Tenant));
-                if (checkpoint == null || checkpoint.Checkpoint < maxCheckpoint) 
+                if (checkpoint == null || checkpoint.Checkpoint < maxCheckpoint)
                 {
                     Thread.Sleep(200); //wait for queue manager to read all stream
                 }
@@ -644,8 +644,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     public class integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
 
-
-
         [Test]
         public async void verify_nested_zip_count_file_verification()
         {
@@ -725,7 +723,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 4)
                 {
-                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    var doc = _documentDescriptorCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
                     Assert.That(doc.Attachments, Is.EquivalentTo(new[] {
                         new Core.Model.DocumentHandle("content_zip_1"),
                         new Core.Model.DocumentHandle("content_zip_2"),
@@ -824,6 +822,80 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             };
         }
     }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_handle_with_attachment_duplicated_then_first_deleted : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        [Test]
+        public async void verify_deletion_original_handle()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("main");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("main");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFile,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            Int32 docCount;
+            do
+            {
+                await UpdateAndWait();
+                docCount = _documentDescriptorCollection.AsQueryable().Count();
+                if (docCount == 4)
+                {
+                    break;
+                }
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            //now all attachment are unzipped.
+            var secondaryHandleClient = DocumentHandle.FromString("secondary");
+            var secondaryHandleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("secondary");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFile, //Same file it will be de-duplicated
+               secondaryHandleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            //now delete primary handle
+            await _documentStoreClient.DeleteAsync(handleClient);
+
+            startWait = DateTime.Now;
+            do
+            {
+                await UpdateAndWait();
+
+                //now I want to be sure that secondary handle still has attachments
+                var fat = await _documentStoreClient.GetAttachmentsFatAsync(secondaryHandleClient);
+                Assert.That(fat.Attachments, Has.Count.EqualTo(3));
+                var allHandle = _documentCollection.FindAll().Count();
+                Assert.That(allHandle, Is.EqualTo(4)); //second handle with all attachments
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("de-duplicated document handle does not maintain attachments after deletion");
+        }
+        
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
+            };
+        }
+    }
+
     [TestFixture]
     [Category("integration_full")]
     public class integration_attachments_mail_with_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
@@ -854,7 +926,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 2)
                 {
                     //all attachment are unzipped correctly
-                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    var doc = _documentDescriptorCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
                     Assert.That(doc.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("attachment_email_1") }));
                     return;
                 }
@@ -909,7 +981,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 10)
                 {
                     //all attachment are unzipped correctly
-                    var doc = _documentCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
+                    var doc = _documentDescriptorCollection.FindOneById(BsonValue.Create(handleClient.ToString()));
                     Assert.That(doc.Attachments, Has.Count.EqualTo(2), "primary document has wrong number of attachments");
                     return;
                 }
@@ -933,4 +1005,68 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             };
         }
     }
+
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class Deletion_of_attachments_advanced : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        [Test]
+        public async void verify_deletion_original_handle_delete_attachments()
+        {
+
+            _sutBase = new AttachmentOutOfProcessJob();
+            PrepareJob();
+
+            var handleClient = DocumentHandle.FromString("main");
+            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("main");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToZipFile,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+            DateTime startWait = DateTime.Now;
+            Int32 docDescriptorCount = 0;
+            do
+            {
+                await UpdateAndWait();
+                docDescriptorCount = _documentDescriptorCollection.AsQueryable().Count();
+                if (docDescriptorCount == 4)
+                {
+                    break;
+                }
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            //now delete primary handle
+            await _documentStoreClient.DeleteAsync(handleClient);
+
+            startWait = DateTime.Now;
+            do
+            {
+                await UpdateAndWait();
+
+                //all attachment should be deleted
+                docDescriptorCount = _documentDescriptorCollection.AsQueryable().Count();
+                Assert.That(docDescriptorCount, Is.EqualTo(0));
+
+                var docCount = _documentCollection.Count();
+                Assert.That(docCount, Is.EqualTo(0));
+                return;
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("de-duplicated document handle does not maintain attachments after deletion");
+        }
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
+            };
+        }
+    }
+
 }
