@@ -1,6 +1,6 @@
 ﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 
-namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
+namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentDescriptorHandlers
 {
     public class DeduplicateDocumentDescriptorCommandHandler : DocumentDescriptorCommandHandler<DeduplicateDocumentDescriptor>
     {

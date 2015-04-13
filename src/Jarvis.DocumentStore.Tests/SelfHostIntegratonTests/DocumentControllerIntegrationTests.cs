@@ -44,6 +44,7 @@ using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture]
+    [Category("current")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
@@ -328,7 +329,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             await UpdateAndWaitAsync();
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
             await UpdateAndWaitAsync();
@@ -336,9 +337,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
-            var handle = _documentDescriptorCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentDescriptorCollection.Find(Query.EQ("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
-            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1") }));
+            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { 
+                new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1")
+            }));
         }
 
         [Test]
@@ -350,8 +353,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await UpdateAndWaitAsync();
 
             //upload attachments
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content");
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Content");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToDocumentPng));
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToOpenDocumentText));
             await UpdateAndWaitAsync();
 
             var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
@@ -360,33 +363,34 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_2")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with second child handle was not find.");
 
-            var handle = _documentDescriptorCollection.Find(Query.EQ("_id", "father")).SingleOrDefault();
+            var handle = _documentDescriptorCollection.Find(Query.EQ("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
-            Assert.That(handle.Attachments, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("content_1"), new Core.Model.DocumentHandle("content_2") }));
+            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("content_1"), new Core.Model.DocumentHandle("content_2") }));
         }
 
-        [Test]
-        public async void add_multiple_attachment_to_existing_handle_then_delete_by_source()
-        {
-            //Upload father
-            var fatherHandle = new DocumentHandle("father");
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-            await UpdateAndWaitAsync();
+        //Delete by source type is not anymore supported
+        //[Test]
+        //public async void add_multiple_attachment_to_existing_handle_then_delete_by_source()
+        //{
+        //    //Upload father
+        //    var fatherHandle = new DocumentHandle("father");
+        //    await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+        //    await UpdateAndWaitAsync();
 
-            //upload attachments
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourcea");
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceb");
-            await UpdateAndWaitAsync();
+        //    //upload attachments
+        //    await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourcea", Path.GetFileName(TestConfig.PathToDocumentPng));
+        //    await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceb", Path.GetFileName(TestConfig.PathToOpenDocumentText));
+        //    await UpdateAndWaitAsync();
 
-            await _documentStoreClient.DeleteAttachmentsAsync(fatherHandle, "sourceb");
-            await UpdateAndWaitAsync();
+        //    await _documentStoreClient.DeleteAttachmentsAsync(fatherHandle, "sourceb");
+        //    await UpdateAndWaitAsync();
 
-            var handle = _documentCollection.Find(Query.EQ("_id", "sourcea_1")).SingleOrDefault();
-            Assert.That(handle, Is.Not.Null, "SourceA attachment should not be deleted.");
+        //    var handle = _documentCollection.Find(Query.EQ("_id", "sourcea_1")).SingleOrDefault();
+        //    Assert.That(handle, Is.Not.Null, "SourceA attachment should not be deleted.");
 
-            handle = _documentCollection.Find(Query.EQ("_id", "sourceb_1")).SingleOrDefault();
-            Assert.That(handle, Is.Null, "SourceB attachment should be deleted.");
-        }
+        //    handle = _documentCollection.Find(Query.EQ("_id", "sourceb_1")).SingleOrDefault();
+        //    Assert.That(handle, Is.Null, "SourceB attachment should be deleted.");
+        //}
 
         [Test]
         public async void add_multiple_attachment_to_existing_handle_then_delete_handle()
@@ -397,8 +401,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await UpdateAndWaitAsync();
 
             //upload attachments
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip");
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip", Path.GetFileName(TestConfig.PathToDocumentPng));
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip", Path.GetFileName(TestConfig.PathToOpenDocumentText));
             await UpdateAndWaitAsync();
 
             await _documentStoreClient.DeleteAsync(fatherHandle);
@@ -420,16 +424,16 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             await UpdateAndWaitAsync();
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
             await UpdateAndWaitAsync();
 
             var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
             Assert.NotNull(attachments);
-            Assert.That(attachments.Attachments, Has.Count.EqualTo(1));
-            Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("source_1"));
-            Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
+            Assert.That(attachments.Attachments.Length, Is.EqualTo(1));
+            Assert.That(attachments.Attachments[0].RelativePath.ToString(), Is.EqualTo(Path.GetFileName(TestConfig.PathToDocumentPng)));
+            Assert.That(attachments.Attachments[0].Handle.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
         }
 
         [Test]
@@ -467,21 +471,21 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             await UpdateAndWaitAsync();
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
             await UpdateAndWaitAsync();
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, new DocumentHandle("source_1"), "nested");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, new DocumentHandle("source_1"), "nested", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
             await UpdateAndWaitAsync();
 
             var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
             Assert.NotNull(attachments);
-            Assert.That(attachments.Attachments, Has.Count.EqualTo(1));
-            Assert.That(attachments.Attachments.Single().Key.ToString(), Is.EqualTo("source_1"));
-            Assert.That(attachments.Attachments.Single().Value.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
+            Assert.That(attachments.Attachments.Length, Is.EqualTo(1));
+            Assert.That(attachments.Attachments[0].RelativePath.ToString(), Is.EqualTo(Path.GetFileName(TestConfig.PathToDocumentPng)));
+            Assert.That(attachments.Attachments[0].Handle.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
         }
 
         [Test]
@@ -494,12 +498,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             await UpdateAndWaitAsync();
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
             await UpdateAndWaitAsync();
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToExcelDocument, new DocumentHandle("source_1"), "nested");
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToExcelDocument, new DocumentHandle("source_1"), "nested", Path.GetFileName(TestConfig.PathToExcelDocument));
 
             // wait background projection polling
             await UpdateAndWaitAsync();

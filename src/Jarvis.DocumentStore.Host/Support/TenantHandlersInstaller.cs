@@ -3,12 +3,13 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
+
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 
 using Jarvis.Framework.Kernel.Commands;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver;
+using Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers;
 
 namespace Jarvis.DocumentStore.Host.Support
 {

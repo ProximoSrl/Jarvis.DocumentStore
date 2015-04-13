@@ -1,4 +1,4 @@
-using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
+using Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
@@ -7,7 +7,7 @@ using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Shared.Jobs;
 using System;
 
-namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
+namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentDescriptorHandlers
 {
     public class InitializeDocumentDescriptorAsAttachCommandHandler : DocumentDescriptorCommandHandler<InitializeDocumentDescriptorAsAttach>
     {
@@ -23,8 +23,10 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
             if (cmd.HandleInfo.CustomData == null ||
                 !cmd.HandleInfo.CustomData.ContainsKey(JobsConstants.AttachmentRelativePath)) 
             {
-                throw new Exception(String.Format("Cannot initialize document as attach [{0}] without relative path. Missing CustomData key {1}",
-                    cmd.AggregateId, JobsConstants.AttachmentRelativePath));
+                String error =String.Format("Cannot initialize document as attach [{0}] without relative path. Missing CustomData key {1}",
+                    cmd.AggregateId, JobsConstants.AttachmentRelativePath);
+                Logger.Error(error);
+                throw new Exception(error);
             }
             var path = cmd.HandleInfo.CustomData[JobsConstants.AttachmentRelativePath].ToString();
             FindAndModify(

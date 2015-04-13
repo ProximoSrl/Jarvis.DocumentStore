@@ -8,7 +8,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Shared.IdentitySupport;
 using MongoDB.Driver;
 
-namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
+namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
     public class HandleMapper : AbstractIdentityTranslator<DocumentId>, IHandleMapper
     {

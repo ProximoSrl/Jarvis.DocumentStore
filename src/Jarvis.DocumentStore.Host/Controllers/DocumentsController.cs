@@ -394,12 +394,12 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return DocumentNotFound(handle);
             }
 
-            if (documentDescriptor.Attachments == null || documentDescriptor.Attachments.Count == 0) 
-                return Request.CreateResponse(HttpStatusCode.OK, new List<AttachmentInfo>());
+            if (documentDescriptor.Attachments == null || documentDescriptor.Attachments.Count == 0)
+                return Request.CreateResponse(HttpStatusCode.OK, new List<ClientAttachmentInfo>());
 
             var attachments = documentDescriptor.Attachments
                 .Select(a => {
-                    var attachment =new AttachmentInfo() 
+                    var attachment =new ClientAttachmentInfo() 
                     {
                         Handle = Url.Content("/" + tenantId + "/documents/" + a.Handle),
                         RelativePath = a.RelativePath
@@ -606,24 +606,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 string.Format("Document marked for deletion {0}", handle)
             );
         }
-
-        //[HttpDelete]
-        //[Route("{tenantId}/documents/attachments/{fatherHandle}/{source}")]
-        //public HttpResponseMessage DeleteAttachments(TenantId tenantId, DocumentHandle fatherHandle, String source)
-        //{
-        //    var document = GetDocumentByHandle(fatherHandle);
-        //    if (document == null)
-        //        return DocumentNotFound(fatherHandle);
-
-        //    //find all the attachments belonging to this source
-        //    CommandBus.Send(new DeleteAttachments(fatherHandle, source), "api");
-
-        //    return Request.CreateResponse(
-        //        HttpStatusCode.Accepted,
-        //        string.Format("Attachment of handle {0} with source {1} marked for deletion!", fatherHandle, source)
-        //    );
-        //}
-
 
 
         private void CreateDocument(

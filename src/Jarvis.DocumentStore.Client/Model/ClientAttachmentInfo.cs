@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jarvis.DocumentStore.Host.Model
+namespace Jarvis.DocumentStore.Client.Model
 {
-    public class AttachmentInfo
+    public class ClientAttachmentInfo
     {
         public String RelativePath { get; set; }
 

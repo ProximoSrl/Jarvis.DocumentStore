@@ -100,18 +100,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandHandlers\DocumentHandlers\AddFormatToDocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\InitializeDocumentDescriptorAsAttachCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\InitializeDocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\DeduplicateDocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\DocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentDescriptorCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeleteAttachmentsCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeleteDocumentCommandHandler.cs" />
-    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\HandleMapper.cs" />
-    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\IHandleMapper.cs" />
-    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\LinkHandleToDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\AddFormatToDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\InitializeDocumentDescriptorAsAttachCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\InitializeDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeduplicateDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeleteDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\CreateDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\HandleMapper.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\IHandleMapper.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\LinkHandleToDocumentCommandHandler.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\AddFormatToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\InitializeDocumentDescriptorAsAttach.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\InitializeDocumentDescriptor.cs" />
@@ -134,7 +133,6 @@
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorCreated.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\FormatAddedToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentFormat.cs" />
-    <Compile Include="Domain\Document\Commands\DeleteAttachments.cs" />
     <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
     <Compile Include="Domain\Document\Commands\LinkDocumentToDocumentDescriptor.cs" />
     <Compile Include="Domain\Document\Events\AttachmentDeleted.cs" />

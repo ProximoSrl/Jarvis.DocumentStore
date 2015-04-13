@@ -11,6 +11,7 @@ using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Client
 {
@@ -125,10 +126,12 @@ namespace Jarvis.DocumentStore.Client
             DocumentHandle fatherDocumentHandle,
             Stream inputStream,
             String attachSource,
+            String relativePath,
             IDictionary<string, object> customData = null)
         {
             if (customData == null) customData = new Dictionary<String, Object>();
-            customData["source"] = attachSource;
+            customData[AddAttachmentToHandleParameters.Source] = attachSource;
+            customData[JobsConstants.AttachmentRelativePath] = relativePath;
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachSource);
             return await DoUpload(endPoint, fileNameWithExtension, inputStream, customData);
         }
@@ -137,10 +140,12 @@ namespace Jarvis.DocumentStore.Client
            string pathToFile,
            DocumentHandle fatherDocumentHandle,
            String attachSource,
-           IDictionary<string, object> customData = null) 
+           String relativePath,
+           IDictionary<string, object> customData = null)
         {
             if (customData == null) customData = new Dictionary<String, Object>();
-            customData["source"] = attachSource;
+            customData[AddAttachmentToHandleParameters.Source] = attachSource;
+            customData[JobsConstants.AttachmentRelativePath] = relativePath;
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachSource);
             return await UploadFromFile(endPoint, pathToFile, customData);
         }
@@ -150,10 +155,12 @@ namespace Jarvis.DocumentStore.Client
            String queueName,
            String jobId,
            String attachSource,
+           String relativePath,
            IDictionary<string, object> customData = null)
         {
             if (customData == null) customData = new Dictionary<String, Object>();
-            customData["source"] = attachSource;
+            customData[AddAttachmentToHandleParameters.Source] = attachSource;
+            customData[JobsConstants.AttachmentRelativePath] = relativePath;
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/attach/" + queueName + "/" + jobId + "/" + attachSource);
             return await UploadFromFile(endPoint, pathToFile, customData);
         }
@@ -167,7 +174,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>MD5 of the uploaded file. MD5 is calculated by the DocumentStore</returns>
         public async Task<UploadedDocumentResponse> UploadAsync(
             string pathToFile,
-            DocumentHandle documentHandle, 
+            DocumentHandle documentHandle,
             IDictionary<string, object> customData = null)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
@@ -216,9 +223,9 @@ namespace Jarvis.DocumentStore.Client
         }
 
         async Task<UploadedDocumentResponse> DoUpload(
-            Uri endPoint, 
-            string fileNameWithExtension, 
-            Stream inputStream, 
+            Uri endPoint,
+            string fileNameWithExtension,
+            Stream inputStream,
             IDictionary<string, object> customData)
         {
             string fileName = Path.GetFileNameWithoutExtension(fileNameWithExtension);
@@ -251,7 +258,7 @@ namespace Jarvis.DocumentStore.Client
         }
 
         public async Task<UploadedDocumentResponse> AddFormatToDocument(
-            AddFormatFromFileToDocumentModel model, 
+            AddFormatFromFileToDocumentModel model,
             IDictionary<string, object> customData = null)
         {
             using (var sourceStream = File.OpenRead(model.PathToFile))
@@ -274,7 +281,7 @@ namespace Jarvis.DocumentStore.Client
                         customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
                         customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
                         customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
-                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName); 
+                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName);
                         customData.Add(AddFormatToDocumentParameters.Format, model.Format);
 
                         var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
@@ -295,7 +302,7 @@ namespace Jarvis.DocumentStore.Client
         }
 
         public async Task<UploadedDocumentResponse> AddFormatToDocument(
-            AddFormatFromObjectToDocumentModel model, 
+            AddFormatFromObjectToDocumentModel model,
             IDictionary<string, object> customData = null)
         {
             using (var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes((model.StringContent))))
@@ -318,7 +325,7 @@ namespace Jarvis.DocumentStore.Client
                         customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
                         customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
                         customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
-                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName); 
+                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName);
                         customData.Add(AddFormatToDocumentParameters.Format, model.Format);
 
                         var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
@@ -453,7 +460,7 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new HttpClient())
             {
                 var json = await client.GetStringAsync(resourceUri);
-                var d = await FromJsonAsync<IDictionary<DocumentHandle, Uri>>(json);
+                var d = await FromJsonAsync <ClientAttachmentInfo[]>(json);
                 return new DocumentAttachments(d);
             }
         }

@@ -320,12 +320,13 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             String jobId,
             string pathToFile,
             String source,
+            String relativePath,
             IDictionary<string, object> customData)
         {
             DocumentStoreServiceClient client = new DocumentStoreServiceClient(
                _dsEndpoints.First().BaseUrl, tenantId);
 
-            var response = await client.UploadAttachmentAsync(pathToFile, this.QueueName, jobId, source, customData);
+            var response = await client.UploadAttachmentAsync(pathToFile, this.QueueName, jobId, source, relativePath,  customData);
             return response != null;
         }
 

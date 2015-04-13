@@ -65,10 +65,9 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                         parameters.JobId,
                         file,
                         "content_zip",
-                        new Dictionary<string, object>()
-                        {
-                            {JobsConstants.AttachmentRelativePath, relativeFileName}   
-                        });
+                        relativeFileName,
+                        new Dictionary<string, object>() {}
+                        );
                 }
             }
             else if (extension == ".eml") 
@@ -98,10 +97,9 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                             parameters.JobId,
                             fileName,
                             "attachment_email",
-                            new Dictionary<string, object>()
-                        {
-                            {JobsConstants.AttachmentRelativePath, attachment.FileName}   
-                        });
+                            attachment.FileName,
+                        new Dictionary<string, object>() {}
+                        );
                     }
                 }
       
@@ -126,10 +124,9 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                             parameters.JobId,
                             fileName,
                             "attachment_email",
-                            new Dictionary<string, object>()
-                        {
-                            {JobsConstants.AttachmentRelativePath, attachment.FileName}   
-                        });
+                           attachment.FileName,
+                            new Dictionary<string, object>() { }
+                        );
                     }
                 }
             }

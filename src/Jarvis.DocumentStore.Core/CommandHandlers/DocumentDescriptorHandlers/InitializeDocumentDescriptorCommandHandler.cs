@@ -1,9 +1,9 @@
-using Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers;
+using Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.ReadModel;
 
-namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
+namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentDescriptorHandlers
 {
     public class InitializeDocumentDescriptorCommandHandler : DocumentDescriptorCommandHandler<InitializeDocumentDescriptor>
     {

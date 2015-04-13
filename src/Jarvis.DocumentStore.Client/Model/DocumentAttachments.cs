@@ -8,13 +8,13 @@ namespace Jarvis.DocumentStore.Client.Model
 {
     public class DocumentAttachments
     {
-        readonly IDictionary<DocumentHandle, Uri> _attachments;
-        public IDictionary<DocumentHandle, Uri> Attachments
+        readonly ClientAttachmentInfo[] _attachments;
+        public ClientAttachmentInfo[] Attachments
         {
             get { return _attachments; }
         }
 
-        public DocumentAttachments(IDictionary<DocumentHandle, Uri> attachments)
+        public DocumentAttachments(ClientAttachmentInfo[] attachments)
         {
             _attachments = attachments;
         }

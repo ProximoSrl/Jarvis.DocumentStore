@@ -2,7 +2,7 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.Framework.Kernel.Commands;
 
-namespace Jarvis.DocumentStore.Core.CommandHandlers.HandleHandlers
+namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
     public class DeleteDocumentCommandHandler : RepositoryCommandHandler<Document, DeleteDocument>
     {

@@ -173,7 +173,6 @@
     <Compile Include="Controllers\SchedulerController.cs" />
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
     <Compile Include="Model\AddFormatToDocument.cs" />
-    <Compile Include="Model\AttachmentInfo.cs" />
     <Compile Include="Model\EventStreamModel.cs" />
     <Compile Include="Model\FeedForStreamReadModel.cs" />
     <Compile Include="Model\UploadedDocumentResponse.cs" />
