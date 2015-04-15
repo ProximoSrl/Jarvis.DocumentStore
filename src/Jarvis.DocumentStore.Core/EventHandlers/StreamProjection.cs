@@ -82,7 +82,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                Handle = e.Handle,
+                Handle = e.HandleInfo.Handle,
                 EventType = HandleStreamEventTypes.DocumentCreated,
             });
         }
@@ -98,7 +98,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _streamReadModelCollection.Insert(e, new StreamReadModel()
             {
                 Id = GetNewId(),
-                Handle = e.Handle,
+                Handle = e.HandleInfo.Handle,
                 EventType = HandleStreamEventTypes.DocumentCreated,
             });
         }

@@ -6,9 +6,8 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands
     {
         public DocumentDescriptorId OtherDocumentDescriptorId { get; private set; }
 
-        public DocumentHandle OtherHandle { get; private set; }
+        public DocumentHandleInfo OtherHandleInfo { get; private set; }
 
-        public FileNameWithExtension OtherFileName { get; private set; }
 
         /// <summary>
         /// 
@@ -20,14 +19,12 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands
         /// <param name="otherFileName"></param>
         public DeduplicateDocumentDescriptor(
             DocumentDescriptorId documentDescriptorId, 
-            DocumentDescriptorId otherDocumentDescriptorId, 
-            DocumentHandle otherHandle,
-            FileNameWithExtension otherFileName)
+            DocumentDescriptorId otherDocumentDescriptorId,
+            DocumentHandleInfo otherHandleInfo)
             : base(documentDescriptorId)
         {
             OtherDocumentDescriptorId = otherDocumentDescriptorId;
-            OtherHandle = otherHandle;
-            OtherFileName = otherFileName;
+            OtherHandleInfo = otherHandleInfo;
         }
     }
 }

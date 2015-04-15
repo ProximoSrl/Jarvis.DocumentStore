@@ -20,12 +20,14 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 
         protected override void Execute(LinkDocumentToDocumentDescriptor cmd)
         {
-            var handleId = _mapper.Map(cmd.Handle);
+            var handleId = _mapper.Map(cmd.HandleInfo.Handle);
             FindAndModify(
                 handleId,
                 h =>
                 {
-                    if (!h.HasBeenCreated) h.Initialize(handleId, cmd.Handle);
+                    if (!h.HasBeenCreated) h.Initialize(handleId, cmd.HandleInfo.Handle);
+                    h.SetFileName(cmd.HandleInfo.FileName);
+                    h.SetCustomData(cmd.HandleInfo.CustomData);
                     h.Link(cmd.DocumentDescriptorId);
                 },
                 true);

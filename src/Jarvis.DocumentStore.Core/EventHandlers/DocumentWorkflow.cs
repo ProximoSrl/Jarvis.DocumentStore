@@ -4,8 +4,10 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.Framework.Kernel.Events;
+using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.Commands;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
@@ -22,12 +24,19 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         private readonly ICommandBus _commandBus;
         private readonly IBlobStore _blobStore;
         private readonly DeduplicationHelper _deduplicationHelper;
+        private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documents;
+        
 
-        public DocumentWorkflow(ICommandBus commandBus, IBlobStore blobStore, DeduplicationHelper deduplicationHelper)
+        public DocumentWorkflow(
+            ICommandBus commandBus, 
+            IBlobStore blobStore, 
+            DeduplicationHelper deduplicationHelper,
+            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documents)
         {
             _commandBus = commandBus;
             _blobStore = blobStore;
             _deduplicationHelper = deduplicationHelper;
+            _documents = documents;
         }
 
         public override void Drop()
@@ -42,12 +51,16 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentDescriptorCreated e)
         {
             if (IsReplay) return;
-            
-            _commandBus.Send(new LinkDocumentToDocumentDescriptor(e.Handle, (DocumentDescriptorId)e.AggregateId)
+  
+            //This projection depends on the projection of document descriptor
+            //to execute the workflow.
+            var descriptor = _documents.FindOneById((DocumentDescriptorId)e.AggregateId);
+
+            _commandBus.Send(new LinkDocumentToDocumentDescriptor(
+                (DocumentDescriptorId)e.AggregateId,
+                e.HandleInfo)
                 .WithDiagnosticTriggeredByInfo(e, "Queued for processing of " + e.AggregateId)
             );
-
-            var descriptor = _blobStore.GetDescriptor(e.BlobId);
         }
 
         public void On(DocumentDescriptorHasBeenDeduplicated e)
@@ -55,7 +68,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             if (IsReplay)
                 return;
 
-            _commandBus.Send(new LinkDocumentToDocumentDescriptor(e.Handle,(DocumentDescriptorId)e.AggregateId)
+            _commandBus.Send(new LinkDocumentToDocumentDescriptor(
+                (DocumentDescriptorId)e.AggregateId,
+                e.HandleInfo)
                 .WithDiagnosticTriggeredByInfo(e, "Document " + e.OtherDocumentId + " deduplicated to " + e.AggregateId)
             );
 
@@ -88,13 +103,16 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
             if (duplicatedId != null)
             {
-                _commandBus.Send(new DeduplicateDocumentDescriptor(duplicatedId, thisDocumentId, e.HandleInfo.Handle, e.HandleInfo.FileName)
+                _commandBus.Send(new DeduplicateDocumentDescriptor(
+                    duplicatedId, 
+                    thisDocumentId, 
+                    e.HandleInfo)
                     .WithDiagnosticTriggeredByInfo(e)                        
                 );
             }
             else
             {
-                _commandBus.Send(new CreateDocumentDescriptor(thisDocumentId, e.HandleInfo.Handle)
+                _commandBus.Send(new CreateDocumentDescriptor(thisDocumentId, e.HandleInfo)
                     .WithDiagnosticTriggeredByInfo(e)                        
                 );
             }

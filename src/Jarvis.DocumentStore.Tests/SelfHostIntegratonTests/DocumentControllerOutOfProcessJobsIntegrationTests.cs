@@ -884,6 +884,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 Assert.That(fat.Attachments, Has.Count.EqualTo(3));
                 var allHandle = _documentCollection.FindAll().Count();
                 Assert.That(allHandle, Is.EqualTo(4)); //second handle with all attachments
+                return; //everythins is ok.
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 

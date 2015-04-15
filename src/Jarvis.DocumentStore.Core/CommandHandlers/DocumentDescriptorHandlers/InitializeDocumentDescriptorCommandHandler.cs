@@ -24,23 +24,23 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentDescriptorHandlers
                 true
             );
 
-            LinkHandle(cmd);
+            //LinkHandle(cmd);
         }
 
-        void LinkHandle(InitializeDocumentDescriptor cmd)
-        {
-            var docHandle = cmd.HandleInfo.Handle;
-            var id = _mapper.Map(docHandle);
-            var handle = Repository.GetById<Document>(id);
-            if (!handle.HasBeenCreated)
-            {
-                handle.Initialize(id, docHandle);
-            }
+        //void LinkHandle(InitializeDocumentDescriptor cmd)
+        //{
+        //    var docHandle = cmd.HandleInfo.Handle;
+        //    var id = _mapper.Map(docHandle);
+        //    var handle = Repository.GetById<Document>(id);
+        //    if (!handle.HasBeenCreated)
+        //    {
+        //        handle.Initialize(id, docHandle);
+        //    }
 
-            handle.SetFileName(cmd.FileName);
-            handle.SetCustomData(cmd.HandleInfo.CustomData);
+        //    handle.SetFileName(cmd.FileName);
+        //    handle.SetCustomData(cmd.HandleInfo.CustomData);
             
-            Repository.Save(handle, cmd.MessageId, h => { });
-        }
+        //    Repository.Save(handle, cmd.MessageId, h => { });
+        //}
     }
 }

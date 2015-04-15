@@ -19,7 +19,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 
         Establish context = () => SetUp(new DocumentDescriptorState(),_id);
 
-        Because of = () => DocumentDescriptor.Deduplicate(_otherDocumentId, _otherHandleInfo.Handle,_fname);
+        Because of = () => DocumentDescriptor.Deduplicate(_otherDocumentId, _otherHandleInfo);
 
         It DocumentDescriptorHasBeenDeduplicated_event_should_be_raised = () =>
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.EventHasBeenRaised<DocumentDescriptorHasBeenDeduplicated>().ShouldBeTrue();
@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         {
             var e = AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.RaisedEvent<DocumentDescriptorHasBeenDeduplicated>();
             Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
-            Assert.AreSame(_otherHandleInfo.Handle, e.Handle);
+            Assert.AreSame(_otherHandleInfo.Handle, e.HandleInfo);
         };
     }
 }

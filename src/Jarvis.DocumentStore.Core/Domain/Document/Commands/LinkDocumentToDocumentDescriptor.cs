@@ -6,13 +6,16 @@ namespace Jarvis.DocumentStore.Core.Domain.Document.Commands
 {
     public class LinkDocumentToDocumentDescriptor : Command
     {
-        public LinkDocumentToDocumentDescriptor(DocumentHandle handle, DocumentDescriptorId documentDescriptorId)
+        public LinkDocumentToDocumentDescriptor(
+            DocumentDescriptorId documentDescriptorId,
+            DocumentHandleInfo handleInfo)
         {
-            Handle = handle;
             DocumentDescriptorId = documentDescriptorId;
+            HandleInfo = handleInfo;
         }
 
-        public DocumentHandle Handle { get; private set; }
         public DocumentDescriptorId DocumentDescriptorId { get; private set; }
+
+        public DocumentHandleInfo HandleInfo { get; set; }
     }
 }

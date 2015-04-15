@@ -9,13 +9,13 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events
     /// </summary>
     public class DocumentDescriptorCreated : DomainEvent
     {
-        public DocumentDescriptorCreated(BlobId blobId, DocumentHandle handle)
+        public DocumentDescriptorCreated(BlobId blobId, DocumentHandleInfo handleInfo)
         {
             BlobId = blobId;
-            Handle = handle;
+            HandleInfo = handleInfo;
         }
 
         public BlobId BlobId { get; private set; }
-        public DocumentHandle Handle { get; private set; }
+        public DocumentHandleInfo HandleInfo { get; private set; }
     }
 }

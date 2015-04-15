@@ -78,7 +78,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_id_when_empty_projection()
         {
             CreateSut();
-            var evt = new DocumentDescriptorCreated(new BlobId("original.1"),  new DocumentHandle("Rev_1"))
+            var evt = new DocumentDescriptorCreated(
+                new BlobId("original.1"),  
+                new DocumentHandleInfo(new DocumentHandle("Rev_1"), new FileNameWithExtension("test.txt")))
                 .AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
@@ -118,7 +120,10 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_document_descriptor_created_generates_record()
         {
             CreateSut();
-            var evt = new DocumentDescriptorCreated(new BlobId("original.1"), new DocumentHandle("rev_1")).AssignIdForTest(new DocumentDescriptorId(1));
+            var evt = new DocumentDescriptorCreated(
+                new BlobId("original.1"), 
+                new DocumentHandleInfo(new DocumentHandle("Rev_1"), new FileNameWithExtension("test.txt")))
+                .AssignIdForTest(new DocumentDescriptorId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
             Assert.That(rmStream[0].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentCreated));
@@ -129,7 +134,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_document_descriptor_de_duplicated_generates_record()
         {
             CreateSut();
-            var evt = new DocumentDescriptorHasBeenDeduplicated(new DocumentDescriptorId(2),  new DocumentHandle("rev_2"), new FileNameWithExtension("test.pdf"))
+            var evt = new DocumentDescriptorHasBeenDeduplicated(new DocumentDescriptorId(2),  
+                new DocumentHandleInfo(new DocumentHandle("rev_2"), 
+                new FileNameWithExtension("test.pdf")))
                 .AssignIdForTest(new DocumentDescriptorId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(1));
@@ -229,7 +236,9 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             rmStream.Add(new StreamReadModel() { Id = 41 });
             CreateSut();
-            var evt = new DocumentDescriptorCreated(new BlobId("blob.1"), new  DocumentHandle("rev_1")).AssignIdForTest(new DocumentId(1));
+            var evt = new DocumentDescriptorCreated(new BlobId("blob.1"), 
+                new DocumentHandleInfo(new  DocumentHandle("rev_1"), new FileNameWithExtension("test.txt")))
+                .AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(2));
             Assert.That(rmStream[1].Id, Is.EqualTo(42));

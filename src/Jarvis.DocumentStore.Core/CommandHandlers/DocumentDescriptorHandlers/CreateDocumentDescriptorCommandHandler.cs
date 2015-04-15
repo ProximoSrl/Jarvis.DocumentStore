@@ -6,7 +6,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentDescriptorHandlers
     {
         protected override void Execute(CreateDocumentDescriptor cmd)
         {
-            FindAndModify(cmd.AggregateId, doc => doc.Create(cmd.Handle)); 
+            FindAndModify(cmd.AggregateId, doc => doc.Create(cmd.HandleInfo)); 
         }
     }
 }

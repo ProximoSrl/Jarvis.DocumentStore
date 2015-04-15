@@ -15,13 +15,13 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         {
             AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.Create(_id);
             State.Apply(new DocumentDescriptorInitialized(_blobId, _handleInfo, _fileHash));
-            State.Apply(new DocumentDescriptorCreated(_blobId, _handleInfo.Handle));
+            State.Apply(new DocumentDescriptorCreated(_blobId, _handleInfo));
             DocumentDescriptor.DocumentFormatTranslator.GetFormatFromFileName(Arg.Any<String>()).Returns(new DocumentFormat("pdf"));
         };
 
         Because of = () =>
         {
-            exception = Catch.Exception(() => DocumentDescriptor.Create(_handleInfo.Handle));
+            exception = Catch.Exception(() => DocumentDescriptor.Create(_handleInfo));
         };
 
         It Exception_should_have_been_raised = () => exception.ShouldNotBeNull();

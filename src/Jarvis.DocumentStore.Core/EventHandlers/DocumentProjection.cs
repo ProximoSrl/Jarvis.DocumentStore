@@ -93,7 +93,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         {
             var originalDocumentDescriptor = _documentDescriptorCollectionWrapper.All.Single(d => d.Id == e.AggregateId); 
             _writer.DocumentDeDuplicated(
-                e.Handle,
+                e.HandleInfo.Handle,
                 null,
                 (DocumentDescriptorId)e.AggregateId,
                 LongCheckpoint.Parse(e.CheckpointToken).LongValue

@@ -10,13 +10,14 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
     public class when_a_deduplicated_documentDescriptor_is_deleted : DocumentDescriptorSpecifications
     {
         static readonly DocumentHandle _otherHandle = new DocumentHandle("other");
+        static readonly DocumentHandleInfo _otherHandleInfo = new DocumentHandleInfo(_otherHandle, new FileNameWithExtension("other.txt"));
 
         Establish context = () =>
         {
             Create(_id);
             DocumentDescriptor.Initialize(_blobId, _handleInfo, _fileHash, _fileName);
-            DocumentDescriptor.Create(Handle);
-            DocumentDescriptor.Deduplicate(new DocumentDescriptorId(2), _otherHandle, _fname);
+            DocumentDescriptor.Create(_handleInfo);
+            DocumentDescriptor.Deduplicate(new DocumentDescriptorId(2), _otherHandleInfo);
         };
 
         Because of = () =>

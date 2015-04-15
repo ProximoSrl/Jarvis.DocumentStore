@@ -11,15 +11,13 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events
     /// </summary>
     public class DocumentDescriptorHasBeenDeduplicated : DomainEvent
     {
-        public DocumentHandle Handle { get; private set; }
+        public DocumentHandleInfo HandleInfo { get; private set; }
         public DocumentDescriptorId OtherDocumentId { get; private set; }
-        public FileNameWithExtension OtherFileName { get; private set; }
 
         public DocumentDescriptorHasBeenDeduplicated(
-            DocumentDescriptorId otherDocumentId, DocumentHandle handle, FileNameWithExtension otherFileName)
+            DocumentDescriptorId otherDocumentId, DocumentHandleInfo handleInfo)
         {
-            OtherFileName = otherFileName;
-            Handle = handle;
+            HandleInfo = handleInfo;
             OtherDocumentId = otherDocumentId;
         }
     }

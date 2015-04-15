@@ -94,7 +94,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //a zip document that contains the first one.
             _docs.UploadAsync(TestConfig.PathToZipFileThatContainsOtherZip, 
                 DocumentHandle.FromString("zipcontainer")).Wait();
-            
+            //you can test on 
+            //http://localhost:5123/docs/documents/attachments_fat/zipcontainer
+            //http://localhost:5123/docs/documents/attachments/zipcontainer
         }
 
         [Test]

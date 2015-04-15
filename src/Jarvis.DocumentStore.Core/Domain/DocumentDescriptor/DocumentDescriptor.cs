@@ -57,10 +57,10 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
             }
         }
 
-        void Attach(DocumentHandle handle)
+        void Attach(DocumentHandleInfo handleInfo)
         {
-            if (!InternalState.IsValidHandle(handle))
-                RaiseEvent(new DocumentHandleAttached(handle));
+            if (!InternalState.IsValidHandle(handleInfo.Handle))
+                RaiseEvent(new DocumentHandleAttached(handleInfo.Handle));
         }
 
         public void Delete(DocumentHandle handle)
@@ -93,11 +93,15 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
         /// <param name="otherDocumentDescriptorId"></param>
         /// <param name="handle"></param>
         /// <param name="fileName"></param>
-        public void Deduplicate(DocumentDescriptorId otherDocumentDescriptorId, DocumentHandle handle, FileNameWithExtension fileName)
+        public void Deduplicate(
+            DocumentDescriptorId otherDocumentDescriptorId, 
+            DocumentHandleInfo handleInfo)
         {
             ThrowIfDeleted();
-            RaiseEvent(new DocumentDescriptorHasBeenDeduplicated(otherDocumentDescriptorId, handle, fileName));
-            Attach(handle);
+            RaiseEvent(new DocumentDescriptorHasBeenDeduplicated(
+                otherDocumentDescriptorId,
+                handleInfo));
+            Attach(handleInfo);
         }
 
         void ThrowIfDeleted()
@@ -106,12 +110,12 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
                 throw new DomainException(this.Id, "Document has been deleted");
         }
 
-        public void Create(DocumentHandle handle)
+        public void Create(DocumentHandleInfo handleInfo)
         {
             if (InternalState.Created)
                 throw new DomainException(this.Id, "Already created");
-            RaiseEvent(new DocumentDescriptorCreated(InternalState.BlobId, handle));
-            Attach(handle);
+            RaiseEvent(new DocumentDescriptorCreated(InternalState.BlobId, handleInfo));
+            Attach(handleInfo);
         }
 
         internal void AddAttachment(DocumentHandle attachmentDocumentHandle, String attachmentPath)
