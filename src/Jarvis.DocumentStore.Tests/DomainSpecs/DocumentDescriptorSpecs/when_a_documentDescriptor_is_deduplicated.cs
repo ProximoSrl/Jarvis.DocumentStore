@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
         It DocumentDescriptorHasBeenDeduplicated_event_should_have_documentId_and_handle = () =>
         {
             var e = AggregateSpecification<DocumentDescriptor, DocumentDescriptorState>.RaisedEvent<DocumentDescriptorHasBeenDeduplicated>();
-            Assert.AreSame(_otherDocumentId, e.OtherDocumentId);
+            Assert.AreSame(_otherDocumentId, e.DuplicatedDocumentDescriptorId);
             Assert.AreSame(_otherHandleInfo, e.HandleInfo);
         };
     }

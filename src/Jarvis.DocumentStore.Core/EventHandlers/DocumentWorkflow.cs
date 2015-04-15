@@ -73,10 +73,10 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _commandBus.Send(new LinkDocumentToDocumentDescriptor(
                 (DocumentDescriptorId)e.AggregateId,
                 e.HandleInfo)
-                .WithDiagnosticTriggeredByInfo(e, "Document " + e.OtherDocumentId + " deduplicated to " + e.AggregateId)
+                .WithDiagnosticTriggeredByInfo(e, "Document " + e.DuplicatedDocumentDescriptorId + " deduplicated to " + e.AggregateId)
             );
 
-            _commandBus.Send(new DeleteDocumentDescriptor(e.OtherDocumentId,DocumentHandle.Empty)
+            _commandBus.Send(new DeleteDocumentDescriptor(e.DuplicatedDocumentDescriptorId,DocumentHandle.Empty)
                 .WithDiagnosticTriggeredByInfo(e,"deduplication of " + e.AggregateId)
             );
         }
