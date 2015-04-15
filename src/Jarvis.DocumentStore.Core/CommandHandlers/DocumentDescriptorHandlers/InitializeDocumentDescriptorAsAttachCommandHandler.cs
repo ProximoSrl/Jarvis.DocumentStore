@@ -37,31 +37,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentDescriptorHandlers
                 },
                 true
             );
-
-            //LinkHandleAndAddAttachment(cmd, path);
         }
-
-        //private void LinkHandleAndAddAttachment(
-        //    InitializeDocumentDescriptorAsAttach cmd,
-        //    String attachmentRelativePath)
-        //{
-        //    var docHandle = cmd.HandleInfo.Handle;
-        //    var id = _mapper.Map(docHandle);
-        //    var handle = Repository.GetById<Document>(id);
-        //    if (!handle.HasBeenCreated)
-        //    {
-        //        handle.Initialize(id, docHandle);
-        //    }
-
-        //    handle.SetFileName(cmd.FileName);
-        //    handle.SetCustomData(cmd.HandleInfo.CustomData);
-
-        //    Repository.Save(handle, cmd.MessageId, h => { });
-
-        //    var father = Repository.GetById<DocumentDescriptor>(cmd.FatherDocumentDescriptorId);
-        //    father.AddAttachment(cmd.HandleInfo.Handle, attachmentRelativePath);
-        //    Repository.Save(father, cmd.MessageId, h => { });
-        //}
 
     }
 }
