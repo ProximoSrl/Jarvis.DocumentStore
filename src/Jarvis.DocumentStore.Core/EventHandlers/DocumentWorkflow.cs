@@ -6,9 +6,11 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.Commands;
+using System;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -114,6 +116,17 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             {
                 _commandBus.Send(new CreateDocumentDescriptor(thisDocumentId, e.HandleInfo)
                     .WithDiagnosticTriggeredByInfo(e)                        
+                );
+            }
+
+            if (e.FatherDocumentDescriptorId != null) 
+            {
+                //This handle is created as attachment of another document.
+                _commandBus.Send(new CreateAttachment(
+                    e.FatherDocumentDescriptorId, 
+                    e.HandleInfo.Handle, 
+                    e.HandleInfo.CustomData[JobsConstants.AttachmentRelativePath] as String)
+                        .WithDiagnosticTriggeredByInfo(e)
                 );
             }
         }

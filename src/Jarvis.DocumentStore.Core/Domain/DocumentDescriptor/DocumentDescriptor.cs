@@ -35,6 +35,26 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
                 RaiseEvent(new FormatAddedToDocumentDescriptor(knownFormat, blobId, null));
         }
 
+        public void InitializeAsAttach(
+           BlobId blobId,
+           DocumentHandleInfo handleInfo,
+           FileHash hash,
+           String fileName,
+           DocumentHandle fatherHandle, 
+           DocumentDescriptorId fatherDocumentDescriptorId)
+        {
+            ThrowIfDeleted();
+
+            if (HasBeenCreated)
+                throw new DomainException(Id, "Already initialized");
+
+            RaiseEvent(new DocumentDescriptorInitialized(blobId, handleInfo, hash, fatherDocumentDescriptorId));
+
+            var knownFormat = DocumentFormatTranslator.GetFormatFromFileName(fileName);
+            if (knownFormat != null)
+                RaiseEvent(new FormatAddedToDocumentDescriptor(knownFormat, blobId, null));
+        }
+
         public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
         {
             ThrowIfDeleted();
@@ -125,5 +145,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
             RaiseEvent(new DocumentDescriptorHasNewAttachment(attachmentDocumentHandle, attachmentPath));
         }
+
+      
     }
 }
