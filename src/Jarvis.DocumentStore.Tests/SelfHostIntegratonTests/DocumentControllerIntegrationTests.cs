@@ -461,31 +461,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_de_duplication_delete_original_blob()
-        {
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
-            // wait background projection polling
-            await UpdateAndWaitAsync();
-
-            //now we need to wait cleanupJobs to start 
-            var store = _tenant.Container.Resolve<IBlobStore>();
-            CleanupJob job = _tenant.Container.Resolve<CleanupJob>();
-            IJobExecutionContext context = NSubstitute.Substitute.For<IJobExecutionContext>();
-            IJobDetail jobDetail = NSubstitute.Substitute.For<IJobDetail>();
-            IDictionary<string, object> mapd = new Dictionary<string, object>() { { JobKeys.TenantId.ToString(), _tenant.Id.ToString() } };
-            JobDataMap map = new JobDataMap(mapd);
-            jobDetail.JobDataMap.Returns(map);
-            context.JobDetail.Returns(jobDetail);
-            job.Execute(context);
-
-            //verify that blob
-            Assert.That(store.GetDescriptor(new BlobId("original.1")), Is.Not.Null);
-
-            Assert.Throws<Exception>(() => store.GetDescriptor(new BlobId("original.2")));
-        }
-
-        [Test]
         public async void attachments_not_retrieve_nested_attachment()
         {
             //Upload father
