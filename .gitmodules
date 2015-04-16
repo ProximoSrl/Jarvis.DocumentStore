@@ -1,3 +1,3 @@
-[submodule "src/cqrs"]
+[submodule "src/Jarvis.Framework"]
 	path = src/Jarvis.Framework
-	url = git@github.com:ProximoSrl/cqrs.git
+	url = git@github.com:ProximoSrl/Jarvis.Framework.git
