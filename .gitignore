@@ -189,3 +189,5 @@ FakesAssemblies/
 /src/Jarvis.DocumentStore.Tests/Docs/.~lock.An OpenDocument Presentation.odp#
 /src/Jarvis.DocumentStore.Tests/Docs/.~lock.Powerpoint show.ppsx#
 /src/Jarvis.DocumentStore.Tests/Docs/passwordprotected_decrypted.pdf
+/src/mspec-output.xml
+/src/nunit-output.xml
