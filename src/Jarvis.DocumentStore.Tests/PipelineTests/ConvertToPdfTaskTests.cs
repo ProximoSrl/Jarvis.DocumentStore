@@ -97,7 +97,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             Debug.WriteLine("{0} conversion took {1} ms", blobId, s.ElapsedMilliseconds);
         }
 
-        [Test]
+        [Test, Explicit]
         public void parallel_conversion_should_not_throw_exceptions()
         {
             Parallel.ForEach(
