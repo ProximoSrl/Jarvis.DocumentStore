@@ -323,5 +323,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 _docs.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html"))
             );
         }
+
+        [Test]
+        public async void upload_video()
+        {
+            await
+                _docs.UploadAsync(
+                    @"c:\Users\andrea.balducci\Downloads\Placebo---The-Bitter-End-Live-At-Sziget-2014-large.mp4",
+                    new DocumentHandle("bitter_end"));
+        }
     }
 }

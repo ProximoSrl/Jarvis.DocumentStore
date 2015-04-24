@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -34,6 +35,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
 {
     public class DocumentsController : ApiController, ITenantController
     {
+        public const int ReadStreamBufferSize = 65 * 1024;
+
         readonly IBlobStore _blobStore;
         readonly DocumentStoreConfiguration _configService;
         readonly IIdentityGenerator _identityGenerator;
@@ -126,9 +129,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("{tenantId}/documents/jobs/attach/{queueName}/{jobId}/{attachSource}")]
         [HttpPost]
         public async Task<HttpResponseMessage> UploadAttachFromJob(
-            TenantId tenantId, 
-            String queueName, 
-            String jobId, 
+            TenantId tenantId,
+            String queueName,
+            String jobId,
             String attachSource)
         {
             var job = _queueDispatcher.GetJob(queueName, jobId);
@@ -164,8 +167,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// to <paramref name="fatherHandle"/></param>
         /// <returns></returns>
         private async Task<HttpResponseMessage> InnerUploadDocument(
-            TenantId tenantId, 
-            DocumentHandle handle, 
+            TenantId tenantId,
+            DocumentHandle handle,
             DocumentHandle fatherHandle,
             DocumentDescriptorId fatherHandleDescriptorId)
         {
@@ -398,13 +401,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, new List<ClientAttachmentInfo>());
 
             var attachments = documentDescriptor.Attachments
-                .Select(a => {
-                    var attachment =new ClientAttachmentInfo() 
+                .Select(a =>
+                {
+                    var attachment = new ClientAttachmentInfo()
                     {
                         Handle = Url.Content("/" + tenantId + "/documents/" + a.Handle),
                         RelativePath = a.RelativePath
                     };
-                    var hasAttachment = _documentDescriptorReader.AllUnsorted.Any(d => 
+                    var hasAttachment = _documentDescriptorReader.AllUnsorted.Any(d =>
                         d.Documents.Contains(a.Handle) &&
                         d.Attachments.Count > 0);
                     attachment.HasAttachments = hasAttachment;
@@ -440,28 +444,26 @@ namespace Jarvis.DocumentStore.Host.Controllers
             if (documentDescriptor.Attachments != null && documentDescriptor.Attachments.Count > 0)
             {
                 ScanAttachments(
-                    tenantId, 
-                    documentDescriptor.Attachments, 
-                    fat, 
-                    "", 
-                    0, 
-                    5);  
+                    tenantId,
+                    documentDescriptor.Attachments,
+                    fat,
+                    "",
+                    0,
+                    5);
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, fat);
         }
 
         private void ScanAttachments(
-            TenantId tenantId, 
-            IEnumerable<DocumentAttachmentReadModel> attachments, 
-            List<DocumentAttachmentsFat.AttachmentInfo> fat, 
+            TenantId tenantId,
+            IEnumerable<DocumentAttachmentReadModel> attachments,
+            List<DocumentAttachmentsFat.AttachmentInfo> fat,
             String rootAttachmentPath,
             Int32 actualDeepLevel,
             Int32 maxLevel)
         {
             //grab in a single query all documents and descriptors for this data
-            var handles = attachments.ToList();
-
             foreach (var attach in attachments)
             {
                 //grab all data for this attachment
@@ -479,8 +481,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
                 //we need to further scan attachment.
                 if (actualDeepLevel < maxLevel &&
-                    descriptor.Attachments != null && 
-                    descriptor.Attachments.Count > 0) 
+                    descriptor.Attachments != null &&
+                    descriptor.Attachments.Count > 0)
                 {
                     ScanAttachments(tenantId, descriptor.Attachments, fat, newRootAttachmentPath, actualDeepLevel + 1, maxLevel);
                 }
@@ -489,12 +491,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
 
 
-        [Route("{tenantId}/documents/{handle}/{format}")]
+        [Route("{tenantId}/documents/{handle}/{format}/{fname}")]
         [HttpGet]
         public async Task<HttpResponseMessage> GetFormat(
             TenantId tenantId,
             DocumentHandle handle,
-            DocumentFormat format
+            DocumentFormat format,
+            string fname = null
         )
         {
             var mapping = _handleWriter.FindOneById(handle);
@@ -510,9 +513,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (format == DocumentFormats.Original)
             {
+                var fileName = fname != null ? new FileNameWithExtension(fname) : null;
                 return StreamFile(
                     document.GetFormatBlobId(format),
-                    mapping.FileName
+                    fileName ?? mapping.FileName
                 );
             }
 
@@ -576,17 +580,62 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
             }
 
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StreamContent(descriptor.OpenRead());
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+            RangeHeaderValue rangeHeader = Request.Headers.Range;
 
-            if (fileName != null)
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Headers.AcceptRanges.Add("bytes");
+
+            // full stream
+            if (rangeHeader == null || !rangeHeader.Ranges.Any())
             {
-                response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                response.Content = new StreamContent(descriptor.OpenRead());
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+
+                if (fileName != null)
                 {
-                    FileName = fileName
-                };
+                    response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = fileName
+                    };
+                }
+
+                return response;
             }
+
+            // range stream
+            long start = 0, end = 0;
+            long totalLength = descriptor.Length;
+
+            // 1. If the unit is not 'bytes'.
+            // 2. If there are multiple ranges in header value.
+            // 3. If start or end position is greater than file length.
+            if (rangeHeader.Unit != "bytes" || rangeHeader.Ranges.Count > 1 ||
+                !TryReadRangeItem(rangeHeader.Ranges.First(), totalLength, out start, out end))
+            {
+                response.StatusCode = HttpStatusCode.RequestedRangeNotSatisfiable;
+                response.Content = new StreamContent(Stream.Null);  // No content for this status.
+                response.Content.Headers.ContentRange = new ContentRangeHeaderValue(totalLength);
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+
+                return response;
+            }
+
+            var contentRange = new ContentRangeHeaderValue(start, end, totalLength);
+
+            // We are now ready to produce partial content.
+            response.StatusCode = HttpStatusCode.PartialContent;
+            response.Content = new PushStreamContent((outputStream, httpContent, transpContext)
+            =>
+            {
+                using (outputStream) // Copy the file to output stream in indicated range.
+                using (Stream inputStream = descriptor.OpenRead())
+                    CreatePartialContent(inputStream, outputStream, start, end);
+
+            }, descriptor.ContentType);
+
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
+            response.Content.Headers.ContentLength = end - start + 1;
+            response.Content.Headers.ContentRange = contentRange;
 
             return response;
         }
@@ -632,8 +681,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 createDocument = new InitializeDocumentDescriptorAsAttach(
                     documentDescriptorId,
                     blobId,
-                    handleInfo, 
-                    fatherHandle, 
+                    handleInfo,
+                    fatherHandle,
                     fatherDocumentDescriptorId,
                     descriptor.Hash, fileName);
             }
@@ -649,7 +698,61 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             return _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
         }
+
+        private bool TryReadRangeItem(
+            RangeItemHeaderValue range,
+            long contentLength,
+            out long start,
+            out long end
+        )
+        {
+            if (range.From != null)
+            {
+                start = range.From.Value;
+                if (range.To != null)
+                    end = range.To.Value;
+                else
+                    end = contentLength - 1;
+            }
+            else
+            {
+                end = contentLength - 1;
+                if (range.To != null)
+                    start = contentLength - range.To.Value;
+                else
+                    start = 0;
+            }
+            return (start < contentLength && end < contentLength);
+        }
+
+        private void CreatePartialContent(Stream inputStream, Stream outputStream,
+           long start, long end)
+        {
+            int count = 0;
+            long remainingBytes = end - start + 1;
+            long position = start;
+            byte[] buffer = new byte[ReadStreamBufferSize];
+
+            inputStream.Position = start;
+            do
+            {
+                try
+                {
+                    if (remainingBytes > ReadStreamBufferSize)
+                        count = inputStream.Read(buffer, 0, ReadStreamBufferSize);
+                    else
+                        count = inputStream.Read(buffer, 0, (int)remainingBytes);
+
+                    outputStream.Write(buffer, 0, count);
+                }
+                catch (Exception error)
+                {
+                    Logger.ErrorFormat(error, "CreatePartialContent failed");
+                    break;
+                }
+                position = inputStream.Position;
+                remainingBytes = end - position + 1;
+            } while (position <= end);
+        }
     }
-
-
 }
