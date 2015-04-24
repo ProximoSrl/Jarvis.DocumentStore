@@ -18,6 +18,11 @@ namespace Jarvis.DocumentStore.Client
             _request = (HttpWebRequest)WebRequest.Create(address);
             if (options != null)
             {
+                if (options.SkipContent)
+                {
+                    _request.Method = WebRequestMethods.Http.Head;
+                }
+                
                 if (options.RangeFrom > 0 || options.RangeTo > 0)
                 {
                     _request.AddRange(options.RangeFrom, options.RangeTo);

@@ -87,6 +87,37 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void should_get_info_without_content()
+        {
+            var documentHandle = DocumentHandle.FromString("Pdf_2");
+
+            await _documentStoreClient.UploadAsync(
+                TestConfig.PathToDocumentPdf,
+                documentHandle
+            );
+
+            // waits for storage
+            await UpdateAndWaitAsync();
+            var format = new DocumentFormat("original");
+
+            var options = new OpenOptions()
+            {
+                FileName = "pluto.pdf",
+                SkipContent = true
+            };
+
+            using (var reader = _documentStoreClient.OpenRead(documentHandle, format, options))
+            {
+                using (var downloaded = new MemoryStream())
+                {
+                    await (await reader.ReadStream).CopyToAsync(downloaded);
+                    Assert.AreEqual(0, downloaded.Length);
+                    Assert.AreEqual(72768, reader.ContentLength);
+                }
+            }
+        }
+
+        [Test]
         public async void should_download_with_range_header()
         {
             var documentHandle = DocumentHandle.FromString("Pdf_2");

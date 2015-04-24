@@ -22,6 +22,7 @@ namespace Jarvis.DocumentStore.Client
         public string FileName { get; set; }
         public int RangeFrom { get; set; }
         public int RangeTo { get; set; }
+        public bool SkipContent { get; set; }
     }
 
     /// <summary>
@@ -504,7 +505,5 @@ namespace Jarvis.DocumentStore.Client
                 return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default);
             }
         }
-
-
-    }
+   }
 }
