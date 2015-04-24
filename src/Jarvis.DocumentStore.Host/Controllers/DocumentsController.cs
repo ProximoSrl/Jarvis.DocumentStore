@@ -493,6 +493,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/{handle}/{format}/{fname?}")]
         [HttpGet]
+        [HttpHead]
         public async Task<HttpResponseMessage> GetFormat(
             TenantId tenantId,
             DocumentHandle handle,
@@ -532,7 +533,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     )
                 );
             }
-            
+
             return StreamFile(formatBlobId, fileName);
         }
 
@@ -586,10 +587,27 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var response = Request.CreateResponse(HttpStatusCode.OK);
             response.Headers.AcceptRanges.Add("bytes");
 
+            // HEAD?
+            bool isHead = false;
+            if (Request.Method == HttpMethod.Head)
+            {
+                isHead = true;
+                rangeHeader = null;
+            }
+
             // full stream
             if (rangeHeader == null || !rangeHeader.Ranges.Any())
             {
-                response.Content = new StreamContent(descriptor.OpenRead());
+                if (isHead)
+                {
+                    response.Content = new ByteArrayContent(new byte[0]);
+                    response.Content.Headers.ContentLength = descriptor.Length;
+                }
+                else
+                {
+                    response.Content = new StreamContent(descriptor.OpenRead());
+                }
+
                 response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
 
                 if (fileName != null)
