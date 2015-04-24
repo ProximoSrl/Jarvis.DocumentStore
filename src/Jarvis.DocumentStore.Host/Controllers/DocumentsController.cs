@@ -29,7 +29,6 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -760,7 +759,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 }
                 catch (Exception error)
                 {
-                    Logger.ErrorFormat(error, "CreatePartialContent failed");
+                    // stream closed for skip
+//                    Logger.ErrorFormat(error, "CreatePartialContent failed");
                     break;
                 }
                 position = inputStream.Position;

@@ -329,8 +329,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             await
                 _docs.UploadAsync(
-                    @"c:\Users\andrea.balducci\Downloads\Placebo---The-Bitter-End-Live-At-Sziget-2014-large.mp4",
-                    new DocumentHandle("bitter_end"));
+//                    @"c:\Users\andrea.balducci\Downloads\Placebo---The-Bitter-End-Live-At-Sziget-2014-large.mp4",
+//                        new DocumentHandle("bitter_end"));
+                    @"C:\Downloads\Video\[MP4 720p] Placebo Live @ Sziget 2014 [Full Concert].mp4",
+                    new DocumentHandle("sziget"));
         }
     }
 }
