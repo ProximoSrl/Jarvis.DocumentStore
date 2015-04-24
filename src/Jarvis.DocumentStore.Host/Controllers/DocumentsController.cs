@@ -491,7 +491,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
 
 
-        [Route("{tenantId}/documents/{handle}/{format}/{fname}")]
+        [Route("{tenantId}/documents/{handle}/{format}/{fname?}")]
         [HttpGet]
         public async Task<HttpResponseMessage> GetFormat(
             TenantId tenantId,
