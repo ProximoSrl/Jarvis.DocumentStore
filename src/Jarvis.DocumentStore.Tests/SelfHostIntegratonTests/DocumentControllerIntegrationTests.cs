@@ -28,6 +28,7 @@ using Quartz.Impl;
 using Quartz.Spi;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using System;
+using System.Net;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Model;
@@ -83,6 +84,37 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             _documentStoreService.Stop();
             BsonClassMapHelper.Clear();
+        }
+
+        [Test]
+        public async void should_download_with_range_header()
+        {
+            var documentHandle = DocumentHandle.FromString("Pdf_2");
+
+            await _documentStoreClient.UploadAsync(
+                TestConfig.PathToDocumentPdf,
+                documentHandle
+            );
+
+            // waits for storage
+            await UpdateAndWaitAsync();
+            var format = new DocumentFormat("original");
+
+            var options = new OpenOptions()
+            {
+                FileName = "pluto.pdf",
+                RangeTo = 199
+            };
+
+            using (var reader = _documentStoreClient.OpenRead(documentHandle, format, options))
+            {
+                using (var downloaded = new MemoryStream())
+                {
+                    await (await reader.ReadStream).CopyToAsync(downloaded);
+
+                    Assert.AreEqual(200, downloaded.Length);
+                }
+            }
         }
 
         [Test]
@@ -184,7 +216,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
         }
 
-       
+
 
         [Test]
         public async void can_add_new_format_with_api()
@@ -410,7 +442,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(_documentDescriptorCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
             Assert.That(_documentCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
 
-           
+
         }
 
         [Test]
@@ -510,12 +542,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var attachments = await _documentStoreClient.GetAttachmentsFatAsync(fatherHandle);
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments, Has.Count.EqualTo(2));
-            Assert.That(attachments.Attachments.Select(a => a.FileName), Is.EquivalentTo(new [] {
+            Assert.That(attachments.Attachments.Select(a => a.FileName), Is.EquivalentTo(new[] {
                 Path.GetFileName(TestConfig.PathToDocumentPng), 
                 Path.GetFileName(TestConfig.PathToExcelDocument)
             }));
-            Assert.That(attachments.Attachments.Select(a => a.Uri), 
-                Is.EquivalentTo(new [] {
+            Assert.That(attachments.Attachments.Select(a => a.Uri),
+                Is.EquivalentTo(new[] {
                     new Uri("http://localhost:5123/tests/documents/source_1"), 
                     new Uri("http://localhost:5123/tests/documents/nested_1")
             }));
@@ -594,7 +626,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.AreEqual(0, allDocuments);
         }
 
-//        [Test, Explicit]
+        //        [Test, Explicit]
         public void should_upload_all_documents()
         {
             Task.WaitAll(
@@ -612,6 +644,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Debug.WriteLine("Done");
         }
 
-      
+
     }
 }

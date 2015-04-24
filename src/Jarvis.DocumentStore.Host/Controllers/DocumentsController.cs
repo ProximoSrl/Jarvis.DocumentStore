@@ -41,7 +41,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         readonly DocumentStoreConfiguration _configService;
         readonly IIdentityGenerator _identityGenerator;
         private readonly ICounterService _counterService;
-        private IDocumentFormatTranslator _documentFormatTranslator;
+        private readonly IDocumentFormatTranslator _documentFormatTranslator;
 
         readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
         readonly IQueueDispatcher _queueDispatcher;
@@ -699,12 +699,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
         }
 
-        private bool TryReadRangeItem(
-            RangeItemHeaderValue range,
-            long contentLength,
-            out long start,
-            out long end
-        )
+        private bool TryReadRangeItem(RangeItemHeaderValue range, long contentLength, out long start, out long end)
         {
             if (range.From != null)
             {
@@ -725,12 +720,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return (start < contentLength && end < contentLength);
         }
 
-        private void CreatePartialContent(Stream inputStream, Stream outputStream,
-           long start, long end)
+        private void CreatePartialContent(Stream inputStream, Stream outputStream, long start, long end)
         {
-            int count = 0;
             long remainingBytes = end - start + 1;
-            long position = start;
+            long position;
             byte[] buffer = new byte[ReadStreamBufferSize];
 
             inputStream.Position = start;
@@ -738,6 +731,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 try
                 {
+                    var count = 0;
                     if (remainingBytes > ReadStreamBufferSize)
                         count = inputStream.Read(buffer, 0, ReadStreamBufferSize);
                     else

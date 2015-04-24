@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -7,26 +8,31 @@ namespace Jarvis.DocumentStore.Client
 {
     public class DocumentFormatReader : IDisposable
     {
-        readonly Uri _address;
-        readonly WebClient _client;
+        private readonly HttpWebRequest _request;
 
-        public DocumentFormatReader(Uri address)
+        public DocumentFormatReader(Uri address, OpenOptions options = null)
         {
-            _address = address;
-            _client = new WebClient();
+            _request = (HttpWebRequest)WebRequest.Create(address);
+            if (options != null)
+            {
+                if (options.RangeFrom > 0 || options.RangeTo > 0)
+                {
+                    _request.AddRange(options.RangeFrom, options.RangeTo);
+                }
+            }
         }
 
         public Task<Stream> ReadStream
         {
             get
             {
-                return _client.OpenReadTaskAsync(_address);
+                var response = _request.GetResponse();
+                return Task.FromResult(response.GetResponseStream());
             }
         }
 
         public void Dispose()
         {
-            _client.Dispose();
         }
     }
 }

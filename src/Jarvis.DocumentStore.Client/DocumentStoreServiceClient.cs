@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +17,13 @@ using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Client
 {
+    public class OpenOptions
+    {
+        public string FileName { get; set; }
+        public int RangeFrom { get; set; }
+        public int RangeTo { get; set; }
+    }
+
     /// <summary>
     /// DocumentStore client
     /// </summary>
@@ -388,12 +397,17 @@ namespace Jarvis.DocumentStore.Client
         /// </summary>
         /// <param name="documentHandle">Document handle</param>
         /// <param name="format">Document format</param>
+        /// <param name="fname">Open blob as filename</param>
         /// <returns>A document format reader</returns>
-        public DocumentFormatReader OpenRead(DocumentHandle documentHandle, DocumentFormat format = null)
+        public DocumentFormatReader OpenRead(DocumentHandle documentHandle, DocumentFormat format = null, OpenOptions options = null)
         {
             format = format ?? new DocumentFormat("original");
-            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/" + format);
-            return new DocumentFormatReader(endPoint);
+            var relativeUri = Tenant + "/documents/" + documentHandle + "/" + format;
+            if (options != null && !string.IsNullOrWhiteSpace(options.FileName))
+                relativeUri = relativeUri + "/" + options.FileName;
+
+            var endPoint = new Uri(_documentStoreUri, relativeUri);
+            return new DocumentFormatReader(endPoint,options);
         }
 
         /// <summary>
