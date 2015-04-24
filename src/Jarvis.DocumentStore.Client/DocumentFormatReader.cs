@@ -8,6 +8,9 @@ namespace Jarvis.DocumentStore.Client
 {
     public class DocumentFormatReader : IDisposable
     {
+        public Int64 ContentLength { get; private set; }
+
+        
         private readonly HttpWebRequest _request;
 
         public DocumentFormatReader(Uri address, OpenOptions options = null)
@@ -27,6 +30,7 @@ namespace Jarvis.DocumentStore.Client
             get
             {
                 var response = _request.GetResponse();
+                this.ContentLength = response.ContentLength;
                 return Task.FromResult(response.GetResponseStream());
             }
         }

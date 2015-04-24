@@ -407,7 +407,7 @@ namespace Jarvis.DocumentStore.Client
                 relativeUri = relativeUri + "/" + options.FileName;
 
             var endPoint = new Uri(_documentStoreUri, relativeUri);
-            return new DocumentFormatReader(endPoint,options);
+            return new DocumentFormatReader(endPoint, options);
         }
 
         /// <summary>
