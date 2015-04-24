@@ -511,9 +511,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return DocumentNotFound(handle);
             }
 
+            var fileName = fname != null ? new FileNameWithExtension(fname) : null;
+
             if (format == DocumentFormats.Original)
             {
-                var fileName = fname != null ? new FileNameWithExtension(fname) : null;
                 return StreamFile(
                     document.GetFormatBlobId(format),
                     fileName ?? mapping.FileName
@@ -531,8 +532,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     )
                 );
             }
-
-            return StreamFile(formatBlobId);
+            
+            return StreamFile(formatBlobId, fileName);
         }
 
         /// <summary>
