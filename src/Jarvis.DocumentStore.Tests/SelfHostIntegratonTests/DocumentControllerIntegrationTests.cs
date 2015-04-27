@@ -132,6 +132,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var options = new OpenOptions()
             {
                 FileName = "pluto.pdf",
+                RangeFrom = 0,
                 RangeTo = 199
             };
 
@@ -140,7 +141,23 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 await (await reader.OpenStream()).CopyToAsync(downloaded);
 
-                Assert.AreEqual(200, downloaded.Length);
+                Assert.AreEqual(200, downloaded.Length, "Wrong range support");
+                Assert.AreEqual(200, reader.ContentLength);
+            }
+
+            //load without rangeto
+            options = new OpenOptions()
+            {
+                FileName = "pluto.pdf",
+                RangeFrom = 200
+            };
+
+            reader = _documentStoreClient.OpenRead(documentHandle, format, options);
+            using (var downloaded = new MemoryStream())
+            {
+                await (await reader.OpenStream()).CopyToAsync(downloaded);
+                Assert.AreEqual(72768 - 200, downloaded.Length, "Wrong range support");
+                Assert.AreEqual(72768 - 200, reader.ContentLength);
             }
         }
 
