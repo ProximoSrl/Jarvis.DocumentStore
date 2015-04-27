@@ -20,8 +20,8 @@ namespace Jarvis.DocumentStore.Client
     public class OpenOptions
     {
         public string FileName { get; set; }
-        public int RangeFrom { get; set; }
-        public int RangeTo { get; set; }
+        public Int64 RangeFrom { get; set; }
+        public Int64 RangeTo { get; set; }
         public bool SkipContent { get; set; }
     }
 
