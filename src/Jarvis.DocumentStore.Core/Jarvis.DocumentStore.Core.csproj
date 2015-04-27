@@ -100,6 +100,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackgroundTasks\ImportFormatFromFileQueue.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\AddFormatToDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\InitializeDocumentDescriptorAsAttachCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\CreateAttachmentCommandHandler.cs" />

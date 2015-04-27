@@ -168,6 +168,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
 
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }
+        public static string QueueFolder
+        {
+            get { return Path.Combine(DocumentsFolder, "Queue"); }
+        }
+
 
         public static string PathToLangFile(string lang)
         {

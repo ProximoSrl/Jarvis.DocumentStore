@@ -252,6 +252,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackgroudTasksTests\ImportFromFileTests.cs" />
     <Compile Include="ControllerTests\AbstractFileControllerTests.cs" />
     <Compile Include="ControllerTests\DownloadTests.cs" />
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
@@ -284,7 +285,6 @@
     <Compile Include="DomainSpecs\ClassWithBlobId.cs" />
     <Compile Include="DomainSpecs\BlobIdJsonConverterTests.cs" />
     <Compile Include="JobTests\Queue\QueueInfoTests.cs" />
-    <Compile Include="JobTests\TestJobHelper.cs" />
     <Compile Include="Misc\FileNameWithExtensionTests.cs" />
     <Compile Include="Misc\RemoteConfigurationServiceTests.cs" />
     <Compile Include="DomainSpecs\StringValueMongoTests.cs" />
@@ -337,6 +337,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Docs\Powerpoint show.ppsx" />
+    <None Include="Docs\Queue\File_1.dsimport" />
     <None Include="Docs\RTF Document.rtf" />
     <None Include="Docs\file.invalid" />
     <None Include="Docs\A Powerpoint Document.pptx" />
@@ -478,6 +479,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
