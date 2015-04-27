@@ -23,9 +23,12 @@ namespace Jarvis.DocumentStore.Client
                     _request.Method = WebRequestMethods.Http.Head;
                 }
                 
-                if (options.RangeFrom > 0 || options.RangeTo > 0)
+                if (options.RangeFrom.HasValue)
                 {
-                    _request.AddRange(options.RangeFrom, options.RangeTo);
+                    if (options.RangeTo.HasValue)
+                        _request.AddRange(options.RangeFrom.Value, options.RangeTo.Value);
+                    else
+                        _request.AddRange(options.RangeFrom.Value);
                 }
             }
         }
