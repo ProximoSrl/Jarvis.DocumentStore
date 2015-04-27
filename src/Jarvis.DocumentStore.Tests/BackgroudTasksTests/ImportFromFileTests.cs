@@ -8,7 +8,10 @@ using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.BackgroundTasks;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
+using Jarvis.DocumentStore.Tests.ProjectionTests;
+using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using NUnit.Framework;
 
@@ -18,14 +21,33 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
     public class ImportFromFileTests
     {
         private ImportFormatFromFileQueue _queue;
+        private DocumentStoreBootstrapper _documentStoreService;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            var config = new DocumentStoreTestConfiguration();
+            MongoDbTestConnectionProvider.DropTestsTenant();
+            config.SetTestAddress(TestConfig.ServerAddress);
+            _documentStoreService = new DocumentStoreBootstrapper();
+            _documentStoreService.Start(config);
+
+            _queue = new ImportFormatFromFileQueue(new string[] { TestConfig.QueueFolder }, _documentStoreService.Manager)
+            {
+                Logger = new ConsoleLogger()
+            };
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _documentStoreService.Stop();
+            BsonClassMapHelper.Clear();
+        }
 
         [SetUp]
         public void SetUp()
         {
-            _queue = new ImportFormatFromFileQueue(new string[] { TestConfig.QueueFolder })
-            {
-                Logger = new ConsoleLogger()
-            };
         }
 
         [Test]

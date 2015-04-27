@@ -9,7 +9,9 @@ using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Serialization;
+using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Newtonsoft.Json;
 
@@ -32,10 +34,12 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public ILogger Logger { get; set; }
 
         private readonly string[] _foldersToWatch;
-        public ImportFormatFromFileQueue(string[] foldersToWatch)
+        private readonly ITenantAccessor _tenantAccessor;
+
+        public ImportFormatFromFileQueue(string[] foldersToWatch, ITenantAccessor tenantAccessor)
         {
             _foldersToWatch = foldersToWatch;
-
+            _tenantAccessor = tenantAccessor;
         }
 
         public void PollFileSystem()
@@ -54,10 +58,39 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                             task.Format,
                             task.Uri
                         );
-                    
+
+                        UploadFile(task);
                     }
                 });
             }
+        }
+
+        private void UploadFile(FileInQueue task)
+        {
+            if (!task.Uri.IsFile)
+            {
+                Logger.ErrorFormat("Uri is not a file: {0}", task.Uri);
+                return;
+            }
+
+            var fname = task.Uri.LocalPath;
+            if (!File.Exists(fname))
+            {
+                Logger.ErrorFormat("File missing: {0}", fname);
+                return;
+            }
+
+            var tenant = _tenantAccessor.GetTenant(task.Tenant);
+            if(tenant == NullTenant.Instance)
+            {
+                Logger.ErrorFormat("Tenant {1} not found for file {0}", fname, tenant);
+                return;
+            }
+
+            var container = tenant.Container;
+            var blobStore = container.Resolve<IBlobStore>();
+            blobStore.Upload(task.Format, fname);
+
         }
 
         public FileInQueue LoadTask(string pathToFile)

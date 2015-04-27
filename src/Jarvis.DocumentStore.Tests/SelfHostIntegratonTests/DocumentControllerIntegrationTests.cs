@@ -7,13 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Shared.Model;
-using Jarvis.DocumentStore.Tests.JobTests;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
@@ -21,22 +19,15 @@ using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 using NUnit.Framework;
 using Quartz;
-using Quartz.Impl;
-using Quartz.Spi;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using System;
-using System.Net;
 using Newtonsoft.Json;
-using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
-using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
-using MongoDB.Bson;
 using MongoDB.Driver.Builders;
 using NSubstitute;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
@@ -51,7 +42,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private DocumentStoreServiceClient _documentStoreClient;
         private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
         private MongoCollection<DocumentReadModel> _documentCollection;
-        private MongoCollection<StreamReadModel> _streamCollection;
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
 
@@ -76,7 +66,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
-            _streamCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<StreamReadModel>("rm.Stream");
         }
 
         [TearDown]

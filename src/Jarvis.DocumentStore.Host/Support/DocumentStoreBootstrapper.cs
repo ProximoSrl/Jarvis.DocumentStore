@@ -39,12 +39,12 @@ namespace Jarvis.DocumentStore.Host.Support
                 config.IsReadmodelBuilder
             );
 
-            var manager = BuildTenants(_container, config);
+            Manager = BuildTenants(_container, config);
 
             var installers = new List<IWindsorInstaller>()
             {
                 new CoreInstaller(config),
-                new EventStoreInstaller(manager),
+                new EventStoreInstaller(Manager),
                 new SchedulerInstaller(false),
                 new QueueInfrasctructureInstaller(config.QueueConnectionString, config.QueueInfoList),
             };
@@ -79,7 +79,7 @@ namespace Jarvis.DocumentStore.Host.Support
             }
 
             _container.Install(installers.ToArray());
-            foreach (var tenant in manager.Tenants)
+            foreach (var tenant in Manager.Tenants)
             {
                 var tenantInstallers = new List<IWindsorInstaller>
                 {
@@ -152,6 +152,8 @@ namespace Jarvis.DocumentStore.Host.Support
         }
 
         private Boolean isStopped = false;
+        public TenantManager Manager { get; private set; }
+
         public void Stop()
         {
             if (isStopped) return;
