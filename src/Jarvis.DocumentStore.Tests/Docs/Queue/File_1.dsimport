@@ -1,3 +1,9 @@
 ﻿{
-	"uri" : "file:///%CURRENT_DIR%/../A Word Document.docx"
+    "uri": "file:///%CURRENT_DIR%/../A Word Document.docx",
+    "handle": "word",
+    "format": "original",
+    "tenant": "docs",
+    "customData": { 
+        "expire-on" :  "2050-01-01"
+    }
 }

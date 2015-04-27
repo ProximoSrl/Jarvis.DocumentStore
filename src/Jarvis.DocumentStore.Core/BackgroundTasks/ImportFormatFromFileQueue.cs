@@ -6,16 +6,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Shared.Serialization;
+using Jarvis.Framework.Shared.MultitenantSupport;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using NEventStore.Serialization;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
     public class FileInQueue
     {
         public Uri Uri { get; private set; }
+        public DocumentHandle Handle { get; private set; }
+        public DocumentFormat Format { get; private set; }
+        public TenantId Tenant { get; private set; }
+        public DocumentCustomData CustomData { get; private set; }
     }
 
     public class ImportFormatFromFileQueue
