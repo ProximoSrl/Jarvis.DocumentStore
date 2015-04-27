@@ -106,14 +106,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 SkipContent = true
             };
 
-            using (var reader = _documentStoreClient.OpenRead(documentHandle, format, options))
+            var reader = _documentStoreClient.OpenRead(documentHandle, format, options);
+            using (var downloaded = new MemoryStream())
             {
-                using (var downloaded = new MemoryStream())
-                {
-                    await (await reader.ReadStream).CopyToAsync(downloaded);
-                    Assert.AreEqual(0, downloaded.Length);
-                    Assert.AreEqual(72768, reader.ContentLength);
-                }
+                await (await reader.OpenStream()).CopyToAsync(downloaded);
+                Assert.AreEqual(0, downloaded.Length);
+                Assert.AreEqual(72768, reader.ContentLength);
             }
         }
 
@@ -137,14 +135,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 RangeTo = 199
             };
 
-            using (var reader = _documentStoreClient.OpenRead(documentHandle, format, options))
+            var reader = _documentStoreClient.OpenRead(documentHandle, format, options);
+            using (var downloaded = new MemoryStream())
             {
-                using (var downloaded = new MemoryStream())
-                {
-                    await (await reader.ReadStream).CopyToAsync(downloaded);
+                await (await reader.OpenStream()).CopyToAsync(downloaded);
 
-                    Assert.AreEqual(200, downloaded.Length);
-                }
+                Assert.AreEqual(200, downloaded.Length);
             }
         }
 
@@ -162,19 +158,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // waits for storage
             await UpdateAndWaitAsync();
 
-            using (var reader = _documentStoreClient.OpenRead(DocumentHandle.FromString("Pdf_2")))
+            var reader = _documentStoreClient.OpenRead(DocumentHandle.FromString("Pdf_2"));
+            using (var downloaded = new MemoryStream())
+            using (var uploaded = new MemoryStream())
             {
-                using (var downloaded = new MemoryStream())
-                using (var uploaded = new MemoryStream())
+                using (var fileStream = File.OpenRead(TestConfig.PathToDocumentPdf))
                 {
-                    using (var fileStream = File.OpenRead(TestConfig.PathToDocumentPdf))
-                    {
-                        await fileStream.CopyToAsync(uploaded);
-                    }
-                    await (await reader.ReadStream).CopyToAsync(downloaded);
-
-                    Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded));
+                    await fileStream.CopyToAsync(uploaded);
                 }
+                await (await reader.OpenStream()).CopyToAsync(downloaded);
+
+                Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded));
             }
         }
 
@@ -586,38 +580,29 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         private async Task CompareDownloadedStreamToFile(string pathToFileToCompare, DocumentFormatReader documentFormatReader)
         {
-            using (var reader = documentFormatReader)
+            using (var downloaded = new MemoryStream())
+            using (var uploaded = new MemoryStream())
             {
-                using (var downloaded = new MemoryStream())
-                using (var uploaded = new MemoryStream())
+                using (var fileStream = File.OpenRead(pathToFileToCompare))
                 {
-                    using (var fileStream = File.OpenRead(pathToFileToCompare))
-                    {
-                        await fileStream.CopyToAsync(uploaded);
-                    }
-                    await (await reader.ReadStream).CopyToAsync(downloaded);
-
-                    Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded),
-                        "Downloaded format is not equal to last format uploaded");
+                    await fileStream.CopyToAsync(uploaded);
                 }
+                await (await documentFormatReader.OpenStream()).CopyToAsync(downloaded);
+
+                Assert.IsTrue(CompareMemoryStreams(uploaded, downloaded),
+                    "Downloaded format is not equal to last format uploaded");
             }
         }
 
         private async Task CompareDownloadedStreamToStringContent(string contentToCompare, DocumentFormatReader documentFormatReader)
         {
-            using (var reader = documentFormatReader)
+            using (var downloaded = new MemoryStream())
             {
-                using (var downloaded = new MemoryStream())
-                {
-
-                    await (await reader.ReadStream).CopyToAsync(downloaded);
-                    var downloadedString = System.Text.Encoding.UTF8.GetString(downloaded.ToArray());
-                    Assert.AreEqual(downloadedString, contentToCompare, "Downloaded stream is not identical");
-                }
+                await (await documentFormatReader.OpenStream()).CopyToAsync(downloaded);
+                var downloadedString = System.Text.Encoding.UTF8.GetString(downloaded.ToArray());
+                Assert.AreEqual(downloadedString, contentToCompare, "Downloaded stream is not identical");
             }
         }
-
-
 
         [Test]
         public async void should_upload_get_metadata_and_delete_a_document()

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Client
 {
-    public class DocumentFormatReader : IDisposable
+    public class DocumentFormatReader
     {
         public Int64 ContentLength { get; private set; }
 
@@ -30,18 +30,11 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        public Task<Stream> ReadStream
+        public async Task<Stream> OpenStream()
         {
-            get
-            {
-                var response = _request.GetResponse();
-                this.ContentLength = response.ContentLength;
-                return Task.FromResult(response.GetResponseStream());
-            }
-        }
-
-        public void Dispose()
-        {
+            var response = await _request.GetResponseAsync();
+            this.ContentLength = response.ContentLength;
+            return response.GetResponseStream();
         }
     }
 }

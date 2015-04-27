@@ -338,15 +338,12 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             String workingFolder)
         {
             String fileName = Path.Combine(workingFolder, originalFileName);
-            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
-                _dsEndpoints.First().BaseUrl, tenantId);
-            using (var reader = client.OpenBlobIdForRead(this.QueueName, jobId))
+            DocumentStoreServiceClient client = new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
+            var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
+            using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
-                using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                {
-                    var stream = await reader.ReadStream;
-                    stream.CopyTo(downloaded);
-                }
+                var stream = await reader.OpenStream();
+                stream.CopyTo(downloaded);
             }
             Logger.DebugFormat("Downloaded blob for job {0} for tenant {1} in local file {2}", jobId, tenantId, fileName);
             return fileName;

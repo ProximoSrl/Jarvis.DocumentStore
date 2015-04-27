@@ -398,7 +398,7 @@ namespace Jarvis.DocumentStore.Client
         /// </summary>
         /// <param name="documentHandle">Document handle</param>
         /// <param name="format">Document format</param>
-        /// <param name="fname">Open blob as filename</param>
+        /// <param name="options">Open options</param>
         /// <returns>A document format reader</returns>
         public DocumentFormatReader OpenRead(DocumentHandle documentHandle, DocumentFormat format = null, OpenOptions options = null)
         {
