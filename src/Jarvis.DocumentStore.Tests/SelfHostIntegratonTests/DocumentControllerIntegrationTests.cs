@@ -143,6 +143,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
                 Assert.AreEqual(200, downloaded.Length, "Wrong range support");
                 Assert.AreEqual(200, reader.ContentLength);
+                Assert.AreEqual("bytes 0-199/72768", reader.ReponseHeaders[HttpResponseHeader.ContentRange]);
             }
 
             //load without rangeto
@@ -158,6 +159,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 await (await reader.OpenStream()).CopyToAsync(downloaded);
                 Assert.AreEqual(72768 - 200, downloaded.Length, "Wrong range support");
                 Assert.AreEqual(72768 - 200, reader.ContentLength);
+                Assert.AreEqual("bytes 200-72767/72768", reader.ReponseHeaders[HttpResponseHeader.ContentRange]);
             }
         }
 
