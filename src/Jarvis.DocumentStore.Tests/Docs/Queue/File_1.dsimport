@@ -1,5 +1,5 @@
 ﻿{
-    "uri": "file:///%CURRENT_DIR%/../A Word Document.docx",
+    "uri": "file:///%CURRENT_DIR%/../A%20Word%20Document.docx",
     "handle": "word",
     "format": "original",
     "tenant": "docs",
