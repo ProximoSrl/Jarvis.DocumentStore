@@ -5,14 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
+using Castle.Windsor;
 using Jarvis.DocumentStore.Core.BackgroundTasks;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.MultitenantSupport;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
@@ -21,46 +24,43 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
     public class ImportFromFileTests
     {
         private ImportFormatFromFileQueue _queue;
-        private DocumentStoreBootstrapper _documentStoreService;
+        private string _pathToTask;
+        private readonly TenantId _testTenant = new TenantId("tests");
+        private IBlobStore _blobstore;
+        private readonly DocumentFormat _originalFormat = new DocumentFormat("original");
+        private readonly DocumentHandle _documentHandle = new DocumentHandle("word");
+        private readonly Uri _fileUri = new Uri(TestConfig.PathToWordDocument);
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [SetUp]
+        public void SetUp()
         {
-            var config = new DocumentStoreTestConfiguration();
-            MongoDbTestConnectionProvider.DropTestsTenant();
-            config.SetTestAddress(TestConfig.ServerAddress);
-            _documentStoreService = new DocumentStoreBootstrapper();
-            _documentStoreService.Start(config);
+            _pathToTask = Path.Combine(TestConfig.QueueFolder, "File_1.dsimport");
 
-            _queue = new ImportFormatFromFileQueue(new string[] { TestConfig.QueueFolder }, _documentStoreService.Manager)
+            var accessor = Substitute.For<ITenantAccessor>();
+            var tenant = Substitute.For<ITenant>();
+            var container = Substitute.For<IWindsorContainer>();
+            _blobstore = Substitute.For<IBlobStore>();
+
+            accessor.GetTenant(_testTenant).Returns(tenant);
+            tenant.Container.Returns(container);
+            container.Resolve<IBlobStore>().Returns(_blobstore);
+
+            _queue = new ImportFormatFromFileQueue(new [] { TestConfig.QueueFolder }, accessor)
             {
                 Logger = new ConsoleLogger()
             };
         }
 
-        [TearDown]
-        public void TearDown()
-        {
-            _documentStoreService.Stop();
-            BsonClassMapHelper.Clear();
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-        }
-
         [Test]
         public void should_load_task()
         {
-            var pathToTask = Path.Combine(TestConfig.QueueFolder, "File_1.dsimport");
-            var descriptor = _queue.LoadTask(pathToTask);
+            var descriptor = _queue.LoadTask(_pathToTask);
 
             Assert.NotNull(descriptor);
-            Assert.AreEqual(new Uri(TestConfig.PathToWordDocument), descriptor.Uri);
-            Assert.AreEqual(new DocumentFormat("original"), descriptor.Format);
-            Assert.AreEqual(new DocumentHandle("word"), descriptor.Handle);
-            Assert.AreEqual(new TenantId("docs"), descriptor.Tenant);
+            Assert.AreEqual(_fileUri, descriptor.Uri);
+            Assert.AreEqual(_originalFormat, descriptor.Format);
+            Assert.AreEqual(_documentHandle, descriptor.Handle);
+            Assert.AreEqual(_testTenant, descriptor.Tenant);
             
             Assert.NotNull(descriptor.CustomData);
             Assert.AreEqual("2050-01-01", descriptor.CustomData["expire-on"]);
@@ -70,6 +70,9 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
         public void poll()
         {
             _queue.PollFileSystem();
+
+            // asserts
+            _blobstore.Received().Upload(Arg.Is(_originalFormat),Arg.Any<string>());
         }
     }
 }

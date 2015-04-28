@@ -80,17 +80,28 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 return;
             }
 
-            var tenant = _tenantAccessor.GetTenant(task.Tenant);
-            if(tenant == NullTenant.Instance)
+            var blobStore = GetBlobStoreForTenant(task.Tenant);
+            if (blobStore == null)
             {
-                Logger.ErrorFormat("Tenant {1} not found for file {0}", fname, tenant);
+                Logger.ErrorFormat("Tenant {1} not found. File: {1}", task.Tenant, fname);
                 return;
+            }
+            
+            blobStore.Upload(task.Format, fname);
+
+        }
+
+        private IBlobStore GetBlobStoreForTenant(TenantId tenantId)
+        {
+            var tenant = _tenantAccessor.GetTenant(tenantId);
+            if (tenant == NullTenant.Instance)
+            {
+                return null;
             }
 
             var container = tenant.Container;
             var blobStore = container.Resolve<IBlobStore>();
-            blobStore.Upload(task.Format, fname);
-
+            return blobStore;
         }
 
         public FileInQueue LoadTask(string pathToFile)
