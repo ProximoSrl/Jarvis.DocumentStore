@@ -58,6 +58,9 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         {
             foreach (var folder in _foldersToWatch)
             {
+                if (!Directory.Exists(folder))
+                    continue;
+
                 var files = Directory.GetFiles(folder, JobExtension, SearchOption.AllDirectories);
                 Parallel.ForEach(files, file =>
                 {
@@ -92,34 +95,43 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 return;
             }
 
-            var blobStore = GetBlobStoreForTenant(task.Tenant);
-            var identityGenerator = GetIdentityGeneratorForTenant(task.Tenant);
-            if (blobStore == null || identityGenerator == null)
+            try
             {
-                Logger.ErrorFormat("Tenant {1} not found or not configured for file: {1}", task.Tenant, fname);
-                return;
+                TenantContext.Enter(task.Tenant);
+
+                var blobStore = GetBlobStoreForTenant();
+                var identityGenerator = GetIdentityGeneratorForTenant();
+                if (blobStore == null || identityGenerator == null)
+                {
+                    Logger.ErrorFormat("Tenant {1} not found or not configured for file: {1}", task.Tenant, fname);
+                    return;
+                }
+
+                var blobId = blobStore.Upload(task.Format, fname);
+                var descriptor = blobStore.GetDescriptor(blobId);
+                var fileName = new FileNameWithExtension(Path.GetFileName(fname));
+                var handleInfo = new DocumentHandleInfo(task.Handle, fileName, task.CustomData);
+                var documentId = identityGenerator.New<DocumentDescriptorId>();
+
+                var createDocument = new InitializeDocumentDescriptor(
+                    documentId,
+                    blobId,
+                    handleInfo,
+                    descriptor.Hash,
+                    fileName
+                );
+
+                _commandBus.Send(createDocument, "import-from-file");
             }
-
-            var blobId = blobStore.Upload(task.Format, fname);
-            var descriptor = blobStore.GetDescriptor(blobId);
-            var fileName = new FileNameWithExtension(Path.GetFileName(fname));
-            var handleInfo = new DocumentHandleInfo(task.Handle, fileName, task.CustomData);
-            var documentId = identityGenerator.New<DocumentDescriptorId>();
-
-            var createDocument = new InitializeDocumentDescriptor(
-                documentId, 
-                blobId, 
-                handleInfo, 
-                descriptor.Hash, 
-                fileName
-            );
-            
-            _commandBus.Send(createDocument, "import-from-file");
+            finally
+            {
+                TenantContext.Exit();
+            }
         }
 
-        private IIdentityGenerator GetIdentityGeneratorForTenant(TenantId tenantId)
+        private IIdentityGenerator GetIdentityGeneratorForTenant()
         {
-            var tenant = _tenantAccessor.GetTenant(tenantId);
+            var tenant = _tenantAccessor.Current;
             if (tenant == NullTenant.Instance)
             {
                 return null;
@@ -130,9 +142,9 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             return generator;
         }
 
-        private IBlobStore GetBlobStoreForTenant(TenantId tenantId)
+        private IBlobStore GetBlobStoreForTenant()
         {
-            var tenant = _tenantAccessor.GetTenant(tenantId);
+            var tenant = _tenantAccessor.Current;
             if (tenant == NullTenant.Instance)
             {
                 return null;
@@ -191,8 +203,16 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         {
             while (!_stopPending)
             {
-                Thread.Sleep(60);
+                Thread.Sleep(60000);
                 Logger.DebugFormat("Ping");
+                try
+                {
+                    _job.PollFileSystem();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat(ex, "error polling filesystem");
+                }
             }
             
             _stop.Set();
