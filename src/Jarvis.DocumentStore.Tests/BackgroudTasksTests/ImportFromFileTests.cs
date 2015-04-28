@@ -49,6 +49,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             _blobstore.Upload(Arg.Is(_originalFormat), Arg.Any<string>()).Returns(_blobId);
 
             accessor.GetTenant(_testTenant).Returns(tenant);
+            accessor.Current.Returns(tenant);
             tenant.Container.Returns(container);
 
             container.Resolve<IBlobStore>().Returns(_blobstore);
@@ -70,7 +71,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             Assert.AreEqual(_originalFormat, descriptor.Format);
             Assert.AreEqual(_documentHandle, descriptor.Handle);
             Assert.AreEqual(_testTenant, descriptor.Tenant);
-            Assert.IsTrue(descriptor.DeleteAfterImport);
+            Assert.IsFalse(descriptor.DeleteAfterImport);
             Assert.NotNull(descriptor.CustomData);
             Assert.AreEqual("2050-01-01", descriptor.CustomData["expire-on"]);
         }
