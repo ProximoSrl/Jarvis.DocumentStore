@@ -19,6 +19,7 @@ using Microsoft.Owin.Hosting;
 using Rebus.Logging;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Metrics;
+using Jarvis.Framework.Kernel.ProjectionEngine.Client;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -31,6 +32,16 @@ namespace Jarvis.DocumentStore.Host.Support
         public void Start(DocumentStoreConfiguration config)
         {
             BuildContainer(config);
+
+            if (RebuildSettings.ShouldRebuild && Environment.UserInteractive)
+            {
+                Console.WriteLine("---> Set Log Level to INFO to speedup rebuild (y/N)?");
+                var res = Console.ReadLine().Trim().ToLowerInvariant();
+                if (res == "y")
+                {
+                    SetLogLevelTo("INFO");
+                }
+            }
 
             _logger.DebugFormat(
                 "Roles:\n  api: {0}\n  worker : {1}\n  projections: {2}",
@@ -177,6 +188,39 @@ namespace Jarvis.DocumentStore.Host.Support
             if (_webApplication != null)
             {
                 _webApplication.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// http://forums.asp.net/t/1969159.aspx?How+to+change+log+level+for+log4net+from+code+behind+during+the+application+up+and+running+
+        /// </summary>
+        /// <param name="logLevel"></param>
+        private void SetLogLevelTo(string logLevel)
+        {
+            try
+            {
+                log4net.Repository.ILoggerRepository[] repositories = log4net.LogManager.GetAllRepositories();
+
+                //Configure all loggers to be at the debug level.
+                foreach (log4net.Repository.ILoggerRepository repository in repositories)
+                {
+                    repository.Threshold = repository.LevelMap[logLevel];
+                    log4net.Repository.Hierarchy.Hierarchy hier = (log4net.Repository.Hierarchy.Hierarchy)repository;
+                    log4net.Core.ILogger[] loggers = hier.GetCurrentLoggers();
+                    foreach (log4net.Core.ILogger logger in loggers)
+                    {
+                        ((log4net.Repository.Hierarchy.Logger)logger).Level = hier.LevelMap[logLevel];
+                    }
+                }
+
+                //Configure the root logger.
+                log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)log4net.LogManager.GetRepository();
+                log4net.Repository.Hierarchy.Logger rootLogger = h.Root;
+                rootLogger.Level = h.LevelMap[logLevel];
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("ERROR CHANGING LOG LEVEL {0}", ex.Message);
             }
         }
     }

@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Host
 
         static int Main(string[] args)
         {
-            
+
             try
             {
                 CommandsExtensions.EnableDiagnostics = true;
@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Host
                 File.WriteAllText(fileName, ex.ToString());
                 throw;
             }
-          
+
         }
 
         private static TopshelfExitCode StandardDocumentStoreStart()
@@ -136,5 +136,7 @@ namespace Jarvis.DocumentStore.Host
             Console.WriteLine();
             Console.WriteLine();
         }
+
+        
     }
 }
