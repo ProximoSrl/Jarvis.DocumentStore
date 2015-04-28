@@ -4,14 +4,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Castle.Core;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Shared.Serialization;
 using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Shared.Commands;
+using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Newtonsoft.Json;
 
@@ -28,18 +34,24 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public string PathToTaskFile { get; set; }
     }
 
-    public class ImportFormatFromFileQueue
+    public class ImportFormatFromFileQueue 
     {
         public const string JobExtension = "*.dsimport";
         public ILogger Logger { get; set; }
 
         private readonly string[] _foldersToWatch;
         private readonly ITenantAccessor _tenantAccessor;
+        private readonly ICommandBus _commandBus;
 
-        public ImportFormatFromFileQueue(string[] foldersToWatch, ITenantAccessor tenantAccessor)
+        public ImportFormatFromFileQueue(
+            string[] foldersToWatch, 
+            ITenantAccessor tenantAccessor, 
+            ICommandBus commandBus
+        )
         {
             _foldersToWatch = foldersToWatch;
             _tenantAccessor = tenantAccessor;
+            _commandBus = commandBus;
         }
 
         public void PollFileSystem()
@@ -52,7 +64,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     var task = LoadTask(file);
                     if (task != null)
                     {
-                        Logger.DebugFormat("Loading /{0}/{1}/{2} - {3}", 
+                        Logger.DebugFormat("Loading /{0}/{1}/{2} - {3}",
                             task.Tenant,
                             task.Handle,
                             task.Format,
@@ -81,14 +93,41 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
 
             var blobStore = GetBlobStoreForTenant(task.Tenant);
-            if (blobStore == null)
+            var identityGenerator = GetIdentityGeneratorForTenant(task.Tenant);
+            if (blobStore == null || identityGenerator == null)
             {
-                Logger.ErrorFormat("Tenant {1} not found. File: {1}", task.Tenant, fname);
+                Logger.ErrorFormat("Tenant {1} not found or not configured for file: {1}", task.Tenant, fname);
                 return;
             }
-            
-            blobStore.Upload(task.Format, fname);
 
+            var blobId = blobStore.Upload(task.Format, fname);
+            var descriptor = blobStore.GetDescriptor(blobId);
+            var fileName = new FileNameWithExtension(Path.GetFileName(fname));
+            var handleInfo = new DocumentHandleInfo(task.Handle, fileName, task.CustomData);
+            var documentId = identityGenerator.New<DocumentDescriptorId>();
+
+            var createDocument = new InitializeDocumentDescriptor(
+                documentId, 
+                blobId, 
+                handleInfo, 
+                descriptor.Hash, 
+                fileName
+            );
+            
+            _commandBus.Send(createDocument, "import-from-file");
+        }
+
+        private IIdentityGenerator GetIdentityGeneratorForTenant(TenantId tenantId)
+        {
+            var tenant = _tenantAccessor.GetTenant(tenantId);
+            if (tenant == NullTenant.Instance)
+            {
+                return null;
+            }
+
+            var container = tenant.Container;
+            var generator = container.Resolve<IIdentityGenerator>();
+            return generator;
         }
 
         private IBlobStore GetBlobStoreForTenant(TenantId tenantId)
@@ -120,6 +159,43 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 Logger.ErrorFormat(ex, "failed to deserialize {0}", pathToFile);
                 return null;
             }
+        }
+    }
+
+    public class ImportFileFromFileSystemRunner : IStartable
+    {
+        private ImportFormatFromFileQueue _job;
+        private ManualResetEvent _stop;
+        private volatile bool _stopPending;
+        public ILogger Logger { get; set; }
+
+        public ImportFileFromFileSystemRunner(ImportFormatFromFileQueue job)
+        {
+            _job = job;
+        }
+
+        public void Start()
+        {
+            _stop = new ManualResetEvent(false);
+            var thread = new Thread(Run);
+            thread.Start();
+        }
+
+        public void Stop()
+        {
+            _stopPending = true;
+            _stop.WaitOne(TimeSpan.FromSeconds(60));
+        }
+
+        private void Run()
+        {
+            while (!_stopPending)
+            {
+                Thread.Sleep(60);
+                Logger.DebugFormat("Ping");
+            }
+            
+            _stop.Set();
         }
     }
 }

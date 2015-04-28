@@ -75,6 +75,15 @@ namespace Jarvis.DocumentStore.Host.Support
             DelayedStartInMilliseconds = Int32.Parse(ConfigurationServiceClient.Instance.GetSetting("poller-delayed-start", "2000"));
 
             Boost = ConfigurationServiceClient.Instance.GetSetting("engine-multithread", "false");
+
+            // import from filesystem
+            var fileQueue = ConfigurationServiceClient.Instance.GetStructuredSetting("file-queue");
+            var listOfFolders = new List<string>();
+            foreach (var folder in fileQueue)
+            {
+                listOfFolders.Add((string) folder);
+            }
+            MonitorFolders(listOfFolders.ToArray());
         }
 
         private static void FillQueueList(List<QueueInfo> queueInfoList)

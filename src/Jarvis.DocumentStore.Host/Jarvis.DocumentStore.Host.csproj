@@ -180,6 +180,7 @@
     <Compile Include="Providers\FormatStoreMultipartStreamProvider.cs" />
     <Compile Include="Providers\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Support\ApiInstaller.cs" />
+    <Compile Include="Support\BackgroundTasksInstaller.cs" />
     <Compile Include="Support\MongoFlatMapper.cs" />
     <Compile Include="Support\MongoPersistenceOptionWithLog.cs" />
     <Compile Include="Support\TenantHandlersInstaller.cs" />

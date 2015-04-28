@@ -91,6 +91,14 @@ namespace Jarvis.DocumentStore.Core.Support
         }
 
         public JobsManagementConfiguration JobsManagement { get; set; }
+        public bool EnableImportFormFileSystem { get; private set; }
+        public string[] FoldersToMonitor { get; private set; }
+
+        public void MonitorFolders(string[] folders)
+        {
+            FoldersToMonitor = folders;
+            EnableImportFormFileSystem = folders.Any();
+        }
 
         protected Uri Expand(Uri address)
         {
