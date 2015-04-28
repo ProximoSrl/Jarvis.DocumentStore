@@ -13,7 +13,6 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
-using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Shared.Serialization;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.Commands;
@@ -23,18 +22,18 @@ using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
-    public class FileInQueue
+    public class ImportTask
     {
         public Uri Uri { get; private set; }
         public DocumentHandle Handle { get; private set; }
         public DocumentFormat Format { get; private set; }
         public TenantId Tenant { get; private set; }
         public DocumentCustomData CustomData { get; private set; }
-
+        public bool DeleteAfterImport { get; private set; }
         public string PathToTaskFile { get; set; }
     }
 
-    public class ImportFormatFromFileQueue 
+    public class ImportFormatFromFileQueue
     {
         public const string JobExtension = "*.dsimport";
         public ILogger Logger { get; set; }
@@ -44,8 +43,8 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private readonly ICommandBus _commandBus;
 
         public ImportFormatFromFileQueue(
-            string[] foldersToWatch, 
-            ITenantAccessor tenantAccessor, 
+            string[] foldersToWatch,
+            ITenantAccessor tenantAccessor,
             ICommandBus commandBus
         )
         {
@@ -67,12 +66,15 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     var task = LoadTask(file);
                     if (task != null)
                     {
-                        Logger.DebugFormat("Loading /{0}/{1}/{2} - {3}",
-                            task.Tenant,
-                            task.Handle,
-                            task.Format,
-                            task.Uri
-                        );
+                        if (Logger.IsInfoEnabled)
+                        {
+                            Logger.InfoFormat("Loading /{0}/{1}/{2} - {3}",
+                                task.Tenant,
+                                task.Handle,
+                                task.Format,
+                                task.Uri
+                            );
+                        }
 
                         UploadFile(task);
                     }
@@ -80,7 +82,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
         }
 
-        private void UploadFile(FileInQueue task)
+        private void UploadFile(ImportTask task)
         {
             if (!task.Uri.IsFile)
             {
@@ -122,10 +124,28 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 );
 
                 _commandBus.Send(createDocument, "import-from-file");
+
+                TaskExecuted(task);
             }
             finally
             {
                 TenantContext.Exit();
+            }
+        }
+
+        private void TaskExecuted(ImportTask task)
+        {
+            if (task.DeleteAfterImport)
+            {
+                var fname = task.Uri.LocalPath;
+                try
+                {
+                    File.Delete(fname);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat(ex, "Delete failed: {0}", fname);
+                }
             }
         }
 
@@ -155,14 +175,14 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             return blobStore;
         }
 
-        public FileInQueue LoadTask(string pathToFile)
+        public ImportTask LoadTask(string pathToFile)
         {
             try
             {
                 var asJson = File.ReadAllText(pathToFile)
                     .Replace("%CURRENT_DIR%", Path.GetDirectoryName(pathToFile).Replace("\\", "/"));
 
-                var task = JsonConvert.DeserializeObject<FileInQueue>(asJson, PocoSerializationSettings.Default);
+                var task = JsonConvert.DeserializeObject<ImportTask>(asJson, PocoSerializationSettings.Default);
                 task.PathToTaskFile = pathToFile;
                 return task;
             }
@@ -204,7 +224,6 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             while (!_stopPending)
             {
                 Thread.Sleep(60000);
-                Logger.DebugFormat("Ping");
                 try
                 {
                     _job.PollFileSystem();
@@ -214,7 +233,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     Logger.ErrorFormat(ex, "error polling filesystem");
                 }
             }
-            
+
             _stop.Set();
         }
     }

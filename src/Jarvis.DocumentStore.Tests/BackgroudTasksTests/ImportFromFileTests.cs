@@ -70,7 +70,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             Assert.AreEqual(_originalFormat, descriptor.Format);
             Assert.AreEqual(_documentHandle, descriptor.Handle);
             Assert.AreEqual(_testTenant, descriptor.Tenant);
-
+            Assert.IsTrue(descriptor.DeleteAfterImport);
             Assert.NotNull(descriptor.CustomData);
             Assert.AreEqual("2050-01-01", descriptor.CustomData["expire-on"]);
         }

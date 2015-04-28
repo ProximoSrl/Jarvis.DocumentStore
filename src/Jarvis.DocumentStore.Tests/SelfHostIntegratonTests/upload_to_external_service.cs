@@ -14,6 +14,16 @@ using System.IO;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
+    public class drop_all_tenants
+    {
+        [Test]
+        public void execute()
+        {
+            MongoDbTestConnectionProvider.DropAll();
+        }
+    }
+
+    [TestFixture, Explicit]
     public class upload_to_external_service
     {
         private DocumentStoreServiceClient _docs;
@@ -33,11 +43,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
         }
 
-        [Test]
-        public void _drop_all_tenants()
-        {
-            MongoDbTestConnectionProvider.DropAll();
-        }
 
         [Test]
         public void upload_pdf()

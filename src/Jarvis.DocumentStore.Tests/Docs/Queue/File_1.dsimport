@@ -3,6 +3,7 @@
     "handle": "word",
     "format": "original",
     "tenant": "tests",
+    "deleteAfterImport" :  false,
     "customData": { 
         "expire-on" :  "2050-01-01"
     }
