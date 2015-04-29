@@ -85,6 +85,38 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 Handle = e.HandleInfo.Handle,
                 EventType = HandleStreamEventTypes.DocumentCreated,
             });
+
+            //Now doc is not duplicated anymore, we should generate format added to document events.
+            var doc = _documentDescriptorReadModel.FindOneById((DocumentDescriptorId) e.AggregateId);
+            if (doc.Documents == null || !doc.Documents.Any())
+                return; //no handle in this document descriptor
+
+            var allHandles = doc.Documents;
+            var descriptor = _blobStore.GetDescriptor(e.BlobId);
+            foreach (var handle in allHandles)
+            {
+                var handleReadMode = _documentWriter.FindOneById(handle);
+                foreach (var format in doc.Formats)
+                {
+                    _streamReadModelCollection.Insert(e, new StreamReadModel()
+                    {
+                        Id = GetNewId(),
+                        Handle = handle,
+                        Filename = descriptor.FileNameWithExtension,
+                        DocumentId = (DocumentDescriptorId)e.AggregateId,
+                        FormatInfo = new FormatInfo()
+                        {
+                            BlobId = e.BlobId,
+                            DocumentFormat = format.Key,
+                            PipelineId = format.Value.PipelineId != PipelineId.Null
+                                ? format.Value.PipelineId 
+                                : new PipelineId("original"),
+                        },
+                        EventType = HandleStreamEventTypes.DocumentHasNewFormat,
+                        DocumentCustomData = handleReadMode.CustomData,
+                    });
+                }
+            }
         }
 
         /// <summary>
@@ -128,6 +160,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentLinked e)
         {
             var doc = _documentDescriptorReadModel.FindOneById(e.DocumentId);
+            if (!doc.Created) return; //Still not deduplicated.
             var handle = _documentWriter.FindOneById(e.Handle);
             foreach (var format in doc.Formats)
             {
@@ -158,7 +191,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         /// <param name="e"></param>
         public void On(FormatAddedToDocumentDescriptor e)
         {
-            var allHandles = _documentDescriptorReadModel.FindOneById((DocumentDescriptorId)e.AggregateId).Documents;
+            var documentDescriptor = _documentDescriptorReadModel.FindOneById((DocumentDescriptorId)e.AggregateId);
+            if (!documentDescriptor.Created) return; //Still not deduplicated.
+            var allHandles = documentDescriptor.Documents;
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {

@@ -56,6 +56,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var format = new DocumentFormat("missing");
 
             var doc = new DocumentDescriptorReadModel(
+                1L,
                 new DocumentDescriptorId(1),
                 new BlobId("file_1")
                 );
@@ -83,6 +84,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             var blobId = new BlobId("file_1");
             var doc = new DocumentDescriptorReadModel(
+                1L,
                 new DocumentDescriptorId(1),
                 blobId);
 
@@ -113,6 +115,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
 
             var blobId = new BlobId("file_1");
             var doc = new DocumentDescriptorReadModel(
+                1L,
                 new DocumentDescriptorId(1),
                 blobId);
 
@@ -144,6 +147,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var pdfBlobId = new BlobId("pdf");
 
             var doc = new DocumentDescriptorReadModel(
+                1L,
                 new DocumentDescriptorId(1),
                 new BlobId("file_1"));
 

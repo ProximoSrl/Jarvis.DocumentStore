@@ -33,16 +33,23 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public int FormatsCount { get; set; }
         public long SequenceNumber { get; set; }
 
+        /// <summary>
+        /// True when document descriptor has been deduplicated and it is 
+        /// officially created
+        /// </summary>
+        public Boolean Created { get; set; }
+
         public HashSet<DocumentAttachmentReadModel> Attachments { get; private set; }
 
         public DocumentDescriptorReadModel(
+            Int64 sequenceNumber,
             DocumentDescriptorId id, 
             BlobId blobId)
         {
             this.Formats = new Dictionary<DocumentFormat, FormatInfo>();
             this.Documents = new HashSet<DocumentHandle>();
             this.Id = id;
-            this.SequenceNumber = id.Id;
+            this.SequenceNumber = sequenceNumber;
             AddFormat(PipelineId.Null, new DocumentFormat(DocumentFormats.Original), blobId);
             Attachments = new HashSet<DocumentAttachmentReadModel>(
                 DocumentAttachmentReadModel.Comparer.Default);

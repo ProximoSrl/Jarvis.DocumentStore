@@ -139,7 +139,6 @@
     <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
     <Compile Include="Domain\Document\Commands\LinkDocumentToDocumentDescriptor.cs" />
     <Compile Include="Domain\Document\Events\AttachmentDeleted.cs" />
-    <Compile Include="Domain\Document\Events\DocumentHasNewAttachment.cs" />
     <Compile Include="Domain\Document\Events\DocumentCustomDataSet.cs" />
     <Compile Include="Domain\Document\Events\DocumentFileNameSet.cs" />
     <Compile Include="Domain\Document\Document.cs" />

@@ -31,6 +31,7 @@ using Jarvis.DocumentStore.Tests.ProjectionTests;
 using MongoDB.Driver.Builders;
 using NSubstitute;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
+using System.Net;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -121,6 +122,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var options = new OpenOptions()
             {
                 FileName = "pluto.pdf",
+                RangeFrom = 0,
                 RangeTo = 199
             };
 
@@ -129,7 +131,25 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 await (await reader.OpenStream()).CopyToAsync(downloaded);
 
-                Assert.AreEqual(200, downloaded.Length);
+                Assert.AreEqual(200, downloaded.Length, "Wrong range support");
+                Assert.AreEqual(200, reader.ContentLength);
+                Assert.AreEqual("bytes 0-199/72768", reader.ReponseHeaders[HttpResponseHeader.ContentRange]);
+            }
+
+            //load without rangeto
+            options = new OpenOptions()
+            {
+                FileName = "pluto.pdf",
+                RangeFrom = 200
+            };
+
+            reader = _documentStoreClient.OpenRead(documentHandle, format, options);
+            using (var downloaded = new MemoryStream())
+            {
+                await (await reader.OpenStream()).CopyToAsync(downloaded);
+                Assert.AreEqual(72768 - 200, downloaded.Length, "Wrong range support");
+                Assert.AreEqual(72768 - 200, reader.ContentLength);
+                Assert.AreEqual("bytes 200-72767/72768", reader.ReponseHeaders[HttpResponseHeader.ContentRange]);
             }
         }
 
@@ -411,6 +431,33 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var handle = _documentDescriptorCollection.Find(Query.EQ("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("content_1"), new Core.Model.DocumentHandle("content_2") }));
+        }
+
+        [Test]
+        public async void add_multiple_time_same_handle_with_same_payload()
+        {
+            //Upload father
+            var theHandle = new DocumentHandle("a_pdf_file");
+            List<Task> jobs = new List<Task>();
+            for (int i = 0; i < 10; i++)
+            {
+                var task = _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, theHandle);
+                jobs.Add(task);
+            }
+            Thread.Sleep(1000);
+            foreach (var job in jobs)
+            {
+                await job;
+            }
+
+            await UpdateAndWaitAsync();
+
+            var documents = _documentDescriptorCollection.FindAll();
+
+            Assert.That(documents.Count(), Is.EqualTo(1), "We expect all document to be de-duplicated.");
+
+            var document = documents.Single();
+            Assert.That(document.Created, Is.True, "Document descriptor should be in created-state.");
         }
 
         //Delete by source type is not anymore supported

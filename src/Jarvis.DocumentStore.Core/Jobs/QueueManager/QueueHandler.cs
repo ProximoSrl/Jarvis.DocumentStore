@@ -62,7 +62,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             if (_info.ShouldCreateJob(streamElement)) 
             {
-
                 //look for already existing job with the same blobid, there is no need to re-queue again
                 //because if a job with the same blobid was already fired for this queue there is no need
                 //to re-issue
@@ -74,6 +73,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 ).Count() > 0;
                 if (existing) return;
 
+                if (Logger.IsDebugEnabled) Logger.DebugFormat("Create queue for readmodel stream id {0} and queue {1}", streamElement.Id, _info.Name);
                 QueuedJob job = new QueuedJob();
                 var id = new QueuedJobId(Guid.NewGuid().ToString());
                 job.Id = id;
