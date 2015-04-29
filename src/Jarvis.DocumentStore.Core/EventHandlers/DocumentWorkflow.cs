@@ -56,8 +56,6 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
   
             //This projection depends on the projection of document descriptor
             //to execute the workflow.
-            var descriptor = _documents.FindOneById((DocumentDescriptorId)e.AggregateId);
-
             _commandBus.Send(new LinkDocumentToDocumentDescriptor(
                 (DocumentDescriptorId)e.AggregateId,
                 e.HandleInfo)
@@ -103,20 +101,32 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 e.BlobId
                 );
 
+            var done = false;
+
             if (duplicatedId != null)
             {
-                _commandBus.Send(new DeduplicateDocumentDescriptor(
-                    duplicatedId, 
-                    thisDocumentId, 
-                    e.HandleInfo)
-                    .WithDiagnosticTriggeredByInfo(e)                        
-                );
+                try
+                {
+                    _commandBus.Send(new DeduplicateDocumentDescriptor(
+                        duplicatedId,
+                        thisDocumentId,
+                        e.HandleInfo)
+                        .WithDiagnosticTriggeredByInfo(e)
+                    );
+                    done = true;
+                }
+                catch (DocumentDescriptorDeletedException ex)
+                {
+                    Logger.ErrorFormat(ex, "Document cannot be deduplicated because {0} is marked for deletion", ex.AggregateId);
+                }
             }
-            else
+
+            if(!done)
             {
                 _commandBus.Send(new CreateDocumentDescriptor(thisDocumentId, e.HandleInfo)
                     .WithDiagnosticTriggeredByInfo(e)                        
                 );
+                done = true;
             }
 
             if (e.FatherDocumentDescriptorId != null) 

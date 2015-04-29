@@ -9,6 +9,13 @@ using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
+    public class DocumentDescriptorDeletedException : DomainException
+    {
+        public DocumentDescriptorDeletedException(IIdentity id) : base(id)
+        {
+        }
+    }
+
     public class DocumentDescriptor : AggregateRoot<DocumentDescriptorState>
     {
         public DocumentDescriptor()
@@ -87,12 +94,14 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
         {
             if (handle != DocumentHandle.Empty)
             {
-                if (!InternalState.IsValidHandle(handle))
+                if (InternalState.IsValidHandle(handle))
                 {
-                    throw new DomainException(this.Id, string.Format("Document handle \"{0}\" is invalid", handle));
+                    RaiseEvent(new DocumentHandleDetached(handle));
                 }
-
-                RaiseEvent(new DocumentHandleDetached(handle));
+                else
+                {
+                    Logger.WarnFormat("Invalid handle {0} on {1}", handle, this.Id);
+                }
             }
 
             if (!InternalState.HasActiveHandles())
@@ -127,7 +136,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
         void ThrowIfDeleted()
         {
             if (InternalState.HasBeenDeleted)
-                throw new DomainException(this.Id, "Document has been deleted");
+                throw new DocumentDescriptorDeletedException(this.Id);
         }
 
         public void Create(DocumentHandleInfo handleInfo)
