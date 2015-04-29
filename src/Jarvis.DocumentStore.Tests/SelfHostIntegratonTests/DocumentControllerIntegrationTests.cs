@@ -443,6 +443,33 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("content_1"), new Core.Model.DocumentHandle("content_2") }));
         }
 
+        [Test]
+        public async void add_multiple_time_same_handle_with_same_payload()
+        {
+            //Upload father
+            var theHandle = new DocumentHandle("a_pdf_file");
+            List<Task> jobs = new List<Task>();
+            for (int i = 0; i < 10; i++)
+            {
+                var task = _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, theHandle);
+                jobs.Add(task);
+            }
+            Thread.Sleep(1000);
+            foreach (var job in jobs)
+            {
+                await job;
+            }
+
+            await UpdateAndWaitAsync();
+
+            var documents = _documentDescriptorCollection.FindAll();
+
+            Assert.That(documents.Count(), Is.EqualTo(1), "We expect all document to be de-duplicated.");
+
+            var document = documents.Single();
+            Assert.That(document.Created, Is.True, "Document descriptor should be in created-state.");
+        }
+
         //Delete by source type is not anymore supported
         //[Test]
         //public async void add_multiple_attachment_to_existing_handle_then_delete_by_source()

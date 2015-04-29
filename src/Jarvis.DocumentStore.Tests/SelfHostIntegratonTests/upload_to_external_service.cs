@@ -179,8 +179,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Task.WaitAll(uploads);
         }
 
-
-        [Test]
+           [Test]
         public void upload_doc()
         {
             _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc")).Wait();
@@ -227,6 +226,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var uploads = Enumerable
                 .Range(1, 100)
                 .Select(x => _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc_" + x)))
+                .ToArray();
+
+            Task.WaitAll(uploads);
+        }
+
+        [Test]
+        public void upload_same_doc_100_times_with_same_handle()
+        {
+            var uploads = Enumerable
+                .Range(1, 100)
+                .Select(x => _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("this_is_a_document")))
                 .ToArray();
 
             Task.WaitAll(uploads);

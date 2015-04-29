@@ -5,6 +5,7 @@ using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using MongoDB.Driver.Builders;
+using NEventStore;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,6 +13,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentDescriptorProjection : AbstractProjection,
         IEventHandler<DocumentDescriptorInitialized>,
+        IEventHandler<DocumentDescriptorCreated>,
         IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<DocumentDescriptorDeleted>,
         IEventHandler<DocumentHandleAttached>,
@@ -52,12 +54,25 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDescriptorInitialized e)
         {
-            var document = new DocumentDescriptorReadModel((DocumentDescriptorId)e.AggregateId, e.BlobId)
+            var longCheckpoint = LongCheckpoint.Parse(e.CheckpointToken).LongValue;
+            var document = new DocumentDescriptorReadModel(longCheckpoint, (DocumentDescriptorId)e.AggregateId, e.BlobId)
             {
                 Hash = e.Hash
             };
 
             _documents.Insert(e, document);
+        }
+
+        /// <summary>
+        /// Need to maintain the chain of the attachment.
+        /// </summary>
+        /// <param name="e"></param>
+        public void On(DocumentDescriptorCreated e)
+        {
+            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
+            {
+                d.Created = true;
+            });
         }
 
         public void On(FormatAddedToDocumentDescriptor e)
@@ -102,5 +117,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 d.AddAttachments(e.Attachment, e.AttachmentPath);
             });
         }
+
+
+     
     }
 }
