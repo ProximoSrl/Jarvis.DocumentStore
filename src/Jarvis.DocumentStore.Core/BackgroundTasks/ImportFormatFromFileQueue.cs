@@ -148,8 +148,18 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorFormat(ex, "Delete failed: {0}", fname);
+                    Logger.ErrorFormat(ex, "Delete source failed: {0}", fname);
                 }
+            }
+
+            try
+            {
+                File.Delete(task.PathToTaskFile);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorFormat(ex, "Delete task failed: {0}", task.PathToTaskFile);
+                throw;
             }
         }
 
@@ -227,7 +237,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         {
             while (!_stopPending)
             {
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
                 try
                 {
                     _job.PollFileSystem();

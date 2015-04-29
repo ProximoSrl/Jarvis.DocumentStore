@@ -508,10 +508,14 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        public DocumentImportData CreateDocumentImportData(string fileName, DocumentHandle handle, DocumentFormat format = null)
+        public DocumentImportData CreateDocumentImportData(
+            Guid taskId,
+            string fileName, 
+            DocumentHandle handle, 
+            DocumentFormat format = null)
         {
             format = format ?? OriginalFormat;
-            return new DocumentImportData(new Uri(fileName),handle, format, Tenant);
+            return new DocumentImportData(new Uri(fileName),handle, format, Tenant, taskId);
         }
 
         public void QueueDocumentImport(DocumentImportData did, string pathToFile)

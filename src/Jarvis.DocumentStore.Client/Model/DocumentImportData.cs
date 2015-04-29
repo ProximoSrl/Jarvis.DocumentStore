@@ -8,6 +8,7 @@ namespace Jarvis.DocumentStore.Client.Model
 {
     public class DocumentImportData
     {
+        public Guid TaskId { get; private set; }
         public Uri Uri { get; private set; }
         public DocumentHandle Handle { get;  private set; }
         public DocumentFormat Format { get;  private set; }
@@ -15,13 +16,9 @@ namespace Jarvis.DocumentStore.Client.Model
         public IDictionary<string,object> CustomData { get;  set; }
         public bool DeleteAfterImport { get;  set; }
 
-        internal DocumentImportData(
-            Uri uri, 
-            DocumentHandle handle, 
-            DocumentFormat format, 
-            string tenant
-        )
+        internal DocumentImportData(Uri uri, DocumentHandle handle, DocumentFormat format, string tenant, Guid taskId)
         {
+            TaskId = taskId;
             Uri = uri;
             Handle = handle;
             Format = format;
