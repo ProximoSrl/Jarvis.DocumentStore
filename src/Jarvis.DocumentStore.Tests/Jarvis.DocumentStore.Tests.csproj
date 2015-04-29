@@ -277,7 +277,6 @@
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_a_format_is_added_to_a_document.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_document_format_deleted_will_be_deleted.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_document_format_has_been_deleted.cs" />
-    <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_trying_to_delete_with_a_wrong_handle.cs" />
     <Compile Include="DomainSpecs\DocumentSpecs\DocumentSpecification.cs" />
     <Compile Include="DomainSpecs\SerializationIdTests.cs" />
     <Compile Include="GlobalSetupFixture.cs" />

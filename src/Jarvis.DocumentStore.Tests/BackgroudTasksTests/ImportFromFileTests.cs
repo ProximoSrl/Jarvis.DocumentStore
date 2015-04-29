@@ -59,6 +59,8 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             {
                 Logger = new ConsoleLogger()
             };
+
+            _queue.DeleteTaskFileAfterImport = false;
         }
 
         [Test]

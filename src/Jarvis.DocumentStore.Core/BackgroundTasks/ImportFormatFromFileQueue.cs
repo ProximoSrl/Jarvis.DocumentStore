@@ -46,12 +46,15 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private readonly ITenantAccessor _tenantAccessor;
         private readonly ICommandBus _commandBus;
 
+        internal bool DeleteTaskFileAfterImport { get; set; }
+
         public ImportFormatFromFileQueue(
             string[] foldersToWatch,
             ITenantAccessor tenantAccessor,
             ICommandBus commandBus
         )
         {
+            DeleteTaskFileAfterImport = true;
             _foldersToWatch = foldersToWatch;
             _tenantAccessor = tenantAccessor;
             _commandBus = commandBus;
@@ -152,14 +155,17 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 }
             }
 
-            try
+            if(DeleteTaskFileAfterImport)
             {
-                File.Delete(task.PathToTaskFile);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorFormat(ex, "Delete task failed: {0}", task.PathToTaskFile);
-                throw;
+                try
+                {
+                    File.Delete(task.PathToTaskFile);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat(ex, "Delete task failed: {0}", task.PathToTaskFile);
+                    throw;
+                }
             }
         }
 
