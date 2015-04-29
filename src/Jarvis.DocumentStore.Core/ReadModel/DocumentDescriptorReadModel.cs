@@ -33,6 +33,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public int FormatsCount { get; set; }
         public long SequenceNumber { get; set; }
 
+        /// <summary>
+        /// True when document descriptor has been deduplicated and it is 
+        /// officially created
+        /// </summary>
+        public Boolean Created { get; set; }
+
         public HashSet<DocumentAttachmentReadModel> Attachments { get; private set; }
 
         public DocumentDescriptorReadModel(

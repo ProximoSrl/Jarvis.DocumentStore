@@ -12,6 +12,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentDescriptorProjection : AbstractProjection,
         IEventHandler<DocumentDescriptorInitialized>,
+        IEventHandler<DocumentDescriptorCreated>,
         IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<DocumentDescriptorDeleted>,
         IEventHandler<DocumentHandleAttached>,
@@ -60,6 +61,18 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _documents.Insert(e, document);
         }
 
+        /// <summary>
+        /// Need to maintain the chain of the attachment.
+        /// </summary>
+        /// <param name="e"></param>
+        public void On(DocumentDescriptorCreated e)
+        {
+            _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
+            {
+                d.Created = true;
+            });
+        }
+
         public void On(FormatAddedToDocumentDescriptor e)
         {
             _documents.FindAndModify(e, (DocumentDescriptorId)e.AggregateId, d =>
@@ -102,5 +115,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 d.AddAttachments(e.Attachment, e.AttachmentPath);
             });
         }
+
+
+     
     }
 }
