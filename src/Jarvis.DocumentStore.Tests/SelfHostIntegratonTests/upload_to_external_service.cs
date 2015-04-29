@@ -183,6 +183,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Task.WaitAll(uploads);
         }
+        
+        [Test]
+        public void upload_same_pdf_100_times_with_same_handle()
+        {
+            var uploads = Enumerable
+                .Range(1, 100)
+                .Select(x => _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("this_is_a_pdf")))
+                .ToArray();
+
+            Task.WaitAll(uploads);
+        }
 
 
         [Test]
