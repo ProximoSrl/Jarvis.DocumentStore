@@ -79,6 +79,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             CreateSut();
             rmDocuments.Add(new DocumentDescriptorReadModel(
+                1L,
                 new DocumentDescriptorId(1),
                 new BlobId("blob.1")) { Created = true });
             var evt = new DocumentDescriptorCreated(
@@ -96,7 +97,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_pipeline_id_is_original_when_pipeline_is_null()
         {
             SetHandleToReturn();
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             docRm.Created = true;
             rmDocuments.Add(docRm);
@@ -124,7 +125,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_document_descriptor_created_generates_record()
         {
             CreateSut();
-            rmDocuments.Add(new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("original.1")));
+            rmDocuments.Add(new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("original.1")));
             var evtCreated = new DocumentDescriptorCreated(
                 new BlobId("original.1"),
                 new DocumentHandleInfo(new DocumentHandle("Rev_1"), new FileNameWithExtension("test.txt")))
@@ -153,7 +154,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_stream_events_have_fileName()
         {
             SetHandleToReturn();
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.Created = true;
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
@@ -169,7 +170,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_stream_events_have_custom_handle_data()
         {
             SetHandleToReturn();
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.Created = true;
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
@@ -185,7 +186,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_stream_events_have_documentId()
         {
             SetHandleToReturn();
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("blob_test"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("blob_test"));
             docRm.Created = true;
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
@@ -201,13 +202,13 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_stream_events_on_attachment()
         {
             SetHandleToReturn();
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_1"));
             var rev1 = new DocumentHandle("rev_1");
             docRm.AddHandle(rev1);
             rmDocuments.Add(docRm);
 
             var attachHandle = new DocumentHandle("rev_2");
-            var docRmAttach = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_2"));
+            var docRmAttach = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_2"));
             docRmAttach.AddHandle(attachHandle);
             rmDocuments.Add(docRmAttach);
             CreateSut();
@@ -244,6 +245,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             rmStream.Add(new StreamReadModel() { Id = 41 });
             rmDocuments.Add(new DocumentDescriptorReadModel(
+                1L,
                 new DocumentDescriptorId(1),
                 new BlobId("blob.1")) { Created = true });
 
@@ -275,7 +277,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             stub.FileNameWithExtension.Returns(new FileNameWithExtension("test.txt"));
             _blobStore.GetDescriptor(Arg.Any<BlobId>()).Returns(stub);
 
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddFormat(new PipelineId("tika"), new DocumentFormat("blah"), new BlobId("pdf"));
             docRm.AddFormat(new PipelineId("test"), new DocumentFormat("blah blah"), new BlobId("test"));
             docRm.Created = true;
@@ -309,7 +311,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_format_added_to_handle_when_added_to_document()
         {
             SetHandleToReturn();
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.Created = true;
             docRm.AddHandle(new DocumentHandle("rev_1"));
             rmDocuments.Add(docRm);
@@ -348,7 +350,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         {
             SetHandleToReturn();
 
-            var docRm = new DocumentDescriptorReadModel(new DocumentDescriptorId(1), new BlobId("file_1"));
+            var docRm = new DocumentDescriptorReadModel(1L, new DocumentDescriptorId(1), new BlobId("file_1"));
             docRm.AddHandle(new DocumentHandle("rev_1"));
             docRm.Created = true;
             rmDocuments.Add(docRm);

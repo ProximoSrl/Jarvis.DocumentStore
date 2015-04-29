@@ -5,6 +5,7 @@ using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using MongoDB.Driver.Builders;
+using NEventStore;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -53,7 +54,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDescriptorInitialized e)
         {
-            var document = new DocumentDescriptorReadModel((DocumentDescriptorId)e.AggregateId, e.BlobId)
+            var longCheckpoint = LongCheckpoint.Parse(e.CheckpointToken).LongValue;
+            var document = new DocumentDescriptorReadModel(longCheckpoint, (DocumentDescriptorId)e.AggregateId, e.BlobId)
             {
                 Hash = e.Hash
             };
