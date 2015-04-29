@@ -253,6 +253,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackgroudTasksTests\ImportFromFileTests.cs" />
+    <Compile Include="ClientTests\DocumentStoreClientTests.cs" />
     <Compile Include="ControllerTests\AbstractFileControllerTests.cs" />
     <Compile Include="ControllerTests\DownloadTests.cs" />
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />

@@ -22,15 +22,19 @@ using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
-    public class ImportTask
+    internal class DocumentImportTask
     {
+        /* input */
         public Uri Uri { get; private set; }
         public DocumentHandle Handle { get; private set; }
         public DocumentFormat Format { get; private set; }
         public TenantId Tenant { get; private set; }
         public DocumentCustomData CustomData { get; private set; }
         public bool DeleteAfterImport { get; private set; }
+        
+        /* working */
         public string PathToTaskFile { get; set; }
+        public string Result { get; set; }
     }
 
     public class ImportFormatFromFileQueue
@@ -82,7 +86,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
         }
 
-        private void UploadFile(ImportTask task)
+        private void UploadFile(DocumentImportTask task)
         {
             if (!task.Uri.IsFile)
             {
@@ -133,7 +137,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
         }
 
-        private void TaskExecuted(ImportTask task)
+        private void TaskExecuted(DocumentImportTask task)
         {
             if (task.DeleteAfterImport)
             {
@@ -175,14 +179,14 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             return blobStore;
         }
 
-        public ImportTask LoadTask(string pathToFile)
+        internal DocumentImportTask LoadTask(string pathToFile)
         {
             try
             {
                 var asJson = File.ReadAllText(pathToFile)
                     .Replace("%CURRENT_DIR%", Path.GetDirectoryName(pathToFile).Replace("\\", "/"));
 
-                var task = JsonConvert.DeserializeObject<ImportTask>(asJson, PocoSerializationSettings.Default);
+                var task = JsonConvert.DeserializeObject<DocumentImportTask>(asJson, PocoSerializationSettings.Default);
                 task.PathToTaskFile = pathToFile;
                 return task;
             }

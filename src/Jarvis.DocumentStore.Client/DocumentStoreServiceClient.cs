@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
@@ -32,6 +33,7 @@ namespace Jarvis.DocumentStore.Client
     {
         public string Tenant { get; private set; }
         readonly Uri _documentStoreUri;
+        public static readonly DocumentFormat OriginalFormat = new DocumentFormat("original");
         public string TempFolder { get; set; }
 
         /// <summary>
@@ -402,7 +404,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>A document format reader</returns>
         public DocumentFormatReader OpenRead(DocumentHandle documentHandle, DocumentFormat format = null, OpenOptions options = null)
         {
-            format = format ?? new DocumentFormat("original");
+            format = format ?? OriginalFormat;
             var relativeUri = Tenant + "/documents/" + documentHandle + "/" + format;
             if (options != null && !string.IsNullOrWhiteSpace(options.FileName))
                 relativeUri = relativeUri + "/" + options.FileName;
@@ -475,7 +477,7 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new HttpClient())
             {
                 var json = await client.GetStringAsync(resourceUri);
-                var d = await FromJsonAsync <ClientAttachmentInfo[]>(json);
+                var d = await FromJsonAsync<ClientAttachmentInfo[]>(json);
                 return new DocumentAttachments(d);
             }
         }
@@ -505,5 +507,27 @@ namespace Jarvis.DocumentStore.Client
                 return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default);
             }
         }
-   }
+
+        public DocumentImportData CreateDocumentImportData(string fileName, DocumentHandle handle, DocumentFormat format = null)
+        {
+            format = format ?? OriginalFormat;
+            return new DocumentImportData(new Uri(fileName),handle, format, Tenant);
+        }
+
+        public void QueueDocumentImport(DocumentImportData did, string pathToFile)
+        {
+            string fileName = pathToFile + ".dsimport";
+            string folder = Path.GetDirectoryName(fileName);
+
+            if (folder == null)
+                throw new Exception("Invalid folder");
+
+            string json = JsonConvert.SerializeObject(did, Formatting.Indented);
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            File.WriteAllText(fileName, json);
+        }
+    }
 }

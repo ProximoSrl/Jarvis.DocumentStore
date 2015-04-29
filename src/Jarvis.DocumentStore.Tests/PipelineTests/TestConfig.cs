@@ -7,10 +7,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     public static class TestConfig
     {
         static readonly string DocumentsFolder;
-
+        public static readonly string TempFolder;
         static TestConfig()
         {
             DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\Docs")).FullName;
+            TempFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             ServerAddress = new Uri("http://localhost:5123");
             Tenant = "tests";
             DocsTenant = "docs";
