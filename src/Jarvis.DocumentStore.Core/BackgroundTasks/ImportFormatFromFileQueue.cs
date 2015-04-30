@@ -12,12 +12,14 @@ using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Serialization;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
+using Jarvis.Framework.Shared.ReadModel;
 using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
@@ -31,7 +33,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public TenantId Tenant { get; private set; }
         public DocumentCustomData CustomData { get; private set; }
         public bool DeleteAfterImport { get; private set; }
-        
+
         /* working */
         public string PathToTaskFile { get; set; }
         public string Result { get; set; }
@@ -42,6 +44,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public const string JobExtension = "*.dsimport";
         public ILogger Logger { get; set; }
 
+        private static DocumentFormat OriginalFormat = new DocumentFormat("original");
         private readonly string[] _foldersToWatch;
         private readonly ITenantAccessor _tenantAccessor;
         private readonly ICommandBus _commandBus;
@@ -117,20 +120,37 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 }
 
                 var blobId = blobStore.Upload(task.Format, fname);
-                var descriptor = blobStore.GetDescriptor(blobId);
-                var fileName = new FileNameWithExtension(Path.GetFileName(fname));
-                var handleInfo = new DocumentHandleInfo(task.Handle, fileName, task.CustomData);
-                var documentId = identityGenerator.New<DocumentDescriptorId>();
 
-                var createDocument = new InitializeDocumentDescriptor(
-                    documentId,
-                    blobId,
-                    handleInfo,
-                    descriptor.Hash,
-                    fileName
-                );
+                if (task.Format == OriginalFormat)
+                {
+                    var descriptor = blobStore.GetDescriptor(blobId);
+                    var fileName = new FileNameWithExtension(Path.GetFileName(fname));
+                    var handleInfo = new DocumentHandleInfo(task.Handle, fileName, task.CustomData);
+                    var documentId = identityGenerator.New<DocumentDescriptorId>();
+                    
+                    var createDocument = new InitializeDocumentDescriptor(
+                        documentId,
+                        blobId,
+                        handleInfo,
+                        descriptor.Hash,
+                        fileName
+                        );
+                    _commandBus.Send(createDocument, "import-from-file");
+                }
+                else
+                {
+                    var reader = _tenantAccessor.Current.Container.Resolve<IDocumentWriter>();
+                    var handle = reader.FindOneById(task.Handle);
+                    var documentId = handle.DocumentDescriptorId;
 
-                _commandBus.Send(createDocument, "import-from-file");
+                    var command = new AddFormatToDocumentDescriptor(
+                        documentId, 
+                        task.Format, 
+                        blobId, 
+                        new PipelineId("user-content")
+                    );
+                    _commandBus.Send(command, "import-from-file");
+                }
 
                 TaskExecuted(task);
             }
@@ -155,7 +175,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 }
             }
 
-            if(DeleteTaskFileAfterImport)
+            if (DeleteTaskFileAfterImport)
             {
                 try
                 {

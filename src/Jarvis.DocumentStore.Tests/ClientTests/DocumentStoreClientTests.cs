@@ -61,7 +61,7 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
             var taskFolder = @"c:\temp\dsqueue";
             var files = Directory.GetFiles(sourceFolder, "*.*", SearchOption.AllDirectories);
             var docs = new DocumentStoreServiceClient(new Uri("http://ds"), "docs");
-            var demo = new DocumentStoreServiceClient(new Uri("http://ds"), "demo");
+//            var demo = new DocumentStoreServiceClient(new Uri("http://ds"), "demo");
 
             var counter = 1;
             Parallel.ForEach(files, file =>
@@ -72,20 +72,19 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
                     file,
                     new DocumentHandle(handle)
                 );
-
-                var taskDemo = demo.CreateDocumentImportData(
-                    Guid.NewGuid(),
-                    file,
-                    new DocumentHandle(handle)
-                );
-
                 taskDoc.DeleteAfterImport = false;
-                taskDemo.DeleteAfterImport = false;
 
                 var docsFile = Path.Combine(taskFolder, "doc_" + handle + "_" + DateTime.Now.Ticks);
-                var demoFile = Path.Combine(taskFolder, "demo_" + handle + "_" + DateTime.Now.Ticks);
                 docs.QueueDocumentImport(taskDoc, docsFile);
-                demo.QueueDocumentImport(taskDemo, demoFile);
+
+                //var taskDemo = demo.CreateDocumentImportData(
+                //    Guid.NewGuid(),
+                //    file,
+                //    new DocumentHandle(handle)
+                //);
+                //taskDemo.DeleteAfterImport = false;
+                //var demoFile = Path.Combine(taskFolder, "demo_" + handle + "_" + DateTime.Now.Ticks);
+                //demo.QueueDocumentImport(taskDemo, demoFile);
             });
         }
     }
