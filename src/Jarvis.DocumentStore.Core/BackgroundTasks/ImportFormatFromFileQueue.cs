@@ -31,6 +31,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public DocumentHandle Handle { get; private set; }
         public DocumentFormat Format { get; private set; }
         public TenantId Tenant { get; private set; }
+        public FileNameWithExtension FileName { get; private set; }
         public DocumentCustomData CustomData { get; private set; }
         public bool DeleteAfterImport { get; private set; }
 
@@ -124,10 +125,10 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 if (task.Format == OriginalFormat)
                 {
                     var descriptor = blobStore.GetDescriptor(blobId);
-                    var fileName = new FileNameWithExtension(Path.GetFileName(fname));
+                    var fileName = task.FileName;
                     var handleInfo = new DocumentHandleInfo(task.Handle, fileName, task.CustomData);
                     var documentId = identityGenerator.New<DocumentDescriptorId>();
-                    
+
                     var createDocument = new InitializeDocumentDescriptor(
                         documentId,
                         blobId,
@@ -144,9 +145,9 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     var documentId = handle.DocumentDescriptorId;
 
                     var command = new AddFormatToDocumentDescriptor(
-                        documentId, 
-                        task.Format, 
-                        blobId, 
+                        documentId,
+                        task.Format,
+                        blobId,
                         new PipelineId("user-content")
                     );
                     _commandBus.Send(command, "import-from-file");

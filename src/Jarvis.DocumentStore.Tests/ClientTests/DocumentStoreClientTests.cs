@@ -21,10 +21,11 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
         {
             var client = new DocumentStoreServiceClient(new Uri("http://ds"), "test");
 
-            var did = client.CreateDocumentImportData(TaskId, "c:\\temp\\a file.docx", Doc);
+            var did = client.CreateDocumentImportData(TaskId, "c:\\temp\\a file.docx","a file.docx", Doc);
 
             Assert.AreEqual("file:///c:/temp/a%20file.docx", did.Uri.AbsoluteUri);
             Assert.AreEqual("test", did.Tenant);
+            Assert.AreEqual("a file.docx", did.FileName);
             Assert.AreEqual(Doc, did.Handle);
             Assert.IsFalse(did.DeleteAfterImport);
             Assert.AreEqual(DocumentStoreServiceClient.OriginalFormat, did.Format);
@@ -35,7 +36,7 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
         {
             var fname = Path.Combine(TestConfig.TempFolder, "a_file_to_import");
             var client = new DocumentStoreServiceClient(new Uri("http://ds"), "test");
-            var did = client.CreateDocumentImportData(TaskId, "c:\\temp\\a file.docx", Doc);
+            var did = client.CreateDocumentImportData(TaskId, "c:\\temp\\a file.docx", "a file.docx", Doc);
             client.QueueDocumentImport(did, fname);
 
             Assert.IsTrue(File.Exists(fname + ".dsimport"));
@@ -44,6 +45,7 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
 @"{
   ""TaskId"": ""9a29d730-f57a-41e4-92ba-55b7d99712a2"",
   ""Uri"": ""c:\\temp\\a file.docx"",
+  ""FileName"": ""a file.docx"",
   ""Handle"": ""doc"",
   ""Format"": ""original"",
   ""Tenant"": ""test"",
@@ -70,6 +72,7 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
                 var taskDoc = docs.CreateDocumentImportData(
                     Guid.NewGuid(),
                     file,
+                    Path.GetFileName(file),
                     new DocumentHandle(handle)
                 );
                 taskDoc.DeleteAfterImport = false;
