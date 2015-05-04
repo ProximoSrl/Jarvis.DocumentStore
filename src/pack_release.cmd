@@ -17,5 +17,6 @@ xcopy .\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.ImageResizer\bin\rel
 xcopy .\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.LibreOffice\bin\release .\publish\jobs\libreoffice\ /S /Y
 xcopy .\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.PdfThumbnails\bin\release .\publish\jobs\pdfthumbnails\ /S /Y
 xcopy .\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Tika\bin\release .\publish\jobs\tika\ /S /Y
+xcopy .\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.VideoThumbnails\bin\release .\publish\jobs\videothumbnails\ /S /Y
 
 pause
