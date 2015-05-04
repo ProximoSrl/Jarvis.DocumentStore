@@ -1,0 +1,87 @@
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Jarvis.DocumentStore.Tools
+{
+    public class CheckOrphanedBlobs
+    {
+
+        internal static void PerformCheck()
+        {
+            Console.WriteLine("Check all queued tika job that have no original in document descriptor");
+            var urlReadModel = new MongoUrl(ConfigurationManager.AppSettings["mainDb"]);
+            var clientReadModel = new MongoClient(urlReadModel);
+
+            var dbReadModel = clientReadModel.GetServer().GetDatabase(urlReadModel.DatabaseName);
+            MongoCollection<BsonDocument> _descriptorCollection = dbReadModel.GetCollection("rm.DocumentDescriptor");
+
+            var allBlobs = _descriptorCollection.FindAll()
+                .SetFields("Formats.v.BlobId");
+
+            HashSet<String> allValidBlobs = new HashSet<string>();
+
+            Int32 count = 0;
+            foreach (var element in allBlobs)
+            {
+                var formats = (BsonArray)element["Formats"];
+                foreach (var format in formats)
+                {
+                    allValidBlobs.Add(format["v"]["BlobId"].AsString);
+                }
+                count++;
+                if (count % 100 == 0) Console.WriteLine("Scanned {0} descriptors." + count);
+            }
+
+            Console.WriteLine("Found {0} valid formats in rm.DocumentDescriptor readmodel", allValidBlobs.Count);
+            HashSet<String> blobsToDelete = CheckBlobStore(allValidBlobs, "oriFsDb", "original");
+            PurgeOrphanedBlobs(blobsToDelete, "oriFsDb", "original");
+            blobsToDelete = CheckBlobStore(allValidBlobs, "artFsDb", "tika");
+            blobsToDelete = CheckBlobStore(allValidBlobs, "artFsDb", "rasterimage");
+            blobsToDelete = CheckBlobStore(allValidBlobs, "artFsDb", "thumb.small");
+            blobsToDelete = CheckBlobStore(allValidBlobs, "artFsDb", "thumb.large");
+
+        }
+
+        private static void PurgeOrphanedBlobs(HashSet<String> blobsToDelete, String connectionString, String type)
+        {
+            Console.WriteLine("Found {0} orphaned blobs in BlobStorage named {1}", blobsToDelete.Count, type);
+            foreach (var blobToDelete in blobsToDelete)
+            {
+                Console.WriteLine("Blob {0} in database {1} is orphaned", blobToDelete, ConfigurationManager.AppSettings[connectionString]);
+            }
+        }
+
+        private static HashSet<String> CheckBlobStore(
+            HashSet<String> allValidBlobs,
+            String connectionString,
+            String type)
+        {
+            var uri = new MongoUrl(ConfigurationManager.AppSettings[connectionString]);
+            var client = new MongoClient(uri);
+
+            var database = client.GetServer().GetDatabase(uri.DatabaseName);
+            MongoCollection<BsonDocument> blobStoreCollection = database.GetCollection(type + ".files");
+
+            var allOriginals = blobStoreCollection.FindAll();
+            HashSet<String> blobToDelete = new HashSet<string>();
+
+            foreach (var blob in allOriginals)
+            {
+                var id = blob["_id"].AsString;
+                DateTime uploadDate = blob["uploadDate"].AsDateTime;
+                if (!allValidBlobs.Contains(id) &&
+                    DateTime.Now.Subtract(uploadDate).TotalHours > 48)
+                {
+                    blobToDelete.Add(id);
+                }
+            }
+            return blobToDelete;
+        }
+    }
+}

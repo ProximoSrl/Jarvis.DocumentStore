@@ -20,6 +20,9 @@ namespace Jarvis.DocumentStore.Tools
                     case "1":
                         CheckQueueScheduledJob();
                         break;
+                    case "2":
+                        CheckOrphanedBlobs.PerformCheck();
+                        break;
                     case "q":
                         return true;
                 }
@@ -65,6 +68,7 @@ namespace Jarvis.DocumentStore.Tools
             Console.Clear();
             Banner("Menu");
             Console.WriteLine("1 - Check tika scheduled job");
+            Console.WriteLine("2 - Find orphaned blobs");
             Console.WriteLine("");
             Console.WriteLine("Q - esci");
         }
