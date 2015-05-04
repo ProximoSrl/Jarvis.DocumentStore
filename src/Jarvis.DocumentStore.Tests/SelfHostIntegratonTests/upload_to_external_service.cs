@@ -323,6 +323,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_video()
+        {
+            _docs.UploadAsync("C:\\temp\\rainingblood.mp4", DocumentHandle.FromString("slayer_raining_blood")).Wait();
+        }
+
+        [Test]
         public void upload_eml()
         {
             _docs.UploadAsync(TestConfig.PathToEml, DocumentHandle.FromString("eml_1")).Wait();

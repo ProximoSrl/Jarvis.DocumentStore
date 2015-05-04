@@ -349,6 +349,24 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             return fileName;
         }
 
+        protected async Task<Stream> GetBlobFormatReader(
+            String tenantId,
+            String jobId)
+        {
+            DocumentStoreServiceClient client = new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
+            var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
+            return await reader.OpenStream();
+        }
+
+        protected String GetBlobUriForJob(String tenantId, String jobId) 
+        {
+            return String.Format("{0}/{1}/documents/jobs/blob/{2}/{3}",
+                _dsEndpoints.First().BaseUrl,
+                tenantId,
+                QueueName,
+                jobId);
+        }
+
         private void DeleteWorkingFolder(String workingFolder)
         {
             if (!String.IsNullOrEmpty(workingFolder))
