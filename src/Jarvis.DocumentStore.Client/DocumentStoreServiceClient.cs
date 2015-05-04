@@ -356,6 +356,15 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
+        public async Task RemoveFormatFromDocument(DocumentHandle handle, DocumentFormat documentFormat)
+        {
+            using (var client = new HttpClient())
+            {
+                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/" + documentFormat);
+
+                await client.DeleteAsync(resourceUri);
+            }
+        }
 
 
         /// <summary>
@@ -534,5 +543,7 @@ namespace Jarvis.DocumentStore.Client
             }
             File.WriteAllText(fileName, json);
         }
+
+
     }
 }

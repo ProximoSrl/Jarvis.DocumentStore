@@ -60,6 +60,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             this.Formats[format] = new FormatInfo(blobId, pipelineId);
         }
 
+        internal void RemoveFormat(DocumentFormat format)
+        {
+            if (this.Formats.ContainsKey(format))
+                this.Formats.Remove(format);
+        }
+
         public void AddHandle(DocumentHandle handle)
         {
             this.Documents.Add(handle);
@@ -88,6 +94,8 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         {
             Attachments.Add(new DocumentAttachmentReadModel(attachmentHandle, attachmentPath));
         }
+
+      
     }
 
     public class DocumentAttachmentReadModel

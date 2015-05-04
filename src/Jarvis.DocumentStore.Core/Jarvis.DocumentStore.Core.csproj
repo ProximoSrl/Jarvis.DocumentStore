@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackgroundTasks\ImportFormatFromFileQueue.cs" />
+    <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeleteFormatFromDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\AddFormatToDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\InitializeDocumentDescriptorAsAttachCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\CreateAttachmentCommandHandler.cs" />
@@ -113,6 +114,7 @@
     <Compile Include="CommandHandlers\DocumentHandlers\HandleMapper.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\IHandleMapper.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\LinkHandleToDocumentCommandHandler.cs" />
+    <Compile Include="Domain\DocumentDescriptor\Commands\DeleteFormatFromDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\AddFormatToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\CreateAttachment.cs" />
     <Compile Include="Domain\DocumentDescriptor\Commands\InitializeDocumentDescriptorAsAttach.cs" />

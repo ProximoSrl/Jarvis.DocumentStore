@@ -291,6 +291,25 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
+        [Route("{tenantId}/documents/{handle}/{format}")]
+        [HttpDelete]
+        public async Task<HttpResponseMessage> DeleteFormatFromDocument(
+            TenantId tenantId,
+            DocumentHandle handle,
+            DocumentFormat format)
+        {
+            var documentDescriptor = GetDocumentDescriptorByHandle(handle);
+            if (documentDescriptor == null)
+                return DocumentNotFound(handle);
+
+            CommandBus.Send(new DeleteFormatFromDocumentDescriptor(documentDescriptor.Id, format), "api");
+
+            return Request.CreateResponse(
+                HttpStatusCode.Accepted,
+                string.Format("Format {0} marked for deletion for handle {0}", format, handle)
+            );
+        }
+
         /// <summary>
         /// Upload a file sent in an http request
         /// </summary>
@@ -367,14 +386,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentHandle handle
         )
         {
-            var document = GetDocumentByHandle(handle);
+            var documentDescriptor = GetDocumentDescriptorByHandle(handle);
 
-            if (document == null)
+            if (documentDescriptor == null)
             {
                 return DocumentNotFound(handle);
             }
 
-            var formats = document.Formats.ToDictionary(x =>
+            var formats = documentDescriptor.Formats.ToDictionary(x =>
                 (string)x.Key,
                 x => Url.Content("/" + tenantId + "/documents/" + handle + "/" + x.Key)
             );
@@ -662,8 +681,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("{tenantId}/documents/{handle}")]
         public HttpResponseMessage DeleteFile(TenantId tenantId, DocumentHandle handle)
         {
-            var document = GetDocumentByHandle(handle);
-            if (document == null)
+            var documentDescritptor = GetDocumentDescriptorByHandle(handle);
+            if (documentDescritptor == null)
                 return DocumentNotFound(handle);
 
             CommandBus.Send(new DeleteDocument(handle), "api");
@@ -707,7 +726,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             CommandBus.Send(createDocument, "api");
         }
 
-        DocumentDescriptorReadModel GetDocumentByHandle(DocumentHandle handle)
+        DocumentDescriptorReadModel GetDocumentDescriptorByHandle(DocumentHandle handle)
         {
             var mapping = _handleWriter.FindOneById(handle);
             //check if handle is not present, or if the handle still missing descriptor (still not deduplicated)

@@ -344,6 +344,40 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void removing_format_from_document()
+        {
+            //Upload original
+            var handle = new DocumentHandle("Add_Format_Test");
+            await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
+
+            // wait background projection polling
+            await UpdateAndWaitAsync();
+
+            //now add format to document.
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
+            model.DocumentHandle = handle;
+            model.PathToFile = TestConfig.PathToTextDocument;
+            model.CreatedById = "tika";
+            model.Format = new DocumentFormat("tika");
+            await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
+
+            // wait background projection polling
+            await UpdateAndWaitAsync();
+
+            //now delete format
+            await _documentStoreClient.RemoveFormatFromDocument(handle, new DocumentFormat("tika"));
+
+            await UpdateAndWaitAsync();
+
+            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            Assert.NotNull(formats);
+            Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
+            Assert.That(formats, Has.Count.EqualTo(1));
+
+
+        }
+
+        [Test]
         public async void adding_two_time_same_format_overwrite_older()
         {
             //Upload original
