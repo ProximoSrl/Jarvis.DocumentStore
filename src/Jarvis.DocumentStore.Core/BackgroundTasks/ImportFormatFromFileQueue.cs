@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public DocumentHandle Handle { get; private set; }
         public DocumentFormat Format { get; private set; }
         public TenantId Tenant { get; private set; }
-        public FileNameWithExtension FileName { get; private set; }
+        public String FileName { get; private set; }
         public DocumentCustomData CustomData { get; private set; }
         public bool DeleteAfterImport { get; private set; }
 
@@ -125,7 +125,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 if (task.Format == OriginalFormat)
                 {
                     var descriptor = blobStore.GetDescriptor(blobId);
-                    var fileName = task.FileName;
+                    var fileName = new FileNameWithExtension(task.FileName);
                     var handleInfo = new DocumentHandleInfo(task.Handle, fileName, task.CustomData);
                     var documentId = identityGenerator.New<DocumentDescriptorId>();
 
