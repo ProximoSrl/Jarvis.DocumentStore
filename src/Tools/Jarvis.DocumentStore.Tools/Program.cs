@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Tools
                         CheckQueueScheduledJob();
                         break;
                     case "2":
-                        CheckOrphanedBlobs.PerformCheck();
+                        CheckOrphanedBlobs.PerformCheck(DateTime.UtcNow);
                         break;
                     case "q":
                         return true;

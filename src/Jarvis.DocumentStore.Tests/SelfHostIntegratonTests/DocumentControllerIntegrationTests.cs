@@ -45,6 +45,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private MongoCollection<DocumentReadModel> _documentCollection;
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
+        private IBlobStore _blobStore;
 
         private async Task UpdateAndWaitAsync()
         {
@@ -67,6 +68,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _blobStore = _tenant.Container.Resolve<IBlobStore>();
         }
 
         [TearDown]
@@ -364,17 +366,24 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             await UpdateAndWaitAsync();
 
+            //now get the blob for the format
+            var descriptor = _documentDescriptorCollection.FindAll().Single();
+            var blobId = descriptor.Formats
+                .Where(f => f.Key == new DocumentFormat("tika"))
+                .Single().Value.BlobId;
+
             //now delete format
             await _documentStoreClient.RemoveFormatFromDocument(handle, new DocumentFormat("tika"));
-
+            
             await UpdateAndWaitAsync();
 
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
-            Assert.That(formats, Has.Count.EqualTo(1));
+            Assert.That(formats, Has.Count.EqualTo(1), "Tika format should be removed from the projection");
 
-
+            //Uncomment the test if you want to verify that blob id is deleted from a projection
+            //Assert.Throws<Exception>(() => _blobStore.GetDescriptor(blobId), "Blob Id for artifact is not deleted");
         }
 
         [Test]
@@ -398,6 +407,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             await UpdateAndWaitAsync();
 
+            //get blobId of the original format
+            var descriptor = _documentDescriptorCollection.FindAll().Single();
+            var blobId = descriptor.Formats
+                .Where(f => f.Key == new DocumentFormat("tika"))
+                .Single().Value.BlobId;
+
             //now add same format with different content.
             model = new AddFormatFromFileToDocumentModel();
             model.DocumentHandle = handle;
@@ -415,6 +430,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(formats, Has.Count.EqualTo(2));
 
             await CompareDownloadedStreamToFile(TestConfig.PathToHtml, _documentStoreClient.OpenRead(handle, new DocumentFormat("tika")));
+
+            //verify old blob storage was deleted
+            //Assert.Throws<Exception>(() => _blobStore.GetDescriptor(blobId), "Blob Id for artifact is not deleted");
         }
 
 
@@ -571,20 +589,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await UpdateAndWaitAsync();
 
             //now we need to wait cleanupJobs to start 
-            var store = _tenant.Container.Resolve<IBlobStore>();
-            CleanupJob job = _tenant.Container.Resolve<CleanupJob>();
-            IJobExecutionContext context = NSubstitute.Substitute.For<IJobExecutionContext>();
-            IJobDetail jobDetail = NSubstitute.Substitute.For<IJobDetail>();
-            IDictionary<string, object> mapd = new Dictionary<string, object>() { { JobKeys.TenantId.ToString(), _tenant.Id.ToString() } };
-            JobDataMap map = new JobDataMap(mapd);
-            jobDetail.JobDataMap.Returns(map);
-            context.JobDetail.Returns(jobDetail);
-            job.Execute(context);
+            ExecuteCleanupJob();
 
             //verify that blob
-            Assert.That(store.GetDescriptor(new BlobId("original.1")), Is.Not.Null);
+            Assert.That(_blobStore.GetDescriptor(new BlobId("original.1")), Is.Not.Null);
 
-            Assert.Throws<Exception>(() => store.GetDescriptor(new BlobId("original.2")));
+            Assert.Throws<Exception>(() => _blobStore.GetDescriptor(new BlobId("original.2")));
         }
 
         [Test]
@@ -730,6 +740,21 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Debug.WriteLine("Done");
         }
 
+        #region Helpers
+
+        private void ExecuteCleanupJob()
+        {
+            CleanupJob job = _tenant.Container.Resolve<CleanupJob>();
+            IJobExecutionContext context = NSubstitute.Substitute.For<IJobExecutionContext>();
+            IJobDetail jobDetail = NSubstitute.Substitute.For<IJobDetail>();
+            IDictionary<string, object> mapd = new Dictionary<string, object>() { { JobKeys.TenantId.ToString(), _tenant.Id.ToString() } };
+            JobDataMap map = new JobDataMap(mapd);
+            jobDetail.JobDataMap.Returns(map);
+            context.JobDetail.Returns(jobDetail);
+            job.Execute(context);
+        }
+
+        #endregion
 
     }
 }

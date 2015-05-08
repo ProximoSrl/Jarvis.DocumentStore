@@ -51,6 +51,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void remove_tika_from_pdf()
+        {
+            _docs.RemoveFormatFromDocument(DocumentHandle.FromString("Rev_1"), new DocumentFormat("tika")).Wait();
+        }
+
+        [Test]
         public void upload__temp_pdf()
         {
             _docs.UploadAsync(@"c:\temp\temppdf.pdf", DocumentHandle.FromString("temp_pdf")).Wait();
