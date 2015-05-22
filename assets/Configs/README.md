@@ -1,5 +1,46 @@
 ##Configuration of Document Store
 
+###Permissions
+
+DocumentStore needs to open two HTTP port, the first one is used by the main service, the other one is used by metrics.net.
+
+Remember that, in order to run with no-administrative privileges, you need to explicitly add permission to open that port for the user used to run the service.
+
+	netsh http add urlacl url=http://127.0.0.1:5123/ user=Everyone
+
+This is the configuration for the main port of the application, you can use machine_name and this will be substituted by the name of the machine.
+
+```javascript
+"api-bindings": [
+    "http://machine_name:5123",
+    "http://localhost:5123",
+    "http://127.0.0.1:5123",
+],
+```
+
+**If document store started, but navigating with chrome returns a "Service Unavailable", it probably indicates that netsh was badly configured**. In this situation, you should check all permission on selected port running
+
+	netsh http show urlacl 
+
+and then looking at each entry with 5123 as port. You should usually delete every registration for every ip, Es.
+
+	netsh http delete urlacl url=http://127.0.0.1:5123/ 
+	netsh http delete urlacl url=http://MACHINENAME:5123/ 
+	netsh http delete urlacl url=http://+:5123/ 
+	netsh http delete urlacl url=http://localhost:5123/ 
+
+Then re-add all needed registration. Remember that you should add an urlacl for every specific address. Meters is usually installed with this configuration to listen on all IP
+
+```javascript
+"meters": {
+    "http-endpoint": "http://+:55558/"
+},
+```
+
+With this configuration you will need to setup acl (netsh http add urlacl url=http://+:55558/ user=Everyone)
+
+
+
 ###A section of the configuration is dedicated to roles
 
 ```javascript

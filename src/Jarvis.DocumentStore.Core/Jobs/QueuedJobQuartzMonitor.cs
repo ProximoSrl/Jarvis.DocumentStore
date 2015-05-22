@@ -35,10 +35,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
             _pollerJobManager = pollerJobManager;
             _queueHandlers = queueHandlers;
             _config = config;
+          
             new List<String>() 
             {
                 //@@TODO: Multiple bindings?
-                config.ServerAddresses.First().AbsoluteUri
+                config.GetServerAddressForJobs()
             };
             Logger = NullLogger.Instance;
         }

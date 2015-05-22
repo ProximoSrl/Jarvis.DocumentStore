@@ -42,7 +42,7 @@ namespace Jarvis.DocumentStore.Tests.Support
 
         public void SetTestAddress(Uri serverAddress)
         {
-            AddServerAddress(serverAddress);
+            AddServerAddress(serverAddress.AbsoluteUri);
         }
     }
 

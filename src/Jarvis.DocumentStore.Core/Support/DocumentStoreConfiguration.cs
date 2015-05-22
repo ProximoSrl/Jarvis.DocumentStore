@@ -28,12 +28,23 @@ namespace Jarvis.DocumentStore.Core.Support
         public bool HasMetersEnabled {
             get { return MetersOptions.Any(); }
         }
-        private readonly IList<Uri> _addresses = new List<Uri>();
+        private readonly IList<String> _addresses = new List<String>();
         public readonly IDictionary<string,string> MetersOptions = new Dictionary<string, string>();
 
-        public Uri[] ServerAddresses
+        public String[] ServerAddresses
         {
             get { return _addresses.ToArray(); }
+        }
+
+        public String GetServerAddressForJobs()
+        {
+            //TODO: Handle multiple document store application
+            var serverAddress = ServerAddresses.First();
+            if (serverAddress.StartsWith("http://+:"))
+            {
+                serverAddress = serverAddress.Replace("+", Environment.MachineName);
+            }
+            return serverAddress;
         }
 
         public bool IsDeduplicationActive { get; protected set; }
@@ -100,18 +111,19 @@ namespace Jarvis.DocumentStore.Core.Support
             EnableImportFormFileSystem = folders.Any();
         }
 
-        protected Uri Expand(Uri address)
+        protected String Expand(String address)
         {
-            if (address.Host == "machine_name")
+            if (address.Contains("machine_name"))
             {
-                var builder = new UriBuilder(address) { Host = Environment.MachineName };
-                address = builder.Uri;
+                var uri = new Uri(address);
+                var builder = new UriBuilder(uri) { Host = Environment.MachineName };
+                return builder.Uri.AbsoluteUri;
             }
 
             return address;
         }
 
-        protected void AddServerAddress(Uri address)
+        protected void AddServerAddress(String address)
         {
             _addresses.Add(Expand(address));
         }

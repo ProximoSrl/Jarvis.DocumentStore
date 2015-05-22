@@ -82,8 +82,8 @@ namespace Jarvis.DocumentStore.Host.Support
                 var options = new StartOptions();
                 foreach (var uri in config.ServerAddresses)
                 {
-                    _logger.InfoFormat("Binding to @ {0}", uri.AbsoluteUri);
-                    options.Urls.Add(uri.AbsoluteUri);
+                    _logger.InfoFormat("Binding to @ {0}", uri);
+                    options.Urls.Add(uri);
                 }
 
                 _webApplication = WebApp.Start<DocumentStoreApplication>(options);

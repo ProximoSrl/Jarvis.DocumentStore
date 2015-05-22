@@ -57,7 +57,7 @@ namespace Jarvis.DocumentStore.Host.Support
             var apiBindings = ConfigurationServiceClient.Instance.GetStructuredSetting("api-bindings");
             foreach (var binding in apiBindings)
             {
-                AddServerAddress(new Uri((string)binding));
+                AddServerAddress((string)binding);
             }
 
             var metersOptions = ConfigurationServiceClient.Instance.GetStructuredSetting("meters");
