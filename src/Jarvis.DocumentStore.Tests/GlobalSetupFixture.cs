@@ -41,7 +41,7 @@ namespace Jarvis.DocumentStore.Tests
                 mngr.RegisterIdentitiesFromAssembly(typeof (QueuedJobId).Assembly);
 
                 EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
-                MongoFlatMapper.EnableFlatMapping();
+                Jarvis.DocumentStore.Host.Support.MongoFlatMapper.EnableFlatMapping();
             }
             catch (ReflectionTypeLoadException rle)
             {

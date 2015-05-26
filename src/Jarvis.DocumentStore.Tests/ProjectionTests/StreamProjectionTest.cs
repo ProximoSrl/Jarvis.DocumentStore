@@ -116,7 +116,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         public void verify_document_descriptor_initialized_not_generates_record()
         {
             CreateSut();
-            var evt = new DocumentInitialized(new DocumentHandle("rev_1")).AssignIdForTest(new DocumentId(1));
+            var evt = new DocumentInitialized(new DocumentHandle("rev_1"), false).AssignIdForTest(new DocumentId(1));
             _sut.Handle(evt, false);
             Assert.That(rmStream, Has.Count.EqualTo(0), "Document Initialized is raised when document descriptor still is not de-duplicated.");
         }
