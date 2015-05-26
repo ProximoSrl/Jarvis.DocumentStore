@@ -22,22 +22,52 @@ namespace Jarvis.DocumentStore.Host
 
         static int Main(string[] args)
         {
-
+            var lastErrorFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_lastError.txt");
+            if (File.Exists(lastErrorFileName)) File.Delete(lastErrorFileName);
             try
             {
                 CommandsExtensions.EnableDiagnostics = true;
                 Native.DisableWindowsErrorReporting();
                 MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
-                var executionExitCode = StandardDocumentStoreStart();
-                return (Int32)executionExitCode;
+                Int32 executionExitCode;
+                if (args.Length == 1 && (args[0] == "install" || args[0] == "uninstall"))
+                {
+                    executionExitCode = (Int32) StartForInstallOrUninstall();
+                }
+                else
+                {
+                    executionExitCode = (Int32) StandardDocumentStoreStart();
+                }
+                return executionExitCode;
             }
             catch (Exception ex)
             {
-                var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_lastError.txt");
-                File.WriteAllText(fileName, ex.ToString());
+                File.WriteAllText(lastErrorFileName, ex.ToString());
                 throw;
             }
 
+        }
+
+        private static TopshelfExitCode StartForInstallOrUninstall()
+        {
+            var exitCode = HostFactory.Run(host =>
+            {
+              
+                host.Service<Object>(service =>
+                {
+                    
+                    service.ConstructUsing(() => new Object());
+                    service.WhenStarted(s => Console.WriteLine("Start fake for install"));
+                    service.WhenStopped(s => Console.WriteLine("Stop fake for install"));
+                });
+
+                host.RunAsNetworkService();
+
+                host.SetDescription("Jarvis - Document Store");
+                host.SetDisplayName("Jarvis - Document Store");
+                host.SetServiceName("JarvisDocumentStore");
+            });
+            return exitCode;
         }
 
         private static TopshelfExitCode StandardDocumentStoreStart()
