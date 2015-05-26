@@ -59,9 +59,9 @@
     <Reference Include="Common.Logging">
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.ConfigurationService.Client, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Jarvis.ConfigurationService.Client, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.1.94\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
+      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.1.124\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
