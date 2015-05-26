@@ -2,7 +2,8 @@ param(
     [string] $BranchName = "master",
     [string] $InstallDir = "",
     [string] $teamCityBuildId = "Jarvis_DocumentStore_CI",
-    [string] $port = "5123"
+    [string] $port = "5123",
+    [string] $metricsPort = "55558"
 )
 #Remove-Module teamCity
 #Remove-Module jarvisUtils
@@ -78,6 +79,7 @@ Write-Host "Unzipping host zip file in $finalInstallDir"
 
 if (Test-Path $finalInstallDir) 
 {
+    Write-Host "Deleting old folder $finalInstallDir"
     Remove-Item $finalInstallDir -Recurse -Force
 }
 
@@ -96,6 +98,7 @@ Write-Host "Unzipping jobs zip file in $finalJobInstallDir"
 
 if (Test-Path $finalJobInstallDir) 
 {
+    Write-Host "Deleting old jobs folder $finalJobInstallDir"
     Remove-Item $finalJobInstallDir -Recurse -Force
 }
 
@@ -121,6 +124,9 @@ Write-Host "Changing configuration"
 $configFileName = $finalInstallDir + "\Jarvis.DocumentStore.Host.exe.config"
 $xml = [xml](Get-Content $configFileName)
  
+& netsh http add urlacl url=http://+:$port/ user=Everyone
+& netsh http add urlacl url=http://+:$metricsPort/ user=Everyone
+
 Write-Host 'Starting the service'
 Start-Service "Jarvis - Document Store"
 Write-Host "Jarvis Document Store Installed"
