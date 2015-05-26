@@ -71,7 +71,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             if (process == null)
             {
                 process = new System.Diagnostics.Process();
-                process.StartInfo.FileName = jobsLauncherFileExe;
+                process.StartInfo.FileName = fi.FullName;
                 process.StartInfo.Arguments = "/dsuris:" + docStoreAddresses.Aggregate((s1, s2) => s1 + "|" + s2) +
                     " /queue:" + queueId +
                     " /handle:" + processHandle;
