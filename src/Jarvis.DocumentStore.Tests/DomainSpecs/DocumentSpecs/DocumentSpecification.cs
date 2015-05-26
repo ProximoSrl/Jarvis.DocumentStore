@@ -12,6 +12,8 @@ using Machine.Specifications;
 using NSubstitute;
 using NSubstitute.Routing.Handlers;
 using NUnit.Framework;
+using Jarvis.NEventStoreEx.CommonDomainEx.Core;
+using Jarvis.NEventStoreEx.CommonDomainEx;
 
 // ReSharper disable InconsistentNaming
 
@@ -37,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
     public class WhenCreatingAnDocument : DocumentSpecification
     {
         Establish context = () => Create(DocumentId1);
-        Because of = () => DocumentAggregate.Initialize(DocumentId1, DocumentHandle);
+        Because of = () => DocumentAggregate.Initialize(DocumentHandle);
 
         It document_initilized_event_should_be_raised = () =>
             EventHasBeenRaised<DocumentInitialized>().ShouldBeTrue();
@@ -46,12 +48,59 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         {
             var e = RaisedEvent<DocumentInitialized>();
             e.Handle.ShouldBeTheSameAs(DocumentHandle);
+            e.ReInit.ShouldEqual(false);
         };
 
         It linked_document_should_be_null = () =>
             State.LinkedDocument.ShouldBeNull();
     }
 
+    [Subject("with a deleted document")]
+    public class WhenReInitializeDeletedDocument : DocumentSpecification
+    {
+        Establish context = () =>
+        {
+            SetUp(new DocumentState(), DocumentId1);
+            State.MarkAsDeleted();
+        };
+
+        Because of = () => DocumentAggregate.Initialize( DocumentHandle);
+
+        It document_initilized_event_should_be_raised = () =>
+            EventHasBeenRaised<DocumentInitialized>().ShouldBeTrue();
+
+        It document_initialized_event_should_have_and_handle = () =>
+        {
+            var e = RaisedEvent<DocumentInitialized>();
+            e.Handle.ShouldBeTheSameAs(DocumentHandle);
+            e.ReInit.ShouldEqual(true);
+        };
+
+        It linked_document_should_be_null = () =>
+            State.LinkedDocument.ShouldBeNull();
+
+        It state_should_not_be_deleted = () =>
+            State.HasBeenDeleted.ShouldBeFalse();
+    }
+
+    [Subject("with a initialized document")]
+    public class WhenReInitializedNotDeletedDocument : DocumentSpecification
+    {
+
+        Establish context = () =>
+        {
+            Create(DocumentId1);
+            DocumentAggregate.Initialize(DocumentHandle);
+            IAggregateEx agg = DocumentAggregate;
+            agg.ClearUncommittedEvents();
+        };
+
+        Because of = () => DocumentAggregate.Initialize(DocumentHandle);
+
+        It document_initilized_event_should_NOT_be_raised = () =>
+           EventHasBeenRaised<DocumentInitialized>().ShouldBeFalse();
+
+    }
    
 
     public abstract class WithAnInitializedDocument : DocumentSpecification

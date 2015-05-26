@@ -598,6 +598,63 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void verify_de_duplication_not_link_to_deleted_handles()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor =  _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleB") }));
+        }
+
+        [Test]
+        public async void verify_de_duplication_not_link_to_deleted_handles_same_handle()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor =  _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleA") }));
+        }
+
+        [Test]
+        public async void verify_delete_then_re_add_handle()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPng, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleA") }));
+        }
+
+        [Test]
         public async void attachments_not_retrieve_nested_attachment()
         {
             //Upload father

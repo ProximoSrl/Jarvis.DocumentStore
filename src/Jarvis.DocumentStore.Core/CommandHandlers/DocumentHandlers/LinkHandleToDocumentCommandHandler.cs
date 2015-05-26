@@ -25,7 +25,9 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
                 handleId,
                 h =>
                 {
-                    if (!h.HasBeenCreated) h.Initialize(handleId, cmd.HandleInfo.Handle);
+                    //Call Intialize on the handle
+                    h.Initialize(cmd.HandleInfo.Handle);
+
                     h.SetFileName(cmd.HandleInfo.FileName);
                     h.SetCustomData(cmd.HandleInfo.CustomData);
                     h.Link(cmd.DocumentDescriptorId);

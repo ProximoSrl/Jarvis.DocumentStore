@@ -15,12 +15,21 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         {
         }
 
-        public void Initialize(DocumentId id, DocumentHandle handle)
+        public void Initialize(DocumentHandle handle)
         {
-
-            ThrowIfDeleted();
-
-            RaiseEvent(new DocumentInitialized(handle));
+            if (!HasBeenCreated)
+            {
+                RaiseEvent(new DocumentInitialized(handle, false));
+            }
+            else if (InternalState.HasBeenDeleted)
+            {
+                RaiseEvent(new DocumentInitialized(handle, true));
+            }
+            else
+            {
+                if (handle != InternalState.Handle)
+                    throw new DomainException(Id, "Trying to initialize an initialized handle with different handle");
+            }
         }
 
         public void Link(DocumentDescriptorId documentId)

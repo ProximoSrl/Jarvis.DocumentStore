@@ -21,6 +21,8 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
         void When(DocumentInitialized e)
         {
             this.Handle = e.Handle;
+            if (e.ReInit)
+                this.HasBeenDeleted = false;
         }
 
         void When(DocumentDeleted e)
