@@ -1,5 +1,11 @@
 ##Configuration of Document Store
 
+###Parameters
+
+This folder contains a file called parameters.documentstore.config.sample that contains parameters sample file. You should  place this file inside your configuration manager configuration folder, at the same level of the DocumentStore.redirect file.
+
+This permits to change specific parameters to your dev machine or production environment and using the standard default configuration that you download with source control.
+
 ###Permissions
 
 DocumentStore needs to open two HTTP port, the first one is used by the main service, the other one is used by metrics.net.

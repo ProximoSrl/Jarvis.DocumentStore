@@ -1,0 +1,46 @@
+{
+	"baseConnectionString" : "mongodb://localhost/ds",
+	
+	"tenants": ["docs", "demo"],
+    "connectionStrings": {
+        "ds-queues": "%baseConnectionString%-queues",
+        "ds-logs": "%baseConnectionString%-logs",
+        "docs": {
+            "originals": "%baseConnectionString%-docs-ori-fs",
+            "artifacts": "%baseConnectionString%-docs-art-fs",
+            "system": "%baseConnectionString%-docs",
+            "events": "%baseConnectionString%-docs",
+            "readmodel": "%baseConnectionString%-docs"
+        },
+        "demo": {
+            "originals": "%baseConnectionString%-demo-ori-fs",
+            "artifacts": "%baseConnectionString%-demo-art-fs",
+            "system": "%baseConnectionString%-demo",
+            "events": "%baseConnectionString%-demo",
+            "readmodel": "%baseConnectionString%-demo"
+        }
+    },
+	
+	"listeningPort" : "5123",
+	"rebuild" : false,
+	"engine-slots" : "*",
+	"allowed-file-types"  : "*",
+	"restricted-allowed-file-types": "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip",
+	"file-queue" : "c:\\temp\\dsqueue\\",
+	"jobs" : 
+	{
+		"location" : "..\\..\\..\\..\\artifacts\\jobs\\"
+	},
+	
+	"roles": {
+        "api": "true",
+        "worker": "true",
+        "projections": "true",
+        "queueManager": "true",
+        "jobMode": "queue"
+    },
+	
+	"jobsManagement": {
+        "windowVisible": true
+    }
+}
