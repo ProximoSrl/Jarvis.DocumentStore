@@ -111,7 +111,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Text.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.OpenJDK.Tools">
+    <Reference Include="IKVM.OpenJDK.Tools, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Tools.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Util, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
@@ -122,22 +123,28 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.API.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Bind">
+    <Reference Include="IKVM.OpenJDK.XML.Bind, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Bind.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Crypto">
+    <Reference Include="IKVM.OpenJDK.XML.Crypto, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Parse">
+    <Reference Include="IKVM.OpenJDK.XML.Parse, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Parse.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.Transform">
+    <Reference Include="IKVM.OpenJDK.XML.Transform, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Transform.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.WebServices">
+    <Reference Include="IKVM.OpenJDK.XML.WebServices, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.WebServices.dll</HintPath>
     </Reference>
-    <Reference Include="IKVM.OpenJDK.XML.XPath">
+    <Reference Include="IKVM.OpenJDK.XML.XPath, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.XPath.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.Runtime, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
@@ -233,11 +240,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="tika-app, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\TikaOnDotNet.1.6.3\lib\net35\tika-app.dll</HintPath>
+      <HintPath>..\packages\TikaOnDotNet.1.7.0\lib\net35\tika-app.dll</HintPath>
     </Reference>
-    <Reference Include="TikaOnDotNet, Version=1.6.3.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="TikaOnDotNet, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\TikaOnDotNet.1.6.3\lib\net35\TikaOnDotNet.dll</HintPath>
+      <HintPath>..\packages\TikaOnDotNet.1.7.0\lib\net35\TikaOnDotNet.dll</HintPath>
     </Reference>
     <Reference Include="Topshelf, Version=3.1.135.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

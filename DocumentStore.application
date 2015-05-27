@@ -1,0 +1,3 @@
+#jarvis-config
+application-name:documentstore
+base-server-address:http://localhost:55555

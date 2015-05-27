@@ -52,7 +52,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 result = await AddFormatToDocumentFromObject(parameters.TenantId,
                     this.QueueName,
                     parameters.JobId,
-                    new DocumentFormat(DocumentFormats.Content), 
+                    new DocumentFormat(DocumentFormats.Content),
                     DocumentContent.NullContent,
                     contentFileName,
                     new Dictionary<string, object>());
@@ -65,7 +65,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
 
-            var passwords = ClientPasswordSet.GetPasswordFor(parameters.FileName);
+            Logger.DebugFormat("Search for password JobId:{0}",parameters.JobId);
+            var passwords = ClientPasswordSet.GetPasswordFor(parameters.FileName).ToArray();
             String content = "";
             if (passwords.Any())
             {
@@ -82,10 +83,11 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                         Logger.ErrorFormat("Error opening file {0} with password", parameters.FileName);
                     }
                 }
-            } 
+            }
             else
             {
                 //Simply analyze file without password
+                Logger.DebugFormat("Analyze content JobId: {0} -> Path: {1}",parameters.JobId, pathToFile);
                 content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
             }
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
@@ -111,7 +113,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 {
                     documentContent.AddMetadata(DocumentContent.MedatataLanguage, lang);
                 }
-                
+
                 result = await AddFormatToDocumentFromObject(
                       parameters.TenantId,
                       this.QueueName,
@@ -146,7 +148,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             ContentFormatBuilder builder,
             ContentFilterManager filterManager)
             : base(builder, filterManager)
-        { 
+        {
         }
 
         protected override ITikaAnalyzer BuildAnalyzer()
@@ -169,12 +171,15 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             ContentFormatBuilder builder,
             ContentFilterManager filterManager)
             : base(builder, filterManager)
-        { 
+        {
         }
 
         protected override ITikaAnalyzer BuildAnalyzer()
         {
-            return new TikaNetAnalyzer();
+            return new TikaNetAnalyzer()
+            {
+                Logger = this.Logger
+            };
         }
 
         public override bool IsActive
