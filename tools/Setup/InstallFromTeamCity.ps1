@@ -34,6 +34,9 @@ if ($baseBuildUri -eq $null)
 
 Write-Host "Last Build Number is: $lastBuildNumber"
 
+$configTargetFileName = [System.IO.Path]::GetFullPath($InstallDir + "\config.build-$lastBuildNumber.zip ") 
+Get-Artifact "$baseBuildUri/config.zip" $configTargetFileName $user $plainPassword 
+
 $targetpath = [System.IO.Path]::GetFullPath($InstallDir + "\Jarvis.DocumentStore.Host.build-$lastBuildNumber.zip ") 
 $finalInstallDir = [System.IO.Path]::GetFullPath($InstallDir + "\DocumentStoreHost")
 
