@@ -31,10 +31,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            Logger.DebugFormat("Running cleanup on {0}", context.JobDetail.JobDataMap.GetString(JobKeys.TenantId));
-
+            Logger.DebugFormat("Running cleanup on {0} ", 
+                context.JobDetail.JobDataMap.GetString(JobKeys.TenantId), 
+                RecycleBin);
+            DateTime checkDate = DateTime.UtcNow.AddDays(-15);
             var list = RecycleBin.Slots
-                .Where(x => x.Id.StreamId.StartsWith("DocumentDescriptor_"))
+                .Where(x => x.DeletedAt < checkDate &&
+                            x.Id.StreamId.StartsWith("DocumentDescriptor_"))
                 .Take(200)
                 .ToArray();
 

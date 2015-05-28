@@ -55,7 +55,7 @@ namespace Jarvis.DocumentStore.Core.Support
                 .StartAt(DateTimeOffset.Now.AddSeconds(30))
                 .WithSimpleSchedule(b => b.RepeatForever().WithIntervalInSeconds(15))
 #else
-                .StartAt(DateTimeOffset.Now.AddMinutes(5))
+                .StartAt(DateTimeOffset.Now.AddMinutes(30))
                 .WithSimpleSchedule(b=>b.RepeatForever().WithIntervalInMinutes(5))
 #endif
 .WithPriority(1)
