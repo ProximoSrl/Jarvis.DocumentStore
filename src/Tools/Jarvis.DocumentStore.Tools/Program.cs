@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -76,7 +77,7 @@ namespace Jarvis.DocumentStore.Tools
         static void CheckQueueScheduledJob()
         {
             Console.WriteLine("Check all queued tika job that have no original in document descriptor");
-            var urlQueue = new MongoUrl("mongodb://avalance,typhoon,earthquake/ds-queues");
+            var urlQueue = new MongoUrl(ConfigurationManager.ConnectionStrings["queuesDb"].ConnectionString);
             var clientQueue = new MongoClient(urlQueue);
 
             var dbQueue = clientQueue.GetServer().GetDatabase(urlQueue.DatabaseName);
@@ -92,7 +93,7 @@ namespace Jarvis.DocumentStore.Tools
                 blobIdQueued.Add(blobId["BlobId"].AsString);
             }
 
-            var urlDs = new MongoUrl("mongodb://avalance,typhoon,earthquake/ds-docs");
+            var urlDs = new MongoUrl(ConfigurationManager.ConnectionStrings["mainDb"].ConnectionString);
             var clientDs = new MongoClient(urlDs);
 
             var dbDs = clientDs.GetServer().GetDatabase(urlDs.DatabaseName);
