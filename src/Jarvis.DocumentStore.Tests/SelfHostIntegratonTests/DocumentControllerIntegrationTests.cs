@@ -32,6 +32,7 @@ using MongoDB.Driver.Builders;
 using NSubstitute;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 using System.Net;
+using Jarvis.DocumentStore.Core.Support;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -374,7 +375,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             //now delete format
             await _documentStoreClient.RemoveFormatFromDocument(handle, new DocumentFormat("tika"));
-            
+
             await UpdateAndWaitAsync();
 
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
@@ -583,18 +584,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void verify_de_duplication_delete_original_blob()
         {
+            DateTime now = DateTime.UtcNow.AddDays(+30);
+
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
             // wait background projection polling
             await UpdateAndWaitAsync();
-
-            //now we need to wait cleanupJobs to start 
-            ExecuteCleanupJob();
-
+            using (DateTimeService.Override(() => now))
+            {
+                //now we need to wait cleanupJobs to start 
+                ExecuteCleanupJob();
+            }
             //verify that blob
             Assert.That(_blobStore.GetDescriptor(new BlobId("original.1")), Is.Not.Null);
 
             Assert.Throws<Exception>(() => _blobStore.GetDescriptor(new BlobId("original.2")));
+
         }
 
         [Test]

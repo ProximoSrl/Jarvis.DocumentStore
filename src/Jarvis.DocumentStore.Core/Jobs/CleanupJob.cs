@@ -11,6 +11,7 @@ using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using NEventStore;
 using Quartz;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
@@ -34,7 +35,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             Logger.DebugFormat("Running cleanup on {0} ", 
                 context.JobDetail.JobDataMap.GetString(JobKeys.TenantId), 
                 RecycleBin);
-            DateTime checkDate = DateTime.UtcNow.AddDays(-15);
+            DateTime checkDate = DateTimeService.UtcNow.AddDays(-15);
             var list = RecycleBin.Slots
                 .Where(x => x.DeletedAt < checkDate &&
                             x.Id.StreamId.StartsWith("DocumentDescriptor_"))
