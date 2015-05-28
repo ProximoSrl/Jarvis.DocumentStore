@@ -67,7 +67,7 @@ namespace Jarvis.DocumentStore.JobsHost
             {
                 Console.Title = String.Format("Pid {0} - Queue {1} Job Poller Started",
                     Process.GetCurrentProcess().Id, queueName);
-                MongoLog.SetProgramName(String.Format("Document Store Job for Queue {0}", queueName ));
+                MongoLog.SetProgramName(String.Format("ds-job[Queue:{0}]", queueName));
                 Console.WriteLine("JOB STARTED: Press any key to stop the client");
                 Console.ReadKey();
             }

@@ -78,6 +78,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                     }
                     finally
                     {
+                        Logger.Debug("Closing Stream after auto-detect parser");
                         inputStream.close();
                     }
                 }

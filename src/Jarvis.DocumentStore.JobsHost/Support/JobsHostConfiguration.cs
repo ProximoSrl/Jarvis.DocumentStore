@@ -94,13 +94,21 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             //Check log4net.config location, we can accept a local log4net.config
             //or a general one located in parent folder of the job
             var parentLog4net = new FileInfo("..\\log4net.config");
+            Console.WriteLine("START: Searching log4net in: {0}", parentLog4net.FullName);
             if (parentLog4net.Exists) 
             {
                 f.LogUsing(new ExtendedLog4netFactory(parentLog4net.FullName));
             }
             else
             {
-                f.LogUsing(new ExtendedLog4netFactory("log4net.config"));
+                Console.WriteLine("FAILED: Searching log4net in: {0}", parentLog4net.FullName);
+                var log4net = new FileInfo("log4net.config");
+                Console.WriteLine("Use Default log4net in: {0}", log4net.FullName);
+                if (!log4net.Exists)
+                {
+                    Console.Error.WriteLine("ERROR, UNABLE TO FIND LOG4NET IN: {0}", log4net.FullName);
+                }
+                f.LogUsing(new ExtendedLog4netFactory(log4net.FullName));
             }
             
         }
