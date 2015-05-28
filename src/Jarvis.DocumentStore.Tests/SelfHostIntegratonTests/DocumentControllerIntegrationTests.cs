@@ -603,6 +603,25 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public async void verify_de_duplication__not_delete_original_blob_before_15_days()
+        {
+            DateTime now = DateTime.UtcNow.AddDays(+14);
+
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
+            // wait background projection polling
+            await UpdateAndWaitAsync();
+            using (DateTimeService.Override(() => now))
+            {
+                //now we need to wait cleanupJobs to start 
+                ExecuteCleanupJob();
+            }
+            //verify that blob
+            Assert.That(_blobStore.GetDescriptor(new BlobId("original.1")), Is.Not.Null);
+            Assert.That(_blobStore.GetDescriptor(new BlobId("original.2")), Is.Not.Null);
+        }
+
+        [Test]
         public async void attachments_not_retrieve_nested_attachment()
         {
             //Upload father
