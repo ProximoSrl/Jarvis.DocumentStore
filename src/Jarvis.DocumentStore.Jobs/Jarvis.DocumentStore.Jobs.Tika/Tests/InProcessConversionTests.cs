@@ -27,8 +27,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
 
             ITikaAnalyzer analyzer = BuildAnalyzer();
 
-            TestFile(retValue, analyzer, "test_doc.docx", "docx", "Lorem Ipsum", TestFiles.docx);
-            TestFile(retValue, analyzer, "test_ppt.pptx", "pptx", "PPT TITLE", TestFiles.pptx);
+            TestFile(retValue, analyzer, "tika_test_doc.docx", "docx", "Lorem Ipsum", TestFiles.docx);
+            TestFile(retValue, analyzer, "tika_test_ppt.pptx", "pptx", "PPT TITLE", TestFiles.pptx);
 
             return retValue;
         }

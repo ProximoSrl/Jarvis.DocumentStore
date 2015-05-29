@@ -27,23 +27,24 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
         {
             List<PollerTestResult> retValue = new List<PollerTestResult>();
 
-            TestFile(retValue, "test_doc.docx", "docx", TestFiles.docx );
-            TestFile(retValue, "test_ppt.pptx", "pptx", TestFiles.pptx);
+            TestFile(retValue, "office_test_doc.docx", "docx", TestFiles.docx);
+            TestFile(retValue, "office_test_ppt.pptx", "pptx", TestFiles.pptx);
 
             return retValue;
         }
 
         private void TestFile(
-            List<PollerTestResult> retValue, 
+            List<PollerTestResult> retValue,
             String fileName,
             String type,
             Byte[] fileContent)
         {
-            var tempFile = Path.Combine(Path.GetTempPath(), fileName);
-            if (File.Exists(tempFile)) File.Delete(tempFile);
-            File.WriteAllBytes(tempFile, fileContent);
             try
             {
+                var tempFile = Path.Combine(Path.GetTempPath(), fileName);
+                if (File.Exists(tempFile)) File.Delete(tempFile);
+                File.WriteAllBytes(tempFile, fileContent);
+
                 string content = Conversion.Run(tempFile, "pdf");
                 if (!String.IsNullOrEmpty(content))
                 {
