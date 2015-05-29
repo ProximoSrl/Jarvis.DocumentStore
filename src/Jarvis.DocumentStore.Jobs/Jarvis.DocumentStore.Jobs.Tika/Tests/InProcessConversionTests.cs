@@ -59,7 +59,6 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
             catch (Exception ex)
             {
                 retValue.Add(new PollerTestResult(false, type + " conversion: " + ex.Message));
-                throw;
             }
         }
 
