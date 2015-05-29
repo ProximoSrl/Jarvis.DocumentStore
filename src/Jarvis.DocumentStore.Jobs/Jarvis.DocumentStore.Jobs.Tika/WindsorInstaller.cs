@@ -18,5 +18,6 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 Component.For<ContentFormatBuilder>()
                 );
         }
+
     }
 }

@@ -42,6 +42,10 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             {
                 _logger.InfoFormat("Poller: {0} - IsOutOfProcess {1} - IsActive {2} - Type {3}", poller.QueueName, poller.IsOutOfProcess, poller.IsActive, poller.GetType().Name);
             }
+
+            var testResult = ExecuteTests();
+            if (!testResult) return false;
+
             var queuePoller = allPollers.SingleOrDefault(p =>
                 p.IsOutOfProcess && 
                 p.QueueName.Equals(_queueName, StringComparison.OrdinalIgnoreCase) &&
@@ -60,6 +64,42 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             return true;
         }
 
+        private Boolean ExecuteTests()
+        {
+            var tests = _container.ResolveAll<IPollerTest>();
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Executing Startup Tests");
+            Boolean testFailed = false;
+            foreach (var test in tests)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Executing:" + test.Name);
+                var results = test.Execute();
+                foreach (var result in results)
+                {
+                    if (result.Result)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write("PASS: ");
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("FAIL: ");
+                        testFailed = true;
+                    }
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(result.Message);
+                }
+            }
+            if (testFailed)
+            {
+                Console.WriteLine("Some test failed, press a key to continue");
+                Console.ReadKey();
+            }
+            return !testFailed;
+        }
+
         void BuildContainer(JobsHostConfiguration config)
         {
             _container = new WindsorContainer();
@@ -75,11 +115,21 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             _container.Register(
                 Component.For<IClientPasswordSet>()
                     .ImplementedBy<EnvironmentVariableClientPasswordSet>(),
+
+                //Register from this application
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface() ,
+                Classes.FromAssemblyInThisApplication()
+                    .BasedOn<IPollerTest>()
+                    .WithServiceFirstInterface() ,
+
+                //Register from dll that contains Jobs in name.
                 Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*")) 
                     .BasedOn<IPollerJob>()
+                    .WithServiceFirstInterface(),
+                  Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*"))
+                    .BasedOn<IPollerTest>()
                     .WithServiceFirstInterface()
             );
 

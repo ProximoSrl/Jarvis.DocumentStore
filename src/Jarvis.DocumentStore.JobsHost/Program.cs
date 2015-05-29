@@ -73,7 +73,7 @@ namespace Jarvis.DocumentStore.JobsHost
             }
             else
             {
-                Console.WriteLine("NO JOB STARTED!!!! CLOSING!!!!");
+                Console.WriteLine("JOB CANNOT START!!!! CLOSING!!!!");
                 Thread.Sleep(3000);
                 return -1; //code to signal that queue is not supported.
             }
