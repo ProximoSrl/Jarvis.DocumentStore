@@ -131,7 +131,7 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetDir)*.*" "$(SolutionDir)..\artifacts\jobs\libreoffice\" /Y /E
-copy /Y "$(SolutionDir)Jarvis.DocumentStore.JobsHost\app.config" "$(SolutionDir)..\artifacts\jobs\libreoffice\Jarvis.DocumentStore.JobsHost.exe.config"</PostBuildEvent>
+copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\libreoffice\Jarvis.DocumentStore.JobsHost.exe.config.original"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
