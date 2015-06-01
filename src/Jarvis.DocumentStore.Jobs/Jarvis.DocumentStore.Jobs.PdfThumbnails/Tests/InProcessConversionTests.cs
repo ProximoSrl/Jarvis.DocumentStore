@@ -75,7 +75,6 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
             catch (Exception ex)
             {
                 retValue.Add(new PollerTestResult(false, "Pdf to Jpg: " + ex.Message));
-                throw;
             }
         }
 
