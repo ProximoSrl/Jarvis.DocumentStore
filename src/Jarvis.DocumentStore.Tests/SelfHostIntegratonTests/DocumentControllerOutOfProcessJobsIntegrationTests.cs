@@ -39,6 +39,7 @@ using MongoDB.Bson;
 using Jarvis.DocumentStore.Jobs.LibreOffice;
 using Jarvis.DocumentStore.Jobs.Tika.Filters;
 using MongoDB.Driver.Builders;
+using NSubstitute;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -108,7 +109,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var job = testJob ?? _sutBase;
             job.JobsHostConfiguration = _jobsHostConfiguration;
             job.Logger = new TestLogger(LoggerLevel.Error);
+            OnJobPreparing(job);
             job.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, handle);
+        }
+
+        protected virtual void OnJobPreparing(AbstractOutOfProcessPollerJob job)
+        {
+
         }
 
         [TestFixtureTearDown]
@@ -175,12 +182,157 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Tika document not found");
         }
 
-
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
             {
                 new QueueInfo("tika", "original", ""), 
+            };
+        }
+    }
+     
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_tika_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        OutOfProcessTikaNetJob sut;
+
+        protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
+        {
+            var subPassword = NSubstitute.Substitute.For<IClientPasswordSet>();
+            subPassword.GetPasswordFor(Arg.Any<String>()).Returns(new[] { "jarvistest" });
+            job.ClientPasswordSet = subPassword;
+        }
+
+        [Test]
+        public async void verify_tika_job_with_password()
+        {
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
+            PrepareJob();
+
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
+            var handleClient = new DocumentHandle("verify_tika_job");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToPasswordProtectedPdf,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            var tikaFormat = new DocumentFormat("tika");
+            var contentFormat = new DocumentFormat("content");
+            do
+            {
+                await UpdateAndWait();
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(handleCore));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(tikaFormat))
+                {
+                    //Document found, but we want to be sure that the fileName of the format is correct.
+                    var formatInfo = documentDescriptor.Formats[tikaFormat];
+                    var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
+                    Assert.That(
+                        blob.FileNameWithExtension.ToString(),
+                        Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToPasswordProtectedPdf) + ".tika.html"),
+                        "File name is wrong, we expect the same file name with extension .tika.html");
+
+                    var contentFormatInfo = documentDescriptor.Formats[contentFormat];
+
+                    var content = _blobStore.Download(contentFormatInfo.BlobId, Path.GetTempPath());
+                    var contentString = File.ReadAllText(content);
+                    Assert.That(contentString, Contains.Substring("Questo documento è protetto da password."));
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("Tika document not found");
+        }
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_tika_multiple_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        OutOfProcessTikaNetJob sut;
+
+        protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
+        {
+            var subPassword = NSubstitute.Substitute.For<IClientPasswordSet>();
+            subPassword.GetPasswordFor(Arg.Any<String>()).Returns(new[] {  "wrongPassword", "jarvistest" });
+            job.ClientPasswordSet = subPassword;
+        }
+
+        [Test]
+        public async void verify_tika_job_with_two_password()
+        {
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
+            PrepareJob();
+
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
+            var handleClient = new DocumentHandle("verify_tika_job");
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToPasswordProtectedPdf,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            var tikaFormat = new DocumentFormat("tika");
+            var contentFormat = new DocumentFormat("content");
+            do
+            {
+                await UpdateAndWait();
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(handleCore));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(tikaFormat))
+                {
+                    //Document found, but we want to be sure that the fileName of the format is correct.
+                    var formatInfo = documentDescriptor.Formats[tikaFormat];
+                    var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
+                    Assert.That(
+                        blob.FileNameWithExtension.ToString(),
+                        Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToPasswordProtectedPdf) + ".tika.html"),
+                        "File name is wrong, we expect the same file name with extension .tika.html");
+
+                    var contentFormatInfo = documentDescriptor.Formats[contentFormat];
+
+                    var content = _blobStore.Download(contentFormatInfo.BlobId, Path.GetTempPath());
+                    var contentString = File.ReadAllText(content);
+                    Assert.That(contentString, Contains.Substring("Questo documento è protetto da password."));
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("Tika document not found");
+        }
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""),
             };
         }
     }
