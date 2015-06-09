@@ -151,6 +151,7 @@
     <Compile Include="Domain\Document\Events\DocumentLinked.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
     <Compile Include="Support\DateTimeService.cs" />
+    <Compile Include="Support\DocumentStoreMultiTenantCommandBus.cs" />
     <Compile Include="Support\DsDisposableAction.cs" />
     <Compile Include="Support\IDocumentFormatTranslator.cs" />
     <Compile Include="EvenstoreHooks\ReadModelPromisesHook.cs" />

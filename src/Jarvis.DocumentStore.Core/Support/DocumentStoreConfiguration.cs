@@ -78,6 +78,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
         #region Projections
 
+        public String EngineVersion { get; set; }
         public Boolean Rebuild { get; set; }
 
         public String[] EngineSlots { get; set; }

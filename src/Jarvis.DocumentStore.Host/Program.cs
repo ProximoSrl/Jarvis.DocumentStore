@@ -13,6 +13,7 @@ using Jarvis.ConfigurationService.Client;
 using System.Threading;
 using System.Diagnostics;
 using Jarvis.Framework.Shared.Commands;
+using Jarvis.Framework.Shared.IdentitySupport;
 
 namespace Jarvis.DocumentStore.Host
 {

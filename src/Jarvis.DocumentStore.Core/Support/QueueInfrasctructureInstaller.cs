@@ -52,6 +52,8 @@ namespace Jarvis.DocumentStore.Core.Support
                     .ImplementedBy<PollerManager>()
             );
 
+            container.Resolve<QueuedJobStatus>();
+
             //now register all handlers
             foreach (var queueInfo in _queuesInfo)
             {

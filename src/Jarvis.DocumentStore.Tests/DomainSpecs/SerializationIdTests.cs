@@ -2,6 +2,7 @@
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;

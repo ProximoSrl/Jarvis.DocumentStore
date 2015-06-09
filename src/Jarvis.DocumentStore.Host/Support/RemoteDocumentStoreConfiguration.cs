@@ -66,6 +66,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 AddMetersOptions((string)binding.Name, (string)binding.Value);
             }
 
+            EngineVersion = ConfigurationServiceClient.Instance.GetSetting("projection-engine-version", "v1");
             Rebuild = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("rebuild", "false"), StringComparison.OrdinalIgnoreCase);
             NitroMode = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("nitro-mode", "false"), StringComparison.OrdinalIgnoreCase);
             EngineSlots = ConfigurationServiceClient.Instance.GetSetting("engine-slots", "*").Split(',');
