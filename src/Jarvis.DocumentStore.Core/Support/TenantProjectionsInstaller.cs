@@ -143,6 +143,8 @@ namespace Jarvis.DocumentStore.Core.Support
             else if (config.EngineVersion == "v2")
             {
                 container.Register(
+                    Component.For<ProjectionEngineConfig>()
+                        .Instance(config),
                    Component
                        .For<CommitPollingClient>()
                        .ImplementedBy<CommitPollingClient>()
