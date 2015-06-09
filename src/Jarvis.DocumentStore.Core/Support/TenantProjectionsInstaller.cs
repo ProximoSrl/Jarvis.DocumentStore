@@ -159,18 +159,7 @@ namespace Jarvis.DocumentStore.Core.Support
                         .StartUsingMethod(x => x.Start)
                         .StopUsingMethod(x => x.Stop)
                         );
-            }
-
-            //try
-            //{
-            //    container.Resolve<TriggerProjectionEngineHook>();
-            //}
-            //catch (Exception ex)
-            //{
-
-            //    throw;
-            //}
-  
+            }  
         }
     }
 }

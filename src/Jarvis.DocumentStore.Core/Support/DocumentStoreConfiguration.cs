@@ -18,6 +18,7 @@ namespace Jarvis.DocumentStore.Core.Support
         protected DocumentStoreConfiguration()
         {
             TenantSettings = new List<TenantSettings>();
+            EngineVersion = "v1";
         }
 
         #region BasicSettings
