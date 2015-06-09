@@ -10,8 +10,9 @@ namespace Jarvis.DocumentStore.Tests.Support
 {
     public class DocumentStoreTestConfiguration : DocumentStoreConfiguration
     {
-        public DocumentStoreTestConfiguration()
+        public DocumentStoreTestConfiguration(String engineVersion = "v1")
         {
+            EngineVersion = engineVersion;
             IsApiServer = true;
             IsWorker = false;
             IsReadmodelBuilder = true;
@@ -48,12 +49,12 @@ namespace Jarvis.DocumentStore.Tests.Support
 
     public class DocumentStoreTestConfigurationForPollQueue : DocumentStoreTestConfiguration
     {
-        public DocumentStoreTestConfigurationForPollQueue( QueueInfo[] queueInfo)
+        public DocumentStoreTestConfigurationForPollQueue( QueueInfo[] queueInfo, String engineVersion = "v1")
         {
             IsQueueManager = true;
             QueueJobsPollInterval = 50; //poll each 50 milliseconds.
             QueueStreamPollInterval = 50;
-            
+            EngineVersion = engineVersion;
             this.QueueInfoList = queueInfo;
         }
 

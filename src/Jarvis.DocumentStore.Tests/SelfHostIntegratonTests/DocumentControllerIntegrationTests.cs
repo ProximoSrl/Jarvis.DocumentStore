@@ -37,7 +37,8 @@ using Jarvis.DocumentStore.Core.Support;
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
-    [TestFixture]
+    [TestFixture("v1")]
+    //[TestFixture("v2")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
@@ -47,7 +48,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
         private IBlobStore _blobStore;
+        private String _engineVersion;
 
+        public DocumentControllerIntegrationTests(String engineVersion)
+        {
+            _engineVersion = engineVersion;
+        }
         private async Task UpdateAndWaitAsync()
         {
             await _projections.UpdateAndWait();
@@ -56,7 +62,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [SetUp]
         public void SetUp()
         {
-            var config = new DocumentStoreTestConfiguration();
+            var config = new DocumentStoreTestConfiguration(_engineVersion);
             MongoDbTestConnectionProvider.DropTestsTenant();
             config.SetTestAddress(TestConfig.ServerAddress);
             _documentStoreService = new DocumentStoreBootstrapper();

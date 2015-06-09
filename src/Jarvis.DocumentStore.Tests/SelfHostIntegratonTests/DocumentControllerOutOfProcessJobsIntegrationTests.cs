@@ -50,7 +50,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     /// 2) upload document and wait for specific queue to process the docs
     /// 3) verify the outcome.
     /// </summary>
-    [TestFixture]
+    [TestFixture("v1")]
+    //[TestFixture("v2")]
     [Category("integration_full")]
     //[Explicit("This integration test is slow because it wait for polling")]
     public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase
@@ -71,6 +72,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         private ITriggerProjectionsUpdate _projections;
 
+        protected string _engineVersion;
+
+        public DocumentControllerOutOfProcessJobsIntegrationTestsBase(String engineVersion)
+        {
+            _engineVersion = engineVersion;
+        }
+
         protected async Task UpdateAndWait()
         {
             await _projections.UpdateAndWait();
@@ -79,7 +87,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo());
+            _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo(), _engineVersion);
             _jobsHostConfiguration = new JobsHostConfiguration();
             MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
             _config.SetTestAddress(TestConfig.ServerAddress);
@@ -132,11 +140,16 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture()]
     [Category("integration_full")]
     public class integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         OutOfProcessTikaNetJob sut;
+
+        public integration_out_of_process_tika(String engineVersion) : base (engineVersion)
+        {
+                
+        }
 
         [Test]
         public async void verify_tika_job()
@@ -190,12 +203,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             };
         }
     }
-     
+
     [TestFixture]
     [Category("integration_full")]
     public class integration_out_of_process_tika_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         OutOfProcessTikaNetJob sut;
+
+        public integration_out_of_process_tika_password(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
         {
@@ -270,10 +289,16 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     {
         OutOfProcessTikaNetJob sut;
 
+        public integration_out_of_process_tika_multiple_password(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
+
         protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
         {
             var subPassword = NSubstitute.Substitute.For<IClientPasswordSet>();
-            subPassword.GetPasswordFor(Arg.Any<String>()).Returns(new[] {  "wrongPassword", "jarvistest" });
+            subPassword.GetPasswordFor(Arg.Any<String>()).Returns(new[] { "wrongPassword", "jarvistest" });
             job.ClientPasswordSet = subPassword;
         }
 
@@ -343,6 +368,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     {
         OutOfProcessTikaNetJob sut;
 
+        public integration_out_of_process_no_multiple_schedule(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
         /// <summary>
         /// When duplicate document is added to DS it generates two record in the StreamReadModel
         /// but <see cref="QueueManager" /> needs to generate only one job. 
@@ -399,7 +429,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             return new QueueInfo[]
             {
-                new QueueInfo("tika", "original", ""), 
+                new QueueInfo("tika", "original", ""),
             };
         }
     }
@@ -409,6 +439,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     public class integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         OutOfProcessTikaNetJob sut;
+        public integration_out_of_process_tika_content(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_tika_set_content()
@@ -463,7 +498,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             return new QueueInfo[]
             {
-                new QueueInfo("tika", "original", ""), 
+                new QueueInfo("tika", "original", ""),
             };
         }
     }
@@ -472,6 +507,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_out_of_process_image : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_out_of_process_image(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
+
         [Test]
         public async void verify_image_resizer_job()
         {
@@ -546,6 +587,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     {
         AnalyzeEmailOutOfProcessJob sut;
 
+        public integration_out_of_process_eml(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
+
         [Test]
         public async void verify_chain_for_email()
         {
@@ -604,6 +651,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         AnalyzeEmailOutOfProcessJob sut;
 
         HtmlToPdfOutOfProcessJobOld _htmlSut;
+
+        public integration_out_of_process_eml_chain(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_full_chain_for_email_and_html_zipOld()
@@ -673,7 +726,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_out_of_process_html_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_out_of_process_html_to_pdf(String engineVersion)
+            : base(engineVersion)
+        {
 
+        }
         public async Task<Boolean> verify_htmlToPdf_base<T>() where T : AbstractOutOfProcessPollerJob, new()
         {
             _sutBase = new T();
@@ -737,6 +794,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_out_of_process_office_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_out_of_process_office_to_pdf(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_office_job()
@@ -796,6 +858,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_attachments_queue_multiple_zip(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_nested_zip_count_file_verification()
@@ -848,6 +915,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_attachments_queue_singleZip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_attachments_queue_singleZip(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_single_zip_count_file_verification()
@@ -908,7 +980,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_attachment_then_same_attach_inside_externa_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_attachment_then_same_attach_inside_externa_attach(String engineVersion)
+            : base(engineVersion)
+        {
 
+        }
         [Test]
         public async void verify_attachment_chains()
         {
@@ -982,6 +1058,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_handle_with_attachment_duplicated_then_first_deleted : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_handle_with_attachment_duplicated_then_first_deleted(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_deletion_original_handle()
@@ -1042,7 +1123,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Assert.Fail("de-duplicated document handle does not maintain attachments after deletion");
         }
-        
+
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -1056,6 +1137,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_attachments_mail_with_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_attachments_mail_with_attach(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_email_count_file_verification()
@@ -1082,9 +1168,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 2)
                 {
                     //all attachment are unzipped correctly
-                        var doc = _documentDescriptorCollection.Find(
-                        Query.EQ("Documents", handleClient.ToString()))
-                        .Single();
+                    var doc = _documentDescriptorCollection.Find(
+                    Query.EQ("Documents", handleClient.ToString()))
+                    .Single();
                     Assert.That(doc.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                         new Core.Model.DocumentHandle("attachment_email_1") }));
                     return;
@@ -1102,7 +1188,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             return new QueueInfo[]
             {
-                new QueueInfo("attachments", mimeTypes : 
+                new QueueInfo("attachments", mimeTypes :
                     MimeTypes.GetMimeTypeByExtension("zip") + "|" +
                     MimeTypes.GetMimeTypeByExtension("msg") + "|" +
                     MimeTypes.GetMimeTypeByExtension("eml")),
@@ -1114,6 +1200,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class integration_attachments_mail_with_zip_and_other_mail : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+        public integration_attachments_mail_with_zip_and_other_mail(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_email_count_file_verification()
@@ -1159,7 +1250,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             return new QueueInfo[]
             {
-                new QueueInfo("attachments", mimeTypes : 
+                new QueueInfo("attachments", mimeTypes :
                     MimeTypes.GetMimeTypeByExtension("zip") + "|" +
                     MimeTypes.GetMimeTypeByExtension("msg") + "|" +
                     MimeTypes.GetMimeTypeByExtension("eml")),
@@ -1172,6 +1263,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("integration_full")]
     public class Deletion_of_attachments_advanced : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
+
+        public Deletion_of_attachments_advanced(String engineVersion) 
+            : base (engineVersion)
+        {
+
+        }
 
         [Test]
         public async void verify_deletion_original_handle_delete_attachments()
