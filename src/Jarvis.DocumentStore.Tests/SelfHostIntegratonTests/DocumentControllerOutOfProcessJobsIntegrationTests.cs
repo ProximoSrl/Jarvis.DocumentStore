@@ -51,7 +51,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     /// 3) verify the outcome.
     /// </summary>
     [TestFixture("v1")]
-    //[TestFixture("v2")]
+    [TestFixture("v2")]
     [Category("integration_full")]
     //[Explicit("This integration test is slow because it wait for polling")]
     public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase

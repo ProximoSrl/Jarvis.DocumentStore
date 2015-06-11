@@ -5,6 +5,8 @@ using Castle.Services.Logging.Log4netIntegration;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.Framework.Kernel.ProjectionEngine;
+using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Tests.Support
 {
@@ -26,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             QueueStreamPollInterval = 1000;
             IsQueueManager = false;
             TenantSettings.Add(new TestTenantSettings());
-
+            BucketInfo = new List<BucketInfo>() { new BucketInfo() { Slots = new[] { "*" }, BufferSize = 10 } };
             Boost = "true";
             DelayedStartInMilliseconds = 1000;
             ForcedGcSecondsInterval = 0;

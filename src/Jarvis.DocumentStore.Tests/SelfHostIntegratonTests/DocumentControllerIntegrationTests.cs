@@ -38,7 +38,7 @@ using Jarvis.DocumentStore.Core.Support;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture("v1")]
-    //[TestFixture("v2")]
+    [TestFixture("v2")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;

@@ -48,7 +48,10 @@ namespace Jarvis.DocumentStore.Core.Support
                 TenantId = _tenant.Id,
                 DelayedStartInMilliseconds = _config.DelayedStartInMilliseconds,
                 EngineVersion = _config.EngineVersion,
+                BucketInfo = _config.BucketInfo,
             };
+
+          
 
             var readModelDb = _tenant.Get<MongoDatabase>("readmodel.db");
 

@@ -10,6 +10,7 @@ using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Threading;
+using Jarvis.Framework.Kernel.ProjectionEngine;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -67,6 +68,23 @@ namespace Jarvis.DocumentStore.Host.Support
             }
 
             EngineVersion = ConfigurationServiceClient.Instance.GetSetting("projection-engine-version", "v1");
+            var buckets = ConfigurationServiceClient.Instance.WithArraySetting("poller-buckets");
+            if (buckets != null)
+            {
+                BucketInfo = buckets.Select(b => new BucketInfo()
+                {
+                    Slots = b.slots.ToString().Split(','),
+                    BufferSize = (Int32)b.buffer,
+                }).ToList();
+            }
+            else
+            {
+                //No bucket configured, just start with a single bucket for all slots.
+                BucketInfo = new List<BucketInfo>()
+                {
+                    new BucketInfo() {BufferSize = 5000, Slots = new [] { "*" } }
+                };
+            }
             Rebuild = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("rebuild", "false"), StringComparison.OrdinalIgnoreCase);
             NitroMode = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("nitro-mode", "false"), StringComparison.OrdinalIgnoreCase);
             EngineSlots = ConfigurationServiceClient.Instance.GetSetting("engine-slots", "*").Split(',');
