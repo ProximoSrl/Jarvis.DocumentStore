@@ -6,7 +6,8 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
     public static class TestConfig
     {
-        static readonly string DocumentsFolder;
+        public static readonly string DocumentsFolder;
+        public static readonly String QueueFolder;
         public static readonly string TempFolder;
         static TestConfig()
         {
@@ -16,6 +17,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             Tenant = "tests";
             DocsTenant = "docs";
             DemoTenant = "demo";
+            QueueFolder = GenerateQueueFolder();
         }
 
         public static Uri ServerAddress { get; private set; }
@@ -169,9 +171,9 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
 
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }
-        public static string QueueFolder
+        private  static string GenerateQueueFolder()
         {
-            get { return Path.Combine(DocumentsFolder, "Queue"); }
+            return Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Queue"); 
         }
 
 
