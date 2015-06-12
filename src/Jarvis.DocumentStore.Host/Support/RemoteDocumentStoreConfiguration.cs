@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Threading;
 using Jarvis.Framework.Kernel.ProjectionEngine;
+using System.IO;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -126,7 +127,16 @@ namespace Jarvis.DocumentStore.Host.Support
 
         private void BootstrapConfigurationServiceClient()
         {
-            ConfigurationServiceClient.AppDomainInitializer(LoggerFunction, "JARVIS_CONFIG_SERVICE");
+            //this is the configuration with the base parameters value.
+            //var defaultParameterFile = new FileInfo("default-parameters.config");
+            //ConfigurationServiceClient.AppDomainInitializer(
+            //    LoggerFunction, 
+            //    "JARVIS_CONFIG_SERVICE",
+            //    defaultParameterFile : defaultParameterFile);
+
+            ConfigurationServiceClient.AppDomainInitializer(
+                LoggerFunction,
+                "JARVIS_CONFIG_SERVICE");
         }
 
         private void LoggerFunction(string message, bool isError, Exception exception)

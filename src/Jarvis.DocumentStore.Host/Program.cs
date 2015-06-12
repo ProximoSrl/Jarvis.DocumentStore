@@ -17,7 +17,7 @@ using Jarvis.Framework.Shared.IdentitySupport;
 
 namespace Jarvis.DocumentStore.Host
 {
-    class Program
+    class Program 
     {
         static DocumentStoreConfiguration _documentStoreConfiguration;
 
