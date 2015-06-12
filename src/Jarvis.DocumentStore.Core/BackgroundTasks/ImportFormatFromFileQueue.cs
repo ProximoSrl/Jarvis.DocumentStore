@@ -84,30 +84,52 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             _commandBus = commandBus;
         }
 
+        private Boolean _stopped = false;
+        /// <summary>
+        /// Stop all filesystem polling
+        /// </summary>
+        internal void Stop()
+        {
+            _stopped = true;
+        }
+
         public void PollFileSystem()
         {
+            if (_stopped) return;
+
             foreach (var folder in _foldersToWatch)
             {
                 if (!Directory.Exists(folder))
                     continue;
 
-                var files = Directory.GetFiles(folder, JobExtension, SearchOption.AllDirectories);
-                Parallel.ForEach(files, file =>
+                var options = new ParallelOptions()
                 {
-                    var task = LoadTask(file);
-                    if (task != null)
-                    {
-                        if (Logger.IsInfoEnabled)
-                        {
-                            Logger.InfoFormat("Loading /{0}/{1}/{2} - {3}",
-                                task.Tenant,
-                                task.Handle,
-                                task.Format,
-                                task.Uri
-                            );
-                        }
+                    MaxDegreeOfParallelism = 4
+                };
 
-                        UploadFile(task); 
+                var files = Directory.GetFiles(folder, JobExtension, SearchOption.AllDirectories);
+                Parallel.ForEach(
+                    files, 
+                    options,
+                    file =>
+                {
+                    if (!_stopped)
+                    {
+                        var task = LoadTask(file);
+                        if (task != null)
+                        {
+                            if (Logger.IsInfoEnabled)
+                            {
+                                Logger.InfoFormat("Loading /{0}/{1}/{2} - {3}",
+                                    task.Tenant,
+                                    task.Handle,
+                                    task.Format,
+                                    task.Uri
+                                );
+                            }
+
+                            UploadFile(task);
+                        }
                     }
                 });
             }
@@ -309,6 +331,8 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 return null;
             }
         }
+
+
     }
 
     public class ImportFileFromFileSystemRunner : IStartable
@@ -332,6 +356,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
 
         public void Stop()
         {
+            _job.Stop();
             _stopPending = true;
             _stop.WaitOne(TimeSpan.FromSeconds(60));
         }
