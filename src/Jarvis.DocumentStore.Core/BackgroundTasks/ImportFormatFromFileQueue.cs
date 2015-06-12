@@ -126,18 +126,17 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             {
                 Logger.ErrorFormat("File missing: {0}", fname);
                 return;
-            }
-
-            if (FileHasImportFailureMarker(fname, task.FileTimestamp))
-            {
-                Logger.WarnFormat("Tenant {0} - file {1} has import errors and will be skipped.", task.Tenant, fname);
-                return;
-            }
-            
+            }            
 
             try
             {
                 TenantContext.Enter(task.Tenant);
+
+                if (FileHasImportFailureMarker(fname, task.FileTimestamp))
+                {
+                    Logger.WarnFormat("Tenant {0} - file {1} has import errors and will be skipped.", task.Tenant, fname);
+                    return;
+                }
 
                 var blobStore = GetBlobStoreForTenant();
                 var identityGenerator = GetIdentityGeneratorForTenant();
