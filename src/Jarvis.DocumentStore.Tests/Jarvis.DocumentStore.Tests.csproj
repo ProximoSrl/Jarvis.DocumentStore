@@ -156,11 +156,11 @@
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.Framework.Kernel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.12-preBranchBusrefactor\lib\Jarvis.Framework.Kernel.dll</HintPath>
+      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.Framework.Kernel.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.Framework.Shared, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.12-preBranchBusrefactor\lib\Jarvis.Framework.Shared.dll</HintPath>
+      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.Framework.Shared.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.Framework.TestHelpers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -168,7 +168,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.NEventStoreEx, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.12-preBranchBusrefactor\lib\Jarvis.NEventStoreEx.dll</HintPath>
+      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.NEventStoreEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
