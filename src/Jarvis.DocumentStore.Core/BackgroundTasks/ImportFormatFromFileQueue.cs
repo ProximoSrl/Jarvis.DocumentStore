@@ -21,6 +21,10 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using Newtonsoft.Json;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
+using MongoDB.Bson;
+using MongoDB.Driver.Builders;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
@@ -38,6 +42,20 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         /* working */
         public string PathToTaskFile { get; set; }
         public string Result { get; set; }
+
+        public DateTime FileTimestamp { get; set; }
+    }
+
+    public class ImportFailure
+    {
+        [BsonId]
+        public String FileName { get; set; }
+
+        public String Error { get; set; }
+
+        public DateTime Timestamp { get; set; }
+
+        public Int64 ImportFileTimestampTicks { get; set; }
     }
 
     public class ImportFormatFromFileQueue
@@ -49,6 +67,8 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private readonly string[] _foldersToWatch;
         private readonly ITenantAccessor _tenantAccessor;
         private readonly ICommandBus _commandBus;
+        private readonly ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>
+            _importFailureCollections = new ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>();
 
         internal bool DeleteTaskFileAfterImport { get; set; }
 
@@ -64,36 +84,58 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             _commandBus = commandBus;
         }
 
+        private Boolean _stopped = false;
+        /// <summary>
+        /// Stop all filesystem polling
+        /// </summary>
+        internal void Stop()
+        {
+            _stopped = true;
+        }
+
         public void PollFileSystem()
         {
+            if (_stopped) return;
+
             foreach (var folder in _foldersToWatch)
             {
                 if (!Directory.Exists(folder))
                     continue;
 
-                var files = Directory.GetFiles(folder, JobExtension, SearchOption.AllDirectories);
-                Parallel.ForEach(files, file =>
+                var options = new ParallelOptions()
                 {
-                    var task = LoadTask(file);
-                    if (task != null)
-                    {
-                        if (Logger.IsInfoEnabled)
-                        {
-                            Logger.InfoFormat("Loading /{0}/{1}/{2} - {3}",
-                                task.Tenant,
-                                task.Handle,
-                                task.Format,
-                                task.Uri
-                            );
-                        }
+                    MaxDegreeOfParallelism = 4
+                };
 
-                        UploadFile(task);
+                var files = Directory.GetFiles(folder, JobExtension, SearchOption.AllDirectories);
+                Parallel.ForEach(
+                    files, 
+                    options,
+                    file =>
+                {
+                    if (!_stopped)
+                    {
+                        var task = LoadTask(file);
+                        if (task != null)
+                        {
+                            if (Logger.IsInfoEnabled)
+                            {
+                                Logger.InfoFormat("Loading /{0}/{1}/{2} - {3}",
+                                    task.Tenant,
+                                    task.Handle,
+                                    task.Format,
+                                    task.Uri
+                                );
+                            }
+
+                            UploadFile(task);
+                        }
                     }
                 });
             }
         }
 
-        private void UploadFile(DocumentImportTask task)
+        internal void UploadFile(DocumentImportTask task)
         {
             if (!task.Uri.IsFile)
             {
@@ -106,11 +148,17 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             {
                 Logger.ErrorFormat("File missing: {0}", fname);
                 return;
-            }
+            }            
 
             try
             {
                 TenantContext.Enter(task.Tenant);
+
+                if (FileHasImportFailureMarker(fname, task.FileTimestamp))
+                {
+                    Logger.WarnFormat("Tenant {0} - file {1} has import errors and will be skipped.", task.Tenant, fname);
+                    return;
+                }
 
                 var blobStore = GetBlobStoreForTenant();
                 var identityGenerator = GetIdentityGeneratorForTenant();
@@ -154,10 +202,59 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 }
 
                 TaskExecuted(task);
+                DeleteImportFailure(fname);
+            }
+            catch (Exception ex)
+            {
+                ImportFailure failure = new ImportFailure()
+                {
+                    Error = ex.ToString(),
+                    FileName = fname,
+                    Timestamp = DateTime.Now,
+                    ImportFileTimestampTicks = task.FileTimestamp.Ticks,
+                };
+                MarkImportFailure(failure);
             }
             finally
             {
                 TenantContext.Exit();
+            }
+        }
+
+        private void MarkImportFailure(ImportFailure failure)
+        {
+            EnsureFailureConnectionForCurrentTenant();
+            _importFailureCollections[_tenantAccessor.Current.Id].Save(failure);
+        }
+
+        private void DeleteImportFailure(String fileName)
+        {
+            EnsureFailureConnectionForCurrentTenant();
+            _importFailureCollections[_tenantAccessor.Current.Id]
+                .Remove(Query.EQ("_id", fileName));
+        }
+
+        private Boolean FileHasImportFailureMarker(String fileName, DateTime fileTimestamp)
+        {
+            EnsureFailureConnectionForCurrentTenant();
+            //if files has error 
+            return _importFailureCollections[_tenantAccessor.Current.Id]
+                .Find(
+                    Query.And(
+                        Query.EQ("_id", fileName),
+                        Query<ImportFailure>.EQ(i => i.ImportFileTimestampTicks, fileTimestamp.Ticks)
+                    ))
+                .SetFields(Fields.Include("_id"))
+                .Any();
+        }
+
+        private void EnsureFailureConnectionForCurrentTenant()
+        {
+            if (!_importFailureCollections.ContainsKey(_tenantAccessor.Current.Id))
+            {
+                var mongoDb = _tenantAccessor.Current.Container.Resolve<MongoDatabase>();
+                _importFailureCollections[_tenantAccessor.Current.Id] =
+                    mongoDb.GetCollection<ImportFailure>("sys.importFailures");
             }
         }
 
@@ -225,6 +322,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
 
                 var task = JsonConvert.DeserializeObject<DocumentImportTask>(asJson, PocoSerializationSettings.Default);
                 task.PathToTaskFile = pathToFile;
+                task.FileTimestamp = File.GetLastWriteTimeUtc(pathToFile);
                 return task;
             }
             catch (Exception ex)
@@ -233,6 +331,8 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 return null;
             }
         }
+
+
     }
 
     public class ImportFileFromFileSystemRunner : IStartable
@@ -256,6 +356,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
 
         public void Stop()
         {
+            _job.Stop();
             _stopPending = true;
             _stop.WaitOne(TimeSpan.FromSeconds(60));
         }
@@ -278,4 +379,6 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             _stop.Set();
         }
     }
+
+
 }

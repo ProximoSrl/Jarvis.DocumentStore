@@ -49,5 +49,14 @@
 	
 	"jobsManagement": {
         "windowVisible": true
-    }
+    },
+	"log4net" : 
+	{
+		"appender-mongo" : "<appender-ref ref=\"mongo-appender\"/>",
+		"loglevel" : "DEBUG",
+		"mongo-loglevel" : "INFO",
+		"console-loglevel" : "DEBUG",
+		"mongo-connection-string" : "mongodb://localhost/ds-logs",
+		"mongo-collection-name" : "logs"
+	}
 }

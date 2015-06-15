@@ -53,8 +53,8 @@
       <HintPath>..\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.1.19\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
+      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.1.22\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.Framework.UdpAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -118,7 +118,7 @@
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)Jarvis.DocumentStore.JobsHost\log4net.config" "$(SolutionDir)..\artifacts\jobs\log4net.config"</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y "$(SolutionDir)Jarvis.DocumentStore.JobsHost\log4net.config" "$(SolutionDir)..\artifacts\jobs\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

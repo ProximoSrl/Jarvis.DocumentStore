@@ -17,6 +17,8 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using NSubstitute;
 using NUnit.Framework;
+using MongoDB.Driver;
+using Jarvis.DocumentStore.Tests.Support;
 
 namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 {
@@ -25,11 +27,12 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
     {
         private ImportFormatFromFileQueue _queue;
         private string _pathToTask;
+        private string _fileToImport;
         private readonly TenantId _testTenant = new TenantId("tests");
         private IBlobStore _blobstore;
         private readonly DocumentFormat _originalFormat = new DocumentFormat("original");
         private readonly DocumentHandle _documentHandle = new DocumentHandle("word");
-        private readonly Uri _fileUri = new Uri(TestConfig.PathToWordDocument);
+        private readonly Uri _fileUri = new Uri(Path.Combine(TestConfig.QueueFolder, "A word document.docx"));
         private ICommandBus _commandBus;
         private BlobId _blobId;
 
@@ -38,9 +41,14 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
         {
             _blobId = new BlobId(_originalFormat, 1);
             _pathToTask = Path.Combine(TestConfig.QueueFolder, "File_1.dsimport");
-
+            _fileToImport = Path.Combine(TestConfig.QueueFolder, "A Word Document.docx");
+            ClearQueueTempFolder();
+            Directory.CreateDirectory(TestConfig.QueueFolder);
+            File.Copy(Path.Combine(TestConfig.DocumentsFolder, "Queue\\File_1.dsimport"), _pathToTask);
+            File.Copy(TestConfig.PathToWordDocument, _fileToImport);
             var accessor = Substitute.For<ITenantAccessor>();
             var tenant = Substitute.For<ITenant>();
+            tenant.Id.Returns(new TenantId("Docs"));
             var container = Substitute.For<IWindsorContainer>();
             _commandBus = Substitute.For<ICommandBus>();
             var identityGenerator = Substitute.For<IIdentityGenerator>();
@@ -54,7 +62,9 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 
             container.Resolve<IBlobStore>().Returns(_blobstore);
             container.Resolve<IIdentityGenerator>().Returns(identityGenerator);
-
+            container.Resolve<MongoDatabase>().Returns(MongoDbTestConnectionProvider.ReadModelDb);
+            var collection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<ImportFailure>("sys.importFailures");
+            collection.Drop();
             _queue = new ImportFormatFromFileQueue(new[] { TestConfig.QueueFolder }, accessor, _commandBus)
             {
                 Logger = new ConsoleLogger()
@@ -63,7 +73,25 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             _queue.DeleteTaskFileAfterImport = false;
         }
 
-        [Test]
+        private static void ClearQueueTempFolder()
+        {
+            if (Directory.Exists(TestConfig.QueueFolder))
+            {
+                foreach (var file in Directory.GetFiles(TestConfig.QueueFolder))
+                {
+                    File.SetAttributes(file, FileAttributes.Archive);
+                }
+                Directory.Delete(TestConfig.QueueFolder, true);
+            }
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            ClearQueueTempFolder();
+        }
+
+        [Test] 
         public void should_load_task()
         {
             var descriptor = _queue.LoadTask(_pathToTask);
@@ -76,6 +104,49 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             Assert.IsFalse(descriptor.DeleteAfterImport);
             Assert.NotNull(descriptor.CustomData);
             Assert.AreEqual("2050-01-01", descriptor.CustomData["expire-on"]);
+        }
+
+        [Test]
+        public void correctly_delete_file_after_import()
+        {
+            _queue.DeleteTaskFileAfterImport = true;
+            var descriptor = _queue.LoadTask(_pathToTask);
+            _queue.UploadFile(descriptor);
+            Assert.That(File.Exists(_pathToTask), Is.False);
+        }
+
+        [Test]
+        public void what_happens_if_task_file_cannot_be_deleted()
+        {
+            _queue.DeleteTaskFileAfterImport = true;
+            var attribute = File.GetAttributes(_pathToTask);
+            File.SetAttributes(_pathToTask, attribute | FileAttributes.ReadOnly);
+
+            _queue.PollFileSystem();
+            Assert.That(File.Exists(_pathToTask), Is.True); //file cannot be deleted
+            _commandBus.Received(1).Send(Arg.Any<ICommand>(), "import-from-file");
+            _queue.PollFileSystem();
+            _commandBus.Received(1).Send(Arg.Any<ICommand>(), "import-from-file");
+        }
+
+        [Test]
+        public void task_file_cannot_be_deleted_but_then_modified_to_retry()
+        {
+            _queue.DeleteTaskFileAfterImport = true;
+            var attribute = File.GetAttributes(_pathToTask);
+            File.SetAttributes(_pathToTask, attribute | FileAttributes.ReadOnly);
+
+            _queue.PollFileSystem();
+            Assert.That(File.Exists(_pathToTask), Is.True); //file cannot be deleted
+            _commandBus.Received(1).Send(Arg.Any<ICommand>(), "import-from-file");
+            _queue.PollFileSystem();
+            _commandBus.Received(1).Send(Arg.Any<ICommand>(), "import-from-file");
+            attribute = File.GetAttributes(_pathToTask);
+            File.SetAttributes(_pathToTask, attribute & ~FileAttributes.ReadOnly);
+
+            File.SetLastWriteTime(_pathToTask, DateTime.UtcNow);
+            _queue.PollFileSystem();
+            _commandBus.Received(2).Send(Arg.Any<ICommand>(), "import-from-file");
         }
 
         [Test]

@@ -72,8 +72,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.1.19\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
+      <HintPath>..\packages\Jarvis.Framework.MongoAppender.1.1.22\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.Framework.Shared, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Jarvis.Framework.1.0.12-preBranchBusrefactor\lib\Jarvis.Framework.Shared.dll</HintPath>

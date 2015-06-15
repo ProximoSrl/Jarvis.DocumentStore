@@ -471,6 +471,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void add_multiple_attachment_to_existing_handle()
         {
+
+            for (int i = 0; i < 20; i++)
+            {
+                Thread.Sleep(1000);
+            }
+
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
