@@ -1,3 +1,4 @@
+using Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers;
 using Jarvis.DocumentStore.Core.Domain.Document.Commands;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
@@ -27,18 +28,20 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         private readonly IBlobStore _blobStore;
         private readonly DeduplicationHelper _deduplicationHelper;
         private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documents;
-        
+        private readonly IHandleMapper _handleMapper;
 
         public DocumentWorkflow(
             ICommandBus commandBus, 
             IBlobStore blobStore, 
             DeduplicationHelper deduplicationHelper,
-            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documents)
+            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documents,
+            IHandleMapper handleMapper)
         {
             _commandBus = commandBus;
             _blobStore = blobStore;
             _deduplicationHelper = deduplicationHelper;
             _documents = documents;
+            _handleMapper = handleMapper;
         }
 
         public override void Drop()
@@ -148,6 +151,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _commandBus.Send(new DeleteDocumentDescriptor(e.DocumentDescriptorId, e.Handle)
                 .WithDiagnosticTriggeredByInfo(e, "Handle deleted")
             );
+            _handleMapper.DeleteHandle(e.Handle);
         }
 
         public void On(DocumentLinked e)

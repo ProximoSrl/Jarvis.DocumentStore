@@ -327,7 +327,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DocumentContent content = new DocumentContent(new DocumentContent.DocumentPage[]
             {
-                new DocumentContent.DocumentPage(1, "TEST"), 
+                new DocumentContent.DocumentPage(1, "TEST"),
             }, new DocumentContent.MetadataHeader[] { });
             //now add format to document.
             AddFormatFromObjectToDocumentModel model = new AddFormatFromObjectToDocumentModel();
@@ -463,7 +463,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             var handle = _documentDescriptorCollection.Find(Query.EQ("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
-            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { 
+            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                 new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1")
             }));
         }
@@ -684,12 +684,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments, Has.Count.EqualTo(2));
             Assert.That(attachments.Attachments.Select(a => a.FileName), Is.EquivalentTo(new[] {
-                Path.GetFileName(TestConfig.PathToDocumentPng), 
+                Path.GetFileName(TestConfig.PathToDocumentPng),
                 Path.GetFileName(TestConfig.PathToExcelDocument)
             }));
             Assert.That(attachments.Attachments.Select(a => a.Uri),
                 Is.EquivalentTo(new[] {
-                    new Uri("http://localhost:5123/tests/documents/source_1"), 
+                    new Uri("http://localhost:5123/tests/documents/source_1"),
                     new Uri("http://localhost:5123/tests/documents/nested_1")
             }));
         }
@@ -774,6 +774,63 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             Debug.WriteLine("Done");
+        }
+
+        [Test]
+        public async void verify_de_duplication_not_link_to_deleted_handles()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleB") }));
+        }
+
+        [Test]
+        public async void verify_de_duplication_not_link_to_deleted_handles_same_handle()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleA") }));
+        }
+
+        [Test]
+        public async void verify_delete_then_re_add_handle()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPng, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleA") }));
         }
 
         #region Helpers
