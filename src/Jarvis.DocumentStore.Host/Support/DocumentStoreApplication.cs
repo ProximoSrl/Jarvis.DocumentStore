@@ -13,15 +13,27 @@ using Microsoft.Owin.StaticFiles;
 using Newtonsoft.Json.Serialization;
 using Owin;
 using Swashbuckle.Application;
+using Owin.Metrics;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreApplication
     {
+
+        public IAppBuilder OwinApplication { get; private set; }
+
         public void Configuration(IAppBuilder application)
         {
+            OwinApplication = application;
             ConfigureApi(application);
             ConfigureAdmin(application);
+
+            Metric
+                .Config
+                .WithOwin(middleware => application.Use(middleware), config => config
+                .WithRequestMetricsConfig(c => c.WithAllOwinMetrics())
+                .WithMetricsEndpoint()
+            );
         }
 
 
@@ -80,10 +92,10 @@ namespace Jarvis.DocumentStore.Host.Support
             var jsonFormatter = new JsonMediaTypeFormatter();
             jsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());
             jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            config.Services.Replace(typeof (IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
+            config.Services.Replace(typeof(IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
 
             config.Services.Add(
-                typeof(IExceptionLogger), 
+                typeof(IExceptionLogger),
                 new Log4NetExceptionLogger(ContainerAccessor.Instance.Resolve<ILoggerFactory>())
             );
 
@@ -93,7 +105,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             /* swagger */
             config
-                .EnableSwagger(c=>c.SingleApiVersion("v1", "Documenstore api"))
+                .EnableSwagger(c => c.SingleApiVersion("v1", "Documenstore api"))
                 .EnableSwaggerUi();
 
             application.UseWebApi(config);

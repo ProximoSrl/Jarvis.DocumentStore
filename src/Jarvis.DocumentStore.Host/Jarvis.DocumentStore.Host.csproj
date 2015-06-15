@@ -134,6 +134,10 @@
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="Owin.Metrics, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.Metrics.0.2.16\lib\net45\Owin.Metrics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Quartz">
       <HintPath>..\packages\Quartz.2.2.4\lib\net40\Quartz.dll</HintPath>
     </Reference>
