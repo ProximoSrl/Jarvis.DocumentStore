@@ -365,7 +365,16 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         {
             while (!_stopPending)
             {
-                Thread.Sleep(10000);
+                //avoiding blocking for 10 seconds during stop.
+                for (int i = 0; i < 10; i++)
+                {
+                    if (_stopPending)
+                    {
+                        _stop.Set();
+                        return;
+                    }
+                    Thread.Sleep(1000);
+                }
                 try
                 {
                     _job.PollFileSystem();

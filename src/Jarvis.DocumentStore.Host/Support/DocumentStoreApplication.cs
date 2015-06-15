@@ -14,19 +14,29 @@ using Newtonsoft.Json.Serialization;
 using Owin;
 using Swashbuckle.Application;
 using Owin.Metrics;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreApplication
     {
+        private static DocumentStoreConfiguration _config;
 
-        public IAppBuilder OwinApplication { get; private set; }
+        public static void SetConfig(DocumentStoreConfiguration config)
+        {
+            _config = config;
+        }
 
         public void Configuration(IAppBuilder application)
         {
-            OwinApplication = application;
-            ConfigureApi(application);
-            ConfigureAdmin(application);
+            if (_config == null)
+                throw new ApplicationException("Configuration is null, you forget to call DocumentStoreApplication.SetConfig static initialization method");
+
+            if (_config.IsApiServer)
+            {
+                ConfigureApi(application);
+                ConfigureAdmin(application);
+            }
 
             Metric
                 .Config
