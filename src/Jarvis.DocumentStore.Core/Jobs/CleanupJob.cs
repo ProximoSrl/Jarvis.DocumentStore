@@ -32,15 +32,21 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            Logger.DebugFormat("Running cleanup on {0} ", 
-                context.JobDetail.JobDataMap.GetString(JobKeys.TenantId), 
+            Logger.DebugFormat("Running cleanup on {0} ",
+                context.JobDetail.JobDataMap.GetString(JobKeys.TenantId),
                 RecycleBin);
             DateTime checkDate = DateTimeService.UtcNow.AddDays(-15);
+            DocumentDescriptorCleanup(checkDate);
+            DocumentCleanup(checkDate);
+        }
+
+        private void DocumentDescriptorCleanup(DateTime checkDate)
+        {
             var list = RecycleBin.Slots
-                .Where(x => x.DeletedAt < checkDate &&
-                            x.Id.StreamId.StartsWith("DocumentDescriptor_"))
-                .Take(200)
-                .ToArray();
+                            .Where(x => x.DeletedAt < checkDate &&
+                                        x.Id.StreamId.StartsWith("DocumentDescriptor_"))
+                            .Take(200)
+                            .ToArray();
 
             foreach (var slot in list)
             {
@@ -52,6 +58,26 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     BlobStore.Delete(blobId);
                 }
 
+                RecycleBin.Purge(slot.Id);
+
+                Logger.DebugFormat("....deleting stream {0}.{1}", slot.Id.BucketId, slot.Id.StreamId);
+                Store.Advanced.DeleteStream(slot.Id.BucketId, slot.Id.StreamId);
+                Logger.DebugFormat("Slot {0} deleted", slot.Id.StreamId);
+            }
+        }
+
+        private void DocumentCleanup(DateTime checkDate)
+        {
+            var list = RecycleBin.Slots
+                            .Where(x => x.DeletedAt < checkDate &&
+                                        x.Id.StreamId.StartsWith("Document_"))
+                            .Take(200)
+                            .ToArray();
+
+            foreach (var slot in list)
+            {
+                Logger.DebugFormat("Deleting slot {0}", slot.Id.StreamId);
+                
                 RecycleBin.Purge(slot.Id);
 
                 Logger.DebugFormat("....deleting stream {0}.{1}", slot.Id.BucketId, slot.Id.StreamId);

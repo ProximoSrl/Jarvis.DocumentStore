@@ -33,6 +33,9 @@ using NSubstitute;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 using System.Net;
 using Jarvis.DocumentStore.Core.Support;
+using MongoDB.Bson;
+using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
+using Jarvis.DocumentStore.Core.Domain.Document;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -45,6 +48,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private DocumentStoreServiceClient _documentStoreClient;
         private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
         private MongoCollection<DocumentReadModel> _documentCollection;
+        private MongoCollection<BsonDocument> _commitCollection;
+
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
         private IBlobStore _blobStore;
@@ -75,6 +80,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _commitCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<BsonDocument>("Commits");
             _blobStore = _tenant.Container.Resolve<IBlobStore>();
         }
 
@@ -831,6 +837,27 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
             Assert.That(allDescriptor, Has.Count.EqualTo(1));
             Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleA") }));
+        }
+
+        [Test]
+        public async void verify_delete_remove_document_with_cleanup()
+        {
+            DateTime now = DateTime.UtcNow.AddDays(+30);
+            var repo = _tenant.Container.Resolve<IRepositoryEx>();
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleX"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleX"));
+            await UpdateAndWaitAsync();
+
+            using (DateTimeService.Override(() => now))
+            {
+                //now we need to wait cleanupJobs to start 
+                ExecuteCleanupJob();
+            }
+
+            var aggregate = repo.GetById<Document>(new DocumentId(1L));
+            Assert.That(aggregate.Version, Is.EqualTo(0));
         }
 
         #region Helpers
