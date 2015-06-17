@@ -8,14 +8,18 @@ using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.Framework.Shared.ReadModel;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class RecycleBinProjection : AbstractProjection
         ,IEventHandler<DocumentDescriptorDeleted>
+        ,IEventHandler<DocumentDeleted>
     {
         private readonly IRecycleBin _recycleBin;
         private readonly IDocumentWriter _documentWriter;
+        IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentsDescriptorReader;
 
         public override int Priority
         {
@@ -26,10 +30,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         }
         public RecycleBinProjection(
             IRecycleBin recycleBin, 
-            IDocumentWriter documentWriter)
+            IDocumentWriter documentWriter,
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentsDescriptorReader)
         {
             _recycleBin = recycleBin;
             _documentWriter = documentWriter;
+            _documentsDescriptorReader = documentsDescriptorReader;
         }
 
         public override void Drop()
@@ -65,11 +71,23 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 }
                 customData = documentReadModel.CustomData;
             }
+            var documentDescriptorReadModel = _documentsDescriptorReader.AllUnsorted
+                .SingleOrDefault(dd => dd.Id == e.DocumentDescriptorId);
+            String blobId = null;
+            if (documentDescriptorReadModel != null && 
+                documentDescriptorReadModel.Formats.ContainsKey(new DocumentFormat("original")))
+            {
+                var originalFormat = documentDescriptorReadModel.Formats[new DocumentFormat("original")];
+                blobId = originalFormat.BlobId;
+            }
+
            _recycleBin.Delete(e.AggregateId, "Jarvis", e.CommitStamp, 
                new {
                    Handle = e.Handle,
                    FileName = fileName,
                    CustomData = customData,
+                   DocumentDescriptorId = e.DocumentDescriptorId,
+                   OriginalBlobId = blobId,
                });
         }
     }

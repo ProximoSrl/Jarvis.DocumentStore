@@ -9,8 +9,6 @@
         var vm = this;
         vm.tenantId = "docs";
 
-        debugger;
-
         vm.documents = [];
         vm.totalDocuments = 0;
         vm.filters = {
