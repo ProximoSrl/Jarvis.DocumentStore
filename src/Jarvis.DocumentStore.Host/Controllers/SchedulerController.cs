@@ -21,12 +21,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public QueuedJobStatus QueuedJobStats { get; set; }
 
         public DocumentStoreConfiguration Config { get; set; }
-        
+
         [HttpPost]
         [Route("scheduler/start")]
         public void Start()
         {
-            if (Scheduler != null) { 
+            if (Scheduler != null)
+            {
                 Scheduler.Start();
                 Scheduler.ResumeAll();
             }
@@ -54,8 +55,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("scheduler/stats")]
         public object Stats()
         {
-                var queueStats = this.QueuedJobStats.GetQueuesStatus();
-                return queueStats;
+            //avoid exception while the queue engine is starting.
+            if (this.QueuedJobStats == null)
+                return null;
+            var queueStats = this.QueuedJobStats.GetQueuesStatus();
+            return queueStats;
         }
     }
 }

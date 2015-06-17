@@ -52,6 +52,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_pdf_then_delete()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Revision_42")).Wait();
+            Thread.Sleep(3000);
+            _docs.DeleteAsync(DocumentHandle.FromString("Revision_42")).Wait();
+        }
+
+        [Test]
         public void remove_tika_from_pdf()
         {
             _docs.RemoveFormatFromDocument(DocumentHandle.FromString("Rev_1"), new DocumentFormat("tika")).Wait();

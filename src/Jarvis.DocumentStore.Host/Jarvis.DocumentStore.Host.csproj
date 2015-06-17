@@ -169,6 +169,7 @@
     <Compile Include="Controllers\ITenantController.cs" />
     <Compile Include="Controllers\LogController.cs" />
     <Compile Include="Controllers\QueueController.cs" />
+    <Compile Include="Controllers\RecycleBinController.cs" />
     <Compile Include="Controllers\SchedulerController.cs" />
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
     <Compile Include="Model\AddFormatToDocument.cs" />
@@ -1365,6 +1366,11 @@
     <Content Include="app\logs\logsModule.js" />
     <Content Include="app\logs\LogsController.js" />
     <Content Include="app\logs\logsData.js" />
+    <Content Include="app\recyclebin\recyclebin.tpl.html" />
+    <Content Include="app\recyclebin\recyclebinData.js" />
+    <Content Include="app\recyclebin\recyclebin.html" />
+    <Content Include="app\recyclebin\RecycleBinController.js" />
+    <Content Include="app\recyclebin\recyclebinModule.js" />
     <Content Include="app\routeConfig.js" />
     <Content Include="app\scheduler\scheduler.html" />
     <Content Include="app\scheduler\SchedulerController.js" />
