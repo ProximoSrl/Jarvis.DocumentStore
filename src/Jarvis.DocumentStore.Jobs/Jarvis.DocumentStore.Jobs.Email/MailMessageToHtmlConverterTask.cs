@@ -4,7 +4,8 @@ using System.IO.Compression;
 using System.Linq;
 using Castle.Core.Logging;
 using MsgReader;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.Email
 {
     /// <summary>

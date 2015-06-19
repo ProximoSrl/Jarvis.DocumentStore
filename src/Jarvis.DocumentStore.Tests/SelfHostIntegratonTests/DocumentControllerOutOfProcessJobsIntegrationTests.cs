@@ -40,7 +40,8 @@ using Jarvis.DocumentStore.Jobs.LibreOffice;
 using Jarvis.DocumentStore.Jobs.Tika.Filters;
 using MongoDB.Driver.Builders;
 using NSubstitute;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {

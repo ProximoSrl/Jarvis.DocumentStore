@@ -9,7 +9,8 @@ using uno.util;
 using unoidl.com.sun.star.beans;
 using unoidl.com.sun.star.frame;
 using unoidl.com.sun.star.lang;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.LibreOffice
 {
     /// <summary>

@@ -22,7 +22,8 @@ using Jarvis.Framework.Shared.ReadModel;
 using NUnit.Framework;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
     [TestFixture]

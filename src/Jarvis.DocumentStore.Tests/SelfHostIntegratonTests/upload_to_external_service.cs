@@ -9,7 +9,8 @@ using System.Collections.Generic;
 using System;
 using System.Threading;
 using System.IO;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {

@@ -13,7 +13,8 @@ using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.JobsHost.Helpers
 {
     public abstract class AbstractOutOfProcessPollerJob : IPollerJob

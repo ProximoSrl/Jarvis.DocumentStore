@@ -29,7 +29,8 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using Jarvis.Framework.TestHelpers;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
     [TestFixture]

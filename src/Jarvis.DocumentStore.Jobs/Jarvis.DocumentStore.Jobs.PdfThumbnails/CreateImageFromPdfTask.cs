@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using Castle.Core.Logging;
 
 using ImageMagick;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class CreateImageFromPdfTask

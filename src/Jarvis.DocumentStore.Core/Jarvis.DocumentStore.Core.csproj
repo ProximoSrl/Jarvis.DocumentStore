@@ -54,9 +54,6 @@
     <Reference Include="Common.Logging">
       <HintPath>..\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Delimon.Win32.IO">
-      <HintPath>..\..\libs\Delimon.Win32.IO\Delimon.Win32.IO.dll</HintPath>
-    </Reference>
     <Reference Include="Jarvis.NEventStoreEx">
       <HintPath>..\Jarvis.Framework\Jarvis.NEventStoreEx\bin\Debug\Jarvis.NEventStoreEx.dll</HintPath>
     </Reference>

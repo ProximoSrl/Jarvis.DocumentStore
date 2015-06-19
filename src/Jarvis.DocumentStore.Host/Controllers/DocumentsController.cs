@@ -29,7 +29,8 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.DocumentStore.Core.Support;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Host.Controllers
 {
     public class DocumentsController : ApiController, ITenantController

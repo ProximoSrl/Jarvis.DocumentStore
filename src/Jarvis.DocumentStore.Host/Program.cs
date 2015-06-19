@@ -13,7 +13,8 @@ using Jarvis.ConfigurationService.Client;
 using System.Threading;
 using System.Diagnostics;
 using Jarvis.Framework.Shared.Commands;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Host
 {
     class Program

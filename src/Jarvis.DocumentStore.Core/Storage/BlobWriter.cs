@@ -1,6 +1,7 @@
 using System.IO;
 using Jarvis.DocumentStore.Core.Model;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Core.Storage
 {
     public class BlobWriter : IBlobWriter

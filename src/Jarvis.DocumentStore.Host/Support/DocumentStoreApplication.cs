@@ -13,7 +13,8 @@ using Microsoft.Owin.StaticFiles;
 using Newtonsoft.Json.Serialization;
 using Owin;
 using Swashbuckle.Application;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreApplication
@@ -45,7 +46,7 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             var root = AppDomain.CurrentDomain.BaseDirectory
                 .ToLowerInvariant()
-                .Split(Path.DirectorySeparatorChar)
+                .Split(System.IO.Path.DirectorySeparatorChar)
                 .ToList();
 
             while (true)
@@ -62,7 +63,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             root.Add("app");
 
-            var appFolder = String.Join("" + Path.DirectorySeparatorChar, root);
+            var appFolder = String.Join("" + System.IO.Path.DirectorySeparatorChar, root);
             return appFolder;
         }
 
