@@ -23,6 +23,8 @@ namespace Jarvis.DocumentStore.Shared.Helpers
 
         public static void WriteAllText(string fileName, string textFile)
         {
+            if (MyFile.Exists(fileName))
+                MyFile.Delete(fileName);
             MyFile.WriteAllText(fileName, textFile);
         }
 
@@ -53,6 +55,10 @@ namespace Jarvis.DocumentStore.Shared.Helpers
 
         public static FileStream OpenWrite(string path)
         {
+            if (!MyFile.Exists(path))
+            {
+                MyFile.Create(path);
+            }
             return MyFile.OpenWrite(path);
         }
 
@@ -116,7 +122,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             return (Delimon.Win32.IO.FileAttributes)(Int32)attributes;
         }
 
-        private static FileAttributes 
+        private static FileAttributes
             Convert(Delimon.Win32.IO.FileAttributes attributes)
         {
             return (FileAttributes)(Int32)attributes;
