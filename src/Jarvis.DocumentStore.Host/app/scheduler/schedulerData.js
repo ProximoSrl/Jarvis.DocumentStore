@@ -10,7 +10,8 @@
             isRunning: isRunning,
             start: start,
             stop: stop,
-            getStats: getStats
+            getStats: getStats,
+            reScheduleQueue: reScheduleQueue,
         };
 
         return service;
@@ -33,6 +34,11 @@
 
         function getStats() {
             return $http.get('/scheduler/stats');
+        }
+
+        function reScheduleQueue(queueName) {
+            console.log("Reschedule queue " + queueName);
+            return $http.post('/scheduler/reschedulefailed/' + queueName);
         }
     }
 })(window, window.angular);

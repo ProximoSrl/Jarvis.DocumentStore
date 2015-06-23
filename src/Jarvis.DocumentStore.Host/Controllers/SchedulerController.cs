@@ -7,6 +7,7 @@ using System.Web.Http;
 using Quartz;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -19,6 +20,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public IScheduler Scheduler { get; set; }
 
         public QueuedJobStatus QueuedJobStats { get; set; }
+
+        public IQueueManager QueueDispatcher { get; set; }
 
         public DocumentStoreConfiguration Config { get; set; }
 
@@ -55,6 +58,20 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             return false;
         }
+
+        [HttpPost]
+        [Route("scheduler/reschedulefailed/{queueName}")]
+        public object RescheduleFailed(String queueName)
+        {
+            if (QueueDispatcher != null)
+            {
+                var success = QueueDispatcher.ReScheduleFailed(queueName);
+                return new { Success = success };
+            }
+            return new { Error = "Queue manager infrastructure not started" };
+        }
+
+
 
         [HttpGet]
         [Route("scheduler/stats")]

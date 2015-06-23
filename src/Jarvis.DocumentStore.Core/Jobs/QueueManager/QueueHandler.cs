@@ -213,6 +213,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             return _collection.FindOneById(jobId);
         }
+
+        internal Boolean ReScheduleFailed()
+        {
+            var result = _collection.Update(
+                 Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Failed),
+                 Update<QueuedJob>
+                    .Set(j => j.Status, QueuedJobExecutionStatus.ReQueued)
+                    .Set(j => j.SchedulingTimestamp, DateTime.Now),
+                 UpdateFlags.Multi);
+            return result.Ok;
+        }
     }
 
     public sealed class QueueStatInfo
