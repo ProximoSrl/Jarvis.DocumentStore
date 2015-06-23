@@ -57,7 +57,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         {
             if (!MyFile.Exists(path))
             {
-                MyFile.Create(path);
+                using (MyFile.Create(path)) ;
             }
             return MyFile.OpenWrite(path);
         }
