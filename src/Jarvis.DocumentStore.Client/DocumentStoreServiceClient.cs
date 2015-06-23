@@ -65,7 +65,7 @@ namespace Jarvis.DocumentStore.Client
                 Path.GetFileName(pathToFile)
             ), ".htmlzip");
 
-            File.Delete(pathToZip);
+            if (File.Exists(pathToZip)) File.Delete(pathToZip);
 
             using (ZipArchive zip = ZipFile.Open(pathToZip, ZipArchiveMode.Create))
             {
