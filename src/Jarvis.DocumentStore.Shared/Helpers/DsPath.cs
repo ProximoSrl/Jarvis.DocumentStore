@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MyPath = Delimon.Win32.IO.Path;
 
+#if DisableDelimon
+using MyPath = System.IO.Path;
+#else
+using MyPath = Delimon.Win32.IO.Path;
+#endif
 namespace Jarvis.DocumentStore.Shared.Helpers
 {
     public static class DsPath

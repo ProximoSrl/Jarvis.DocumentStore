@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if DisableDelimon
+using MyDirectory = System.IO.Directory;
+#else
 using MyDirectory = Delimon.Win32.IO.Directory;
-
+#endif
 namespace Jarvis.DocumentStore.Shared.Helpers
 {
     public static class DsDirectory
@@ -23,6 +26,13 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             return MyDirectory.GetFiles(folder, jobExtension, Convert(searchOption));
         }
 
+#if DisableDelimon
+        private static System.IO.SearchOption Convert(
+           System.IO.SearchOption searchOption)
+        {
+            return searchOption;
+        }
+#else
         private static Delimon.Win32.IO.SearchOption Convert(
             System.IO.SearchOption searchOption)
         {
@@ -35,5 +45,6 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             }
             throw new ArgumentException();
         }
+#endif
     }
 }

@@ -5,7 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#if DisableDelimon
+using MyFile = System.IO.File;
+#else
 using MyFile = Delimon.Win32.IO.File;
+#endif
 
 namespace Jarvis.DocumentStore.Shared.Helpers
 {
@@ -82,6 +86,26 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         {
             MyFile.SetLastWriteTime(path, utcNow);
         }
+
+#if DisableDelimon
+        private static System.IO.FileAccess Convert(System.IO.FileAccess access)
+        {
+            return access;
+        }
+
+
+        private static System.IO.FileMode Convert(System.IO.FileMode mode)
+        {
+            return mode;
+        }
+
+        private static System.IO.FileAttributes Convert(System.IO.FileAttributes attributes)
+        {
+            return attributes;
+        }
+
+
+#else
 
         private static Delimon.Win32.IO.FileAccess Convert(System.IO.FileAccess access)
         {
@@ -161,6 +185,6 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             //throw new ArgumentException();
         }
 
-
+#endif
     }
 }
