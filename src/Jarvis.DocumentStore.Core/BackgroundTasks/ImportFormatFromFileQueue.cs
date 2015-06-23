@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Castle.Core;
 using Castle.Core.Logging;
-using Delimon.Win32.IO;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
@@ -25,6 +24,10 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using System.IO;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
@@ -107,7 +110,10 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     MaxDegreeOfParallelism = 4
                 };
 
-                var files = Directory.GetFiles(folder, JobExtension, SearchOption.AllDirectories);
+                var files = Directory.GetFiles(
+                    folder, 
+                    JobExtension, 
+                    SearchOption.AllDirectories);
                 Parallel.ForEach(
                     files, 
                     options,

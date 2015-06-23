@@ -3,7 +3,8 @@ using System.IO;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using System;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
     public class ImageResizePollerOutOfProcessJob : AbstractOutOfProcessPollerJob
@@ -40,6 +41,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
                         string resizeImagePath = Path.Combine(
                             workingFolder, 
                             String.Format("{0}.{1}.{2}" ,Path.GetFileNameWithoutExtension(parameters.FileName),size.Name , fileExtension));
+                        resizeImagePath = SanitizeFileNameForLength(resizeImagePath);
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
                             Logger.DebugFormat("Resizing {0}", parameters.JobId);

@@ -33,7 +33,8 @@ using NSubstitute;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 using System.Net;
 using Jarvis.DocumentStore.Core.Support;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
@@ -744,6 +745,32 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             var allDocuments = docReader.AllUnsorted.Count();
             Assert.AreEqual(0, allDocuments);
+        }
+
+        [Test]
+        public async void can_upload_document_with_name_greater_than_250_char()
+        {
+            var handle = DocumentHandle.FromString("Pdf_3");
+            String longFileName = Path.Combine(
+                Path.GetTempPath(), 
+                "_lfn" + new string('X', 240) + ".pdf");
+            if (!File.Exists(longFileName))
+            {
+                File.Copy(TestConfig.PathToDocumentPdf, longFileName);
+            }
+            
+            await _documentStoreClient.UploadAsync(longFileName, handle);
+
+            // wait background projection polling
+            await UpdateAndWaitAsync();
+
+            // check readmodel
+            var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
+            var tenant = tenantAccessor.GetTenant(new TenantId(TestConfig.Tenant));
+            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
+
+            var allDocuments = docReader.AllUnsorted.Count();
+            Assert.AreEqual(1, allDocuments);
         }
 
         //        [Test, Explicit]

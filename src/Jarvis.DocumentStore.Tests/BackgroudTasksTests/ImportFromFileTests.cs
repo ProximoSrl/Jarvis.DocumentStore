@@ -19,7 +19,8 @@ using NSubstitute;
 using NUnit.Framework;
 using MongoDB.Driver;
 using Jarvis.DocumentStore.Tests.Support;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 {
     [TestFixture]

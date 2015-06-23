@@ -1,7 +1,8 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Core.Model
 {
     public class FileNameWithExtension : IEquatable<FileNameWithExtension>

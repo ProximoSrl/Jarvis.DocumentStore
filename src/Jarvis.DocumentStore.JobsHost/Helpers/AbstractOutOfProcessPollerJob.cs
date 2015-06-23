@@ -13,7 +13,8 @@ using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.JobsHost.Helpers
 {
     public abstract class AbstractOutOfProcessPollerJob : IPollerJob
@@ -40,6 +41,8 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         private String _handle;
 
         JsonSerializerSettings _settings;
+
+        public const Int32 MaxFileNameLength = 220;
 
         public IClientPasswordSet ClientPasswordSet { get; set; }
 
@@ -330,6 +333,18 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             return response != null;
         }
 
+        protected String SanitizeFileNameForLength(String fileName)
+        {
+            if (fileName.Length > MaxFileNameLength)
+            {
+                //we need to clip length of the file.
+                var oriFileName = fileName;
+                var fileExtension = Path.GetExtension(fileName);
+                fileName = fileName.Substring(0, MaxFileNameLength - fileExtension.Length) + fileExtension;
+                Logger.InfoFormat("Original Filename {0} longer than 260 chars, it is truncated to {1}", oriFileName, fileName);
+            }
+            return fileName;
+        }
 
         protected async Task<String> DownloadBlob(
             String tenantId,
@@ -338,9 +353,13 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             String workingFolder)
         {
             String fileName = Path.Combine(workingFolder, originalFileName);
+            //TooLongNames should be truncated, tika, or other libraries are not able to access
+            //too long file names. Max file name is 260, but some libraries or task can append some more char
+            //ex tika.html
+            fileName = SanitizeFileNameForLength(fileName);
             DocumentStoreServiceClient client = new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
             var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
-            using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 var stream = await reader.OpenStream();
                 stream.CopyTo(downloaded);

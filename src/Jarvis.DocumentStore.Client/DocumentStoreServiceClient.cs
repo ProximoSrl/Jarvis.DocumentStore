@@ -15,6 +15,8 @@ using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 namespace Jarvis.DocumentStore.Client
 {

@@ -6,7 +6,8 @@ using System;
 using System.Configuration;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Shared.Helpers;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 {
     public class VlcBasedVideoThumbnailOutOfProcessJob : AbstractOutOfProcessPollerJob

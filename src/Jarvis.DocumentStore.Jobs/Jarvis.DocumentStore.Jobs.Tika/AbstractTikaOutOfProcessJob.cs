@@ -8,7 +8,8 @@ using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Jobs.Tika.Filters;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerJob
@@ -126,6 +127,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             }
 
             var tikaFileName = Path.Combine(workingFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".tika.html");
+            tikaFileName = SanitizeFileNameForLength(tikaFileName);
             File.WriteAllText(tikaFileName, sanitizedContent);
             result = await AddFormatToDocumentFromFile(
                 parameters.TenantId,

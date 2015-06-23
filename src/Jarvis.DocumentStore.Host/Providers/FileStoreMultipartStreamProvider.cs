@@ -6,7 +6,8 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Processing;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Core.Support;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Host.Providers
 {
     public class FileStoreMultipartStreamProvider : MultipartFormDataStreamProvider

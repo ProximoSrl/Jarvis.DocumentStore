@@ -3,7 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.JobsHost.Support;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.LibreOffice
 {
     /// <summary>

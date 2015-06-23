@@ -9,7 +9,8 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Core.Storage
 {
     public class GridFsBlobStore : IBlobStore
