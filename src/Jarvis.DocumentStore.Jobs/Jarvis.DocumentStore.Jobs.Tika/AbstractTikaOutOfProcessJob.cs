@@ -127,6 +127,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             }
 
             var tikaFileName = Path.Combine(workingFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".tika.html");
+            tikaFileName = SanitizeFileNameForLength(tikaFileName);
             File.WriteAllText(tikaFileName, sanitizedContent);
             result = await AddFormatToDocumentFromFile(
                 parameters.TenantId,

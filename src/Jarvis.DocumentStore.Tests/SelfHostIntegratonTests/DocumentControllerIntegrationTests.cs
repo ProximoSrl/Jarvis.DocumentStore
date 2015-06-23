@@ -770,7 +770,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
 
             var allDocuments = docReader.AllUnsorted.Count();
-            Assert.AreEqual(0, allDocuments);
+            Assert.AreEqual(1, allDocuments);
         }
 
         //        [Test, Explicit]

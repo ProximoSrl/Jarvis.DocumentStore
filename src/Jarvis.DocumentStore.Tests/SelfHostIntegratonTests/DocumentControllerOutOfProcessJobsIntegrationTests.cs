@@ -191,7 +191,68 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             };
         }
     }
-     
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_tika_long_name : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        OutOfProcessTikaNetJob sut;
+
+        [Test]
+        public async void verify_tika_job_with_long_name()
+        {
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
+            PrepareJob();
+
+            String longFileName = Path.Combine(
+               Path.GetTempPath(),
+               "_lfn" + new string('X', 240) + ".pdf");
+            if (!File.Exists(longFileName))
+            {
+                File.Copy(TestConfig.PathToWordDocument, longFileName);
+            }
+
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
+            var handleClient = new DocumentHandle("verify_tika_job");
+            await _documentStoreClient.UploadAsync(
+               longFileName,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("tika");
+            do
+            {
+                await UpdateAndWait();
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(handleCore));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
+                {
+                    //Document found
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("Tika document not found");
+        }
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""),
+            };
+        }
+    }
+
     [TestFixture]
     [Category("integration_full")]
     public class integration_out_of_process_tika_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase

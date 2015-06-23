@@ -48,6 +48,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             return MyFile.Open(path, Convert(fileMode), Convert(fileAccess));
         }
 
+
         public static void WriteAllBytes(string path, byte[] data)
         {
             MyFile.WriteAllBytes(path, data);

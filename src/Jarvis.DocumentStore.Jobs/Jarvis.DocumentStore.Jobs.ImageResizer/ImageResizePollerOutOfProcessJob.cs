@@ -41,6 +41,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
                         string resizeImagePath = Path.Combine(
                             workingFolder, 
                             String.Format("{0}.{1}.{2}" ,Path.GetFileNameWithoutExtension(parameters.FileName),size.Name , fileExtension));
+                        resizeImagePath = SanitizeFileNameForLength(resizeImagePath);
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
                             Logger.DebugFormat("Resizing {0}", parameters.JobId);

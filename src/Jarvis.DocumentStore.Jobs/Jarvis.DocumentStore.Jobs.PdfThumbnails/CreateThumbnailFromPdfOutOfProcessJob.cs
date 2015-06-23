@@ -56,6 +56,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
         public async Task<Boolean> Write(String workerFolder, PollerJobParameters parameters, String format, int pageIndex, Stream stream)
         {
             var rawFileName = Path.Combine(workerFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".page_" + pageIndex + "." + format);
+            rawFileName = SanitizeFileNameForLength(rawFileName);
             using (var outStream = File.OpenWrite(rawFileName))
             {
                 stream.CopyTo(outStream);
