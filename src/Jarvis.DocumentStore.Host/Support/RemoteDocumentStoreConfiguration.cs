@@ -69,23 +69,25 @@ namespace Jarvis.DocumentStore.Host.Support
             }
 
             EngineVersion = ConfigurationServiceClient.Instance.GetSetting("projection-engine-version", "v1");
-            var buckets = ConfigurationServiceClient.Instance.WithArraySetting("poller-buckets");
-            if (buckets != null)
+            ConfigurationServiceClient.Instance.WithArraySetting("poller-buckets", buckets =>
             {
-                BucketInfo = buckets.Select(b => new BucketInfo()
+                if (buckets != null)
                 {
-                    Slots = b.slots.ToString().Split(','),
-                    BufferSize = (Int32)b.buffer,
-                }).ToList();
-            }
-            else
-            {
-                //No bucket configured, just start with a single bucket for all slots.
-                BucketInfo = new List<BucketInfo>()
+                    BucketInfo = buckets.Select(b => new BucketInfo()
+                    {
+                        Slots = b.slots.ToString().Split(','),
+                        BufferSize = (Int32)b.buffer,
+                    }).ToList();
+                }
+                else
+                {
+                    //No bucket configured, just start with a single bucket for all slots.
+                    BucketInfo = new List<BucketInfo>()
                 {
                     new BucketInfo() {BufferSize = 5000, Slots = new [] { "*" } }
                 };
-            }
+                }
+            });
             Rebuild = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("rebuild", "false"), StringComparison.OrdinalIgnoreCase);
             NitroMode = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("nitro-mode", "false"), StringComparison.OrdinalIgnoreCase);
             EngineSlots = ConfigurationServiceClient.Instance.GetSetting("engine-slots", "*").Split(',');
