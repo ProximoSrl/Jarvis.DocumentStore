@@ -63,8 +63,8 @@
       <HintPath>..\packages\fasterflect.2.1.3\lib\net40\Fasterflect.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.ConfigurationService.Client, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.1.159-pre\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
+    <Reference Include="Jarvis.ConfigurationService.Client, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.2.163\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.Framework.Kernel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
