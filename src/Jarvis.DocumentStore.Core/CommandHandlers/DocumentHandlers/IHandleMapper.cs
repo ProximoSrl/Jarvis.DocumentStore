@@ -12,5 +12,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         /// </summary>
         /// <param name="handle"></param>
         void DeleteHandle(DocumentHandle handle);
+
+        DocumentId TryTranslate(string externalKey);
     }
 }

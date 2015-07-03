@@ -14,8 +14,9 @@
 
         /* */
         function search() {
+            vm.commits = [];
             streamData.getStream(vm.tenantId, vm.streamId).then(function(d) {
-                angular.forEach(d, function(commit) {
+                angular.forEach(d.Commits, function (commit) {
                     if (!angular.isArray(commit.Headers)) {
                         var tmp = [];
                         angular.forEach(commit.Headers, function(v, k) {
@@ -25,8 +26,8 @@
                         commit.Headers = tmp;
                     }
                 });
-
-                vm.commits = d;
+                vm.streamId = d.AggregateId;
+                vm.commits = d.Commits;
             });
         };
     }

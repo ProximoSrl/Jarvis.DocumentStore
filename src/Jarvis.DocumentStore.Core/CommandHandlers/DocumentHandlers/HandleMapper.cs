@@ -26,5 +26,10 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
             return Translate(handle);
         }
+
+        public new DocumentId TryTranslate(string externalKey)
+        {
+            return base.TryTranslate(externalKey);
+        }
     }
 }
