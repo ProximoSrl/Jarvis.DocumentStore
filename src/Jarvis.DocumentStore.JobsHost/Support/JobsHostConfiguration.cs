@@ -5,7 +5,8 @@ using System.IO;
 
 using Castle.Facilities.Logging;
 using Castle.Services.Logging.Log4netIntegration;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 namespace Jarvis.DocumentStore.JobsHost.Support
 {

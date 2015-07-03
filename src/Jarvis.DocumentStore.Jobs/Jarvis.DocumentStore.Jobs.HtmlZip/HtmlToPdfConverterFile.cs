@@ -5,7 +5,8 @@ using System.IO.Compression;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.JobsHost.Support;
 using TuesPechkin;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
 {
     /// <summary>

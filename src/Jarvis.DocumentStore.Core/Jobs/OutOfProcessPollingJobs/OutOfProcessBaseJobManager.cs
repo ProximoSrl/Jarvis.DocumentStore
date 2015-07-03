@@ -11,7 +11,8 @@ using System.IO;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using System.Threading;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
 

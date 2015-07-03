@@ -13,7 +13,8 @@ using Castle.Windsor;
 using Castle.Windsor.Installer;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.JobsHost.Support
 {
     public class DocumentStoreSingleQueueClientBootstrapper

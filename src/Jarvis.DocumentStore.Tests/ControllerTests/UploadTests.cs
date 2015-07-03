@@ -12,7 +12,8 @@ using Jarvis.DocumentStore.Tests.PipelineTests;
 using NSubstitute;
 using NUnit.Framework;
 using System;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.ControllerTests
 {
     [TestFixture]

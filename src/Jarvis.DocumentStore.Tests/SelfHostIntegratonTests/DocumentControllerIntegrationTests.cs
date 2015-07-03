@@ -33,6 +33,8 @@ using NSubstitute;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 using System.Net;
 using Jarvis.DocumentStore.Core.Support;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using MongoDB.Bson;
 using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 using Jarvis.DocumentStore.Core.Domain.Document;
@@ -333,7 +335,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             DocumentContent content = new DocumentContent(new DocumentContent.DocumentPage[]
             {
-                new DocumentContent.DocumentPage(1, "TEST"),
+                new DocumentContent.DocumentPage(1, "TEST"), 
             }, new DocumentContent.MetadataHeader[] { });
             //now add format to document.
             AddFormatFromObjectToDocumentModel model = new AddFormatFromObjectToDocumentModel();
@@ -469,7 +471,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             var handle = _documentDescriptorCollection.Find(Query.EQ("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
-            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
+            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { 
                 new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1")
             }));
         }
@@ -690,12 +692,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments, Has.Count.EqualTo(2));
             Assert.That(attachments.Attachments.Select(a => a.FileName), Is.EquivalentTo(new[] {
-                Path.GetFileName(TestConfig.PathToDocumentPng),
+                Path.GetFileName(TestConfig.PathToDocumentPng), 
                 Path.GetFileName(TestConfig.PathToExcelDocument)
             }));
             Assert.That(attachments.Attachments.Select(a => a.Uri),
                 Is.EquivalentTo(new[] {
-                    new Uri("http://localhost:5123/tests/documents/source_1"),
+                    new Uri("http://localhost:5123/tests/documents/source_1"), 
                     new Uri("http://localhost:5123/tests/documents/nested_1")
             }));
         }
@@ -762,6 +764,32 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             var allDocuments = docReader.AllUnsorted.Count();
             Assert.AreEqual(0, allDocuments);
+        }
+
+        [Test]
+        public async void can_upload_document_with_name_greater_than_250_char()
+        {
+            var handle = DocumentHandle.FromString("Pdf_3");
+            String longFileName = Path.Combine(
+                Path.GetTempPath(), 
+                "_lfn" + new string('X', 240) + ".pdf");
+            if (!File.Exists(longFileName))
+            {
+                File.Copy(TestConfig.PathToDocumentPdf, longFileName);
+            }
+            
+            await _documentStoreClient.UploadAsync(longFileName, handle);
+
+            // wait background projection polling
+            await UpdateAndWaitAsync();
+
+            // check readmodel
+            var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
+            var tenant = tenantAccessor.GetTenant(new TenantId(TestConfig.Tenant));
+            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
+
+            var allDocuments = docReader.AllUnsorted.Count();
+            Assert.AreEqual(1, allDocuments);
         }
 
         //        [Test, Explicit]

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -25,6 +24,10 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using System.IO;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
@@ -107,7 +110,10 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     MaxDegreeOfParallelism = 4
                 };
 
-                var files = Directory.GetFiles(folder, JobExtension, SearchOption.AllDirectories);
+                var files = Directory.GetFiles(
+                    folder, 
+                    JobExtension, 
+                    SearchOption.AllDirectories);
                 Parallel.ForEach(
                     files, 
                     options,

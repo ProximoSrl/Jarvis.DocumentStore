@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class CreateThumbnailFromPdfOutOfProcessJob : AbstractOutOfProcessPollerJob
@@ -55,6 +56,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
         public async Task<Boolean> Write(String workerFolder, PollerJobParameters parameters, String format, int pageIndex, Stream stream)
         {
             var rawFileName = Path.Combine(workerFolder, Path.GetFileNameWithoutExtension(parameters.FileName) + ".page_" + pageIndex + "." + format);
+            rawFileName = SanitizeFileNameForLength(rawFileName);
             using (var outStream = File.OpenWrite(rawFileName))
             {
                 stream.CopyTo(outStream);

@@ -40,7 +40,8 @@ using Jarvis.DocumentStore.Jobs.LibreOffice;
 using Jarvis.DocumentStore.Jobs.Tika.Filters;
 using MongoDB.Driver.Builders;
 using NSubstitute;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
@@ -200,6 +201,72 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             return new QueueInfo[]
             {
                 new QueueInfo("tika", "original", ""), 
+            };
+        }
+    }
+     
+    [TestFixture]
+    [Category("integration_full")]
+    public class integration_out_of_process_tika_long_name : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        OutOfProcessTikaNetJob sut;
+
+        public integration_out_of_process_tika_long_name(String engineVersion) : base (engineVersion)
+        {
+
+        }
+
+        [Test]
+        public async void verify_tika_job_with_long_name()
+        {
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
+            PrepareJob();
+
+            String longFileName = Path.Combine(
+               Path.GetTempPath(),
+               "_lfn" + new string('X', 240) + ".pdf");
+            if (!File.Exists(longFileName))
+            {
+                File.Copy(TestConfig.PathToWordDocument, longFileName);
+            }
+
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
+            var handleClient = new DocumentHandle("verify_tika_job");
+            await _documentStoreClient.UploadAsync(
+               longFileName,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            var format = new DocumentFormat("tika");
+            do
+            {
+                await UpdateAndWait();
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(handleCore));
+                if (documentDescriptor != null &&
+                    documentDescriptor.Formats.ContainsKey(format))
+                {
+                    //Document found
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("Tika document not found");
+        }
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("tika", "original", ""),
             };
         }
     }
@@ -429,7 +496,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             return new QueueInfo[]
             {
-                new QueueInfo("tika", "original", ""),
+                new QueueInfo("tika", "original", ""), 
             };
         }
     }
@@ -498,7 +565,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             return new QueueInfo[]
             {
-                new QueueInfo("tika", "original", ""),
+                new QueueInfo("tika", "original", ""), 
             };
         }
     }
@@ -1123,7 +1190,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Assert.Fail("de-duplicated document handle does not maintain attachments after deletion");
         }
-
+        
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -1168,9 +1235,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 2)
                 {
                     //all attachment are unzipped correctly
-                    var doc = _documentDescriptorCollection.Find(
-                    Query.EQ("Documents", handleClient.ToString()))
-                    .Single();
+                        var doc = _documentDescriptorCollection.Find(
+                        Query.EQ("Documents", handleClient.ToString()))
+                        .Single();
                     Assert.That(doc.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                         new Core.Model.DocumentHandle("attachment_email_1") }));
                     return;
@@ -1188,7 +1255,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             return new QueueInfo[]
             {
-                new QueueInfo("attachments", mimeTypes :
+                new QueueInfo("attachments", mimeTypes : 
                     MimeTypes.GetMimeTypeByExtension("zip") + "|" +
                     MimeTypes.GetMimeTypeByExtension("msg") + "|" +
                     MimeTypes.GetMimeTypeByExtension("eml")),
@@ -1250,7 +1317,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             return new QueueInfo[]
             {
-                new QueueInfo("attachments", mimeTypes :
+                new QueueInfo("attachments", mimeTypes : 
                     MimeTypes.GetMimeTypeByExtension("zip") + "|" +
                     MimeTypes.GetMimeTypeByExtension("msg") + "|" +
                     MimeTypes.GetMimeTypeByExtension("eml")),

@@ -4,7 +4,8 @@ using System.IO;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
 {
     public class HtmlToPdfOutOfProcessJob : AbstractOutOfProcessPollerJob

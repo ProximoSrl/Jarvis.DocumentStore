@@ -7,7 +7,8 @@ using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 using Jarvis.DocumentStore.Jobs.LibreOffice;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
     [TestFixture(Category = "integration")]

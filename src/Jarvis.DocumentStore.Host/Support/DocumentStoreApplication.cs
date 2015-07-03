@@ -16,6 +16,8 @@ using Swashbuckle.Application;
 using Owin.Metrics;
 using Jarvis.DocumentStore.Core.Support;
 
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreApplication
@@ -34,9 +36,9 @@ namespace Jarvis.DocumentStore.Host.Support
 
             if (_config.IsApiServer)
             {
-                ConfigureApi(application);
-                ConfigureAdmin(application);
-            }
+            ConfigureApi(application);
+            ConfigureAdmin(application);
+        }
 
             Metric
                 .Config
@@ -67,7 +69,7 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             var root = AppDomain.CurrentDomain.BaseDirectory
                 .ToLowerInvariant()
-                .Split(Path.DirectorySeparatorChar)
+                .Split(System.IO.Path.DirectorySeparatorChar)
                 .ToList();
 
             while (true)
@@ -84,7 +86,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             root.Add("app");
 
-            var appFolder = String.Join("" + Path.DirectorySeparatorChar, root);
+            var appFolder = String.Join("" + System.IO.Path.DirectorySeparatorChar, root);
             return appFolder;
         }
 
@@ -105,7 +107,7 @@ namespace Jarvis.DocumentStore.Host.Support
             config.Services.Replace(typeof(IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
 
             config.Services.Add(
-                typeof(IExceptionLogger),
+                typeof(IExceptionLogger), 
                 new Log4NetExceptionLogger(ContainerAccessor.Instance.Resolve<ILoggerFactory>())
             );
 

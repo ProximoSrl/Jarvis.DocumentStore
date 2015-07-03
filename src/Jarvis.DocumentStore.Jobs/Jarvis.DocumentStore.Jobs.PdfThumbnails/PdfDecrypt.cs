@@ -7,7 +7,8 @@ using Castle.Core.Logging;
 using iTextSharp.text.pdf;
 using Fasterflect;
 using System.IO;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class PdfDecrypt

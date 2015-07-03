@@ -6,5 +6,6 @@ Jarvis.DocumentStore
 ### Main documentation
 
 1. [Configuration Readme](/assets/Configs/README.md)
+2. [Prerequisites](/src/Prerequisites.md)
 2. [How to write jobs](/src/Jarvis.DocumentStore.Jobs/readme.md)
 

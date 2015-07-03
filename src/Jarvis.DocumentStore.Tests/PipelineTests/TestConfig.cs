@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using Jarvis.DocumentStore.Core.Domain.Document;
-
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
     public static class TestConfig
