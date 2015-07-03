@@ -15,12 +15,10 @@ namespace Jarvis.DocumentStore.Tests.Misc
 
         UnnecessaryTextFileFilter utffSut = new UnnecessaryTextFileFilter();
 
-        
-
         [Test]
         public void Verify_binary_file_should_be_analyzed()
         {
-            var result = utffSut.ShouldAnalyze("Test.jpg", TestConfig.PathToDocumentPng);
+            var result = utffSut.ShouldAnalyze("attachment.msg", TestConfig.PathToMsgWithComplexAttachmentAndZipFileWithFolders);
             Assert.That(result, Is.True);
         }
 

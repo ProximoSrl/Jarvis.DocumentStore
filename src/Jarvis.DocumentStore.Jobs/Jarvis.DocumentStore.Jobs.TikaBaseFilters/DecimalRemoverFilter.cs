@@ -15,6 +15,7 @@ namespace Jarvis.DocumentStore.Jobs.TikaBaseFilters
         {
             //replace decimal with E notation
             tikaContent = Regex.Replace(tikaContent, @"(\t|\n){1}-?[\d\.]+?E[-+]\d{1,2}", "");
+            
             //replace decimal between tabs, excel table content
             tikaContent = Regex.Replace(tikaContent, @"\t[\d\.\s]+\t", "");
 
