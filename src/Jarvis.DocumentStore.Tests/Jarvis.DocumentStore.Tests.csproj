@@ -338,6 +338,7 @@
     <Compile Include="DomainSpecs\StringValueMongoTests.cs" />
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />
+    <Compile Include="Misc\TikaFiltersTest.cs" />
     <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\LanguageDetectionTest.cs" />
     <Compile Include="PipelineTests\TestConfig.cs" />
@@ -363,6 +364,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Docs\A Powerpoint Document.pdf" />
     <None Include="Docs\Architecture_files\css" />
     <None Include="Docs\Document_copy.pdf" />
     <None Include="Docs\Lorem ipsum.pdf" />
@@ -458,6 +460,10 @@
       <Project>{b2c4ec5c-b514-4745-8cce-233f1e05dd1c}</Project>
       <Name>Jarvis.DocumentStore.Jobs.PdfThumbnails</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.TikaBaseFilters\Jarvis.DocumentStore.Jobs.TikaBaseFilters.csproj">
+      <Project>{ca9ad683-00e1-4cb4-b2b0-8bab5019024a}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.TikaBaseFilters</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Tika\Jarvis.DocumentStore.Jobs.Tika.csproj">
       <Project>{99cc9ca1-9a95-4ecb-a7f4-3a46892bf2c8}</Project>
       <Name>Jarvis.DocumentStore.Jobs.Tika</Name>
@@ -511,6 +517,9 @@
     <Content Include="Docs\lang\it.txt" />
     <Content Include="Docs\medium_image.jpg" />
     <Content Include="Docs\pdf.tika.html" />
+    <None Include="Docs\WrongFiles\FileWithNumbers.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

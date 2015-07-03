@@ -102,6 +102,12 @@ namespace Jarvis.DocumentStore.Host
                 host.SetDisplayName("Jarvis - Document Store");
                 host.SetServiceName("JarvisDocumentStore");
             });
+
+            if (exitCode != TopshelfExitCode.Ok)
+            {
+                Console.Error.WriteLine("Abnormal exit from topshelf: {0}. Press a key to continue", exitCode);
+                Console.ReadKey();
+            }
             return exitCode;
         }
 

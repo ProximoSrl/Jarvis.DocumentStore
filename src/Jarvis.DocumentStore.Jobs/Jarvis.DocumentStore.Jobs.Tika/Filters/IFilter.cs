@@ -19,6 +19,13 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Filters
         /// <returns></returns>
         String Filter(String tikaContent);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        Boolean ShouldAnalyze(String fileName, String blobFileName);
+
         Int32 Order { get; }
     }
 }

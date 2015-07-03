@@ -169,6 +169,12 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "document_1.png"); }
         }
 
+        public static string PathToFileWithNumbers
+        {
+            get { return Path.Combine(DocumentsFolder, "WrongFiles\\FileWithNumbers.txt"); }
+        }
+        
+
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }
         private  static string GenerateQueueFolder()

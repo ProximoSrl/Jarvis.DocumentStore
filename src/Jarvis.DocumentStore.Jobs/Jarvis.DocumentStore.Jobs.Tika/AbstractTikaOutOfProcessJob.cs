@@ -49,14 +49,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             if (!_formats.Contains(parameters.FileExtension))
             {
                 Logger.DebugFormat("Document for job Id {0} has an extension not supported, setting null content", parameters.JobId);
-                result = await AddFormatToDocumentFromObject(parameters.TenantId,
-                    this.QueueName,
-                    parameters.JobId,
-                    new DocumentFormat(DocumentFormats.Content),
-                    DocumentContent.NullContent,
-                    contentFileName,
-                    new Dictionary<string, object>());
-                return result;
+                return await AddNullContentFormat(parameters, contentFileName);
             }
 
             Logger.DebugFormat("Starting tika on job: {0}, file extension {1}", parameters.JobId, parameters.FileExtension);
@@ -65,6 +58,12 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
 
+            Boolean shouldAnalyze = _filterManager.ShouldAnalyze(parameters.FileName, pathToFile);
+            if (!shouldAnalyze)
+            {
+                Logger.InfoFormat("File {0} for job {1} was discharded!", parameters.FileName, parameters.JobId);
+                return await AddNullContentFormat(parameters, contentFileName);
+            }
             Logger.DebugFormat("Search for password JobId:{0}",parameters.JobId);
             var passwords = ClientPasswordSet.GetPasswordFor(parameters.FileName).ToArray();
             String content = "";
@@ -139,6 +138,17 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             return true;
         }
 
+        private async Task<bool> AddNullContentFormat(
+            PollerJobParameters parameters, string contentFileName)
+        {
+            return await AddFormatToDocumentFromObject(parameters.TenantId,
+                this.QueueName,
+                parameters.JobId,
+                new DocumentFormat(DocumentFormats.Content),
+                DocumentContent.NullContent,
+                contentFileName,
+                new Dictionary<string, object>());
+        }
     }
 
     public class OutOfProcessTikaJob : AbstractTikaOutOfProcessJob

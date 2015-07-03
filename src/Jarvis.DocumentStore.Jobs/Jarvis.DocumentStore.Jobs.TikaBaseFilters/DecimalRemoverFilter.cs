@@ -21,6 +21,10 @@ namespace Jarvis.DocumentStore.Jobs.TikaBaseFilters
             return tikaContent;
         }
 
+        public bool ShouldAnalyze(string fileName, string blobFileName)
+        {
+            return true;
+        }
 
         public int Order
         {

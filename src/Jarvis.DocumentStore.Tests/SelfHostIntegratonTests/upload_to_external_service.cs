@@ -14,7 +14,7 @@ using System.IO;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
-    public class drop_all_tenants
+    public class upload_drop_all_tenants
     {
         [Test]
         public void execute()
@@ -26,6 +26,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [TestFixture, Explicit]
     public class upload_to_external_service
     {
+
+       
+
         private DocumentStoreServiceClient _docs;
         private DocumentStoreServiceClient _demo;
 
@@ -60,6 +63,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload__temp_pdf()
         {
             _docs.UploadAsync(@"c:\temp\temppdf.pdf", DocumentHandle.FromString("temp_pdf")).Wait();
+        }
+
+        [Test]
+        public void upload__temp_text()
+        {
+            _docs.UploadAsync(@"c:\temp\temp.txt", DocumentHandle.FromString("temp_txt")).Wait();
         }
 
         [Test]
