@@ -42,8 +42,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             var page = request.Page - 1;
             var start = page * request.PageSize;
-            var recycledDocuments = _recycleBin.Slots
-                .Where(s => s.Id.StreamId.StartsWith("Document_"))
+
+            var query = _recycleBin.Slots
+                .Where(s => s.Id.StreamId.StartsWith("Document_"));
+
+            var recycledDocuments = query
                 .OrderByDescending(s => s.DeletedAt)
                 .Skip(start)
                 .Take(request.PageSize)
@@ -61,9 +64,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 })
                 .ToList();
 
-            var count = _recycleBin.Slots
-                .Where(s => s.Id.StreamId.StartsWith("Document_"))
-                .Count();
+            var count = query.Count();
 
             return new RecycleBinResponse
             {

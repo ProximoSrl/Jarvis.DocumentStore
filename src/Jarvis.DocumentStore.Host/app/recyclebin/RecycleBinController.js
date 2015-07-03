@@ -3,11 +3,12 @@
 
     angular.module('admin.recyclebin').controller('RecycleBinController', RecycleBinController);
 
-    RecycleBinController.$inject = ['$scope', 'recyclebinData'];
+    RecycleBinController.$inject = ['$scope', 'recyclebinData', 'configService'];
 
-    function RecycleBinController($scope, recyclebinData) {
+    function RecycleBinController($scope, recyclebinData, configService) {
         var vm = this;
-        vm.tenantId = "docs";
+        vm.tenantId = "";
+        vm.tenants = [];
 
         vm.documents = [];
         vm.totalDocuments = 0;
@@ -23,8 +24,15 @@
         vm.page = 1;
         vm.pageChanged = pageChanged;
 
+        configService.getTenants().then(function (d) {
+            console.log('Get Tenants', d);
+            vm.tenants = d;
+            vm.tenantId = d[0];
+            load();
+        });
+
         function load() {
-            recyclebinData.getDocuments(vm.tenantId, '', 1).then(function (data) {
+            recyclebinData.getDocuments(vm.tenantId, '', vm.page).then(function (data) {
                 console.log('recyclebin documents from server', data);
                 vm.documents = data.documents;
                 vm.totalDocuments = data.count;
@@ -33,9 +41,8 @@
 
         function pageChanged(newPage) {
             vm.page = newPage;
-            refresh();
+            load();
         };
 
-        vm.load();
     }
 })(window, window.angular);
