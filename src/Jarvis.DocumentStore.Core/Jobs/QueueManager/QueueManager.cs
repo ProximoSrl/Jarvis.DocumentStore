@@ -16,10 +16,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.Framework.Kernel.Events;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
-    public interface IQueueDispatcher
+    public interface IQueueManager
     {
         QueuedJob GetNextJob(String queueName, String identity, String callerHandle, TenantId tenant, Dictionary<String, Object> customData);
 
@@ -33,6 +35,16 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <returns></returns>
         QueuedJob GetJob(String queueName, String jobId);
 
+        /// <summary>
+        /// Given an handle, ask to queue manager to schedule
+        /// again all jobs as if the handle was just inserted
+        /// into the system.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="tenant"></param>
+        /// <returns></returns>
+        Boolean ReQueueJobs(DocumentHandle handle, TenantId tenant);
+
         void Start();
 
         void Stop();
@@ -41,7 +53,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// <summary>
     /// Creates and maintain all configured queues.
     /// </summary>
-    public class QueueManager : IQueueDispatcher, IObserveProjection
+    public class QueueManager : IQueueManager, IObserveProjection
     {
         private DocumentStoreConfiguration _configuration;
         private ITenantAccessor _tenantAccessor;
@@ -163,6 +175,32 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     if (!pollerTimer.Enabled) pollerTimer.Start();
                 }
             }
+        }
+
+        public Boolean ReQueueJobs(DocumentHandle handle, TenantId tenant)
+        {
+            //Basically, rescheduling a job just means re-create all the jobs
+            //as if the "original" format was added to an handle.
+            var info = _queueTenantInfos.SingleOrDefault(i => i.TenantId == tenant);
+            if (info == null)
+                throw new ArgumentException("Invalid tenant " + tenant, "tenant");
+            var originalFormat = new DocumentFormat("original");
+            var lastStream = info.StreamReader.AllUnsorted
+                .Where(s => s.FormatInfo.DocumentFormat == originalFormat &&
+                        s.Handle == handle)
+                .OrderByDescending(s => s.LastModified)
+                .FirstOrDefault();
+
+            if (lastStream == null)
+                throw new ArgumentException("Invalid handle " + handle + " unable to find stream event for original content of this handle", "handle");
+
+            //Pass the information to all queue handlers.
+            foreach (var qh in _queueHandlers)
+            {
+                qh.Value.Handle(lastStream, info.TenantId, forceReSchedule : true);
+            }
+
+            return true;
         }
 
         private void Poll()

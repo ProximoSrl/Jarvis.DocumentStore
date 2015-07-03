@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private readonly IDocumentFormatTranslator _documentFormatTranslator;
 
         readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
-        readonly IQueueDispatcher _queueDispatcher;
+        readonly IQueueManager _queueDispatcher;
 
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
@@ -61,7 +61,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,
             IDocumentWriter handleWriter,
-            IQueueDispatcher queueDispatcher,
+            IQueueManager queueDispatcher,
             ICounterService counterService,
             IDocumentFormatTranslator documentFormatTranslator)
         {

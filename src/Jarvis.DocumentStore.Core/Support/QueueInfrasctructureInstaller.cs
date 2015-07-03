@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Support
             var queueDb = GetQueueDb();
             container.Register(
                 Component
-                    .For<QueueManager, IQueueDispatcher>()
+                    .For<QueueManager, IQueueManager>()
                     .ImplementedBy<QueueManager>()
                     .DependsOn(Dependency.OnValue<MongoDatabase>(queueDb))
                     .LifeStyle.Singleton,
