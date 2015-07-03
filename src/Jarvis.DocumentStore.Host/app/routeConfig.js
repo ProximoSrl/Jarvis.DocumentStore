@@ -42,6 +42,12 @@
                 templateUrl: "scheduler/scheduler.html",
                 controller: "SchedulerController as scheduler",
                 data: { pageTitle: 'Scheduler' }
-    });
+            })
+            .state('recyclebin', {
+                url: "/recylebin",
+                templateUrl: "recyclebin/recyclebin.html",
+                controller: "RecycleBinController as recyclebin",
+                data: { pageTitle: 'Recycle Bin' }
+            });
     }
 })(window, window.angular);

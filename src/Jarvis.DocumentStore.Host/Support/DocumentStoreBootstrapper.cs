@@ -20,6 +20,7 @@ using Rebus.Logging;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Metrics;
 using Jarvis.Framework.Kernel.ProjectionEngine.Client;
+using Jarvis.DocumentStore.Host.Controllers;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -111,6 +112,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 _logger.DebugFormat("Configured Projections for tenant {0}", tenant.Id);
 
                 tenant.Container.Install(tenantInstallers.ToArray());
+
             }
             foreach (var act in _container.ResolveAll<IStartupActivity>())
             {

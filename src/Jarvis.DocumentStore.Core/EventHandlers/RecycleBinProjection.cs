@@ -7,6 +7,10 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
+using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.Framework.Shared.ReadModel;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.Document.Events;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -15,10 +19,24 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         ,IEventHandler<DocumentDeleted>
     {
         private readonly IRecycleBin _recycleBin;
+        private readonly IDocumentWriter _documentWriter;
+        IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentsDescriptorReader;
 
-        public RecycleBinProjection(IRecycleBin recycleBin)
+        public override int Priority
+        {
+            get
+            {
+                return 20; //higher priority than 
+            }
+        }
+        public RecycleBinProjection(
+            IRecycleBin recycleBin, 
+            IDocumentWriter documentWriter,
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentsDescriptorReader)
         {
             _recycleBin = recycleBin;
+            _documentWriter = documentWriter;
+            _documentsDescriptorReader = documentsDescriptorReader;
         }
 
         public override void Drop()
@@ -42,7 +60,36 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         /// <param name="e"></param>
         public void On(DocumentDeleted e)
         {
-            _recycleBin.Delete(e.AggregateId, "Jarvis", e.CommitStamp);
+            var documentReadModel = _documentWriter.FindOneById(e.Handle);
+            var data = new Dictionary<String, Object>();
+            String fileName = "";
+            Dictionary<String, object> customData = null;
+            if (documentReadModel != null)
+            {
+                if (documentReadModel.FileName != null)
+                {
+                    fileName = documentReadModel.FileName.FileName + "." + documentReadModel.FileName.Extension;
+                }
+                customData = documentReadModel.CustomData;
+            }
+            var documentDescriptorReadModel = _documentsDescriptorReader.AllUnsorted
+                .SingleOrDefault(dd => dd.Id == e.DocumentDescriptorId);
+            String blobId = null;
+            if (documentDescriptorReadModel != null && 
+                documentDescriptorReadModel.Formats.ContainsKey(new DocumentFormat("original")))
+            {
+                var originalFormat = documentDescriptorReadModel.Formats[new DocumentFormat("original")];
+                blobId = originalFormat.BlobId;
+            }
+
+           _recycleBin.Delete(e.AggregateId, "Jarvis", e.CommitStamp, 
+               new {
+                   Handle = e.Handle,
+                   FileName = fileName,
+                   CustomData = customData,
+                   DocumentDescriptorId = e.DocumentDescriptorId,
+                   OriginalBlobId = blobId,
+               });
         }
     }
 }

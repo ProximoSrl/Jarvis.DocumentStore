@@ -52,7 +52,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
             {
                 Logger.DebugFormat("Deleting slot {0}", slot.Id.StreamId);
                 var blobIds = (BlobId[])slot.Data["files"];
-                foreach (var blobId in blobIds)
+                foreach (var blobId in blobIds.Distinct())
                 {
                     Logger.DebugFormat("....deleting file {0}", blobId);
                     BlobStore.Delete(blobId);

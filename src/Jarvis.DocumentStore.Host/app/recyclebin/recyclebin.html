@@ -1,0 +1,33 @@
+﻿<div class="row">
+    <div class="col-xs-12">
+        <div class="row">
+            <div class="col-xs-3 col-md-3 col-lg-3">
+                Handle
+            </div>
+            <div class="col-xs-3 col-md-3 col-lg-3">
+                File Name
+            </div>
+            <div class="col-xs-3 col-md-3 col-lg-3">
+                Download Link
+            </div>
+        </div>
+        <div dir-paginate="document in recyclebin.documents | itemsPerPage: 30" 
+             total-items="recyclebin.totalDocuments">
+            <div class="row">
+                <div class="col-xs-3 col-md-3 col-lg-3">
+                    {{document.handle}}
+                </div>
+                <div class="col-xs-3 col-md-3 col-lg-3">
+                    {{document.fileName}}
+                </div>
+                <div class="col-xs-3 col-md-3 col-lg-3">
+                    <a href="{{recyclebin.tenantId}}/recyclebin/documents/{{document.documentId}}">Download</a>
+                </div>
+                
+            </div>
+        </div>
+        <dir-pagination-controls template-url="recyclebin/recyclebin.tpl.html"
+                                 on-page-change="logs.pageChanged(newPageNumber)">
+        </dir-pagination-controls>
+    </div>
+</div>

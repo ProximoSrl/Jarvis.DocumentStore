@@ -17,8 +17,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
     public class EventStreamController :ApiController, ITenantController
     {
         private readonly ICommitEvents _commits;
-        private CommitEnhancer _enhancer;
-        public EventStreamController(IStoreEvents eventStore, CommitEnhancer enhancer)
+        private ICommitEnhancer _enhancer;
+
+        public EventStreamController(
+            IStoreEvents eventStore, 
+            ICommitEnhancer enhancer)
         {
             _enhancer = enhancer;
             _commits = (ICommitEvents)eventStore;
