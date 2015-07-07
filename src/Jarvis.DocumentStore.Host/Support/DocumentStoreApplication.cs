@@ -18,6 +18,8 @@ using Jarvis.DocumentStore.Core.Support;
 
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Jarvis.DocumentStore.Host.Support.Filters;
+
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreApplication
@@ -100,6 +102,9 @@ namespace Jarvis.DocumentStore.Host.Support
             };
 
             config.MapHttpAttributeRoutes();
+            var loggerFactory = ContainerAccessor.Instance.Resolve<IExtendedLoggerFactory>();
+
+            config.Filters.Add(new LogFilterAttribute(loggerFactory.Create("LogFilter")));
 
             var jsonFormatter = new JsonMediaTypeFormatter();
             jsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());

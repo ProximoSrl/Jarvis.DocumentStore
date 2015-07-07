@@ -220,6 +220,7 @@
     <Compile Include="Providers\FileStoreMultipartStreamProvider.cs" />
     <Compile Include="Support\ApiInstaller.cs" />
     <Compile Include="Support\BackgroundTasksInstaller.cs" />
+    <Compile Include="Support\Filters\LogFilterAttribute.cs" />
     <Compile Include="Support\MongoPersistenceOptionWithLog.cs" />
     <Compile Include="Support\TenantHandlersInstaller.cs" />
     <Compile Include="Support\ContainerAccessor.cs" />
