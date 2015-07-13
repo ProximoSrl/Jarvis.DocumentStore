@@ -22,6 +22,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public DocumentStoreConfiguration Config { get; set; }
 
+        public SchedulerController(QueuedJobStatus queuedJobStats)
+        {
+            QueuedJobStats = queuedJobStats;
+        }
+
         [HttpPost]
         [Route("scheduler/start")]
         public void Start()
