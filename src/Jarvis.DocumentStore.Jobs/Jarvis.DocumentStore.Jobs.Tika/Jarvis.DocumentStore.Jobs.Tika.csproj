@@ -245,7 +245,7 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetDir)*.*" "$(SolutionDir)..\artifacts\jobs\tika\" /Y /E
-copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\videothumbnails\Jarvis.DocumentStore.JobsHost.exe.config.original"</PostBuildEvent>
+copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\tika\Jarvis.DocumentStore.JobsHost.exe.config.original"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
