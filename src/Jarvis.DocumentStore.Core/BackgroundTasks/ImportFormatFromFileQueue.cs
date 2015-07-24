@@ -188,8 +188,6 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     //No filename given in task, use name of the blob
                     blobId = blobStore.Upload(task.Format, fname);
                 }
-               
-                
 
                 if (task.Format == OriginalFormat)
                 {

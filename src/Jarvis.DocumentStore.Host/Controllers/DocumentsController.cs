@@ -521,7 +521,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         )
         {
             var mapping = _handleWriter.FindOneById(handle);
-            if (mapping == null)
+
+            //If mapping is not present return not found
+            if (mapping == null || mapping.DocumentDescriptorId == null)
                 return DocumentNotFound(handle);
 
             var document = _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
