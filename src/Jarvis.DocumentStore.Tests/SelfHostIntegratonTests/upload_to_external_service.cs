@@ -324,6 +324,20 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_html_zipped()
+        {
+            var zipped = _docs.ZipHtmlPage(TestConfig.PathToHtml);
+
+            _docs.UploadAsync(
+               zipped,
+               DocumentHandle.FromString("html_zip"),
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            ).Wait();
+        }
+
+        [Test]
         public void upload_excel()
         {
             _docs.UploadAsync(TestConfig.PathToExcelDocument, DocumentHandle.FromString("xlsx")).Wait();
