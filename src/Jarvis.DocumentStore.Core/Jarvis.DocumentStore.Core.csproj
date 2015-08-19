@@ -58,16 +58,16 @@
       <HintPath>..\packages\fasterflect.2.1.3\lib\net40\Fasterflect.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.Framework.Kernel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.Framework.Kernel.dll</HintPath>
+    <Reference Include="Jarvis.Framework.Kernel, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.1.1.0\lib\Jarvis.Framework.Kernel.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.Framework.Shared, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.Framework.Shared.dll</HintPath>
+    <Reference Include="Jarvis.Framework.Shared, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.Shared.1.1.0\lib\Jarvis.Framework.Shared.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.NEventStoreEx, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.NEventStoreEx.dll</HintPath>
+    <Reference Include="Jarvis.NEventStoreEx, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.NEventStoreEx.1.1.0\lib\Jarvis.NEventStoreEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
