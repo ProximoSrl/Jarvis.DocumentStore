@@ -12,7 +12,7 @@ using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
     [TestFixture(Category = "integration")]
-    public class ConvertToPdfTaskTests
+    public class LibreOfficeConvertToPdfTaskTests
     {
         LibreOfficeConversion _withLibreOfficeConversion;
         LibreOfficeUnoConversion _unoConversion;

@@ -765,6 +765,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
+ 
+
     [TestFixture]
     [Category("integration_full")]
     public class integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
@@ -853,17 +855,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         }
 
-        public async Task<Boolean> verify_htmlToPdf_base<T>() where T : AbstractOutOfProcessPollerJob, new()
+        public async Task<Boolean> verify_htmlToPdf_base<T>(String testFile) where T : AbstractOutOfProcessPollerJob, new()
         {
             _sutBase = new T();
             PrepareJob();
 
             DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_htmlzip");
-            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
-            var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
-
             await _documentStoreClient.UploadAsync(
-               zipped,
+               testFile,
                handle,
                new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
@@ -898,9 +897,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         //}
 
         [Test]
-        public async void verify_htmlToPdf_old()
+        public async void verify_html_zipped_ToPdf_old()
         {
-            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(), "Format Pdf not found");
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+            var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
+            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(zipped), "Format Pdf not found");
+        }
+
+        [Test]
+        public async void verify_html_plain_ToPdf_old()
+        {
+            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(TestConfig.PathToSimpleHtmlFile), "Format Pdf not found");
         }
 
         protected override QueueInfo[] OnGetQueueInfo()

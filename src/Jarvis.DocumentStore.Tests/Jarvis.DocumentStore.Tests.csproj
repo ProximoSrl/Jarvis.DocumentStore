@@ -339,7 +339,8 @@
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />
     <Compile Include="Misc\TikaFiltersTest.cs" />
-    <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
+    <Compile Include="PipelineTests\TuesPeckinConversionTest.cs" />
+    <Compile Include="PipelineTests\LibreOfficeConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\LanguageDetectionTest.cs" />
     <Compile Include="PipelineTests\TestConfig.cs" />
     <Compile Include="PipelineTests\ThumbnailFromPdfExtractionTest.cs" />
@@ -507,6 +508,9 @@
     <Content Include="Docs\Architecture_files\saved_resource.htm" />
     <Content Include="Docs\Architecture_files\scripts.min.js" />
     <Content Include="Docs\document_1.png" />
+    <Content Include="Docs\HTMLPage.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Docs\lang\ru.txt" />
     <Content Include="Docs\lang\nl.txt" />
     <Content Include="Docs\lang\ch.txt" />

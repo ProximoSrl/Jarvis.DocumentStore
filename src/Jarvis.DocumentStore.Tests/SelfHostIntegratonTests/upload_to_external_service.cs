@@ -324,6 +324,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_simple_html()
+        {
+            var taskFolder = @"c:\temp\dsqueue";
+
+            DocumentImportData data = _docs.CreateDocumentImportData(
+                Guid.NewGuid(),
+                TestConfig.PathToSimpleHtmlFile,
+                Path.GetFileName(TestConfig.PathToSimpleHtmlFile),
+                DocumentHandle.FromString("simple-html-file"));
+            data.DeleteAfterImport = false;
+            var docsFile = Path.Combine(taskFolder, "doc_simple-html-file_" + DateTime.Now.Ticks);
+
+            _docs.QueueDocumentImport(data, docsFile);
+        }
+
+        [Test]
         public void upload_html_zipped()
         {
             var zipped = _docs.ZipHtmlPage(TestConfig.PathToHtml);
