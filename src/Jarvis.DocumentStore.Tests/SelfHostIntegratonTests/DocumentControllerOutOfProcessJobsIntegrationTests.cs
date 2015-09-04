@@ -196,6 +196,60 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Tika document not found");
         }
 
+        [Test]
+        public async void verify_tika_job_on_htmlzip()
+        {
+            _sutBase = sut = new OutOfProcessTikaNetJob(
+                new ContentFormatBuilder(new ContentFilterManager(null)),
+                new ContentFilterManager(null));
+            PrepareJob();
+
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job_with_htmlzip");
+            var handleClient = new DocumentHandle("verify_tika_job_with_htmlzip");
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+            var zipped = _documentStoreClient.ZipHtmlPage(TestConfig.PathToHtml);
+
+            await _documentStoreClient.UploadAsync(
+               zipped,
+               handleClient,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+
+            DateTime startWait = DateTime.Now;
+            DocumentDescriptorReadModel documentDescriptor;
+            var formats = new[] { new DocumentFormat("tika"), new DocumentFormat("content") };
+            do
+            {
+                await UpdateAndWait();
+                documentDescriptor = _documentDescriptorCollection.AsQueryable()
+                    .SingleOrDefault(d => d.Documents.Contains(handleCore));
+                if (documentDescriptor != null &&
+                    formats.All(f => documentDescriptor.Formats.ContainsKey(f)))
+                {
+                    //Document found, but we want to be sure that the fileName of the format is correct.
+                    var tikaFormatInfo = documentDescriptor.Formats[formats[0]];
+                    var blob = _blobStore.GetDescriptor(tikaFormatInfo.BlobId);
+                    Assert.That(
+                        blob.FileNameWithExtension.ToString(),
+                        Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToHtml) + ".tika.html"),
+                        "File name is wrong, we expect the same file name with extension .tika.html");
+
+                    var contentFormatInfo = documentDescriptor.Formats[formats[1]];
+                    var contentFile = _blobStore.Download(contentFormatInfo.BlobId, Path.GetTempPath());
+                    var content = File.ReadAllText(contentFile);
+
+                    Assert.That(content, Is.StringContaining("previous post we introduced Jarvis"));
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("Tika document not found");
+        }
+
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -711,6 +765,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
+ 
+
     [TestFixture]
     [Category("integration_full")]
     public class integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
@@ -798,17 +854,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
 
         }
-        public async Task<Boolean> verify_htmlToPdf_base<T>() where T : AbstractOutOfProcessPollerJob, new()
+
+        public async Task<Boolean> verify_htmlToPdf_base<T>(String testFile) where T : AbstractOutOfProcessPollerJob, new()
         {
             _sutBase = new T();
             PrepareJob();
 
             DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_htmlzip");
-            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
-            var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
-
             await _documentStoreClient.UploadAsync(
-               zipped,
+               testFile,
                handle,
                new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
@@ -843,9 +897,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         //}
 
         [Test]
-        public async void verify_htmlToPdf_old()
+        public async void verify_html_zipped_ToPdf_old()
         {
-            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(), "Format Pdf not found");
+            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+            var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
+            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(zipped), "Format Pdf not found");
+        }
+
+        [Test]
+        public async void verify_html_plain_ToPdf_old()
+        {
+            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(TestConfig.PathToSimpleHtmlFile), "Format Pdf not found");
         }
 
         protected override QueueInfo[] OnGetQueueInfo()

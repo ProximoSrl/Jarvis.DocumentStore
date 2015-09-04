@@ -16,6 +16,10 @@ namespace Jarvis.DocumentStore.Shared.Helpers
 
         public static string GetFileNameWithoutExtension(string fileNameWithExtension)
         {
+            if (String.IsNullOrEmpty(fileNameWithExtension)) return fileNameWithExtension;
+
+            if (!fileNameWithExtension.Contains(".")) //Delimon give exception sometimes if dot is not present
+                return fileNameWithExtension;
             return MyPath.GetFileNameWithoutExtension(fileNameWithExtension);
         }
 

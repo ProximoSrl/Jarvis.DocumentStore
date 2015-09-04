@@ -155,20 +155,20 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.Framework.Kernel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.Framework.Kernel.dll</HintPath>
+    <Reference Include="Jarvis.Framework.Kernel, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.1.1.0\lib\Jarvis.Framework.Kernel.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.Framework.Shared, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.Framework.Shared.dll</HintPath>
+    <Reference Include="Jarvis.Framework.Shared, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.Shared.1.1.0\lib\Jarvis.Framework.Shared.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.Framework.TestHelpers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.TestHelpers.1.0.12-preBranchBusrefactor\lib\Jarvis.Framework.TestHelpers.dll</HintPath>
+    <Reference Include="Jarvis.Framework.TestHelpers, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.TestHelpers.1.1.0\lib\Jarvis.Framework.TestHelpers.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.NEventStoreEx, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.1.0.13-pre\lib\Jarvis.NEventStoreEx.dll</HintPath>
+    <Reference Include="Jarvis.NEventStoreEx, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.NEventStoreEx.1.1.0\lib\Jarvis.NEventStoreEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
@@ -339,7 +339,8 @@
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />
     <Compile Include="Misc\TikaFiltersTest.cs" />
-    <Compile Include="PipelineTests\ConvertToPdfTaskTests.cs" />
+    <Compile Include="PipelineTests\TuesPeckinConversionTest.cs" />
+    <Compile Include="PipelineTests\LibreOfficeConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\LanguageDetectionTest.cs" />
     <Compile Include="PipelineTests\TestConfig.cs" />
     <Compile Include="PipelineTests\ThumbnailFromPdfExtractionTest.cs" />
@@ -507,6 +508,9 @@
     <Content Include="Docs\Architecture_files\saved_resource.htm" />
     <Content Include="Docs\Architecture_files\scripts.min.js" />
     <Content Include="Docs\document_1.png" />
+    <Content Include="Docs\HTMLPage.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Docs\lang\ru.txt" />
     <Content Include="Docs\lang\nl.txt" />
     <Content Include="Docs\lang\ch.txt" />

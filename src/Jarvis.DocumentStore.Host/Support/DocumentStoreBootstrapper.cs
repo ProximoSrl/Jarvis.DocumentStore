@@ -90,9 +90,6 @@ namespace Jarvis.DocumentStore.Host.Support
                 options.Urls.Add(uri);
             }
 
-            _webApplication = WebApp.Start<DocumentStoreApplication>(options);
-            _logger.InfoFormat("Server started");
-
             _container.Install(installers.ToArray());
             foreach (var tenant in Manager.Tenants)
             {
@@ -114,6 +111,10 @@ namespace Jarvis.DocumentStore.Host.Support
                 tenant.Container.Install(tenantInstallers.ToArray());
 
             }
+
+            _webApplication = WebApp.Start<DocumentStoreApplication>(options);
+            _logger.InfoFormat("Server started");
+
             foreach (var act in _container.ResolveAll<IStartupActivity>())
             {
                 _logger.DebugFormat("Starting activity: {0}", act.GetType().FullName);
@@ -126,6 +127,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     _logger.ErrorFormat(ex, "Shutting down {0}", act.GetType().FullName);
                 }
             }
+
         }
 
         void BuildContainer(DocumentStoreConfiguration config)

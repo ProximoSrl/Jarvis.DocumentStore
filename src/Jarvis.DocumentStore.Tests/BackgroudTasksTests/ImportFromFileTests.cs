@@ -56,6 +56,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 
             _blobstore = Substitute.For<IBlobStore>();
             _blobstore.Upload(Arg.Is(_originalFormat), Arg.Any<string>()).Returns(_blobId);
+            _blobstore.Upload(Arg.Is(_originalFormat), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>()).Returns(_blobId);
 
             accessor.GetTenant(_testTenant).Returns(tenant);
             accessor.Current.Returns(tenant);
@@ -158,9 +159,9 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
                .Do(callInfo => command = (InitializeDocumentDescriptor)callInfo.Args()[0]);
 
             _queue.PollFileSystem();
-
+               
             // asserts
-            _blobstore.Received().Upload(Arg.Is(_originalFormat),Arg.Any<string>());
+            _blobstore.Received().Upload(Arg.Is(_originalFormat), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
             
             Assert.NotNull(command);
             Assert.AreEqual(_blobId, command.BlobId);
