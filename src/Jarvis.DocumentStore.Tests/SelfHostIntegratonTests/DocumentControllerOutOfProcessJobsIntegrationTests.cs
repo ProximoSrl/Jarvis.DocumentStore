@@ -424,7 +424,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_tika_job_with_two_password()
+        public async void verify_tika_job_with_password()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
