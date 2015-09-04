@@ -145,6 +145,16 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Architecture.htm"); }
         }
 
+        public static string PathToSimpleHtmlFile
+        {
+            get { return Path.Combine(DocumentsFolder, "HTMLPage.html"); }
+        }
+
+        public static string PathToHtmlZip
+        {
+            get { return Path.Combine(DocumentsFolder, "Architecture.htmlzip"); }
+        }
+
         public static string PathToMediumJpg
         {
             get { return Path.Combine(DocumentsFolder, "medium_image.jpg"); }
@@ -169,6 +179,12 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             get { return Path.Combine(DocumentsFolder, "document_1.png"); }
         }
+
+        public static string PathToFileWithNumbers
+        {
+            get { return Path.Combine(DocumentsFolder, "WrongFiles\\FileWithNumbers.txt"); }
+        }
+        
 
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }

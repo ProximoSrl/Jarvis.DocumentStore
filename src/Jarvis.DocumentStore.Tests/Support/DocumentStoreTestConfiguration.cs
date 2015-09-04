@@ -5,13 +5,16 @@ using Castle.Services.Logging.Log4netIntegration;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.Framework.Kernel.ProjectionEngine;
+using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Tests.Support
 {
     public class DocumentStoreTestConfiguration : DocumentStoreConfiguration
     {
-        public DocumentStoreTestConfiguration()
+        public DocumentStoreTestConfiguration(String engineVersion = "v1")
         {
+            EngineVersion = engineVersion;
             IsApiServer = true;
             IsWorker = false;
             IsReadmodelBuilder = true;
@@ -25,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             QueueStreamPollInterval = 1000;
             IsQueueManager = false;
             TenantSettings.Add(new TestTenantSettings());
-
+            BucketInfo = new List<BucketInfo>() { new BucketInfo() { Slots = new[] { "*" }, BufferSize = 10 } };
             Boost = "true";
             DelayedStartInMilliseconds = 1000;
             ForcedGcSecondsInterval = 0;
@@ -48,12 +51,12 @@ namespace Jarvis.DocumentStore.Tests.Support
 
     public class DocumentStoreTestConfigurationForPollQueue : DocumentStoreTestConfiguration
     {
-        public DocumentStoreTestConfigurationForPollQueue( QueueInfo[] queueInfo)
+        public DocumentStoreTestConfigurationForPollQueue( QueueInfo[] queueInfo, String engineVersion = "v1")
         {
             IsQueueManager = true;
             QueueJobsPollInterval = 50; //poll each 50 milliseconds.
             QueueStreamPollInterval = 50;
-            
+            EngineVersion = engineVersion;
             this.QueueInfoList = queueInfo;
         }
 

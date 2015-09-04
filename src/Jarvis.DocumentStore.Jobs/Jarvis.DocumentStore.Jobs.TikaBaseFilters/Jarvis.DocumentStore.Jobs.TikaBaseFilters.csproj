@@ -52,6 +52,7 @@
     <Compile Include="DecimalRemoverFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StandardFilter.cs" />
+    <Compile Include="UnnecessaryTextFileFilter.cs" />
     <Compile Include="WindsorInstaller.cs" />
   </ItemGroup>
   <ItemGroup>

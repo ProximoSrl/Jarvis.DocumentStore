@@ -9,7 +9,7 @@ using System.Linq;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Core.Model;
-
+using Jarvis.Framework.Kernel.ProjectionEngine;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -18,6 +18,7 @@ namespace Jarvis.DocumentStore.Core.Support
         protected DocumentStoreConfiguration()
         {
             TenantSettings = new List<TenantSettings>();
+            EngineVersion = "v1";
         }
 
         #region BasicSettings
@@ -77,6 +78,11 @@ namespace Jarvis.DocumentStore.Core.Support
         #endregion
 
         #region Projections
+
+        public String EngineVersion { get; set; }
+
+        public List<BucketInfo> BucketInfo { get; set; }
+
 
         public Boolean Rebuild { get; set; }
 

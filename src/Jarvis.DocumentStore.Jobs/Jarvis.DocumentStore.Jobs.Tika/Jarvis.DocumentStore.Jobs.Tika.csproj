@@ -180,6 +180,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="tika-app, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\TikaOnDotNet.1.7.0\lib\net35\tika-app.dll</HintPath>
@@ -245,7 +247,7 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetDir)*.*" "$(SolutionDir)..\artifacts\jobs\tika\" /Y /E
-copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\videothumbnails\Jarvis.DocumentStore.JobsHost.exe.config.original"</PostBuildEvent>
+copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\tika\Jarvis.DocumentStore.JobsHost.exe.config.original"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

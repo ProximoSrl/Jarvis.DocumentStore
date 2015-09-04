@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private readonly IDocumentFormatTranslator _documentFormatTranslator;
 
         readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
-        readonly IQueueDispatcher _queueDispatcher;
+        readonly IQueueManager _queueDispatcher;
 
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
@@ -61,7 +61,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,
             IDocumentWriter handleWriter,
-            IQueueDispatcher queueDispatcher,
+            IQueueManager queueDispatcher,
             ICounterService counterService,
             IDocumentFormatTranslator documentFormatTranslator)
         {
@@ -521,7 +521,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         )
         {
             var mapping = _handleWriter.FindOneById(handle);
-            if (mapping == null)
+
+            //If mapping is not present return not found
+            if (mapping == null || mapping.DocumentDescriptorId == null)
                 return DocumentNotFound(handle);
 
             var document = _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);

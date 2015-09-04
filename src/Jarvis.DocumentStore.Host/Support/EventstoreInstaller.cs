@@ -93,7 +93,7 @@ namespace Jarvis.DocumentStore.Host.Support
                         .For<IRepositoryEx, RepositoryEx>()
                         .ImplementedBy<RepositoryEx>()
                         .Named(tenant.Id + ".repository")
-                        .DependsOn(Dependency.OnComponent(typeof (IStoreEvents), esComponentName))
+                        .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
                         .LifestyleTransient()
                     );
             }
@@ -133,7 +133,7 @@ namespace Jarvis.DocumentStore.Host.Support
         static void EnableFlatIdMapping(IdentityManager converter)
         {
             EventStoreIdentityBsonSerializer.IdentityConverter = converter;
-           
+
         }
     }
 }

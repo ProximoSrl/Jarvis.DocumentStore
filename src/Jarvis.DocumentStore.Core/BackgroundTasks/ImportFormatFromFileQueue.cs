@@ -174,7 +174,20 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                     return;
                 }
 
-                var blobId = blobStore.Upload(task.Format, fname);
+                BlobId blobId;
+                if (!String.IsNullOrEmpty(task.FileName))
+                {
+                    //use the real file name from the task not the name of the file
+                    using (FileStream fs = new FileStream(fname, FileMode.Open))
+                    {
+                        blobId = blobStore.Upload(task.Format, new FileNameWithExtension(task.FileName), fs);
+                    }
+                }
+                else
+                {
+                    //No filename given in task, use name of the blob
+                    blobId = blobStore.Upload(task.Format, fname);
+                }
 
                 if (task.Format == OriginalFormat)
                 {
@@ -371,7 +384,16 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         {
             while (!_stopPending)
             {
-                Thread.Sleep(10000);
+                //avoiding blocking for 10 seconds during stop.
+                for (int i = 0; i < 10; i++)
+                {
+                    if (_stopPending)
+                    {
+                        _stop.Set();
+                        return;
+                    }
+                    Thread.Sleep(1000);
+                }
                 try
                 {
                     _job.PollFileSystem();

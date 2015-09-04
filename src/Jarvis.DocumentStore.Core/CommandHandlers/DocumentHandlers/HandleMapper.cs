@@ -16,9 +16,20 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
         {
         }
 
+        public void DeleteHandle(DocumentHandle handle)
+        {
+            var id = Translate(handle, false);
+            base.DeleteAliases(id);
+        }
+
         public DocumentId Map(DocumentHandle handle)
         {
             return Translate(handle);
+        }
+
+        public new DocumentId TryTranslate(string externalKey)
+        {
+            return base.TryTranslate(externalKey);
         }
     }
 }

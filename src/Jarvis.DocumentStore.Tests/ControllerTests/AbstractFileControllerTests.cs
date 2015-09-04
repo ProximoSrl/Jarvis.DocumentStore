@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected IReader<DocumentDescriptorReadModel, DocumentDescriptorId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
         IDocumentWriter _handleWriter;
-        protected IQueueDispatcher QueueDispatcher;
+        protected IQueueManager QueueDispatcher;
         [SetUp]
         public void SetUp()
         {
@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
             _handleWriter = Substitute.For<IDocumentWriter>();
             DocumentReader = Substitute.For<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
-            QueueDispatcher= Substitute.For<IQueueDispatcher>();
+            QueueDispatcher= Substitute.For<IQueueManager>();
             CounterService = Substitute.For<ICounterService>();
             var bus = Substitute.For<IInProcessCommandBus>();
             var configuration =  new DocumentStoreTestConfiguration();

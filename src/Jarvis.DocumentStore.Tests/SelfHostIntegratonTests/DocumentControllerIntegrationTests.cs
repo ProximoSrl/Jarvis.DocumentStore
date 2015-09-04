@@ -35,20 +35,32 @@ using System.Net;
 using Jarvis.DocumentStore.Core.Support;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using MongoDB.Bson;
+using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
+using Jarvis.DocumentStore.Core.Domain.Document;
+
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
-    [TestFixture]
+    [TestFixture("v1")]
+    [TestFixture("v2")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
         private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
         private MongoCollection<DocumentReadModel> _documentCollection;
+        private MongoCollection<BsonDocument> _commitCollection;
+
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
         private IBlobStore _blobStore;
+        private String _engineVersion;
 
+        public DocumentControllerIntegrationTests(String engineVersion)
+        {
+            _engineVersion = engineVersion;
+        }
         private async Task UpdateAndWaitAsync()
         {
             await _projections.UpdateAndWait();
@@ -57,7 +69,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [SetUp]
         public void SetUp()
         {
-            var config = new DocumentStoreTestConfiguration();
+            var config = new DocumentStoreTestConfiguration(_engineVersion);
             MongoDbTestConnectionProvider.DropTestsTenant();
             config.SetTestAddress(TestConfig.ServerAddress);
             _documentStoreService = new DocumentStoreBootstrapper();
@@ -70,6 +82,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+            _commitCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<BsonDocument>("Commits");
             _blobStore = _tenant.Container.Resolve<IBlobStore>();
         }
 
@@ -466,6 +479,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void add_multiple_attachment_to_existing_handle()
         {
+
+            for (int i = 0; i < 20; i++)
+            {
+                Thread.Sleep(1000);
+            }
+
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
@@ -789,6 +808,84 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             Debug.WriteLine("Done");
+        }
+
+        [Test]
+        public async void verify_de_duplication_not_link_to_deleted_handles()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleB") }));
+        }
+
+        [Test]
+        public async void verify_de_duplication_not_link_to_deleted_handles_same_handle()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleA") }));
+        }
+
+        [Test]
+        public async void verify_delete_then_re_add_handle()
+        {
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //re-add same payload with same handle
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPng, new DocumentHandle("handleA"));
+            await UpdateAndWaitAsync();
+
+            //verify that everything is ok.
+            var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
+            Assert.That(allDescriptor, Has.Count.EqualTo(1));
+            Assert.That(allDescriptor[0].Documents, Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("handleA") }));
+        }
+
+        [Test]
+        public async void verify_delete_remove_document_with_cleanup()
+        {
+            DateTime now = DateTime.UtcNow.AddDays(+30);
+            var repo = _tenant.Container.Resolve<IRepositoryEx>();
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleX"));
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(new DocumentHandle("handleX"));
+            await UpdateAndWaitAsync();
+
+            using (DateTimeService.Override(() => now))
+            {
+                //now we need to wait cleanupJobs to start 
+                ExecuteCleanupJob();
+            }
+
+            var aggregate = repo.GetById<Document>(new DocumentId(1L));
+            Assert.That(aggregate.Version, Is.EqualTo(0));
         }
 
         #region Helpers

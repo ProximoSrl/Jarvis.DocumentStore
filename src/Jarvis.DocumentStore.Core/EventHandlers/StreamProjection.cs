@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             ICollectionWrapper<StreamReadModel, Int64> streamReadModelCollection,
             IDocumentWriter documentWriter,
             IBlobStore blobStore,
-            IQueueDispatcher queueDispatcher,
+            IQueueManager queueDispatcher,
             IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReadModel)
         {
             if (queueDispatcher is IObserveProjection)

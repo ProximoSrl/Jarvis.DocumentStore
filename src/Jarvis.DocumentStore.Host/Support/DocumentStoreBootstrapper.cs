@@ -20,6 +20,7 @@ using Rebus.Logging;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Metrics;
 using Jarvis.Framework.Kernel.ProjectionEngine.Client;
+using Jarvis.DocumentStore.Host.Controllers;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -28,9 +29,10 @@ namespace Jarvis.DocumentStore.Host.Support
         IDisposable _webApplication;
         IWindsorContainer _container;
         ILogger _logger;
-
+        DocumentStoreConfiguration _config;
         public void Start(DocumentStoreConfiguration config)
         {
+            _config = config;
             BuildContainer(config);
 
             if (RebuildSettings.ShouldRebuild && Environment.UserInteractive)
@@ -68,26 +70,24 @@ namespace Jarvis.DocumentStore.Host.Support
                 //@@TODO: https://github.com/etishor/Metrics.NET/wiki/ElasticSearch
                 var binding = config.MetersOptions["http-endpoint"];
                 _logger.DebugFormat("Meters available on {0}", binding);
-                
+
                 Metric
                     .Config
                     .WithHttpEndpoint(binding)
                     .WithAllCounters();
             }
 
+            DocumentStoreApplication.SetConfig(config);
             if (config.IsApiServer)
             {
                 installers.Add(new ApiInstaller());
+            }
 
-                var options = new StartOptions();
-                foreach (var uri in config.ServerAddresses)
-                {
-                    _logger.InfoFormat("Binding to @ {0}", uri);
-                    options.Urls.Add(uri);
-                }
-
-                _webApplication = WebApp.Start<DocumentStoreApplication>(options);
-                _logger.InfoFormat("Server started");
+            var options = new StartOptions();
+            foreach (var uri in config.ServerAddresses)
+            {
+                _logger.InfoFormat("Binding to @ {0}", uri);
+                options.Urls.Add(uri);
             }
 
             _container.Install(installers.ToArray());
@@ -102,14 +102,19 @@ namespace Jarvis.DocumentStore.Host.Support
 
                 if (config.IsApiServer)
                 {
-                    tenantInstallers.Add(new TenantApiInstaller())                    ;
+                    tenantInstallers.Add(new TenantApiInstaller());
                 }
 
                 tenantInstallers.Add(new TenantProjectionsInstaller<NotifyReadModelChanges>(tenant, config));
                 _logger.DebugFormat("Configured Projections for tenant {0}", tenant.Id);
-                
+
                 tenant.Container.Install(tenantInstallers.ToArray());
+
             }
+
+            _webApplication = WebApp.Start<DocumentStoreApplication>(options);
+            _logger.InfoFormat("Server started");
+
             foreach (var act in _container.ResolveAll<IStartupActivity>())
             {
                 _logger.DebugFormat("Starting activity: {0}", act.GetType().FullName);
@@ -122,6 +127,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     _logger.ErrorFormat(ex, "Shutting down {0}", act.GetType().FullName);
                 }
             }
+
         }
 
         void BuildContainer(DocumentStoreConfiguration config)
@@ -191,6 +197,10 @@ namespace Jarvis.DocumentStore.Host.Support
             if (_webApplication != null)
             {
                 _webApplication.Dispose();
+            }
+            if (!_config.IsApiServer)
+            {
+                _container.Dispose();
             }
         }
 

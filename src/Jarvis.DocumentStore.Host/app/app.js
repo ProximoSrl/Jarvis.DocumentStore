@@ -9,6 +9,7 @@
         'admin.scheduler',
         'admin.stream',
         'admin.logs',
+        'admin.recyclebin',
         'angularUtils.directives.uiBreadcrumbs',
         'angularUtils.directives.dirPagination'
     ]);

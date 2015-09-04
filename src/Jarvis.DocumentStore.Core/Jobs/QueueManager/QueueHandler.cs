@@ -37,9 +37,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             _collection.CreateIndex(
                 IndexKeys<QueuedJob>.Ascending(x => x.Status, x => x.StreamId, x => x.SchedulingTimestamp),
                 IndexOptions.SetName("ForGetNextJobQuery"));
+            //This index was unique to avoid same job to be executed for
+            //same blob and tenant, but when we introduced the ability to
+            //re-schedule a job, this constraint was removed.
+            if (_collection.IndexExistsByName("UniqueTenantAndBlob"))
+            {
+                _collection.DropIndexByName("UniqueTenantAndBlob");
+            }
+
             _collection.CreateIndex(
                IndexKeys<QueuedJob>.Ascending(x => x.TenantId, x => x.BlobId),
-               IndexOptions.SetName("UniqueTenantAndBlob").SetUnique(true));
+               IndexOptions.SetName("TenantAndBlob").SetUnique(false));
             _info = info;
             Name = info.Name;
 
@@ -58,21 +66,26 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             Logger = NullLogger.Instance;
         }
 
-        public void Handle(StreamReadModel streamElement, TenantId tenantId)
+        public void Handle(
+            StreamReadModel streamElement, 
+            TenantId tenantId,
+            Boolean forceReSchedule = false)
         {
             if (_info.ShouldCreateJob(streamElement)) 
             {
-                //look for already existing job with the same blobid, there is no need to re-queue again
-                //because if a job with the same blobid was already fired for this queue there is no need
-                //to re-issue
-                var existing = _collection.Find(
-                    Query.And(
-                        Query<QueuedJob>.EQ(j => j.BlobId, streamElement.FormatInfo.BlobId),
-                        Query<QueuedJob>.EQ(j => j.TenantId, tenantId)
-                    )
-                ).Count() > 0;
-                if (existing) return;
-
+                if (!forceReSchedule)
+                {
+                    //look for already existing job with the same blobid, there is no need to re-queue again
+                    //because if a job with the same blobid was already fired for this queue there is no need
+                    //to re-issue
+                    var existing = _collection.Find(
+                        Query.And(
+                            Query<QueuedJob>.EQ(j => j.BlobId, streamElement.FormatInfo.BlobId),
+                            Query<QueuedJob>.EQ(j => j.TenantId, tenantId)
+                        )
+                    ).Count() > 0;
+                    if (existing) return;
+                }
                 if (Logger.IsDebugEnabled) Logger.DebugFormat("Create queue for readmodel stream id {0} and queue {1}", streamElement.Id, _info.Name);
                 QueuedJob job = new QueuedJob();
                 var id = new QueuedJobId(Guid.NewGuid().ToString());

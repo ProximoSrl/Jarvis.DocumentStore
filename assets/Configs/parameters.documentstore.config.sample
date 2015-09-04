@@ -25,6 +25,13 @@
 	"rebuild" : false,
 	"engine-slots" : "*",
 	"allowed-file-types"  : "*",
+	"nitro-mode" : "false",
+	"poller-buckets" : [
+		{
+			'slots' : '*',
+			'buffer' : 10000
+		}
+	],
 	"restricted-allowed-file-types": "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip",
 	"file-queue" : "c:\\temp\\dsqueue\\",
 	"jobs" : 

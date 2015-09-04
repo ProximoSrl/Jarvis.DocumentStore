@@ -7,6 +7,8 @@ using Jarvis.DocumentStore.JobsHost.Support;
 using TuesPechkin;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Linq;
+
 namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
 {
     /// <summary>
@@ -19,10 +21,18 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         public ILogger Logger { get; set; }
         readonly JobsHostConfiguration _config;
 
+        private String[] unzippedHtmlExtension = new[] { ".html", ".htm" };
+
         public HtmlToPdfConverterFromDiskFileOld(String inputFileName, JobsHostConfiguration config)
         {
             _inputFileName = inputFileName;
             _config = config;
+        }
+
+        private Boolean IsUnzippedHtmlFile(String fileName)
+        {
+            var fileExtension = Path.GetExtension(_inputFileName);
+            return unzippedHtmlExtension.Any(s => s.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -89,6 +99,8 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
             var folder = _config.GetWorkingFolder(tenantId, jobId);
 
             Logger.DebugFormat("Downloaded {0}", _inputFileName);
+
+            if (IsUnzippedHtmlFile(_inputFileName)) return _inputFileName;
 
             var workingFolder = Path.GetDirectoryName(_inputFileName);
             ZipFile.ExtractToDirectory(_inputFileName, workingFolder);

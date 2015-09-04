@@ -247,30 +247,52 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             return parameters;
         }
 
+        private DateTime _lastCommunicationError = DateTime.MinValue;
+        private DateTime _lastGoodCommunication = DateTime.Now;
+
         private QueuedJobDto DsGetNextJob()
         {
-            QueuedJobDto nextJob = null;
-            string pollerResult;
-            using (WebClientEx client = new WebClientEx())
+            try
             {
-                //TODO: use round robin if a document store is down.
-                var firstUrl = _dsEndpoints.First();
-                var payload = JsonConvert.SerializeObject(new
+                QueuedJobDto nextJob = null;
+                string pollerResult;
+                using (WebClientEx client = new WebClientEx())
                 {
-                    QueueName = this.QueueName,
-                    Identity = this._identity,
-                    Handle = this._handle,
-                });
-                Logger.DebugFormat("Polling url: {0} with payload {1}", firstUrl, payload);
-                client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                pollerResult = client.UploadString(firstUrl.GetNextJobUrl, payload);
-                Logger.DebugFormat("GetNextJobResult: {0}", pollerResult);
+                    //TODO: use round robin if a document store is down.
+                    var firstUrl = _dsEndpoints.First();
+                    var payload = JsonConvert.SerializeObject(new
+                    {
+                        QueueName = this.QueueName,
+                        Identity = this._identity,
+                        Handle = this._handle,
+                    });
+                    Logger.DebugFormat("Polling url: {0} with payload {1}", firstUrl, payload);
+                    client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                    pollerResult = client.UploadString(firstUrl.GetNextJobUrl, payload);
+                    Logger.DebugFormat("GetNextJobResult: {0}", pollerResult);
+                }
+                if (!pollerResult.Equals("null", StringComparison.OrdinalIgnoreCase))
+                {
+                    nextJob = JsonConvert.DeserializeObject<QueuedJobDto>(pollerResult, _settings);
+                }
+                _lastGoodCommunication = DateTime.Now;
+                return nextJob;
             }
-            if (!pollerResult.Equals("null", StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
-                nextJob = JsonConvert.DeserializeObject<QueuedJobDto>(pollerResult, _settings);
+                if (DateTime.UtcNow.AddMinutes(-15) > _lastCommunicationError)
+                {
+                    //new error in 15 minutes, we need to log
+                    Logger.ErrorFormat(ex, "Unable to contact Document Store at address: {0}", _dsEndpoints.First());
+                    _lastCommunicationError = DateTime.UtcNow;
+                }
+                else
+                {
+                    Logger.InfoFormat("Document store cannot be reached, down since {0}", _lastGoodCommunication);
+                }
+                return null;
             }
-            return nextJob;
+           
         }
 
         protected async Task<Boolean> AddFormatToDocumentFromFile(

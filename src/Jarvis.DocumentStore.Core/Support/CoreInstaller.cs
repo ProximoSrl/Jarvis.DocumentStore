@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Support
                     .DependsOn(Dependency.OnValue<MongoDatabase>(logDb)),
                 Component
                     .For<ICommandBus, IInProcessCommandBus>()
-                    .ImplementedBy<MultiTenantInProcessCommandBus>()
+                    .ImplementedBy<DocumentStoreMultiTenantCommandBus>()
                 );
 
             container.Register(

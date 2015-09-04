@@ -7,7 +7,7 @@ namespace Jarvis.DocumentStore.Core.Support
 {
     public class QueueManagerStartupActivity : IStartupActivity
     {
-        readonly IQueueDispatcher _queueManager;
+        readonly IQueueManager _queueManager;
         readonly DocumentStoreConfiguration _config;
         readonly PollerManager _pollerManager;
 
@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
     public class QueueManagerShutdownActivity : IShutdownActivity
     {
-        readonly IQueueDispatcher _queueManager;
+        readonly IQueueManager _queueManager;
         readonly DocumentStoreConfiguration _config;
         readonly PollerManager _pollerManager;
 

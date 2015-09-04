@@ -15,7 +15,7 @@ using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
-    public class drop_all_tenants
+    public class upload_drop_all_tenants
     {
         [Test]
         public void execute()
@@ -27,6 +27,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [TestFixture, Explicit]
     public class upload_to_external_service
     {
+
+       
+
         private DocumentStoreServiceClient _docs;
         private DocumentStoreServiceClient _demo;
 
@@ -52,6 +55,32 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_pdf_then_delete()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Revision_42")).Wait();
+            Thread.Sleep(3000);
+            _docs.DeleteAsync(DocumentHandle.FromString("Revision_42")).Wait();
+        }
+          
+        [Test]
+        public void upload_many_pdf()
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Manypdf_" + i)).Wait();
+            }
+        }
+
+        [Test]
+        public void upload_many_pdf_delete()
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                _docs.DeleteAsync(DocumentHandle.FromString("Manypdf_" + i)).Wait();
+            }
+        }
+
+        [Test]
         public void remove_tika_from_pdf()
         {
             _docs.RemoveFormatFromDocument(DocumentHandle.FromString("Rev_1"), new DocumentFormat("tika")).Wait();
@@ -61,6 +90,19 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload__temp_pdf()
         {
             _docs.UploadAsync(@"c:\temp\temppdf.pdf", DocumentHandle.FromString("temp_pdf")).Wait();
+        }
+
+        [Test]
+        public void upload__temp_excel()
+        {
+            _docs.UploadAsync(@"c:\temp\excel.xlsx", DocumentHandle.FromString("temp_excel")).Wait();
+        }
+
+
+        [Test]
+        public void upload__temp_text()
+        {
+            _docs.UploadAsync(@"c:\temp\temp.txt", DocumentHandle.FromString("temp_txt")).Wait();
         }
 
         [Test]
@@ -279,6 +321,36 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload_html()
         {
             _docs.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html")).Wait();
+        }
+
+        [Test]
+        public void upload_simple_html()
+        {
+            var taskFolder = @"c:\temp\dsqueue";
+
+            DocumentImportData data = _docs.CreateDocumentImportData(
+                Guid.NewGuid(),
+                TestConfig.PathToSimpleHtmlFile,
+                Path.GetFileName(TestConfig.PathToSimpleHtmlFile),
+                DocumentHandle.FromString("simple-html-file"));
+            data.DeleteAfterImport = false;
+            var docsFile = Path.Combine(taskFolder, "doc_simple-html-file_" + DateTime.Now.Ticks);
+
+            _docs.QueueDocumentImport(data, docsFile);
+        }
+
+        [Test]
+        public void upload_html_zipped()
+        {
+            var zipped = _docs.ZipHtmlPage(TestConfig.PathToHtml);
+
+            _docs.UploadAsync(
+               zipped,
+               DocumentHandle.FromString("html_zip"),
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            ).Wait();
         }
 
         [Test]

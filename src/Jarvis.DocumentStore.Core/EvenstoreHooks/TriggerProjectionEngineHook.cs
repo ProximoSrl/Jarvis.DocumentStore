@@ -14,11 +14,15 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
     public class TriggerProjectionEngineHook : PipelineHookBase
     {
         public ILogger Logger { get; set; }
-        public ITenantAccessor TenantAccessor { get; set; }
-        public ITriggerProjectionsUpdate Updater { get; set; }
+        public ITenantAccessor TenantAccessor { get;private  set; }
+        public ITriggerProjectionsUpdate Updater { get; private set; }
 
-        public TriggerProjectionEngineHook()
+        public TriggerProjectionEngineHook(
+            ITriggerProjectionsUpdate updater,
+            ITenantAccessor tenantAccessor)
         {
+            Updater = updater;
+            TenantAccessor = tenantAccessor;
         }
 
         public override void PostCommit(ICommit committed)

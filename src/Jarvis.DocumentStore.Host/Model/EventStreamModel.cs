@@ -27,4 +27,12 @@ namespace Jarvis.DocumentStore.Host.Model
             Events = commit.Events.ToList();
         }
     }
+
+    public class EventStreamResult
+    {
+        public List<CommitModel> Commits { get; set; }
+
+        public String AggregateId { get; set; }
+
+    }
 }

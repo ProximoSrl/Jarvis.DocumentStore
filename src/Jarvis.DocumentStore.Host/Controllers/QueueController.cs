@@ -10,6 +10,7 @@ using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Metrics;
+using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -18,7 +19,12 @@ namespace Jarvis.DocumentStore.Host.Controllers
     /// </summary>
     public class QueueController : ApiController
     {
-        public IQueueDispatcher QueueDispatcher { get; set; }
+        public IQueueManager QueueManager { get; set; }
+
+        public QueueController(IQueueManager queueManager)
+        {
+            QueueManager = queueManager;
+        }
 
         [HttpPost]
         [Route("queue/getnextjob")]
@@ -26,8 +32,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             using (Metric.Timer("queue-nextjob", Unit.Requests).NewContext(parameter.QueueName))
             {
-                if (QueueDispatcher == null) return null;
-                return QueueDispatcher.GetNextJob(
+                if (QueueManager == null) return null;
+                return QueueManager.GetNextJob(
                     parameter.QueueName,
                     parameter.Identity,
                     parameter.Handle,
@@ -42,8 +48,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             using (Metric.Timer("queue-complete", Unit.Requests).NewContext(parameter.QueueName))
             {
-                return QueueDispatcher.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
+                return QueueManager.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
             }
+        }
+
+        [HttpGet]
+        [Route("queue/requeue/{tenantId}/{handle}")]
+        public Boolean ReQueue(TenantId tenantId, DocumentHandle handle)
+        {
+            return QueueManager.ReQueueJobs(handle, tenantId);
         }
     }
 

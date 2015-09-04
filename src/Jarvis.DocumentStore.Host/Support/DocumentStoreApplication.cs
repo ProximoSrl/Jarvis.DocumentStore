@@ -13,16 +13,41 @@ using Microsoft.Owin.StaticFiles;
 using Newtonsoft.Json.Serialization;
 using Owin;
 using Swashbuckle.Application;
+using Owin.Metrics;
+using Jarvis.DocumentStore.Core.Support;
+
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Jarvis.DocumentStore.Host.Support.Filters;
+
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreApplication
     {
+        private static DocumentStoreConfiguration _config;
+
+        public static void SetConfig(DocumentStoreConfiguration config)
+        {
+            _config = config;
+        }
+
         public void Configuration(IAppBuilder application)
         {
+            if (_config == null)
+                throw new ApplicationException("Configuration is null, you forget to call DocumentStoreApplication.SetConfig static initialization method");
+
+            if (_config.IsApiServer)
+            {
             ConfigureApi(application);
             ConfigureAdmin(application);
+        }
+
+            Metric
+                .Config
+                .WithOwin(middleware => application.Use(middleware), config => config
+                .WithRequestMetricsConfig(c => c.WithAllOwinMetrics())
+                .WithMetricsEndpoint()
+            );
         }
 
 
@@ -77,11 +102,14 @@ namespace Jarvis.DocumentStore.Host.Support
             };
 
             config.MapHttpAttributeRoutes();
+            var loggerFactory = ContainerAccessor.Instance.Resolve<IExtendedLoggerFactory>();
+
+            config.Filters.Add(new LogFilterAttribute(loggerFactory.Create("LogFilter")));
 
             var jsonFormatter = new JsonMediaTypeFormatter();
             jsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());
             jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            config.Services.Replace(typeof (IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
+            config.Services.Replace(typeof(IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
 
             config.Services.Add(
                 typeof(IExceptionLogger), 
@@ -94,7 +122,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             /* swagger */
             config
-                .EnableSwagger(c=>c.SingleApiVersion("v1", "Documenstore api"))
+                .EnableSwagger(c => c.SingleApiVersion("v1", "Documenstore api"))
                 .EnableSwaggerUi();
 
             application.UseWebApi(config);

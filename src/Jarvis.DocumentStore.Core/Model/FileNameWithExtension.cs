@@ -59,7 +59,11 @@ namespace Jarvis.DocumentStore.Core.Model
 
             FileName = Path.GetFileNameWithoutExtension(fileNameWithExtension);
             Extension = Path.GetExtension(fileNameWithExtension);
-
+            if (fileNameWithExtension.StartsWith("."))
+            {
+                FileName = fileNameWithExtension;
+                Extension = "";
+            }
             if (!String.IsNullOrWhiteSpace(Extension))
                 Extension = Extension.Remove(0, 1).ToLowerInvariant();
         }

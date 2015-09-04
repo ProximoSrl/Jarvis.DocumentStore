@@ -1,14 +1,19 @@
 ﻿<div class="row">
-    <div class="col-xs-12">
-        <form role="form" ng-submit="stream.search()">
+    
+        <form role="form"  ng-submit="stream.search()">
+            <div class="input-group col-xs-3">
+
+                <select class="form-control" ng-options="tenant for tenant in stream.tenants track by tenant"
+                        ng-model="stream.tenantId"></select>
+            </div>
             <div class="input-group">
+            
                 <input type="text" ng-model="stream.streamId" class="form-control" placeholder="insert stream id..." autofocus />
                 <span class="input-group-btn">
                     <button type="submit" class="btn btn-flat"><i class="fa fa-search"></i></button>
                 </span>
             </div>
         </form>
-    </div>
 </div>
 <br />
 <ul class="timeline">
@@ -17,7 +22,6 @@
             [{{commit.Sequence}}] {{commit.Date}}
         </span>
     </li>
-
     <li>
         <i class="fa fa-envelope bg-blue"></i>
         <div class="timeline-item">
@@ -37,7 +41,6 @@
             </table>
         </div>
     </li>
-
     <li ng-repeat-end>
         <i class="fa fa-envelope bg-orange"></i>
         <div class="timeline-item">
