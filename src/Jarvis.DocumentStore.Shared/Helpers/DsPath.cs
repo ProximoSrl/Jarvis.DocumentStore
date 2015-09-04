@@ -28,6 +28,11 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             return MyPath.GetFileName(pathToFile);
         }
 
+        public static string GetTempFileName()
+        {
+            return MyPath.GetTempFileName();
+        }
+
         public static string ChangeExtension(string path, string extension)
         {
             return System.IO.Path.ChangeExtension(path, extension);
