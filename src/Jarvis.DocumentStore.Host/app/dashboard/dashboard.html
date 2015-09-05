@@ -85,17 +85,20 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th colspan="3">Triggers</th>
+                    <th colspan="6">Triggers</th>
                 </tr>
                 <tr>
-                    <th>
+                    <th class="col-xs-3">
                         Status
                     </th>
-                    <th>
+                    <th class="col-xs-3">
                         Group
                     </th>
-                    <th>
+                    <th class="col-xs-3">
                         Count
+                    </th>
+                    <th class="col-xs-1">
+                        Commands
                     </th>
                 </tr>
             </thead>
@@ -104,6 +107,7 @@
                     <td>{{t.status}}</td>
                     <td>{{t.group}}</td>
                     <td>{{t.count}}</td>
+                    <td><button ng-if="t.statusInt == 2" ng-click="dashboard.reSchedule(t.group)">ReSchedule</button></td>
                 </tr>
             </tbody>
             <tfoot>
