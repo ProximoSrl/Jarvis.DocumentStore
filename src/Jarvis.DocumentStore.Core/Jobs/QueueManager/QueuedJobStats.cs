@@ -22,10 +22,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             public long Count { get; private set; }
 
+            public Int32 StatusInt { get; set; }
+
             public QueuedJobStatInfo(String queueName, QueuedJobExecutionStatus status, long count)
             {
                 Group = queueName;
                 Status = status.ToString();
+                StatusInt = (Int32)status;
                 Count = count;
             }
         }

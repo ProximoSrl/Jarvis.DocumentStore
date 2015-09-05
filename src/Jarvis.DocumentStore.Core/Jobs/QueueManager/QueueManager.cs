@@ -45,6 +45,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <returns></returns>
         Boolean ReQueueJobs(DocumentHandle handle, TenantId tenant);
 
+        Boolean ReScheduleFailed(String queueName);
+
         void Start();
 
         void Stop();
@@ -258,7 +260,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public QueuedJob GetJob(String queueName, string jobId)
         {
             return ExecuteWithQueueHandler("get job", queueName, qh => qh.GetJob(jobId)) as QueuedJob;
-
         }
 
         public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
@@ -266,13 +267,21 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.SetJobExecuted(jobId, errorMessage));
         }
 
+        public Boolean ReScheduleFailed(String queueName)
+        {
+            return ExecuteWithQueueHandler("reschedule failed jobs", queueName, qh => qh.ReScheduleFailed());
 
-        private Object ExecuteWithQueueHandler(String operationName, String queueName, Func<QueueHandler, Object> executor)
+        }
+
+        private T ExecuteWithQueueHandler<T>(
+            String operationName, 
+            String queueName, 
+            Func<QueueHandler, T> executor) 
         {
             if (_queueHandlers == null || !_queueHandlers.ContainsKey(queueName))
             {
                 Logger.ErrorFormat("Requested operation {0} for queue name {1} but no Queue configured with that name", operationName, queueName);
-                return null;
+                return default(T);
             }
             var qh = _queueHandlers[queueName];
             return executor(qh);

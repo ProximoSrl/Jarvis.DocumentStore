@@ -50,6 +50,12 @@
             });
         };
 
+        vm.reSchedule = function (queueName)
+        {
+            console.log("Reschedule " + queueName);
+            schedulerData.reScheduleQueue(queueName);
+        }
+
         $scope.$on('$destroy', function () {
             $interval.cancel(stop);
         });

@@ -26,6 +26,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
             QueueManager = queueManager;
         }
 
+        public QueueController()
+        {
+
+        }
+
         [HttpPost]
         [Route("queue/getnextjob")]
         public QueuedJobDto GetNextJob(GetNextJobParameter parameter)
