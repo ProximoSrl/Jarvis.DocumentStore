@@ -46,16 +46,23 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
             String networkStream = base.GetBlobUriForJob(parameters.TenantId, parameters.JobId);
             String thumbNail = worker.CreateThumbnail(networkStream, workingFolder, secondsOffset);
 
-            await AddFormatToDocumentFromFile(
-                parameters.TenantId,
-                parameters.JobId,
-                new DocumentFormat(DocumentFormats.RasterImage),
-                thumbNail,
-                new Dictionary<string, object>());
+            if (String.IsNullOrEmpty(thumbNail))
+            {
+                Logger.WarnFormat("Conversion returned no thumbnail for file {0} - job {1}", parameters.FileName, parameters.JobId);
+            }
+            else
+            {
+                await AddFormatToDocumentFromFile(
+                    parameters.TenantId,
+                    parameters.JobId,
+                    new DocumentFormat(DocumentFormats.RasterImage),
+                    thumbNail,
+                    new Dictionary<string, object>());
 
-            Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.JobId, format);
+                Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.JobId, format);
+            }
             return true;
         }
 
-      }
+    }
 }
