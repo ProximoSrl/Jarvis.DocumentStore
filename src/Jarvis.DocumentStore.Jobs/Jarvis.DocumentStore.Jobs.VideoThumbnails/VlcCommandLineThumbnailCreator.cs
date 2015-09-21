@@ -76,9 +76,13 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 
             if (file == null)
             {
-                logger.ErrorFormat("Unable to find snapshot file in directory {0}. Files in directory are {1}", 
-                    tempDir,
-                    Directory.GetFiles(tempDir).Aggregate((s1, s2) => s1 + ", " + s2));
+                String fileList = "";
+                var files = Directory.GetFiles(tempDir).ToList();
+                if (files.Count > 0)
+                {
+                    fileList = files.Aggregate((s1, s2) => s1 + ", " + s2);
+                }
+                logger.ErrorFormat("Unable to find snapshot file in directory {0}. Files actually in directory: {1}", tempDir, fileList);
                 return "";
             }
             return file.FullName;
