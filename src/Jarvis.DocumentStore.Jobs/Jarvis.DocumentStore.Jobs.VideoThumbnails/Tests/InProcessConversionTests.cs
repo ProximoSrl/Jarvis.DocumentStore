@@ -29,12 +29,9 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
             String format ="png";
             Int32 secondsOffset = 4;
 
-            String vlcLocation = 
-                ConfigurationManager.AppSettings["vlc_location"] ??
-                @"C:\Program Files (x86)\VideoLAN\VLC";
+            String vlcExecutable = Helper.GetExecutableLocation();
 
-            String vlcExecutable = vlcLocation.TrimEnd('\\') + "\\vlc.exe";
-            if (!File.Exists(vlcExecutable))
+            if (vlcExecutable == null)
             {
                 retValue.Add(new PollerTestResult(false, "Executable location, use app settings vlc_location"));
                 return retValue;
@@ -63,7 +60,6 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
 
             return retValue;
         }
-
        
     }
 

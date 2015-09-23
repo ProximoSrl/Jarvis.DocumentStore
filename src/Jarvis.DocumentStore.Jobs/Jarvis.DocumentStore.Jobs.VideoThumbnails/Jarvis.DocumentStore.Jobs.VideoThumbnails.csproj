@@ -75,6 +75,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helper.cs" />
     <Compile Include="Tests\InProcessConversionTests.cs" />
     <Compile Include="Tests\TestFiles.Designer.cs">
       <AutoGen>True</AutoGen>

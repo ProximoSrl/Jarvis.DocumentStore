@@ -26,15 +26,10 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 
             Logger.DebugFormat("Conversion for jobId {0} in format {1} starting", parameters.JobId, format);
 
-            String vlcLocation = parameters.All.GetOrDefault("vlc_location") ??
-                ConfigurationManager.AppSettings["vlc_location"] ??
-                @"C:\Program Files (x86)\VideoLAN\VLC";
-
-            String vlcExecutable = vlcLocation.TrimEnd('\\') + "\\vlc.exe";
+            String vlcExecutable = Helper.GetExecutableLocation();
             if (!File.Exists(vlcExecutable))
             {
-                String error = String.Format("Unable to find VLC.exe executable in position {0}. You can specify VLC directory with 'vlc_location' job parameter or with 'vlc_location' app config configuration",
-                    vlcLocation);
+                String error = String.Format("Unable to find VLC.exe executable in standard folders. You can specify VLC directory with 'vlc_location' job parameter or with 'vlc_location' app config configuration");
                 Logger.ErrorFormat(error);
                 Console.WriteLine("Unable to start converter, press a key to close.");
                 Console.ReadKey();
