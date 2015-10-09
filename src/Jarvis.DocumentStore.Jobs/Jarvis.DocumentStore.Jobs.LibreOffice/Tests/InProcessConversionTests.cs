@@ -37,28 +37,29 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
         private void TestFile(
             List<PollerTestResult> retValue,
             String fileName,
-            String type,
-            Byte[] fileContent)
+            String type, 
+            Byte[] fileContent)   
         {
+            String converter = Conversion.GetType().Name;
             try
             {
                 var tempFile = Path.Combine(Path.GetTempPath(), fileName);
                 if (File.Exists(tempFile)) File.Delete(tempFile);
                 File.WriteAllBytes(tempFile, fileContent);
-
+                
                 string content = Conversion.Run(tempFile, "pdf");
                 if (!String.IsNullOrEmpty(content))
                 {
-                    retValue.Add(new PollerTestResult(true, type + " conversion"));
+                    retValue.Add(new PollerTestResult(true, type + " conversion with converter: " + converter));
                 }
                 else
                 {
-                    retValue.Add(new PollerTestResult(false, type + " conversion: wrong content"));
+                    retValue.Add(new PollerTestResult(false, type + " conversion: wrong content with converter: " + converter));
                 }
             }
             catch (Exception ex)
             {
-                retValue.Add(new PollerTestResult(false, type + " conversion: " + ex.Message));
+                retValue.Add(new PollerTestResult(false, type + " conversion with converter " + converter + ex.Message));
             }
         }
 
