@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
         {
             var outputFile = Path.ChangeExtension(sourceFile, outType);
 
-            Logger.DebugFormat("Converting: {0} to {1}", sourceFile, outputFile);
+            Logger.DebugFormat("UNO CONVERSION: Converting: {0} to {1}", sourceFile, outputFile);
 
             lock (LockRoot) // -> single runner (todo: more user profiles)
             {

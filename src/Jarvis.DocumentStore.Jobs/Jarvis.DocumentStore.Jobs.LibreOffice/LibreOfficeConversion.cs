@@ -24,7 +24,7 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
 
         public string Run(string sourceFile, string outType)
         {
-            Logger.DebugFormat("Starting conversion of blobId {0} to {1}", sourceFile, outType);
+            Logger.DebugFormat("DIRECT SOFFICE.EXE CONVERSION: Starting conversion of blobId {0} to {1}", sourceFile, outType);
             string pathToLibreOffice = _config.GetPathToLibreOffice();
             var outputFile = Path.ChangeExtension(sourceFile, outType);
 
