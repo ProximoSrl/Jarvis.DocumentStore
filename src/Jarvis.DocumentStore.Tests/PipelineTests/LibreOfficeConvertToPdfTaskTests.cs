@@ -9,6 +9,8 @@ using NUnit.Framework;
 using Jarvis.DocumentStore.Jobs.LibreOffice;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System;
+
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
     [TestFixture(Category = "integration")]
@@ -53,7 +55,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             {
                 _unoConversion.CloseOpenOffice();
             }
-            catch 
+            catch
             {
             }
         }
@@ -88,7 +90,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestCase("ods")]
         [TestCase("odp")]
         [TestCase("rtf")]
-        public void processing_file_with_sdk_should_succeed(string blobId) 
+        public void processing_file_with_sdk_should_succeed(string blobId)
         {
             var s = new Stopwatch();
             s.Start();
@@ -103,7 +105,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             Parallel.ForEach(
                 _mapping.Keys,
-//                new ParallelOptions() { MaxDegreeOfParallelism = 2 },
+                //                new ParallelOptions() { MaxDegreeOfParallelism = 2 },
                 k =>
                 {
                     var fileName = _unoConversion.Run(_mapping[k], "pdf");
