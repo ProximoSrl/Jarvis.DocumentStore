@@ -26,6 +26,15 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
 
         public LibreOfficeUnoConversion(JobsHostConfiguration config)
         {
+            //Needed by UNO SDK5. 
+            //http://stackoverflow.com/questions/31856025/bootstrap-uno-api-libreoffice-exception
+            //look at comments of funbit. We need to set UNO_PATH and soffice should be in the PATH
+            //of the system.
+            var sofficePath = config.GetPathToLibreOffice();
+            var unoPath = Path.GetDirectoryName(sofficePath);
+            Environment.SetEnvironmentVariable("UNO_PATH", unoPath, EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + @";" + unoPath, EnvironmentVariableTarget.Process);
+
             _config = config;
             Logger = NullLogger.Instance;
         }
