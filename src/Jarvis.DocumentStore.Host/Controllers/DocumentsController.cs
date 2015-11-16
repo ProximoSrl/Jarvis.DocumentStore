@@ -204,6 +204,30 @@ namespace Jarvis.DocumentStore.Host.Controllers
             );
         }
 
+        [Route("{tenantId}/documents/{originalHandle}/copy/{copiedHandle}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> CopyDocument(
+            TenantId tenantId, DocumentHandle originalHandle, DocumentHandle copiedHandle)
+        {
+            var documentDescriptor = GetDocumentDescriptorByHandle(originalHandle);
+            if (documentDescriptor == null)
+                return DocumentNotFound(originalHandle);
+
+            documentDescriptor = GetDocumentDescriptorByHandle(copiedHandle);
+            if (documentDescriptor != null)
+                return Request.CreateErrorResponse(
+                   HttpStatusCode.InternalServerError,
+                   string.Format("Handle {0} already existing", copiedHandle)
+               );
+
+            CommandBus.Send(new CopyDocument(originalHandle, copiedHandle), "api");
+
+            return Request.CreateResponse(
+                HttpStatusCode.Accepted,
+                string.Format("Handle {0} copied into handle {1}", originalHandle, copiedHandle)
+            );
+        }
+
         [Route("{tenantId}/documents/addformat/{format}")]
         [HttpPost]
         public async Task<HttpResponseMessage> AddFormatToDocument(TenantId tenantId, DocumentFormat format)

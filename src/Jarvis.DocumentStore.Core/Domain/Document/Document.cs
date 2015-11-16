@@ -63,10 +63,23 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 RaiseEvent(new DocumentDeleted(InternalState.Handle, InternalState.LinkedDocument));
             }
         }
+
+        internal void CopyDocument(DocumentHandle copiedHandle)
+        {
+            ThrowIfDeleted();
+            if (InternalState.LinkedDocument == null)
+                throw new DomainException((IIdentity)Id, "Cannot copy document not linked to any Document Descriptor");
+
+            var handleInfo = new DocumentHandleInfo(copiedHandle, InternalState.FileName, InternalState.CustomData);
+            RaiseEvent(new DocumentCopied(copiedHandle, InternalState.LinkedDocument, handleInfo));
+        }
+
         void ThrowIfDeleted()
         {
             if (InternalState.HasBeenDeleted)
                 throw new DomainException((IIdentity)Id, "Handle has been deleted");
         }
+
+      
     }
 }

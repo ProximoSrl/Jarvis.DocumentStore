@@ -195,6 +195,18 @@ namespace Jarvis.DocumentStore.Client
             return await UploadFromFile(endPoint, pathToFile, customData);
         }
 
+        public async Task<String> CopyHandleAsync(
+            DocumentHandle originalHandle,
+            DocumentHandle copiedHandle)
+        {
+            using (var client = new HttpClient())
+            {
+                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
+                return await client.GetStringAsync(resourceUri);
+            }            
+        }
+
+
         private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, IDictionary<string, object> customData)
         {
             var fileExt = Path.GetExtension(pathToFile).ToLowerInvariant();
