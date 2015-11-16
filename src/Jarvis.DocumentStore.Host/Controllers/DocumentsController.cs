@@ -223,7 +223,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             CommandBus.Send(new CopyDocument(originalHandle, copiedHandle), "api");
 
             return Request.CreateResponse(
-                HttpStatusCode.Accepted,
+                HttpStatusCode.OK,
                 string.Format("Handle {0} copied into handle {1}", originalHandle, copiedHandle)
             );
         }

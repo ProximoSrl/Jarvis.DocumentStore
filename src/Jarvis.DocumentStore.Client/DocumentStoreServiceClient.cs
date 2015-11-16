@@ -195,6 +195,14 @@ namespace Jarvis.DocumentStore.Client
             return await UploadFromFile(endPoint, pathToFile, customData);
         }
 
+        /// <summary>
+        /// copy an handle to another handle without forcing the client
+        /// to download and re-upload the same file
+        /// </summary>
+        /// <param name="originalHandle">Handle you want to copy</param>
+        /// <param name="copiedHandle">Copied handle that will point to the very
+        /// same content of the original one.</param>
+        /// <returns></returns>
         public async Task<String> CopyHandleAsync(
             DocumentHandle originalHandle,
             DocumentHandle copiedHandle)
