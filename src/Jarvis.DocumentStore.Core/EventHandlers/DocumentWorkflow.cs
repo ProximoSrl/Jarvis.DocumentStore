@@ -22,7 +22,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         IEventHandler<FormatAddedToDocumentDescriptor>,
         IEventHandler<DocumentDeleted>,
         IEventHandler<DocumentDescriptorDeleted>,
-        IEventHandler<DocumentLinked>
+        IEventHandler<DocumentLinked>,
+        IEventHandler<DocumentCopied>
     {
         private readonly ICommandBus _commandBus;
         private readonly IBlobStore _blobStore;
@@ -180,6 +181,15 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 }
             }
              
+        }
+
+        public void On(DocumentCopied e)
+        {
+            if (IsReplay) return;
+
+            _commandBus.Send(new CreateDocumentAsCopy(e.NewHandle, e.DocumentDescriptorId, e.HandleInfo)
+                .WithDiagnosticTriggeredByInfo(e, "Handle deleted")
+            );
         }
     }
 }

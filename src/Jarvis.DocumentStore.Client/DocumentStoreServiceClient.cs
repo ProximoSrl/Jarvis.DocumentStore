@@ -15,8 +15,10 @@ using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Jobs;
+#if UseDelimon
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+#endif
 
 namespace Jarvis.DocumentStore.Client
 {
@@ -194,6 +196,26 @@ namespace Jarvis.DocumentStore.Client
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
             return await UploadFromFile(endPoint, pathToFile, customData);
         }
+
+        /// <summary>
+        /// copy an handle to another handle without forcing the client
+        /// to download and re-upload the same file
+        /// </summary>
+        /// <param name="originalHandle">Handle you want to copy</param>
+        /// <param name="copiedHandle">Copied handle that will point to the very
+        /// same content of the original one.</param>
+        /// <returns></returns>
+        public async Task<String> CopyHandleAsync(
+            DocumentHandle originalHandle,
+            DocumentHandle copiedHandle)
+        {
+            using (var client = new HttpClient())
+            {
+                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
+                return await client.GetStringAsync(resourceUri);
+            }            
+        }
+
 
         private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, IDictionary<string, object> customData)
         {

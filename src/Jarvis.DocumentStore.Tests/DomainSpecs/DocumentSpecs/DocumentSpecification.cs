@@ -28,7 +28,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
         public static readonly DocumentCustomData CustomData_2 = new DocumentCustomData();
         public static readonly DocumentCustomData CustomData_3 = new DocumentCustomData(){{"a", "b"}};
         public static readonly DocumentHandle DocumentHandle = new DocumentHandle("this_is_an_document");
-
+        public static readonly DocumentHandle DocumentHandleCopy = new DocumentHandle("this_is_a_copied_document");
 
         public static Document DocumentAggregate { get { return Aggregate; }}
     }
@@ -225,5 +225,30 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs
 
         It CustomDataSetEvent_should_have_beed_raised = () =>
            EventHasBeenRaised<DocumentCustomDataSet>().ShouldBeTrue();
+    }
+
+    [Subject("with an document with file name")]
+    public class when_copy_document_with_new_handle : WithAnInitializedDocument
+    {
+        Establish context = () =>
+        {
+            State.SetFileName(new FileNameWithExtension("a", "file"));
+            State.Link(Document_1);
+        };
+
+        Because of = () =>
+            DocumentAggregate.CopyDocument(DocumentHandleCopy);
+
+        It copied_document_had_been_raised = () =>
+            EventHasBeenRaised<DocumentCopied>().ShouldBeTrue();
+
+        It copied_document_has_right_properties = () =>
+         {
+             var evt = RaisedEvent<DocumentCopied>();
+             evt.NewHandle.ShouldEqual(DocumentHandleCopy);
+             evt.DocumentDescriptorId.ShouldEqual(Document_1);
+             evt.HandleInfo.FileName.FileName.ShouldEqual("a");
+             evt.HandleInfo.FileName.Extension.ShouldEqual("file");
+         };
     }
 }
