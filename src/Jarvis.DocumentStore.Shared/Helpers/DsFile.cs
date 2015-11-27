@@ -52,6 +52,11 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             return MyFile.Open(path, Convert(fileMode), Convert(fileAccess));
         }
 
+        public static FileStream Open(string path, FileMode fileMode)
+        {
+            return MyFile.Open(path, Convert(fileMode));
+        }
+
 
         public static void WriteAllBytes(string path, byte[] data)
         {

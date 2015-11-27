@@ -19,11 +19,26 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         }
 
         public static String[] GetFiles(
-            string folder, 
+            string folder,
             string jobExtension,
             SearchOption searchOption)
         {
             return MyDirectory.GetFiles(folder, jobExtension, Convert(searchOption));
+        }
+
+        public static void Delete(string path, bool recursive)
+        {
+            MyDirectory.Delete(path, recursive);
+        }
+
+        public static void CreateDirectory(string path)
+        {
+            MyDirectory.CreateDirectory(path);
+        }
+
+        public static IEnumerable<string> GetFiles(string dir)
+        {
+            return MyDirectory.GetFiles(dir);
         }
 
 #if DisableDelimon
@@ -45,6 +60,8 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             }
             throw new ArgumentException();
         }
+
+    
 #endif
     }
 }

@@ -300,6 +300,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackgroudTasksTests\ImportFromFileLongPathTest.cs" />
     <Compile Include="BackgroudTasksTests\ImportFromFileTests.cs" />
     <Compile Include="ClientTests\DocumentStoreClientTests.cs" />
     <Compile Include="ControllerTests\AbstractFileControllerTests.cs" />
