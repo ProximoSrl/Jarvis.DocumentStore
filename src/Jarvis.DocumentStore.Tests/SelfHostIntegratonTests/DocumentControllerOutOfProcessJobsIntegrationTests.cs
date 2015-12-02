@@ -51,7 +51,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     /// 2) upload document and wait for specific queue to process the docs
     /// 3) verify the outcome.
     /// </summary>
-    [TestFixture("v1")]
+    //[TestFixture("v1")] //Uncomment this if you want to test with old projection engine
     [TestFixture("v2")]
     [Category("integration_full")]
     //[Explicit("This integration test is slow because it wait for polling")]
