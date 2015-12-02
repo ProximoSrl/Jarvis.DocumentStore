@@ -96,6 +96,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Pri.LongPath, Version=2.0.11.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pri.LongPath.2.0.11\lib\net45\Pri.LongPath.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Quartz">
       <HintPath>..\packages\Quartz.2.2.4\lib\net40\Quartz.dll</HintPath>
     </Reference>
@@ -151,6 +155,8 @@
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DeleteDocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\DocumentDescriptorCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentDescriptorHandlers\CreateDocumentDescriptorCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\CopyDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandlers\DocumentHandlers\CreateDocumentAsCopyCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\DeleteDocumentCommandHandler.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\HandleMapper.cs" />
     <Compile Include="CommandHandlers\DocumentHandlers\IHandleMapper.cs" />
@@ -179,9 +185,12 @@
     <Compile Include="Domain\DocumentDescriptor\Events\DocumentDescriptorCreated.cs" />
     <Compile Include="Domain\DocumentDescriptor\Events\FormatAddedToDocumentDescriptor.cs" />
     <Compile Include="Domain\DocumentDescriptor\DocumentFormat.cs" />
+    <Compile Include="Domain\Document\Commands\CopyDocument.cs" />
+    <Compile Include="Domain\Document\Commands\CreateDocumentAsCopy.cs" />
     <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
     <Compile Include="Domain\Document\Commands\LinkDocumentToDocumentDescriptor.cs" />
     <Compile Include="Domain\Document\Events\AttachmentDeleted.cs" />
+    <Compile Include="Domain\Document\Events\DocumentCopied.cs" />
     <Compile Include="Domain\Document\Events\DocumentCustomDataSet.cs" />
     <Compile Include="Domain\Document\Events\DocumentFileNameSet.cs" />
     <Compile Include="Domain\Document\Document.cs" />

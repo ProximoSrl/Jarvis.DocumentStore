@@ -84,7 +84,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
             }
         }
 
-        void Attach(DocumentHandleInfo handleInfo)
+        public void Attach(DocumentHandleInfo handleInfo)
         {
             if (!InternalState.IsValidHandle(handleInfo.Handle))
                 RaiseEvent(new DocumentHandleAttached(handleInfo.Handle));

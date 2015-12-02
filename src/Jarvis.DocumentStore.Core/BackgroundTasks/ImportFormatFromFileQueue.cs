@@ -24,9 +24,11 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
+
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+
 using System.IO;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
@@ -178,7 +180,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 if (!String.IsNullOrEmpty(task.FileName))
                 {
                     //use the real file name from the task not the name of the file
-                    using (FileStream fs = new FileStream(fname, FileMode.Open))
+                    using (FileStream fs = File.Open(fname, FileMode.Open))
                     {
                         blobId = blobStore.Upload(task.Format, new FileNameWithExtension(task.FileName), fs);
                     }

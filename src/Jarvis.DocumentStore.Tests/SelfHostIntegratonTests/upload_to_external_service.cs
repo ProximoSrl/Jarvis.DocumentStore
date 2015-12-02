@@ -55,6 +55,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_pdf_copyHandle()
+        {
+            _docs.CopyHandleAsync(DocumentHandle.FromString("Rev_1"), DocumentHandle.FromString("Rev_1_copied"));
+        }
+
+        [Test]
         public void upload_pdf_then_delete()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Revision_42")).Wait();

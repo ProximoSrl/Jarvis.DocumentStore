@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-#if DisableDelimon
+#if DisablePriLongPath
 using MyPath = System.IO.Path;
 #else
-using MyPath = Delimon.Win32.IO.Path;
+using MyPath = Pri.LongPath.Path;
 #endif
 namespace Jarvis.DocumentStore.Shared.Helpers
 {

@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if DisableDelimon
+#if DisablePriLongPath
 using MyDirectory = System.IO.Directory;
 #else
-using MyDirectory = Delimon.Win32.IO.Directory;
+using MyDirectory = Pri.LongPath.Directory;
 #endif
 namespace Jarvis.DocumentStore.Shared.Helpers
 {
@@ -19,32 +19,27 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         }
 
         public static String[] GetFiles(
-            string folder, 
+            string folder,
             string jobExtension,
             SearchOption searchOption)
         {
-            return MyDirectory.GetFiles(folder, jobExtension, Convert(searchOption));
+            return MyDirectory.GetFiles(folder, jobExtension, searchOption);
         }
 
-#if DisableDelimon
-        private static System.IO.SearchOption Convert(
-           System.IO.SearchOption searchOption)
+        public static void Delete(string path, bool recursive)
         {
-            return searchOption;
+            MyDirectory.Delete(path, recursive);
         }
-#else
-        private static Delimon.Win32.IO.SearchOption Convert(
-            System.IO.SearchOption searchOption)
+
+        public static void CreateDirectory(string path)
         {
-            switch (searchOption)
-            {
-                case SearchOption.AllDirectories:
-                    return Delimon.Win32.IO.SearchOption.AllDirectories;
-                case SearchOption.TopDirectoryOnly:
-                    return Delimon.Win32.IO.SearchOption.TopDirectoryOnly;
-            }
-            throw new ArgumentException();
+            MyDirectory.CreateDirectory(path);
         }
-#endif
+
+        public static IEnumerable<string> GetFiles(string dir)
+        {
+            return MyDirectory.GetFiles(dir);
+        }
+
     }
 }
