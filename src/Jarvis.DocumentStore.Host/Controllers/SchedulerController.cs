@@ -25,6 +25,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public DocumentStoreConfiguration Config { get; set; }
 
+        public IPollerJobManager PollerJobManager { get; set; }
+
         public SchedulerController(QueuedJobStatus queuedJobStats)
         {
             QueuedJobStats = queuedJobStats;
@@ -34,29 +36,21 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("scheduler/start")]
         public void Start()
         {
-            if (Scheduler != null)
-            {
-                Scheduler.Start();
-                Scheduler.ResumeAll();
-            }
+            throw new NotImplementedException("Implement how to start the queue.");
         }
 
         [HttpPost]
         [Route("scheduler/stop")]
         public void Stop()
         {
-            if (Scheduler != null)
-                Scheduler.Standby();
+            throw new NotImplementedException("Implement how to stop the queue.");
         }
 
         [HttpGet]
         [Route("scheduler/running")]
         public bool IsRunning()
         {
-            if (Scheduler != null)
-                return !Scheduler.InStandbyMode;
-
-            return false;
+            return true;
         }
 
         [HttpPost]
@@ -72,6 +66,16 @@ namespace Jarvis.DocumentStore.Host.Controllers
         }
 
 
+        [HttpGet]
+        [Route("scheduler/getjobsinfo")]
+        public object GetAllJobsInfo()
+        {
+            if (PollerJobManager != null)
+            {
+                return PollerJobManager.GetAllJobsInfo();
+            }
+            return new List<PollingJobInfo>();
+        }
 
         [HttpGet]
         [Route("scheduler/stats")]

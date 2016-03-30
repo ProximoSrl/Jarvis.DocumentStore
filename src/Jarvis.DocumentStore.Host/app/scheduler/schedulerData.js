@@ -12,6 +12,7 @@
             stop: stop,
             getStats: getStats,
             reScheduleQueue: reScheduleQueue,
+            getJobsInfo : getJobsInfo,
         };
 
         return service;
@@ -23,17 +24,19 @@
         }
 
         function start() {
-            debugger;
             $http.post('/scheduler/start');
         }
 
         function stop() {
-            debugger;
             $http.post('/scheduler/stop');
         }
 
         function getStats() {
             return $http.get('/scheduler/stats');
+        }
+
+        function getJobsInfo() {
+            return $http.get('/scheduler/getjobsinfo');
         }
 
         function reScheduleQueue(queueName) {

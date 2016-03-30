@@ -32,5 +32,29 @@ namespace Jarvis.DocumentStore.Core.Jobs
         /// a call to the <see cref="Start" /> method</param>
         /// <returns></returns>
         Boolean Restart(String jobHandle);
+
+        /// <summary>
+        /// Retrieve info about all jobs, with standard <see cref="OutOfProcessBaseJobManager"/> this is the 
+        /// list of the processes that should be active.
+        /// </summary>
+        /// <remarks>This list returns all the jobs, even the jobs that are stopped because failed the start test. This is used
+        /// to understand all information about jobs</remarks>
+        /// <returns></returns>
+        List<PollingJobInfo> GetAllJobsInfo();
+    }
+
+    public class PollingJobInfo
+    {
+        public String QueueId { get; set; }
+
+        /// <summary>
+        /// true if the job is active and running.
+        /// </summary>
+        public Boolean IsActive { get; set; }
+
+        /// <summary>
+        /// Description, for local job processes is the command line.
+        /// </summary>
+        public String ProcessDescription { get; set; }
     }
 }

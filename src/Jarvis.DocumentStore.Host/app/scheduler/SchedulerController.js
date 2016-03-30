@@ -11,13 +11,16 @@
         vm.status = 'off';
         vm.start = startScheduler;
         vm.stop = stopScheduler;
-
+        vm.info = null;
 
         /* */
         var stop = $interval(function () {
-            schedulerData.isRunning().then(function(running) {
+            schedulerData.isRunning().then(function (running) {
                 vm.status = running ? "on" : "off";
-            })
+            });
+            schedulerData.getJobsInfo().then(function (data) {
+                vm.info = data.data;
+            });
         }, 1000);
 
 

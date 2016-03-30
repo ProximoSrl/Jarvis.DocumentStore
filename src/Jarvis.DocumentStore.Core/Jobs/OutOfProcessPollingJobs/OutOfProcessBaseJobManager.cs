@@ -39,7 +39,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             public List<String> DocStoreAddresses { get; set; }
         }
 
-        ConcurrentDictionary<String, ProcessInfo> activeProcesses;
+        ConcurrentDictionary<String, ProcessInfo> _activeProcesses;
+
+        private ConcurrentDictionary<String, PollingJobInfo> _jobInfoList;
 
         public ILogger Logger { get; set; }
 
@@ -53,11 +55,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         public OutOfProcessBaseJobManager(DocumentStoreConfiguration configuration)
         {
             _configuration = configuration;
-            activeProcesses = new ConcurrentDictionary<string, ProcessInfo>();
+            _jobInfoList = new ConcurrentDictionary<string, PollingJobInfo>();
+            _activeProcesses = new ConcurrentDictionary<string, ProcessInfo>();
             Logger = NullLogger.Instance;
             //check each 10 minutes if some process is dead and was not started.
             _monitorTimer = new Timer(CheckProcesses, null, 20 * 1000, 10 * 60 * 1000);
         }
+
+
 
         public string Start(String queueName, Dictionary<String, String> customParameters, List<string> docStoreAddresses)
         {
@@ -117,13 +122,28 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 CustomParameters = customParameters,               
                 DocStoreAddresses = docStoreAddresses,
              };
-            activeProcesses[processHandle] = info;
+            _activeProcesses[processHandle] = info;
+
+            if (!_jobInfoList.ContainsKey(queueId))
+            {
+                PollingJobInfo pjInfo = new PollingJobInfo()
+                {
+                    QueueId = queueId,
+                    IsActive = true,
+                    ProcessDescription = String.Format("{0} {1}", fi.FullName, process.StartInfo.Arguments),
+                };
+                _jobInfoList[queueId] = pjInfo;
+            }
+            else
+            {
+                _jobInfoList[queueId].IsActive = true;
+            }
             Logger.InfoFormat("Started worker: ProcessHandle {0} for queue {1}", processHandle, queueId);
         }
 
         private string GetJobHandleFromProcess(Process process)
         {
-            return activeProcesses
+            return _activeProcesses
                 .Where(info => info.Value.Process.Id == process.Id && info.Value.Process.MachineName == process.MachineName)
                 .Select(info => info.Key)
                 .SingleOrDefault();
@@ -180,15 +200,20 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     Logger.ErrorFormat("Process with unknown handle exited. Process Id {0} Machine Name {1}", process.Id, process.MachineName);
                     return;
                 }
-                if (activeProcesses.ContainsKey(handle))
+                if (_activeProcesses.ContainsKey(handle))
                 {
-                    var processInfo = activeProcesses[handle];
+                    var processInfo = _activeProcesses[handle];
+                    PollingJobInfo pjInfo;
+                    if (_jobInfoList.TryGetValue(processInfo.QueueId, out pjInfo))
+                    {
+                        pjInfo.IsActive = false;
+                    }
                     var retValue = process.ExitCode;
                     if (retValue == -1)
                     {
                         Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because of internal error, the job cannot execute.", process.Id, processInfo.QueueId);
                         ProcessInfo pi;
-                        activeProcesses.TryRemove(handle, out pi);
+                        _activeProcesses.TryRemove(handle, out pi);
                         return;
                     }
 
@@ -202,9 +227,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public bool Stop(string jobHandle)
         {
-            if (!activeProcesses.ContainsKey(jobHandle)) return false;
+            if (!_activeProcesses.ContainsKey(jobHandle)) return false;
 
-            var info = activeProcesses[jobHandle];
+            var info = _activeProcesses[jobHandle];
             var process = info.Process;
 
             process.Exited -= process_Exited; //remove handler 
@@ -212,15 +237,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             process.Kill();
             ProcessInfo pi;
-            activeProcesses.TryRemove(jobHandle, out pi);
+            _activeProcesses.TryRemove(jobHandle, out pi);
+            PollingJobInfo pjInfo;
+            _jobInfoList.TryRemove(info.QueueId, out pjInfo);
             return true;
         }
 
         public bool Restart(string jobHandle)
         {
-            if (!activeProcesses.ContainsKey(jobHandle)) return false;
+            if (!_activeProcesses.ContainsKey(jobHandle)) return false;
 
-            var activeProcess = activeProcesses[jobHandle];
+            var activeProcess = _activeProcesses[jobHandle];
             if (!Stop(jobHandle)) 
             {
                 Logger.ErrorFormat("Unable to stop job with handle {0}", jobHandle);
@@ -234,7 +261,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         public void Stop()
         {
             _started = false;
-            foreach (var jobHandle in activeProcesses.Keys.ToList())
+            foreach (var jobHandle in _activeProcesses.Keys.ToList())
             {
                 Stop(jobHandle);
             }
@@ -244,7 +271,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             lock (this)
             {
-                foreach (var activeProcess in activeProcesses.ToList())
+                foreach (var activeProcess in _activeProcesses.ToList())
                 {
                     try
                     {
@@ -269,5 +296,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             }
         }
 
+        public List<PollingJobInfo> GetAllJobsInfo()
+        {
+            return _jobInfoList.Values.ToList();
+        }
     }
 }
