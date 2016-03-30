@@ -5,6 +5,7 @@
                 <th>Queue Name</th>
                 <th>Active</th>
                 <th>Description</th>
+                <th>Commands</th>
             </tr>
         </thead>
         <tbody>
@@ -12,6 +13,7 @@
                 <td>{{job.queueId}}</td>
                 <td>{{job.isActive}}</td>
                 <td>{{job.processDescription}}</td>
+                <td><button ng-show="!job.isActive" ng-click="scheduler.restartJob(job.queueId)">Restart</button></td>
             </tr>
         </tbody>
     </table>

@@ -101,6 +101,15 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 queueClients.Remove(queueInfo);
             }
         }
+
+        public void Restart(String queueId)
+        {
+            var client = queueClients.SingleOrDefault(c => c.QueueName == queueId);
+            if (client != null)
+            {
+                client.PollerManager.Restart(client.Handle);
+            }
+        }
     }
     
    

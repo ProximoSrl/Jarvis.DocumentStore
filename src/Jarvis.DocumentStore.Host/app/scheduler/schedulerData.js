@@ -12,7 +12,8 @@
             stop: stop,
             getStats: getStats,
             reScheduleQueue: reScheduleQueue,
-            getJobsInfo : getJobsInfo,
+            getJobsInfo: getJobsInfo,
+            restartJob : restartJob,
         };
 
         return service;
@@ -29,6 +30,10 @@
 
         function stop() {
             $http.post('/scheduler/stop');
+        }
+
+        function restartJob(queueId) {
+            $http.post('/scheduler/restartjob/' + queueId);
         }
 
         function getStats() {

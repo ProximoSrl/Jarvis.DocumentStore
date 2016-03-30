@@ -11,6 +11,7 @@
         vm.status = 'off';
         vm.start = startScheduler;
         vm.stop = stopScheduler;
+        vm.restartJob = restartJob;
         vm.info = null;
 
         /* */
@@ -30,6 +31,11 @@
 
         function stopScheduler() {
             schedulerData.stop();
+        }
+
+        function restartJob(queueId)
+        {
+            schedulerData.restartJob(queueId);
         }
 
         $scope.$on('$destroy', function () {

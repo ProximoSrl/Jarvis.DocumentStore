@@ -27,6 +27,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public IPollerJobManager PollerJobManager { get; set; }
 
+        public PollerManager PollerManager { get; set; }
+
         public SchedulerController(QueuedJobStatus queuedJobStats)
         {
             QueuedJobStats = queuedJobStats;
@@ -75,6 +77,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 return PollerJobManager.GetAllJobsInfo();
             }
             return new List<PollingJobInfo>();
+        }
+
+        [HttpPost]
+        [Route("scheduler/restartjob/{queueName}")]
+        public object RestartJob(String queueName)
+        {
+            if (PollerManager != null)
+            {
+                PollerManager.Restart(queueName);
+                return new { Success = true };
+            }
+            return new { Error = "Queue manager infrastructure not started" };
         }
 
         [HttpGet]

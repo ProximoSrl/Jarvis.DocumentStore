@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             public List<String> DocStoreAddresses { get; set; }
         }
 
-        ConcurrentDictionary<String, ProcessInfo> _activeProcesses;
+        ConcurrentDictionary<String, ProcessInfo> _startedProcesses;
 
         private ConcurrentDictionary<String, PollingJobInfo> _jobInfoList;
 
@@ -56,10 +56,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             _configuration = configuration;
             _jobInfoList = new ConcurrentDictionary<string, PollingJobInfo>();
-            _activeProcesses = new ConcurrentDictionary<string, ProcessInfo>();
+            _startedProcesses = new ConcurrentDictionary<string, ProcessInfo>();
             Logger = NullLogger.Instance;
             //check each 10 minutes if some process is dead and was not started.
-            _monitorTimer = new Timer(CheckProcesses, null, 20 * 1000, 10 * 60 * 1000);
+            _monitorTimer = new Timer(CheckProcesses, null, 30 * 1000, 10 * 60 * 1000);
         }
 
 
@@ -122,7 +122,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 CustomParameters = customParameters,               
                 DocStoreAddresses = docStoreAddresses,
              };
-            _activeProcesses[processHandle] = info;
+            _startedProcesses[processHandle] = info;
 
             if (!_jobInfoList.ContainsKey(queueId))
             {
@@ -143,7 +143,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         private string GetJobHandleFromProcess(Process process)
         {
-            return _activeProcesses
+            return _startedProcesses
                 .Where(info => info.Value.Process.Id == process.Id && info.Value.Process.MachineName == process.MachineName)
                 .Select(info => info.Key)
                 .SingleOrDefault();
@@ -200,9 +200,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     Logger.ErrorFormat("Process with unknown handle exited. Process Id {0} Machine Name {1}", process.Id, process.MachineName);
                     return;
                 }
-                if (_activeProcesses.ContainsKey(handle))
+                if (_startedProcesses.ContainsKey(handle))
                 {
-                    var processInfo = _activeProcesses[handle];
+                    var processInfo = _startedProcesses[handle];
                     PollingJobInfo pjInfo;
                     if (_jobInfoList.TryGetValue(processInfo.QueueId, out pjInfo))
                     {
@@ -212,8 +212,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     if (retValue == -1)
                     {
                         Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because of internal error, the job cannot execute.", process.Id, processInfo.QueueId);
-                        ProcessInfo pi;
-                        _activeProcesses.TryRemove(handle, out pi);
                         return;
                     }
 
@@ -227,9 +225,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public bool Stop(string jobHandle)
         {
-            if (!_activeProcesses.ContainsKey(jobHandle)) return false;
+            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
 
-            var info = _activeProcesses[jobHandle];
+            var info = _startedProcesses[jobHandle];
             var process = info.Process;
 
             process.Exited -= process_Exited; //remove handler 
@@ -237,7 +235,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             process.Kill();
             ProcessInfo pi;
-            _activeProcesses.TryRemove(jobHandle, out pi);
+            _startedProcesses.TryRemove(jobHandle, out pi);
             PollingJobInfo pjInfo;
             _jobInfoList.TryRemove(info.QueueId, out pjInfo);
             return true;
@@ -245,9 +243,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
         public bool Restart(string jobHandle)
         {
-            if (!_activeProcesses.ContainsKey(jobHandle)) return false;
+            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
 
-            var activeProcess = _activeProcesses[jobHandle];
+            var activeProcess = _startedProcesses[jobHandle];
             if (!Stop(jobHandle)) 
             {
                 Logger.ErrorFormat("Unable to stop job with handle {0}", jobHandle);
@@ -261,7 +259,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         public void Stop()
         {
             _started = false;
-            foreach (var jobHandle in _activeProcesses.Keys.ToList())
+            foreach (var jobHandle in _startedProcesses.Keys.ToList())
             {
                 Stop(jobHandle);
             }
@@ -271,16 +269,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         {
             lock (this)
             {
-                foreach (var activeProcess in _activeProcesses.ToList())
+                foreach (var activeProcess in _startedProcesses.ToList())
                 {
                     try
                     {
                         if (activeProcess.Value.Process != null)
                         {
                             var activeProcessInfo = activeProcess.Value;
-                            var processId = activeProcessInfo.Process.Id;
-                            var process = Process.GetProcessById(processId);
-                            if (process == null || process.HasExited)
+                            if (activeProcessInfo.Process == null || activeProcessInfo.Process.HasExited)
                             {
                                 Logger.ErrorFormat("Queue {0} job is not active anymore but it was not automatically restarted", activeProcess.Value.QueueId);
                                 InnerStart(activeProcessInfo.QueueId, activeProcessInfo.CustomParameters, activeProcessInfo.DocStoreAddresses, activeProcess.Key);
