@@ -25,6 +25,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
         readonly String _queueName;
         IWindsorContainer _container;
         ILogger _logger;
+        JobsHostConfiguration _config;
 
         public DocumentStoreSingleQueueClientBootstrapper(Uri serverAddress, String queueName, String handle)
         {
@@ -36,6 +37,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
         public Boolean Start(JobsHostConfiguration config)
         {
             Console.WriteLine("Starting");
+            _config = config;
             BuildContainer(config);
 
             var allPollers = _container.ResolveAll<IPollerJob>();
@@ -92,11 +94,6 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine(result.Message);
                 }
-            }
-            if (testFailed)
-            {
-                Console.WriteLine("Some test failed, press a key to continue");
-                Console.ReadKey();
             }
             return !testFailed;
         }

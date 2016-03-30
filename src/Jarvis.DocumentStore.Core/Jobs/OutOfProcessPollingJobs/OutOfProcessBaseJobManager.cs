@@ -173,7 +173,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 var retValue = process.ExitCode;
                 if (retValue == -1)
                 {
-                    Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because queue is not supported.", process.Id, processInfo.QueueId);
+                    Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because of internal error, the job cannot execute.", process.Id, processInfo.QueueId);
                     activeProcesses.Remove(handle);
                     return;
                 }
