@@ -329,6 +329,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _docs.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html")).Wait();
         }
 
+
+        [Test]
+        public void upload_mime_html()
+        {
+            _docs.UploadAsync(TestConfig.PathToMht, DocumentHandle.FromString("mhtml")).Wait();
+        }
+
         [Test]
         public void upload_simple_html()
         {

@@ -145,6 +145,12 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Architecture.htm"); }
         }
 
+        public static string PathToMht
+        {
+            get { return Path.Combine(DocumentsFolder, "MimeHtml.mht"); }
+        }
+
+
         public static string PathToSimpleHtmlFile
         {
             get { return Path.Combine(DocumentsFolder, "HTMLPage.html"); }

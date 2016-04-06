@@ -386,6 +386,7 @@
     <None Include="Docs\MailWithMultipleAttach.msg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Docs\MimeHtml.mht" />
     <None Include="Docs\Multilanguage.docx" />
     <None Include="Docs\Multilanguage.pdf" />
     <None Include="Docs\Multipage Word.docx" />
