@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="HtmlToPdfConverterFile.cs" />
     <Compile Include="HtmlToPdfOutOfProcessJob.cs" />
+    <Compile Include="MhtConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

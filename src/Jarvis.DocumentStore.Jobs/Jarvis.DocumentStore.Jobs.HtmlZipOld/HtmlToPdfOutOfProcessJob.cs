@@ -22,7 +22,17 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
             if (Logger.IsDebugEnabled)
                 Logger.DebugFormat("Conversion of HtmlZip to PDF: file {0}", pathToFile);
 
-            var converter = new HtmlToPdfConverterFromDiskFileOld(pathToFile, base.JobsHostConfiguration)
+            var file = pathToFile;
+            if (pathToFile.ToLower().EndsWith(".mht") || pathToFile.ToLower().EndsWith(".mhtml"))
+            {
+                string mhtml = File.ReadAllText(pathToFile);
+                MHTMLParser parser = new MHTMLParser(mhtml);
+                var outFile = Path.ChangeExtension(pathToFile, ".html");
+                File.WriteAllText(outFile, parser.getHTMLText());
+                file = outFile;
+            }
+
+            var converter = new HtmlToPdfConverterFromDiskFileOld(file, base.JobsHostConfiguration)
             {
                 Logger = Logger
             };
