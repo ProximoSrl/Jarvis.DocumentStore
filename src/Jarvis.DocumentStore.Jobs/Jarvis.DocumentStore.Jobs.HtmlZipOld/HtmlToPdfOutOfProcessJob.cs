@@ -27,6 +27,8 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
             {
                 string mhtml = File.ReadAllText(pathToFile);
                 MHTMLParser parser = new MHTMLParser(mhtml);
+                parser.OutputDirectory = workingFolder;
+                parser.DecodeImageData = true;
                 var outFile = Path.ChangeExtension(pathToFile, ".html");
                 File.WriteAllText(outFile, parser.getHTMLText());
                 file = outFile;

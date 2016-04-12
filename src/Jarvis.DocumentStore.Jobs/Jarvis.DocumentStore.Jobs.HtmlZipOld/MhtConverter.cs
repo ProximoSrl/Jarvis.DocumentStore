@@ -16,6 +16,10 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
     /// 
     /// Originally based on this project https://github.com/DavidBenko/MHTML-to-HTML-Decoding-in-C-Sharp
     /// </summary>
+    /// <summary>
+    /// HTMLParser is an object that can decode mhtml into ASCII text.
+    /// Using getHTMLText() will generate static HTML with inline images. 
+    /// </summary>
     public class MHTMLParser
     {
         const string BOUNDARY = "boundary";
@@ -30,25 +34,23 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
 
         private string mhtmlString; // the string we want to decode
         private string log; // log file
-        public bool decodeImageData; //decode images?
+        public bool DecodeImageData { get; set; }
 
-        /*
-         * Results of Conversion
-         * This is split into a string[3] for each part
-         * string[0] is the content type
-         * string[1] is the content name
-         * string[2] is the converted data
-         */
-        public List<string[]> dataset;
+        /// <summary>
+        /// Directory were to save images and css and all parts that needs to 
+        /// be saved
+        /// </summary>
+        public String OutputDirectory { get; set; }
+        private List<PartInfo> dataset;
 
         /*
          * Default Constructor
          */
         public MHTMLParser()
         {
-            this.dataset = new List<string[]>(); //Init dataset
+            this.dataset = new List<PartInfo>(); //Init dataset
             this.log += "Initialized dataset.\n";
-            this.decodeImageData = false; //Set default for decoding images
+            this.DecodeImageData = false; //Set default for decoding images
         }
 
         /*
@@ -65,7 +67,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         public MHTMLParser(string mhtml, bool decodeImages)
             : this(mhtml)
         {
-            this.decodeImageData = decodeImages;
+            this.DecodeImageData = decodeImages;
         }
         /*
          * Set the mhtml string we want to decode
@@ -87,7 +89,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         /*
          * Decompress Archive From String
          */
-        public List<string[]> decompressString()
+        private List<PartInfo> decompressString()
         {
             // init Prerequisites
             StringReader reader = null;
@@ -117,17 +119,45 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                     {
                         if (buffer != null) //If this is a new section and the buffer is full, write to dataset
                         {
-                            string[] data = new string[3];
-                            data[0] = type;
-                            data[1] = filename;
-                            data[2] = writeBufferContent(buffer, encoding, charset, type, this.decodeImageData, location);
+                            var bufferContent = writeBufferContent(buffer, encoding, charset, type, this.DecodeImageData, location);
+                            PartInfo info = new PartInfo()
+                            {
+                                ContentType = type,
+                                ContentName = filename,
+                                DataAsString = bufferContent,
+                                Location = location,
+                            };
                             if ("text/css".Equals(type, StringComparison.OrdinalIgnoreCase))
                             {
                                 var fileName = ToSafeFileName(location) + ".css";
-                                File.WriteAllText(fileName, data[2]);
+                                File.WriteAllText(fileName, info.DataAsString);
                                 cssMap[location] = fileName;
                             }
-                            this.dataset.Add(data);
+                            else if (type.Contains("image"))
+                            {
+                                this.log += "Image Data Detected.\n";
+                                if (DecodeImageData)
+                                {
+                                    if (encoding != "base64")
+                                        throw new NotImplementedException("Cannot decode if the encoding is not base64");
+
+                                    var b = Convert.FromBase64String(buffer.ToString());
+                                    info.DataAsBinary = b;
+                                    using (var ms = new MemoryStream(b))
+                                    {
+                                        using (var image = Image.FromStream(ms))
+                                        {
+                                            var fileName = ToSafeFileName(location);
+                                            var realLocation = Path.Combine(this.OutputDirectory, fileName);
+                                            image.Save(realLocation);
+                                            imageMap[location] = realLocation;
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            this.dataset.Add(info);
                             buffer = null;
                             this.log += "Wrote Buffer Content and reset buffer.\n";
                         }
@@ -200,33 +230,6 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         {
             this.log += "Start writing buffer contents.\n";
 
-            //Detect if this is an image and if we want to decode it
-            if (type.Contains("image"))
-            {
-                this.log += "Image Data Detected.\n";
-                if (!decodeImages)
-                {
-                    this.log += "Skipping image decode.\n";
-                    return buffer.ToString();
-                }
-                else
-                {
-                    if (encoding != "base64")
-                        throw new NotImplementedException("Cannot decode if the encoding is not base64");
-
-                    var b = Convert.FromBase64String(buffer.ToString());
-                    using (var ms = new MemoryStream(b))
-                    {
-                        var image = Image.FromStream(ms);
-                        var fileName = ToSafeFileName(location);
-                        image.Save(fileName);
-                        imageMap[location] = fileName;
-                    }
-
-                }
-            }
-
-
             // base64 Decoding
             if (encoding.ToLower().Equals("base64"))
             {
@@ -293,18 +296,16 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         private string getBoundary(StringReader reader)
         {
             string line = null;
-
+            Int32 lineCount = 0;
             while ((line = reader.ReadLine()) != null)
             {
-                line = line.Trim();
-                //If the line starts with BOUNDARY, lets grab everything in quotes and return it
-                if (line.StartsWith(BOUNDARY))
+                var match = Regex.Match(line, "boundary=\"(?<boundary>.*)\"");
+                if (match.Success)
                 {
-                    char c = '"';
-                    int a = line.IndexOf(c.ToString());
-                    int b = line.LastIndexOf(c.ToString());
-                    return line.Substring(line.IndexOf(c.ToString()) + 1, line.LastIndexOf(c.ToString()) - line.IndexOf(c.ToString()) - 1);
+                    return match.Groups["boundary"].Value;
                 }
+
+                if (lineCount++ > 50) return null;
             }
             return null;
         }
@@ -330,35 +331,37 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         public string getHTMLText()
         {
             // if (this.decodeImageData) throw new Exception("Turn off image decoding for valid html output.");
-            List<string[]> data = this.decompressString();
+            var data = this.decompressString();
             string body = "";
             //First, lets write all non-images to mail body
             //Then go back and add images in 
-            for (int i = 0; i < 2; i++)
+            String bodyLocation = "";
+            foreach (var part in data)
             {
-                foreach (string[] strArray in data)
+                if (part.ContentType.Contains("text/html"))
                 {
-                    if (i == 0)
-                    {
-                        if (strArray[0].Equals("text/html"))
-                        {
-                            body += strArray[2];
-                            this.log += "Writing HTML Text\n";
-                        }
-                    }
-                    else if (i == 1)
-                    {
-                        if (strArray[0].Contains("image"))
-                        {
-                            body = body.Replace("cid:" + strArray[1], "data:" + strArray[0] + ";base64," + strArray[2]);
-                            this.log += "Overwriting HTML with image: " + strArray[1] + "\n";
-                        }
-                    }
+                    body += part.DataAsString;
+                    this.log += "Writing HTML Text\n";
+                    bodyLocation = part.Location;
                 }
+                //else if (part.ContentType.Contains("image"))
+                //{
+                //    body = body.Replace("cid:" + part.ContentName, "data:" + part.ContentType + ";base64," + part.DataAsString);
+                //    this.log += "Overwriting HTML with image: " + part.ContentName + "\n";
+                //}
             }
+
             foreach (var image in imageMap)
             {
+                var originalBody = body;
                 body = body.Replace(image.Key, image.Value);
+                if (body == originalBody)
+                {
+                    //we have relative image
+                    var relativedir = bodyLocation.Substring(0, bodyLocation.LastIndexOf('/'));
+                    var relativeImagePath = image.Key.Substring(relativedir.Length + 1);
+                    body = body.Replace(relativeImagePath, image.Value);
+                }
             }
             foreach (var image in cssMap)
             {
@@ -442,6 +445,20 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                     safe.Append(c);
             }
             return safe.ToString();
+        }
+
+        private class PartInfo
+        {
+            public String ContentType { get; set; }
+
+            public String ContentName { get; set; }
+
+            public String DataAsString { get; set; }
+
+            public Byte[] DataAsBinary { get; set; }
+
+            public String Location { get; set; }
+
         }
     }
 }
