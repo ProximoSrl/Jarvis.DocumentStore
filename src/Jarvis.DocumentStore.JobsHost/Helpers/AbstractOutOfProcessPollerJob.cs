@@ -15,6 +15,8 @@ using Newtonsoft.Json;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Text;
+
 namespace Jarvis.DocumentStore.JobsHost.Helpers
 {
     public abstract class AbstractOutOfProcessPollerJob : IPollerJob
@@ -63,6 +65,8 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         {
             get { return 1; }
         }
+
+        public object StringBuider { get; private set; }
 
         private class DsEndpoint
         {
@@ -195,10 +199,15 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 {
                     Logger.ErrorFormat(aex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
                         nextJob.Parameters[JobKeys.TenantId]);
+                    StringBuilder aggregateMessage = new StringBuilder();
+                    aggregateMessage.Append(aex.Message);
                     foreach (var ex in aex.InnerExceptions)
                     {
-                        Logger.ErrorFormat(ex, "Inner error queued job {0} queue {1}: {2}", nextJob.Id, this.QueueName, ex.Message);
+                        var errorMessage = String.Format("Inner error queued job {0} queue {1}: {2}", nextJob.Id, this.QueueName, ex.Message);
+                        Logger.Error( errorMessage, ex);
+                        aggregateMessage.Append(errorMessage);
                     }
+                    DsSetJobExecuted(QueueName, nextJob.Id, aggregateMessage.ToString());
                 }
                 catch (Exception ex)
                 {

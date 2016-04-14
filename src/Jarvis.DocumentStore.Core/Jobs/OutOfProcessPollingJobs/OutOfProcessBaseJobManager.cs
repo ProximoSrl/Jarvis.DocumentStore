@@ -13,6 +13,8 @@ using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using System.Threading;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Collections.Concurrent;
+
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
 
@@ -35,18 +37,36 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             public Dictionary<String,String> CustomParameters { get; set; }
 
             public List<String> DocStoreAddresses { get; set; }
+
+            public Boolean Suspended { get; set; }
         }
 
-        Dictionary<String, ProcessInfo> activeProcesses;
+        ConcurrentDictionary<String, ProcessInfo> _startedProcesses;
+
+        private ConcurrentDictionary<String, PollingJobInfo> _jobInfoList;
 
         public ILogger Logger { get; set; }
+
+        /// <summary>
+        /// It is a rare situation, but it happened before that a process could not be 
+        /// restarted for various reasons. This timer is used to verify that all processes
+        /// are still alive.
+        /// </summary>
+        private readonly Timer _monitorTimer;
 
         public OutOfProcessBaseJobManager(DocumentStoreConfiguration configuration)
         {
             _configuration = configuration;
-            activeProcesses = new Dictionary<string, ProcessInfo>();
+            _jobInfoList = new ConcurrentDictionary<string, PollingJobInfo>();
+            _startedProcesses = new ConcurrentDictionary<string, ProcessInfo>();
             Logger = NullLogger.Instance;
+            //check each 10 minutes if some process is dead and was not started.
+            // _monitorTimer = new Timer(CheckProcesses, null, 30 * 1000, 10 * 60 * 1000);
+
+            _monitorTimer = new Timer(CheckProcesses, null, 1000, 10 * 1000);
         }
+
+
 
         public string Start(String queueName, Dictionary<String, String> customParameters, List<string> docStoreAddresses)
         {
@@ -54,6 +74,43 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             InnerStart(queueName, customParameters, docStoreAddresses, processHandle);
             _started = true;
             return processHandle;
+        }
+
+        public bool Stop(string jobHandle)
+        {
+            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
+
+            var info = _startedProcesses[jobHandle];
+            var process = info.Process;
+
+            process.Exited -= process_Exited; //remove handler 
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+
+            ProcessInfo pi;
+            _startedProcesses.TryRemove(jobHandle, out pi);
+            _jobInfoList[info.QueueId].WorkerActive = false;
+
+            return true;
+        }
+
+        public bool SuspendWorker(string jobHandle)
+        {
+            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
+
+            var info = _startedProcesses[jobHandle];
+            var process = info.Process;
+
+            process.Exited -= process_Exited; //remove handler 
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+            info.Suspended = true;
+            _jobInfoList[info.QueueId].WorkerActive = false;
+            return true;
         }
 
         private void InnerStart(
@@ -106,13 +163,29 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 CustomParameters = customParameters,               
                 DocStoreAddresses = docStoreAddresses,
              };
-            activeProcesses[processHandle] = info;
+            _startedProcesses[processHandle] = info;
+
+            if (!_jobInfoList.ContainsKey(queueId))
+            {
+                PollingJobInfo pjInfo = new PollingJobInfo()
+                {
+                    QueueId = queueId,
+                    WorkerActive = true,
+                    QueueActive = true,
+                    ProcessDescription = String.Format("{0} {1}", fi.FullName, process.StartInfo.Arguments),
+                };
+                _jobInfoList[queueId] = pjInfo;
+            }
+            else
+            {
+                _jobInfoList[queueId].WorkerActive = true;
+            }
             Logger.InfoFormat("Started worker: ProcessHandle {0} for queue {1}", processHandle, queueId);
         }
 
         private string GetJobHandleFromProcess(Process process)
         {
-            return activeProcesses
+            return _startedProcesses
                 .Where(info => info.Value.Process.Id == process.Id && info.Value.Process.MachineName == process.MachineName)
                 .Select(info => info.Key)
                 .SingleOrDefault();
@@ -158,75 +231,97 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         void process_Exited(object sender, EventArgs e)
         {
             if (!_started) return;
-            
-            //process is exited, it should be restarted if it is a crash.
-            Process process = (Process)sender;
-            String handle = GetJobHandleFromProcess(process);
-            if (String.IsNullOrEmpty(handle))
+            //locking prevent that restarting a dead service is executed concurrently to periodic check.
+            lock(this)
             {
-                Logger.ErrorFormat("Process with unknown handle exited. Process Id {0} Machine Name {1}", process.Id, process.MachineName);
-                return;
-            }
-            if (activeProcesses.ContainsKey(handle))
-            {
-                var processInfo = activeProcesses[handle];
-                var retValue = process.ExitCode;
-                if (retValue == -1)
+                //process is exited, it should be restarted if it is a crash.
+                Process process = (Process)sender;
+                String handle = GetJobHandleFromProcess(process);
+                if (String.IsNullOrEmpty(handle))
                 {
-                    Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because queue is not supported.", process.Id, processInfo.QueueId);
-                    activeProcesses.Remove(handle);
+                    Logger.ErrorFormat("Process with unknown handle exited. Process Id {0} Machine Name {1}", process.Id, process.MachineName);
                     return;
                 }
+                if (_startedProcesses.ContainsKey(handle))
+                {
+                    var processInfo = _startedProcesses[handle];
+                    PollingJobInfo pjInfo;
+                    if (_jobInfoList.TryGetValue(processInfo.QueueId, out pjInfo))
+                    {
+                        pjInfo.WorkerActive = false;
+                    }
+                    var retValue = process.ExitCode;
+                    if (retValue == -1)
+                    {
+                        Logger.WarnFormat("Worker with ProcessId {0} and queue {1} stopped because of internal error, the job cannot execute.", process.Id, processInfo.QueueId);
+                        return;
+                    }
 
-                //process is ended, restart the process, it will have new id.
-                Thread.Sleep(1000); //if for some reason the executable is stuck, not waiting for restart can kill the machine.
-                Logger.WarnFormat("Job terminated unexpectedly, job handle {0} for queue {1}. Restarting!!", handle, processInfo.QueueId);
-                InnerStart(processInfo.QueueId, processInfo.CustomParameters, processInfo.DocStoreAddresses, handle);
+                    //process is ended, restart the process, it will have new id.
+                    Thread.Sleep(1000); //if for some reason the executable is stuck, not waiting for restart can kill the machine.
+                    Logger.WarnFormat("Job terminated unexpectedly, job handle {0} for queue {1}. Restarting!!", handle, processInfo.QueueId);
+                    InnerStart(processInfo.QueueId, processInfo.CustomParameters, processInfo.DocStoreAddresses, handle);
+                }
             }
         }
 
-        public bool Stop(string jobHandle)
+        public bool RestartWorker(string jobHandle, Boolean forceClose)
         {
-            if (!activeProcesses.ContainsKey(jobHandle)) return false;
+            ProcessInfo activeProcess = null;
 
-            var info = activeProcesses[jobHandle];
-            var process = info.Process;
-
-            //SendText(process.MainWindowHandle, "x");
-            //var exited = process.WaitForExit(5000);
-            //if (exited == false) process.Kill();
-            process.Exited -= process_Exited; //remove handler 
-            if (process.HasExited) return true; //already closed.
-
-            process.Kill();
-            activeProcesses.Remove(jobHandle);
-            return true;
-        }
-
-        public bool Restart(string jobHandle)
-        {
-            if (!activeProcesses.ContainsKey(jobHandle)) return false;
-
-            var activeProcess = activeProcesses[jobHandle];
-            if (!Stop(jobHandle)) 
+            if (_startedProcesses.ContainsKey(jobHandle))
             {
-                Logger.ErrorFormat("Unable to stop job with handle {0}", jobHandle);
-                return false;
+                activeProcess = _startedProcesses[jobHandle];
             }
-            //Restart the same job with the same handle.
+            if (forceClose && activeProcess != null)
+            {
+                if (!Stop(jobHandle))
+                {
+                    Logger.ErrorFormat("Unable to stop job with handle {0}", jobHandle);
+                    return false;
+                }
+            }
+            else
+            {
+                if (activeProcess != null && !activeProcess.Process.HasExited)
+                    return false; //Cannot start, it is already started
+            }
+           
+            //If we reach here, we should start same job with the same handle.
             InnerStart(activeProcess.QueueId, activeProcess.CustomParameters, activeProcess.DocStoreAddresses, jobHandle);
             return true;
         }
 
-        public void Stop()
+        private void CheckProcesses(object state)
         {
-            _started = false;
-            foreach (var jobHandle in activeProcesses.Keys.ToList())
+            lock (this)
             {
-                Stop(jobHandle);
+                foreach (var activeProcess in _startedProcesses.ToList())
+                {
+                    try
+                    {
+                        if (activeProcess.Value.Process != null && !activeProcess.Value.Suspended)
+                        {
+                            var activeProcessInfo = activeProcess.Value;
+                            if (activeProcessInfo.Process == null || activeProcessInfo.Process.HasExited)
+                            {
+                                Logger.ErrorFormat("Queue {0} job is not active anymore but it was not automatically restarted", activeProcess.Value.QueueId);
+                                InnerStart(activeProcessInfo.QueueId, activeProcessInfo.CustomParameters, activeProcessInfo.DocStoreAddresses, activeProcess.Key);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorFormat(ex, "Error checking process key {0} queue {1}", activeProcess.Key, activeProcess.Value.QueueId);
+                    }
+
+                }
             }
         }
 
-
+        public List<PollingJobInfo> GetAllJobsInfo()
+        {
+            return _jobInfoList.Values.ToList();
+        }
     }
 }

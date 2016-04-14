@@ -38,16 +38,23 @@ namespace Jarvis.DocumentStore.Host.Support
 
             if (_config.IsApiServer)
             {
-            ConfigureApi(application);
-            ConfigureAdmin(application);
-        }
+                ConfigureApi(application);
+                ConfigureAdmin(application);
+            }
+
 
             Metric
                 .Config
-                .WithOwin(middleware => application.Use(middleware), config => config
-                .WithRequestMetricsConfig(c => c.WithAllOwinMetrics())
-                .WithMetricsEndpoint()
-            );
+                .WithOwin(middleware => application.Use(middleware),
+                           config => config
+                    .WithRequestMetricsConfig(c => c.WithAllOwinMetrics())
+                    .WithMetricsEndpoint(endpointConfig => endpointConfig
+                        .MetricsEndpoint("metrics/metrics")
+                        .MetricsTextEndpoint("metrics/text")
+                        .MetricsHealthEndpoint("metrics/health")
+                        .MetricsJsonEndpoint("metrics/json")
+                        .MetricsPingEndpoint("metrics/ping")
+                    ));
         }
 
 
@@ -112,7 +119,7 @@ namespace Jarvis.DocumentStore.Host.Support
             config.Services.Replace(typeof(IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
 
             config.Services.Add(
-                typeof(IExceptionLogger), 
+                typeof(IExceptionLogger),
                 new Log4NetExceptionLogger(ContainerAccessor.Instance.Resolve<ILoggerFactory>())
             );
 

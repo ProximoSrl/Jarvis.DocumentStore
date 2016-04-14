@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs
 {
-    public class PollerManager  
+    public class PollerManager
     {
         readonly Dictionary<String, IPollerJobManager> _pollerJobManagers;
 
@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         private List<ClientInfo> queueClients;
 
-        private class ClientInfo 
+        private class ClientInfo
         {
             public ClientInfo(
                 IPollerJobManager pollerManager,
@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 foreach (var poller in queueInfo.PollersInfo)
                 {
                     //for each queue I need to start client
-                    if (!_pollerJobManagers.ContainsKey(poller.Name)) 
+                    if (!_pollerJobManagers.ContainsKey(poller.Name))
                     {
                         Logger.ErrorFormat("Unable to start polling with poller {0}, unknown poller class.");
                         continue;
@@ -77,7 +77,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                     {
                         Logger.ErrorFormat(ex, "Exception launching job for queue {0}: {1}", queueInfo.Name, ex.Message);
                     }
-                  
+
                     if (!String.IsNullOrEmpty(clientJobHandle))
                     {
                         queueClients.Add(new ClientInfo(_pollerJobManagers[poller.Name], queueInfo.Name, clientJobHandle));
@@ -87,11 +87,11 @@ namespace Jarvis.DocumentStore.Core.Jobs
                         Logger.ErrorFormat("Error starting client job for queue {0}", queueInfo.Name);
                     }
                 }
-               
+
             }
         }
 
-        public void Stop()
+        public void Shutdown()
         {
             if (_configuration.IsWorker == false) return;
 
@@ -101,7 +101,33 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 queueClients.Remove(queueInfo);
             }
         }
+
+        /// <summary>
+        /// Suspend the job
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <returns></returns>
+        public Boolean SuspendWorker(String queueName)
+        {
+            if (_configuration.IsWorker == false) return false;
+            var queue = queueClients.SingleOrDefault(q => q.QueueName == queueName);
+            if (queue == null)
+                return false;
+
+            queue.PollerManager.SuspendWorker(queue.Handle);
+            return true;
+        }
+
+
+        public void RestartWorker(String queueId, Boolean forceClose)
+        {
+            var client = queueClients.SingleOrDefault(c => c.QueueName == queueId);
+            if (client != null)
+            {
+                client.PollerManager.RestartWorker(client.Handle, forceClose);
+            }
+        }
     }
-    
-   
+
+
 }

@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Threading;
+
 namespace Jarvis.DocumentStore.Jobs.Tika.Tests
 {
     public class BaseConversionTests : IPollerTest

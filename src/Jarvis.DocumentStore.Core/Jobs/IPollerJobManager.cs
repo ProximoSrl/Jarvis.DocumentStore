@@ -17,7 +17,8 @@ namespace Jarvis.DocumentStore.Core.Jobs
         String Start(String queueName, Dictionary<String, String> customParameters, List<String> docStoreAddresses);
 
         /// <summary>
-        /// Stops poller job, 
+        /// Stops poller job, it disable the queue for this instalnce of Document store, closes the 
+        /// queue and stop using it.
         /// </summary>
         /// <param name="jobHandle">Handle of the job to stop. This is the handle returned from
         /// a call to the <see cref="Start" /> method</param>
@@ -30,7 +31,47 @@ namespace Jarvis.DocumentStore.Core.Jobs
         /// </summary>
         /// <param name="jobHandle">Handle of the job to stop. This is the handle returned from
         /// a call to the <see cref="Start" /> method</param>
+        /// <param name="forceClose">if true the job is killed if it is still active, it is useful
+        /// if the job is stuck for some reason</param>
         /// <returns></returns>
-        Boolean Restart(String jobHandle);
+        Boolean RestartWorker(String jobHandle, Boolean forceClose);
+
+        /// <summary>
+        /// We can suspend a queue, basically stops serving the queue, this is useful to limit load when
+        /// server is highly loaded, we can suspend memory or CPU intensive queue.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <returns></returns>
+        Boolean SuspendWorker(string handle);
+
+        /// <summary>
+        /// Retrieve info about all jobs, with standard <see cref="OutOfProcessBaseJobManager"/> this is the 
+        /// list of the processes that should be active.
+        /// </summary>
+        /// <remarks>This list returns all the jobs, even the jobs that are stopped because failed the start test. This is used
+        /// to understand all information about jobs</remarks>
+        /// <returns></returns>
+        List<PollingJobInfo> GetAllJobsInfo();
+
+    }
+
+    public class PollingJobInfo
+    {
+        public String QueueId { get; set; }
+
+        /// <summary>
+        /// true if the Worker is active and running.
+        /// </summary>
+        public Boolean WorkerActive { get; set; }
+
+        /// <summary>
+        /// Tells if the queue is active
+        /// </summary>
+        public Boolean QueueActive { get; set; }
+
+        /// <summary>
+        /// Description, for local job processes is the command line.
+        /// </summary>
+        public String ProcessDescription { get; set; }
     }
 }
