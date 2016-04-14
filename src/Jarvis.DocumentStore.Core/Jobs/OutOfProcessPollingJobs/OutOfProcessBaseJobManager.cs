@@ -37,6 +37,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             public Dictionary<String,String> CustomParameters { get; set; }
 
             public List<String> DocStoreAddresses { get; set; }
+
+            public Boolean Suspended { get; set; }
         }
 
         ConcurrentDictionary<String, ProcessInfo> _startedProcesses;
@@ -59,7 +61,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             _startedProcesses = new ConcurrentDictionary<string, ProcessInfo>();
             Logger = NullLogger.Instance;
             //check each 10 minutes if some process is dead and was not started.
-            _monitorTimer = new Timer(CheckProcesses, null, 30 * 1000, 10 * 60 * 1000);
+            // _monitorTimer = new Timer(CheckProcesses, null, 30 * 1000, 10 * 60 * 1000);
+
+            _monitorTimer = new Timer(CheckProcesses, null, 1000, 10 * 1000);
         }
 
 
@@ -70,6 +74,43 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             InnerStart(queueName, customParameters, docStoreAddresses, processHandle);
             _started = true;
             return processHandle;
+        }
+
+        public bool Stop(string jobHandle)
+        {
+            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
+
+            var info = _startedProcesses[jobHandle];
+            var process = info.Process;
+
+            process.Exited -= process_Exited; //remove handler 
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+
+            ProcessInfo pi;
+            _startedProcesses.TryRemove(jobHandle, out pi);
+            _jobInfoList[info.QueueId].WorkerActive = false;
+
+            return true;
+        }
+
+        public bool SuspendWorker(string jobHandle)
+        {
+            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
+
+            var info = _startedProcesses[jobHandle];
+            var process = info.Process;
+
+            process.Exited -= process_Exited; //remove handler 
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+            info.Suspended = true;
+            _jobInfoList[info.QueueId].WorkerActive = false;
+            return true;
         }
 
         private void InnerStart(
@@ -129,14 +170,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 PollingJobInfo pjInfo = new PollingJobInfo()
                 {
                     QueueId = queueId,
-                    IsActive = true,
+                    WorkerActive = true,
+                    QueueActive = true,
                     ProcessDescription = String.Format("{0} {1}", fi.FullName, process.StartInfo.Arguments),
                 };
                 _jobInfoList[queueId] = pjInfo;
             }
             else
             {
-                _jobInfoList[queueId].IsActive = true;
+                _jobInfoList[queueId].WorkerActive = true;
             }
             Logger.InfoFormat("Started worker: ProcessHandle {0} for queue {1}", processHandle, queueId);
         }
@@ -206,7 +248,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     PollingJobInfo pjInfo;
                     if (_jobInfoList.TryGetValue(processInfo.QueueId, out pjInfo))
                     {
-                        pjInfo.IsActive = false;
+                        pjInfo.WorkerActive = false;
                     }
                     var retValue = process.ExitCode;
                     if (retValue == -1)
@@ -223,46 +265,31 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             }
         }
 
-        public bool Stop(string jobHandle)
+        public bool RestartWorker(string jobHandle, Boolean forceClose)
         {
-            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
+            ProcessInfo activeProcess = null;
 
-            var info = _startedProcesses[jobHandle];
-            var process = info.Process;
-
-            process.Exited -= process_Exited; //remove handler 
-            if (process.HasExited) return true; //already closed.
-
-            process.Kill();
-            ProcessInfo pi;
-            _startedProcesses.TryRemove(jobHandle, out pi);
-            PollingJobInfo pjInfo;
-            _jobInfoList.TryRemove(info.QueueId, out pjInfo);
-            return true;
-        }
-
-        public bool Restart(string jobHandle)
-        {
-            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
-
-            var activeProcess = _startedProcesses[jobHandle];
-            if (!Stop(jobHandle)) 
+            if (_startedProcesses.ContainsKey(jobHandle))
             {
-                Logger.ErrorFormat("Unable to stop job with handle {0}", jobHandle);
-                return false;
+                activeProcess = _startedProcesses[jobHandle];
             }
-            //Restart the same job with the same handle.
+            if (forceClose && activeProcess != null)
+            {
+                if (!Stop(jobHandle))
+                {
+                    Logger.ErrorFormat("Unable to stop job with handle {0}", jobHandle);
+                    return false;
+                }
+            }
+            else
+            {
+                if (activeProcess != null && !activeProcess.Process.HasExited)
+                    return false; //Cannot start, it is already started
+            }
+           
+            //If we reach here, we should start same job with the same handle.
             InnerStart(activeProcess.QueueId, activeProcess.CustomParameters, activeProcess.DocStoreAddresses, jobHandle);
             return true;
-        }
-
-        public void Stop()
-        {
-            _started = false;
-            foreach (var jobHandle in _startedProcesses.Keys.ToList())
-            {
-                Stop(jobHandle);
-            }
         }
 
         private void CheckProcesses(object state)
@@ -273,7 +300,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 {
                     try
                     {
-                        if (activeProcess.Value.Process != null)
+                        if (activeProcess.Value.Process != null && !activeProcess.Value.Suspended)
                         {
                             var activeProcessInfo = activeProcess.Value;
                             if (activeProcessInfo.Process == null || activeProcessInfo.Process.HasExited)

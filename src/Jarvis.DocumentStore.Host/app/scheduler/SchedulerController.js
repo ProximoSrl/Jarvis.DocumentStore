@@ -11,7 +11,9 @@
         vm.status = 'off';
         vm.start = startScheduler;
         vm.stop = stopScheduler;
-        vm.restartJob = restartJob;
+        vm.restartWorker = restartWorker;
+        vm.suspendWorker = suspendWorker;
+        vm.resumeWorker = resumeWorker;
         vm.info = null;
 
         /* */
@@ -22,7 +24,7 @@
             schedulerData.getJobsInfo().then(function (data) {
                 vm.info = data.data;
             });
-        }, 1000);
+        }, 2000);
 
 
         function startScheduler() {
@@ -33,9 +35,17 @@
             schedulerData.stop();
         }
 
-        function restartJob(queueId)
+        function restartWorker(queueId)
         {
-            schedulerData.restartJob(queueId);
+            schedulerData.restartWorker(queueId);
+        }
+        
+        function resumeWorker(queueId) {
+            schedulerData.resumeWorker(queueId);
+        }
+
+        function suspendWorker(queueId) {
+            schedulerData.suspendWorker(queueId);
         }
 
         $scope.$on('$destroy', function () {

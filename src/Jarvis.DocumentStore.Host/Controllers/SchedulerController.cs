@@ -80,12 +80,36 @@ namespace Jarvis.DocumentStore.Host.Controllers
         }
 
         [HttpPost]
-        [Route("scheduler/restartjob/{queueName}")]
-        public object RestartJob(String queueName)
+        [Route("scheduler/restartworker/{queueName}")]
+        public object RestartWorker(String queueName)
         {
             if (PollerManager != null)
             {
-                PollerManager.Restart(queueName);
+                PollerManager.RestartWorker(queueName, true);
+                return new { Success = true };
+            }
+            return new { Error = "Queue manager infrastructure not started" };
+        }
+
+        [HttpPost]
+        [Route("scheduler/suspendworker/{queueName}")]
+        public object SuspendWorker(String queueName)
+        {
+            if (PollerManager != null)
+            {
+                var stopQueueResult = PollerManager.SuspendWorker(queueName);
+                return new { Success = stopQueueResult };
+            }
+            return new { Error = "Queue manager infrastructure not started" };
+        }
+
+        [HttpPost]
+        [Route("scheduler/resumeworker/{queueName}")]
+        public object ResumeWorker(String queueName)
+        {
+            if (PollerManager != null)
+            {
+                PollerManager.RestartWorker(queueName, false);
                 return new { Success = true };
             }
             return new { Error = "Queue manager infrastructure not started" };

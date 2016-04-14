@@ -13,7 +13,9 @@
             getStats: getStats,
             reScheduleQueue: reScheduleQueue,
             getJobsInfo: getJobsInfo,
-            restartJob : restartJob,
+            restartWorker: restartWorker,
+            resumeWorker: resumeWorker,
+            suspendWorker: suspendWorker,
         };
 
         return service;
@@ -32,8 +34,16 @@
             $http.post('/scheduler/stop');
         }
 
-        function restartJob(queueId) {
-            $http.post('/scheduler/restartjob/' + queueId);
+        function restartWorker(queueId) {
+            return $http.post('/scheduler/restartworker/' + queueId);
+        }
+
+        function suspendWorker(queueId) {
+            return $http.post('/scheduler/suspendworker/' + queueId);
+        }
+
+        function resumeWorker(queueId) {
+            return $http.post('/scheduler/resumeworker/' + queueId);
         }
 
         function getStats() {

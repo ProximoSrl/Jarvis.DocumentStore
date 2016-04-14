@@ -57,7 +57,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 foreach (var blockedHandle in allBlockedHandles)
 	            {
                     Logger.WarnFormat("Unblock jobs for queue {0} and handle {1}", qh.Name, blockedHandle);
-                    _pollerJobManager.Restart(blockedHandle);
+                    _pollerJobManager.RestartWorker(blockedHandle, true);
 	            }
                 foreach (var job in blockedJobs)
                 {
