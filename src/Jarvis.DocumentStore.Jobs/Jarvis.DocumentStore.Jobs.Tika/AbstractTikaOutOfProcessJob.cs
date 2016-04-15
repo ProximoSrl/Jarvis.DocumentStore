@@ -29,7 +29,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         {
             _builder = builder;
             _filterManager = filterManager;
-            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt|tmp|htmlzip|htmzip|mht|mhtml".Split('|');
+            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt|tmp|htmlzip|htmzip|mht|mhtml|eml".Split('|');
             base.PipelineId = "tika";
             base.QueueName = "tika";
         }
