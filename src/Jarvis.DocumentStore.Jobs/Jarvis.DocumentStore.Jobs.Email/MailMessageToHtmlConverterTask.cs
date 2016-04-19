@@ -47,7 +47,23 @@ namespace Jarvis.DocumentStore.Jobs.Email
                 }
                 Logger.DebugFormat("Total files {0}", files.Length);
             }
-            var htmlFileName = files.First(x => x.ToLowerInvariant().EndsWith(".htm"));
+            var htmlFileName = files.FirstOrDefault(x => x.ToLowerInvariant().EndsWith(".htm")) ??
+                files.FirstOrDefault(x => x.ToLowerInvariant().EndsWith(".html"));
+            if (htmlFileName == null)
+            {
+                var textFile = files.FirstOrDefault(x => x.ToLowerInvariant().EndsWith(".txt"));
+                if (textFile != null)
+                {
+                    htmlFileName = textFile + ".html";
+                    var textcontent = File.ReadAllText(textFile);
+                    File.WriteAllText(htmlFileName, String.Format("<html><body><pre>{0}</html></body></pre>", textcontent));
+                }
+                else
+                {
+                    htmlFileName = "contentmissing.html";
+                    File.WriteAllText(htmlFileName, "<html>No content found in mail.</html>");
+                }
+            }
             var htmlNameWithoutExtension = Path.GetFileNameWithoutExtension(htmlFileName);
 
             var htmlContent = File.ReadAllText(htmlFileName);
