@@ -203,6 +203,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="app\handles\HandlesData.js" />
     <Compile Include="Controllers\ConfigController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\FeedController.cs" />
@@ -215,6 +216,7 @@
     <Compile Include="Controllers\SchedulerController.cs" />
     <Compile Include="Logging\Log4NetExceptionLogger.cs" />
     <Compile Include="Model\AddFormatToDocument.cs" />
+    <Compile Include="Model\DocumentInfo.cs" />
     <Compile Include="Model\EventStreamModel.cs" />
     <Compile Include="Model\FeedForStreamReadModel.cs" />
     <Compile Include="Model\UploadedDocumentResponse.cs" />
@@ -329,6 +331,9 @@
     <Content Include="app\dashboard\dashboardModule.js" />
     <Content Include="app\dashboard\DashboardController.js" />
     <Content Include="app\dashboard\dashboardData.js" />
+    <Content Include="app\handles\handles.html" />
+    <Content Include="app\handles\HandlesController.js" />
+    <Content Include="app\handles\HandlesModule.js" />
     <Content Include="app\index.html" />
     <Content Include="app\layout\sidebar.js" />
     <Content Include="app\layout\header.html" />

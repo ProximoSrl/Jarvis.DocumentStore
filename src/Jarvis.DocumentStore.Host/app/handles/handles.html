@@ -1,0 +1,49 @@
+﻿<div class="row">
+    <form class="form-horizontal" role="form">
+        <div class="form-group">
+            <label for="tenantSelector" class="col-md-2 control-label">Tenants</label>
+            <div class="col-md-3">
+                <select class="form-control" ng-options="tenant for tenant in handles.tenants track by tenant"
+                        ng-model="handles.tenantId" id="tenantSelector"></select>
+            </div>
+            <label for="txtHandleSearch" class="col-md-1 control-label">Search</label>
+            <div class="col-md-3">
+                <input id="txtHandleSearch" type="text" class="form-control" ng-model="handles.searchText" />
+
+            </div>
+
+            <button type="button" class="btn btn-flat btn-primary" ng-click="handles.search()" title="Search">
+                <i class="fa fa-search"></i>
+            </button>
+        </div>
+    </form>
+    <div class="col-xs-12">
+        <table class="table table-striped table-bordered table-condensed">
+            <thead>
+                <tr>
+                    <th>Handle</th>
+                    <th>Formats</th>
+                    <th>Commands</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="d in handles.data">
+                    <td>{{d.documentHandle}}</td>
+                    <td>
+                        <ul>
+                            <li ng-repeat="f in d.formats">
+                                <a target="_blank" href="{{f.formatUrl}}">{{f.formatType}}</a>
+                            </li>
+                        </ul>
+                    </td>
+                    <td>
+                        <button ng-click="handles.reQueue(d.documentHandle)">Re-Analyze</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    <pre>{{handles.data | json}}</pre>
+</div>

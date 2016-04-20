@@ -31,6 +31,8 @@ using Jarvis.Framework.Shared.Commands;
 using Jarvis.DocumentStore.Core.Support;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using MongoDB.Driver.Builders;
+
 namespace Jarvis.DocumentStore.Host.Controllers
 {
     public class DocumentsController : ApiController, ITenantController
@@ -43,7 +45,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private readonly ICounterService _counterService;
         private readonly IDocumentFormatTranslator _documentFormatTranslator;
 
-        readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
+        readonly IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
         readonly IQueueManager _queueDispatcher;
 
         public ILogger Logger { get; set; }
@@ -58,7 +60,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             IBlobStore blobStore,
             DocumentStoreConfiguration configService,
             IIdentityGenerator identityGenerator,
-            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
+            IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
             IInProcessCommandBus commandBus,
             IDocumentWriter handleWriter,
             IQueueManager queueDispatcher,
@@ -718,6 +720,36 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 HttpStatusCode.Accepted,
                 string.Format("Document marked for deletion {0}", handle)
             );
+        }
+
+        [Route("{tenantId}/documents/info/{handle}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetHandleInfo(
+            TenantId tenantId, 
+            DocumentHandle handle)
+        {
+            var handleString = handle.ToString();
+            var regex = "/" + handleString.Replace("/", "//") + "/";
+            var descriptors = _documentDescriptorReader.Collection
+                .Find(Query.Matches("Documents", new MongoDB.Bson.BsonRegularExpression(regex)));
+
+            var retValue = new List<DocumentInfo>();
+            foreach (var d in descriptors)
+            {
+                var documentHandle = d.Documents.FirstOrDefault(dd => dd.ToString().Contains(handleString));
+                var di = new DocumentInfo()
+                {
+                    DocumentHandle = documentHandle,
+                    Formats = d.Formats.Select(f => new DocumentFormatInfo()
+                    {
+                        FormatType = f.Key,
+                        FormatUrl = Url.Content("/" + tenantId + "/documents/" + documentHandle + "/" + f.Key)
+                    }).ToList()
+                };
+                retValue.Add(di);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, retValue);
         }
 
 
