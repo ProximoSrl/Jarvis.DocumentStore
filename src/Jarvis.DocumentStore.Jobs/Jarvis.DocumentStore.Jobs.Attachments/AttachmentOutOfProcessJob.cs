@@ -16,11 +16,13 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
 {
     public class AttachmentOutOfProcessJob  : AbstractOutOfProcessPollerJob
     {
+        private SevenZipExtractorFunctions _sevenZipExtractorFunctions;
 
-        public AttachmentOutOfProcessJob()
+        public AttachmentOutOfProcessJob(SevenZipExtractorFunctions sevenZipFunctions)
         {
             base.PipelineId = "attachments";
             base.QueueName = "attachments";
+            _sevenZipExtractorFunctions = sevenZipFunctions;
         }
 
         protected async override Task<bool> OnPolling(Shared.Jobs.PollerJobParameters parameters, string workingFolder)
@@ -42,36 +44,17 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
             }
 
             var extension = Path.GetExtension(localFile);
-            var unzippingDirectory = Path.Combine(workingFolder, Guid.NewGuid().ToString());
+            var unzippingDirectory = new DirectoryInfo( Path.Combine(workingFolder, Guid.NewGuid().ToString())).FullName;
             if (!Directory.Exists(unzippingDirectory)) Directory.CreateDirectory(unzippingDirectory);
-            if (extension == ".zip") 
+            if (extension == ".zip")
             {
                 //we can handle unzipping everything.
-               
                 ZipFile.ExtractToDirectory(localFile, unzippingDirectory);
-                foreach (string file in Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories))
-                {
-                    var attachmentExtension = Path.GetExtension(file).Trim('.');
-                    if (permittedExtension != null &&
-                        !permittedExtension.Contains(attachmentExtension, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.DebugFormat("job: {0} File {1} attachment is discharded because extension {2} is not permitted",
-                            parameters.JobId, file, attachmentExtension);
-                        continue;
-                        ;
-                    }
-                    var relativeFileName = file.Substring(unzippingDirectory.Length);
-                    await AddAttachmentToHandle(
-                        parameters.TenantId,
-                        parameters.JobId,
-                        file,
-                        "content_zip",
-                        relativeFileName,
-                        new Dictionary<string, object>() {}
-                        );
-                }
+                IEnumerable<String> files = Directory.EnumerateFiles(unzippingDirectory, "*.*", SearchOption.AllDirectories);
+                Int32 uploadCount = await UploadAttachmentListToDocumentStore(parameters, permittedExtension, unzippingDirectory, files);
+                Logger.DebugFormat("Uploaded {0} attachments", uploadCount);
             }
-            else if (extension == ".eml") 
+            else if (extension == ".eml")
             {
                 using (var stream = File.Open(localFile, FileMode.Open, FileAccess.Read))
                 {
@@ -82,9 +65,9 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                     foreach (MsgReader.Mime.MessagePart attachment in message.Attachments.OfType<MsgReader.Mime.MessagePart>())
                     {
                         if (!String.IsNullOrEmpty(attachment.ContentId) &&
-                            body.Contains(attachment.ContentId)) 
+                            body.Contains(attachment.ContentId))
                         {
-                            if (Logger.IsDebugEnabled) 
+                            if (Logger.IsDebugEnabled)
                             {
                                 Logger.DebugFormat("Attachment cid {0} name {1} discharded because it is inline", attachment.ContentId, attachment.FileName);
                                 continue;
@@ -99,20 +82,17 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                             fileName,
                             "attachment_email",
                             attachment.FileName,
-                        new Dictionary<string, object>() {}
+                        new Dictionary<string, object>() { }
                         );
                     }
                 }
-      
-               
-
             }
             else if (extension == ".msg")
             {
                 using (var stream = File.Open(localFile, FileMode.Open, FileAccess.Read))
-                using (var message = new Storage.Message(stream)) 
+                using (var message = new Storage.Message(stream))
                 {
-                    foreach (Storage.Attachment attachment in message.Attachments.OfType < Storage.Attachment>())
+                    foreach (Storage.Attachment attachment in message.Attachments.OfType<Storage.Attachment>())
                     {
                         if (attachment.IsInline)
                             continue; //no need to uncompress inline attqach
@@ -131,9 +111,43 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                     }
                 }
             }
+            else if (extension == ".7z" || extension == ".7zip" || extension == ".rar")
+            {
+                //we can handle unzipping everything.
+                var extracted = _sevenZipExtractorFunctions.ExtractTo(localFile, unzippingDirectory);
+                Int32 uploadCount = await UploadAttachmentListToDocumentStore(parameters, permittedExtension, unzippingDirectory, extracted);
+                Logger.DebugFormat("Uploaded {0} attachments", uploadCount);
+            }
            
 
             return true;
+        }
+
+        private async Task<Int32> UploadAttachmentListToDocumentStore(PollerJobParameters parameters, string[] permittedExtension, string unzippingDirectory, IEnumerable<string> files)
+        {
+            Int32 uploadCount = 0;
+            foreach (string file in files)
+            {
+                var attachmentExtension = Path.GetExtension(file).Trim('.');
+                if (permittedExtension != null &&
+                    !permittedExtension.Contains(attachmentExtension, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.DebugFormat("job: {0} File {1} attachment is discharded because extension {2} is not permitted",
+                        parameters.JobId, file, attachmentExtension);
+                    continue;
+                }
+                var relativeFileName = file.Substring(unzippingDirectory.Length);
+                await AddAttachmentToHandle(
+                    parameters.TenantId,
+                    parameters.JobId,
+                    file,
+                    "content_zip",
+                    relativeFileName,
+                    new Dictionary<string, object>() { }
+                    );
+                uploadCount++;
+            }
+            return uploadCount;
         }
     }
 }

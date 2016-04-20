@@ -74,6 +74,9 @@
   <ItemGroup>
     <Compile Include="AttachmentOutOfProcessJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SevenZipExtractorFunctions.cs" />
+    <Compile Include="Tests\SevenZipTests.cs" />
+    <Compile Include="WindsorInstaller.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">
