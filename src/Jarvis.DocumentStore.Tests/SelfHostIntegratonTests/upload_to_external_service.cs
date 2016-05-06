@@ -136,6 +136,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_seven_zip()
+        {
+            _docs.UploadAsync(TestConfig.PathTo7Zip, DocumentHandle.FromString("7zip")).Wait();
+        }
+
+        [Test]
         public void zipped_file_withFolders_upload()
         {
             _docs.UploadAsync(TestConfig.PathToZipFileWithFolders, DocumentHandle.FromString("zip_with_folders")).Wait();
@@ -327,6 +333,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload_html()
         {
             _docs.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html")).Wait();
+        }
+
+
+        [Test]
+        public void upload_mime_html()
+        {
+            _docs.UploadAsync(TestConfig.PathToMht, DocumentHandle.FromString("mhtml")).Wait();
         }
 
         [Test]

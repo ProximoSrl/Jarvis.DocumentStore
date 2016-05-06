@@ -997,7 +997,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_nested_zip_count_file_verification()
         {
 
-            _sutBase = new AttachmentOutOfProcessJob();
+            _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("verify_nested_zip");
@@ -1054,7 +1054,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_single_zip_count_file_verification()
         {
 
-            _sutBase = new AttachmentOutOfProcessJob();
+            _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("verify_zip");
@@ -1118,7 +1118,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_attachment_chains()
         {
 
-            _sutBase = new AttachmentOutOfProcessJob();
+            _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("child_zip");
@@ -1197,7 +1197,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_deletion_original_handle()
         {
 
-            _sutBase = new AttachmentOutOfProcessJob();
+            _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("main");
@@ -1276,7 +1276,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_email_count_file_verification()
         {
 
-            _sutBase = new AttachmentOutOfProcessJob();
+            _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("verify_eml");
@@ -1339,7 +1339,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_email_count_file_verification()
         {
 
-            _sutBase = new AttachmentOutOfProcessJob();
+            _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("verify_eml");
@@ -1403,7 +1403,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async void verify_deletion_original_handle_delete_attachments()
         {
 
-            _sutBase = new AttachmentOutOfProcessJob();
+            _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("main");

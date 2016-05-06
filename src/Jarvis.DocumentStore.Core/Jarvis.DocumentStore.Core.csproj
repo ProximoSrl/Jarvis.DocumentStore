@@ -254,6 +254,7 @@
     <Compile Include="Support\CoreInstaller.cs" />
     <Compile Include="Support\IStartupActivity.cs" />
     <Compile Include="Support\LoggingExtensionMethods.cs" />
+    <Compile Include="Support\MetricHeartBeatHealthCheck.cs" />
     <Compile Include="Support\NotifyCommitHandled.cs" />
     <Compile Include="Support\QueueInfrasctructureInstaller.cs" />
     <Compile Include="Support\QueueManagerActivities.cs" />

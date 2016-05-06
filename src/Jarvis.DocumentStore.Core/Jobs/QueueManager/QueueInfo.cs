@@ -118,14 +118,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         internal bool ShouldCreateJob(StreamReadModel streamElement)
         {
-            if (_splittedExtensions.Length > 0 && !_splittedExtensions.Contains(streamElement.Filename.Extension))
-                return false;
-
+            //if extensions or mime type are present we need to check belonging in one of them
+            if (_splittedExtensions.Length > 0 || _splittedMimeTypes.Length > 0)
+            {
+                if (!_splittedExtensions.Contains(streamElement.Filename.Extension) && !_splittedMimeTypes.Contains(Core.MimeTypes.GetMimeType(streamElement.Filename)))
+                {
+                    return false;
+                }
+            }
             if (_splittedFormats.Length > 0 && !_splittedFormats.Contains(streamElement.FormatInfo.DocumentFormat.ToString()))
                 return false;
-            
-            if (_splittedMimeTypes.Length > 0 && !_splittedMimeTypes.Contains(Jarvis.DocumentStore.Core.MimeTypes.GetMimeType(streamElement.Filename)))
-                return false;
+
 
             if (!String.IsNullOrEmpty(Pipeline) &&
                 streamElement.FormatInfo.PipelineId != null &&

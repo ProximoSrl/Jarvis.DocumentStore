@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Fasterflect;
+using Jarvis.DocumentStore.Core.ReadModel;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
@@ -32,6 +33,37 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             RemoteDocumentStoreConfiguration.ParseQueueList(listOfQueue, test);
             Assert.That(listOfQueue, Has.Count.EqualTo(1));
             Assert.That(listOfQueue[0].Name, Is.EqualTo("tika"));
+        }
+
+        [TestCase("html|test|xlsx", "test.html", true)]
+        [TestCase("htm|test|xlsx", "test.html", false)]
+        public void verify_should_create_job_extension(String extensions, String fileName, Boolean expected)
+        {
+            QueueInfo sut = new QueueInfo("TEST", extensions : extensions);
+            StreamReadModel sr = new StreamReadModel();
+            sr.Filename = new Core.Model.FileNameWithExtension(fileName);
+            Assert.That(sut.ShouldCreateJob(sr), Is.EqualTo(expected));
+        }
+
+        [TestCase("application/zip|message/rfc822|application/vnd.ms-outlook", "test.zip", true)]
+        [TestCase("application/zip", "test.html", false)]
+        public void verify_should_create_job_mimetypes(String mimetypes, String fileName, Boolean expected)
+        {
+            QueueInfo sut = new QueueInfo("TEST", mimeTypes : mimetypes);
+            StreamReadModel sr = new StreamReadModel();
+            sr.Filename = new Core.Model.FileNameWithExtension(fileName);
+            Assert.That(sut.ShouldCreateJob(sr), Is.EqualTo(expected));
+        }
+
+        [TestCase("application/zip", "xlsx|html", "test.zip", true)]
+        [TestCase("application/zip", "xlsx|html", "test.xlsx", true)]
+        [TestCase("application/zip", "xlsx|html", "test.doc", false)]
+        public void verify_should_create_job_mime_extension(String mimetypes, String extensions, String fileName, Boolean expected)
+        {
+            QueueInfo sut = new QueueInfo("TEST", extensions : extensions, mimeTypes: mimetypes);
+            StreamReadModel sr = new StreamReadModel();
+            sr.Filename = new Core.Model.FileNameWithExtension(fileName);
+            Assert.That(sut.ShouldCreateJob(sr), Is.EqualTo(expected));
         }
 
         [Test]

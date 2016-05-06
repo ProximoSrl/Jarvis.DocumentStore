@@ -68,6 +68,7 @@ namespace Jarvis.DocumentStore.JobsHost
             {
                 Console.Title = String.Format("Pid {0} - Queue {1} Job Poller Started",
                     Process.GetCurrentProcess().Id, queueName);
+                
                 MongoLog.SetProgramName(String.Format("ds-job[Queue:{0}]", queueName));
                 Console.WriteLine("JOB STARTED: Press any key to stop the client");
                 Console.ReadKey();
@@ -76,7 +77,7 @@ namespace Jarvis.DocumentStore.JobsHost
             {
                 Console.WriteLine("JOB CANNOT START!!!! CLOSING!!!!");
                 Thread.Sleep(3000);
-                return -1; //code to signal that queue is not supported.
+                Environment.Exit(-1); //code to signal that queue is not supported.
             }
             return 0;
         }

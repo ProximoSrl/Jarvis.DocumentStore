@@ -32,7 +32,8 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             if(String.IsNullOrWhiteSpace(libreOffice))
                 throw new Exception("Please set LIBREOFFICE_PATH in app.config or env variable");
 
-            return libreOffice;
+            //Lets trim " char, because we do not need it.
+            return libreOffice.Trim('\"');
         }
 
         public string GetPathToJava()

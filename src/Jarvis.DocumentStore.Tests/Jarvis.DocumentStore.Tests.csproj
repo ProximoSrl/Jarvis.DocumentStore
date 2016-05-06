@@ -344,6 +344,7 @@
     <Compile Include="Misc\SizeInfoHelperTests.cs" />
     <Compile Include="Misc\SizeInfoTests.cs" />
     <Compile Include="Misc\TikaFiltersTest.cs" />
+    <Compile Include="PipelineTests\AttachmentTests.cs" />
     <Compile Include="PipelineTests\TuesPeckinConversionTest.cs" />
     <Compile Include="PipelineTests\LibreOfficeConvertToPdfTaskTests.cs" />
     <Compile Include="PipelineTests\LanguageDetectionTest.cs" />
@@ -386,6 +387,7 @@
     <None Include="Docs\MailWithMultipleAttach.msg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Docs\MimeHtml.mht" />
     <None Include="Docs\Multilanguage.docx" />
     <None Include="Docs\Multilanguage.pdf" />
     <None Include="Docs\Multipage Word.docx" />
@@ -405,6 +407,8 @@
     <None Include="Docs\Document.pdf" />
     <None Include="Docs\eml sample.eml" />
     <None Include="Docs\outlook message.msg" />
+    <None Include="Docs\sample.7z" />
+    <None Include="Docs\sample.rar" />
     <None Include="Docs\Zipped.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

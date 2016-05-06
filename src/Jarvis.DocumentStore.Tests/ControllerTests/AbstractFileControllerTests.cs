@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected IBlobStore BlobStore;
         protected IIdentityGenerator IdentityGenerator;
         protected ICounterService CounterService;
-        protected IReader<DocumentDescriptorReadModel, DocumentDescriptorId> DocumentReader;
+        protected IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> DocumentReader;
         protected TenantId _tenantId = new TenantId("docs");
         IDocumentWriter _handleWriter;
         protected IQueueManager QueueDispatcher;
@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             BlobStore = Substitute.For<IBlobStore>();
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
             _handleWriter = Substitute.For<IDocumentWriter>();
-            DocumentReader = Substitute.For<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
+            DocumentReader = Substitute.For<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
             QueueDispatcher= Substitute.For<IQueueManager>();
             CounterService = Substitute.For<ICounterService>();
             var bus = Substitute.For<IInProcessCommandBus>();

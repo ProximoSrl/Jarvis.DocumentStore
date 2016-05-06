@@ -10,6 +10,7 @@
         'admin.stream',
         'admin.logs',
         'admin.recyclebin',
+        'admin.handles',
         'angularUtils.directives.uiBreadcrumbs',
         'angularUtils.directives.dirPagination'
     ]);

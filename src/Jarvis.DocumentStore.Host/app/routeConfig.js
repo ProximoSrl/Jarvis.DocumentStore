@@ -48,6 +48,12 @@
                 templateUrl: "recyclebin/recyclebin.html",
                 controller: "RecycleBinController as recyclebin",
                 data: { pageTitle: 'Recycle Bin' }
-            });
+            })
+             .state('handles', {
+                 url: "/handles",
+                 templateUrl: "handles/handles.html",
+                 controller: "HandlesController as handles",
+                 data: { pageTitle: 'Manage Handles' }
+             });
     }
 })(window, window.angular);

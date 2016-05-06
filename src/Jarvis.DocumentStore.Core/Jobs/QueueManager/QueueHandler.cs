@@ -14,6 +14,7 @@ using System.Linq;
 using MongoDB.Driver.Linq;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -27,6 +28,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         readonly QueueInfo _info;
         readonly BsonDocument _statsAggregationQuery;
         private readonly AggregateArgs _aggregation;
+        private readonly MetricHeartBeatHealthCheck _healthCheck;
 
         public ILogger Logger { get; set; }
         public String Name { get; private set; }
@@ -58,7 +60,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
           c : {$sum:1}
        }
 }");
-
+            //timeout of polling time is the maximum timeout allowed before a job is considered to be locked
+            //but give 10 seconds to each job to start
+            var millisecondTimeout = info.JobLockTimeout * 60 * 1000;
+            _healthCheck = MetricHeartBeatHealthCheck.Create(
+                "Job queue " + info.Name,
+                millisecondTimeout,
+                TimeSpan.FromMilliseconds(millisecondTimeout - 10000));
+                
             _aggregation = new AggregateArgs()
             {
                 Pipeline = new[] { _statsAggregationQuery }
@@ -117,6 +126,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public QueuedJob GetNextJob(String identity, String handle, TenantId tenantId, Dictionary<String, Object> customData)
         {
+            if (_healthCheck != null) _healthCheck.Pulse();
             IMongoQuery query = Query.Or(
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Idle),
                     Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.ReQueued)

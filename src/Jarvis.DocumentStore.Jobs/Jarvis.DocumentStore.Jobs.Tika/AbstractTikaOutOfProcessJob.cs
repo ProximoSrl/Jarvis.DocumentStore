@@ -11,6 +11,7 @@ using Jarvis.DocumentStore.Jobs.Tika.Filters;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using System.IO.Compression;
+using Jarvis.DocumentStore.Jobs.HtmlZipOld;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
@@ -28,7 +29,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         {
             _builder = builder;
             _filterManager = filterManager;
-            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt|tmp|htmlzip|htmzip".Split('|');
+            _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt|tmp|htmlzip|htmzip|mht|mhtml|eml".Split('|');
             base.PipelineId = "tika";
             base.QueueName = "tika";
         }
@@ -146,7 +147,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
         private string ProcessFile(string pathToFile, string workingFolder)
         {
-            var extension = Path.GetExtension(pathToFile);
+            var extension = Path.GetExtension(pathToFile).ToLower();
             if (extension == ".htmlzip" || extension == ".htmzip")
             {
                 ZipFile.ExtractToDirectory(pathToFile, workingFolder);
@@ -167,6 +168,15 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 }
 
                 Logger.ErrorFormat("Invalid HTMLZIP file, name is {0} but corresponding html file not found after decompression", Path.GetFileName(pathToFile));
+            }
+            else if (extension == ".mht" || extension == ".mhtml")
+            {
+                MHTMLParser parser = new MHTMLParser(File.ReadAllText(pathToFile));
+                parser.OutputDirectory = workingFolder;
+                parser.DecodeImageData = false;
+                var html = parser.getHTMLText();
+                pathToFile = pathToFile + ".html";
+                File.WriteAllText(pathToFile, html);
             }
             return pathToFile;
         }

@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Core.Support
             if (_config.IsQueueManager)
                 _queueManager.Stop();
 
-            _pollerManager.Stop();
+            _pollerManager.Shutdown();
         }
     }
 }

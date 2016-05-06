@@ -9,3 +9,10 @@ Jarvis.DocumentStore
 2. [Prerequisites](/src/Prerequisites.md)
 2. [How to write jobs](/src/Jarvis.DocumentStore.Jobs/readme.md)
 
+###Standard handler to grab document
+
+http://localhost_5123/docs/documents/{handle} (gets list of formats)
+http://localhost_5123/docs/documents/attachments_fat/{handle} (get list of all attachment for this handle)
+
+
+
