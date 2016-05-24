@@ -23,6 +23,21 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _streamReadModel = streamReadModel;
         }
 
+        /// <summary>
+        /// possible GET call
+        /// http://localhost:5123/docs/feed/21/20?types=2&types=3
+        /// 
+        /// types is completely optional you can simply call
+        /// 
+        /// http://localhost:5123/docs/feed/21/20
+        /// 
+        /// if yoy are interested in all types of events.
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="startId"></param>
+        /// <param name="numOfResults"></param>
+        /// <param name="types"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("{tenantId}/feed/{startId}/{numOfResults}")]
         public HttpResponseMessage GetFeed(TenantId tenantId, Int64 startId, Int32 numOfResults, [ModelBinder] List<Int32> types)
@@ -32,8 +47,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (types != null && types.Count > 0)
             {
-                var listOfTypes = types.ToList();
-                baseQuery = baseQuery.Where(r => listOfTypes.Contains((Int32) r.EventType));
+                baseQuery = baseQuery.Where(r => types.Contains((Int32) r.EventType));
             }
 
             var result = baseQuery.Take(numOfResults)
