@@ -626,7 +626,7 @@ namespace Jarvis.DocumentStore.Client
                     sb.Append("types=" + (Int32)type + "&");
                 }
                 sb.Length -= 1;
-                uriString = uriString + sb.ToString();
+                uriString = uriString + "?" + sb.ToString();
             }
 
             var endPoint = new Uri(_documentStoreUri, uriString);
