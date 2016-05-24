@@ -13,6 +13,7 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using MongoDB.Driver.Builders;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -74,7 +75,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override void SetUp()
         {
-
+            _streamReadModelCollection.CreateIndex(IndexKeys<StreamReadModel>
+                .Ascending(x => x.EventType)
+                .Ascending(x => x.Id));
         }
 
         public void On(DocumentDescriptorCreated e)
