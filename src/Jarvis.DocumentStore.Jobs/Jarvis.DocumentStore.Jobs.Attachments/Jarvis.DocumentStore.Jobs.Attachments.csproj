@@ -58,8 +58,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\mongocsharpdriver.1.10.0\lib\net35\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="MsgReader">
-      <HintPath>..\..\packages\MSGReader.1.7.4\lib\MsgReader.dll</HintPath>
+    <Reference Include="MsgReader, Version=1.9.14.0, Culture=neutral, PublicKeyToken=47f99f3a9a2648df, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MSGReader.1.9.14\lib\MsgReader.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
