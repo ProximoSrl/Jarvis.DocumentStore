@@ -15,6 +15,7 @@ using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Jobs;
+using System.Linq;
 
 #if DisablePriLongPath
 using Path = System.IO.Path;
@@ -417,6 +418,17 @@ namespace Jarvis.DocumentStore.Client
         }
 
         /// <summary>
+        /// Deserialize custom data from json string
+        /// </summary>
+        /// <param name="data">json representation of custom data</param>
+        /// <param name="settings">serializer settings</param>
+        /// <returns>custom data</returns>
+        private T FromJson<T>(string data, JsonSerializerSettings settings = null)
+        {
+            return JsonConvert.DeserializeObject<T>(data, settings);
+        }
+
+        /// <summary>
         /// Retrieve custom data from DocumentStore
         /// </summary>
         /// <param name="documentHandle">Document handle</param>
@@ -573,5 +585,52 @@ namespace Jarvis.DocumentStore.Client
         }
 
 
+        /// <summary>
+        /// Retrieve custom data from DocumentStore
+        /// </summary>
+        /// <param name="documentHandle">Document handle</param>
+        /// <returns>Custom data</returns>
+        public async Task<IEnumerable<ClientFeed>> GetFeedAsync(Int64 startFeed, Int32 numOfFeeds, params HandleStreamEventTypes[] types)
+        {
+            using (var client = new HttpClient())
+            {
+                Uri endPoint = GenerateUriForFeed(startFeed, numOfFeeds, types);
+                var json = await client.GetStringAsync(endPoint);
+                return await FromJsonAsync<IEnumerable<ClientFeed>>(json);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve custom data from DocumentStore
+        /// </summary>
+        /// <param name="documentHandle">Document handle</param>
+        /// <returns>Custom data</returns>
+        public IEnumerable<ClientFeed> GetFeed(Int64 startFeed, Int32 numOfFeeds, params HandleStreamEventTypes[] types)
+        {
+            using (var client = new WebClient())
+            {
+                Uri endPoint = GenerateUriForFeed(startFeed, numOfFeeds, types);
+                var json = client.DownloadString(endPoint);
+                return FromJson<IEnumerable<ClientFeed>>(json);
+            }
+        }
+
+        private Uri GenerateUriForFeed(long startFeed, int numOfFeeds, HandleStreamEventTypes[] types)
+        {
+            var uriString = Tenant + "/feed/" + startFeed + "/" + numOfFeeds;
+            if (types != null && types.Length > 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var type in types)
+                {
+                    sb.Append("types=" + (Int32)type + "&");
+                }
+                sb.Length -= 1;
+                uriString = uriString + "?" + sb.ToString();
+            }
+
+            var endPoint = new Uri(_documentStoreUri, uriString);
+            return endPoint;
+        }
     }
 }

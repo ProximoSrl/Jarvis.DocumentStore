@@ -11,6 +11,7 @@ using System.Threading;
 using System.IO;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Jarvis.DocumentStore.Shared.Model;
 
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
@@ -436,6 +437,23 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void upload_medium_jpg()
         {
             _docs.UploadAsync(TestConfig.PathToMediumJpg, DocumentHandle.FromString("jpg_1")).Wait();
+        }
+
+        [Test]
+        public void verify_get_of_feed()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_2")).Wait();
+            var feed = _docs.GetFeed(0, 20);
+            Assert.That(feed.Count(), Is.GreaterThan(1));
+        }
+
+        [Test]
+        public void verify_typed_get_of_feed()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_3")).Wait();
+            var feed = _docs.GetFeed(0, 20, HandleStreamEventTypes.DocumentCreated);
+            Assert.That(feed.Count(), Is.GreaterThan(1));
+            Assert.That(feed.All(d => d.EventType == HandleStreamEventTypes.DocumentCreated));
         }
 
         [Test]

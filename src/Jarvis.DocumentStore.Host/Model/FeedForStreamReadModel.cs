@@ -11,6 +11,8 @@ namespace Jarvis.DocumentStore.Host.Model
 {
     public class FeedForStreamReadModel
     {
+        public Int64 Id { get; set; }
+
         public String Handle { get; set; }
 
         public HandleStreamEventTypes EventType { get; set; }
@@ -27,6 +29,7 @@ namespace Jarvis.DocumentStore.Host.Model
 
         public FeedForStreamReadModel(StreamReadModel original)
         {
+            Id = original.Id;
             Handle = original.Handle;
             EventType = original.EventType;
             EventTypeDesc = original.EventType.ToString();
