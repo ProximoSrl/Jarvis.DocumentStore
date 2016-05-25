@@ -241,6 +241,9 @@
     <Compile Include="Support\WindsorResolver.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\assets\Configs\defaultParameter.config">
+      <Link>defaultParameter.config</Link>
+    </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>

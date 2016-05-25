@@ -36,7 +36,11 @@
 	"file-queue" : "c:\\temp\\dsqueue\\",
 	"jobs" : 
 	{
-		"location" : "..\\..\\..\\..\\artifacts\\jobs\\"
+		"location" : "..\\..\\..\\..\\artifacts\\jobs\\",
+		"imgResize" : 
+		{ 
+			"thumb-format" : "png" 
+		}
 	},
 	
 	"roles": {

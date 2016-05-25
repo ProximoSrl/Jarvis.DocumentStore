@@ -5,6 +5,8 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using System;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Drawing.Imaging;
+
 namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
     public class ImageResizePollerOutOfProcessJob : AbstractOutOfProcessPollerJob
@@ -18,6 +20,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
         protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             var fileExtension = parameters.All[JobKeys.ThumbnailFormat];
+            ImageFormat format = GetFormatFromExtension(fileExtension);
             var sizesAsString = parameters.All[JobKeys.Sizes];
             var imageSizes = SizeInfoHelper.Deserialize(sizesAsString);
 
@@ -45,7 +48,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
                         using (var outStream = File.OpenWrite(resizeImagePath))
                         {
                             Logger.DebugFormat("Resizing {0}", parameters.JobId);
-                            ImageResizer.Shrink(pageStream, outStream, size.Width, size.Height);
+                            ImageResizer.Shrink(pageStream, outStream, size.Width, size.Height, format);
                         }
                         await AddFormatToDocumentFromFile(
                             parameters.TenantId, 
@@ -58,6 +61,27 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
 
             Logger.DebugFormat("Ended resize job for {0} - {1}", parameters.JobId, sizesAsString);
             return true;
+        }
+
+        private ImageFormat GetFormatFromExtension(string fileExtension)
+        {
+            if ("png".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Png;
+            else if ("tiff".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Tiff;
+            else if ("jpeg".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Jpeg;
+            else if ("jpg".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Jpeg;
+            else if ("bmp".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Bmp;
+            else if ("emf".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Emf;
+            else if ("wmf".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                return ImageFormat.Wmf;
+            Logger.WarnFormat("Configuration error for Image Resizer, format {0} is not supported, default to png", fileExtension);
+
+            return ImageFormat.Png;
         }
     }
 }
