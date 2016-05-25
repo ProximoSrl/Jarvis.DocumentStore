@@ -9,7 +9,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
     public static class ImageResizer
     {
-        public static void Shrink(Stream source, Stream destination, int maxWidth, int maxHeight)
+        public static void Shrink(Stream source, Stream destination, int maxWidth, int maxHeight, ImageFormat format)
         {
             using (var image = Image.FromStream(source))
             {
@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
                     g.DrawImage(image, 0, 0, newWidth, newHeight);
                 }
 
-                newImage.Save(destination, ImageFormat.Png);
+                newImage.Save(destination, format);
             }
         }
     }

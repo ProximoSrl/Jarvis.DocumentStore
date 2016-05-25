@@ -135,10 +135,12 @@ namespace Jarvis.DocumentStore.Host.Support
             //    LoggerFunction, 
             //    "JARVIS_CONFIG_SERVICE",
             //    defaultParameterFile : defaultParameterFile);
-
+            var defaultParameterFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "defaultParameters.config");
             ConfigurationServiceClient.AppDomainInitializer(
-                LoggerFunction,
-                "JARVIS_CONFIG_SERVICE");
+                    LoggerFunction,
+                    "JARVIS_CONFIG_SERVICE",
+                    defaultConfigFile : new FileInfo(defaultParameterFileName)
+                );
         }
 
         private void LoggerFunction(string message, bool isError, Exception exception)
