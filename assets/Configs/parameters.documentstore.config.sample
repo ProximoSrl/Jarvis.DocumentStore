@@ -39,7 +39,7 @@
 		"location" : "..\\..\\..\\..\\artifacts\\jobs\\",
 		"imgResize" : 
 		{ 
-			"thumb-format" : "jpg" 
+			"thumb-format" : "png" 
 		}
 	},
 	
