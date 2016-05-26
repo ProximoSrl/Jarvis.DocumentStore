@@ -241,8 +241,9 @@
     <Compile Include="Support\WindsorResolver.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Configs\defaultParameter.config">
-      <Link>defaultParameter.config</Link>
+    <None Include="..\..\assets\Configs\defaultParameters.config">
+      <Link>defaultParameters.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
@@ -305,9 +306,6 @@
     <None Include="app\lib\skin\js\plugins\slimScroll\slimScroll.jquery.json" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
-    </None>
-    <None Include="default-parameters.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
