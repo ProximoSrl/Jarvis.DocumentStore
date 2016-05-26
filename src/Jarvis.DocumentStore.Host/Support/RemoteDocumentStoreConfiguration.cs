@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System.Threading;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using System.IO;
+using Jarvis.ConfigurationService.Client.Support;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -91,7 +92,7 @@ namespace Jarvis.DocumentStore.Host.Support
             Rebuild = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("rebuild", "false"), StringComparison.OrdinalIgnoreCase);
             NitroMode = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("nitro-mode", "false"), StringComparison.OrdinalIgnoreCase);
             EngineSlots = ConfigurationServiceClient.Instance.GetSetting("engine-slots", "*").Split(',');
-        
+
             PollingMsInterval = Int32.Parse(ConfigurationServiceClient.Instance.GetSetting("polling-interval-ms", "1000"));
             ForcedGcSecondsInterval = Int32.Parse(ConfigurationServiceClient.Instance.GetSetting("memory-collect-seconds", "0"));
             DelayedStartInMilliseconds = Int32.Parse(ConfigurationServiceClient.Instance.GetSetting("poller-delayed-start", "2000"));
@@ -103,7 +104,7 @@ namespace Jarvis.DocumentStore.Host.Support
             var listOfFolders = new List<string>();
             foreach (var folder in fileQueue)
             {
-                listOfFolders.Add((string) folder);
+                listOfFolders.Add((string)folder);
             }
             MonitorFolders(listOfFolders.ToArray());
         }
@@ -129,17 +130,11 @@ namespace Jarvis.DocumentStore.Host.Support
 
         private void BootstrapConfigurationServiceClient()
         {
-            //this is the configuration with the base parameters value.
-            //var defaultParameterFile = new FileInfo("default-parameters.config");
-            //ConfigurationServiceClient.AppDomainInitializer(
-            //    LoggerFunction, 
-            //    "JARVIS_CONFIG_SERVICE",
-            //    defaultParameterFile : defaultParameterFile);
             var defaultParameterFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "defaultParameters.config");
             ConfigurationServiceClient.AppDomainInitializer(
                     LoggerFunction,
                     "JARVIS_CONFIG_SERVICE",
-                    defaultConfigFile : new FileInfo(defaultParameterFileName)
+                    defaultConfigFile: new FileInfo(defaultParameterFileName)
                 );
         }
 
@@ -151,7 +146,13 @@ namespace Jarvis.DocumentStore.Host.Support
                 {
                     if (exception != null)
                     {
-                        Console.WriteLine("ERROR: {0}\n{1}", message, exception.Message);
+                        String msg = exception.Message;
+                        if (exception is ServerConfigurationException)
+                        {
+                            var ex = exception as ServerConfigurationException;
+                            msg = ex.ServerResponse;
+                        }
+                        Console.WriteLine("ERROR: {0}\n{1}", message, msg);
                     }
                     else
                     {
