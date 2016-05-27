@@ -109,7 +109,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public JobsManagementConfiguration JobsManagement { get; set; }
         public bool EnableImportFormFileSystem { get; private set; }
-        public string[] FoldersToMonitor { get; private set; }
+        public string[] FoldersToMonitor { get; protected set; }
 
         public void MonitorFolders(string[] folders)
         {
