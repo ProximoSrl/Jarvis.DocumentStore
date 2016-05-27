@@ -30,6 +30,7 @@ using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
 
 using System.IO;
+using Jarvis.DocumentStore.Core.Support;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
@@ -74,19 +75,22 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private readonly ICommandBus _commandBus;
         private readonly ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>
             _importFailureCollections = new ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>();
+        DocumentStoreConfiguration _configuration;
 
         internal bool DeleteTaskFileAfterImport { get; set; }
 
         public ImportFormatFromFileQueue(
-            string[] foldersToWatch,
+            DocumentStoreConfiguration configuration,
             ITenantAccessor tenantAccessor,
             ICommandBus commandBus
         )
         {
             DeleteTaskFileAfterImport = true;
-            _foldersToWatch = foldersToWatch;
+            _configuration = configuration;
+            _foldersToWatch = _configuration.FoldersToMonitor;
             _tenantAccessor = tenantAccessor;
             _commandBus = commandBus;
+            
         }
 
         private Boolean _stopped = false;
@@ -273,9 +277,10 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         {
             if (!_importFailureCollections.ContainsKey(_tenantAccessor.Current.Id))
             {
-                var mongoDb = _tenantAccessor.Current.Container.Resolve<MongoDatabase>();
+                var tenantSettings = _configuration.TenantSettings.Single(t => t.TenantId == _tenantAccessor.Current.Id);
+                var systemDb = tenantSettings.Get<MongoDatabase>("system.db");
                 _importFailureCollections[_tenantAccessor.Current.Id] =
-                    mongoDb.GetCollection<ImportFailure>("sys.importFailures");
+                    systemDb.GetCollection<ImportFailure>("sys.importFailures");
             }
         }
 
