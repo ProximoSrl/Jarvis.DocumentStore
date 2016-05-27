@@ -9,6 +9,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.BackgroundTasks;
 using Jarvis.DocumentStore.Core.Support;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -27,8 +28,7 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 container.Register(
                     Component
-                        .For<ImportFormatFromFileQueue>()
-                        .DependsOn(Dependency.OnValue<string[]>(_config.FoldersToMonitor)),
+                        .For<ImportFormatFromFileQueue>(),
                     Component
                         .For<ImportFileFromFileSystemRunner>()
                         .Start()
