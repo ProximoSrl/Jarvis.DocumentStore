@@ -6,7 +6,7 @@ using MongoDB.Driver.GridFS;
 namespace Jarvis.DocumentStore.Tests.Support
 {
     public class TestTenantSettings :TenantSettings{
-        public TestTenantSettings(): base(new TenantId("tests"))
+        public TestTenantSettings(string tenantId): base(new TenantId(tenantId))
         {
             SetConnectionString("events");
             SetConnectionString("originals");
