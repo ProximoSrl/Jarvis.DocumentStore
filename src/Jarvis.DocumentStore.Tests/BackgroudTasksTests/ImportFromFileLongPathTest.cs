@@ -76,7 +76,9 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             container.Resolve<MongoDatabase>().Returns(MongoDbTestConnectionProvider.ReadModelDb);
             var collection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<ImportFailure>("sys.importFailures");
             collection.Drop();
-            _queue = new ImportFormatFromFileQueue(new[] { longFolderName }, accessor, _commandBus)
+            DocumentStoreTestConfiguration config = new DocumentStoreTestConfiguration();
+            config.SetFolderToMonitor(longFolderName);
+            _queue = new ImportFormatFromFileQueue(config, accessor, _commandBus)
             {
                 Logger = new ConsoleLogger()
             };

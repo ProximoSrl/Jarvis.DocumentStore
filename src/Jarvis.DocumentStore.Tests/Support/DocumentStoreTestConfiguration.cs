@@ -47,6 +47,11 @@ namespace Jarvis.DocumentStore.Tests.Support
         {
             AddServerAddress(serverAddress.AbsoluteUri);
         }
+
+        public void SetFolderToMonitor(String folder)
+        {
+            FoldersToMonitor = new String[] { folder };
+        }
     }
 
     public class DocumentStoreTestConfigurationForPollQueue : DocumentStoreTestConfiguration
