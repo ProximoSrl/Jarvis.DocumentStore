@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Tests.Support
 {
     public class DocumentStoreTestConfiguration : DocumentStoreConfiguration
     {
-        public DocumentStoreTestConfiguration(String engineVersion = "v1")
+        public DocumentStoreTestConfiguration(String engineVersion = "v1", String tenantId = "tests")
         {
             EngineVersion = engineVersion;
             IsApiServer = true;
@@ -27,7 +27,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             QueueJobsPollInterval = 100; //poll each 100 milliseconds.
             QueueStreamPollInterval = 1000;
             IsQueueManager = false;
-            TenantSettings.Add(new TestTenantSettings());
+            TenantSettings.Add(new TestTenantSettings(tenantId));
             BucketInfo = new List<BucketInfo>() { new BucketInfo() { Slots = new[] { "*" }, BufferSize = 10 } };
             Boost = "true";
             DelayedStartInMilliseconds = 1000;
