@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             File.Copy(TestConfig.PathToWordDocument, _fileToImport);
             var accessor = Substitute.For<ITenantAccessor>();
             var tenant = Substitute.For<ITenant>();
-            tenant.Id.Returns(new TenantId("Docs"));
+            tenant.Id.Returns(new TenantId("tests"));
             var container = Substitute.For<IWindsorContainer>();
             _commandBus = Substitute.For<ICommandBus>();
             var identityGenerator = Substitute.For<IIdentityGenerator>();
@@ -76,8 +76,10 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             container.Resolve<MongoDatabase>().Returns(MongoDbTestConnectionProvider.ReadModelDb);
             var collection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<ImportFailure>("sys.importFailures");
             collection.Drop();
-            DocumentStoreTestConfiguration config = new DocumentStoreTestConfiguration(tenantId : "Docs");
+            DocumentStoreTestConfiguration config = new DocumentStoreTestConfiguration(tenantId : "tests");
             config.SetFolderToMonitor(longFolderName);
+            var sysDb = config.TenantSettings.Single(t => t.TenantId == "tests").Get<MongoDatabase>("system.db");
+            sysDb.Drop();
             _queue = new ImportFormatFromFileQueue(config, accessor, _commandBus)
             {
                 Logger = new ConsoleLogger()
