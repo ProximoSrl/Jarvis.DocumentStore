@@ -2,10 +2,17 @@ Param
 (
     [String] $Configuration,
     [String] $DestinationDir = "",
-    [Bool] $DeleteOriginalAfterZip = $true
+    [String] $DeleteOriginalAfterZip = "$true",
+    [String] $StandardZipFormat = "$false"
 )
 
+Write-Output "Configuration = $Configuration, DestinationDir = $DestinationDir, DeleteOriginalAfterZip = $DeleteOriginalAfterZip, StandardZipFormat = $StandardZipFormat"
+
+$DeleteOriginalAfterZipBool = ($DeleteOriginalAfterZip -eq "$true") -or ($DeleteOriginalAfterZip -eq "true")
+$StandardZipFormatBool =  ($StandardZipFormat -eq "$true") -or ($StandardZipFormat -eq "true")
+
 $runningDirectory = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
+
 
 if ($DestinationDir -eq "") 
 {
@@ -19,6 +26,7 @@ elseif ($DestinationDir.StartsWith("."))
 $DestinationDir = [System.IO.Path]::GetFullPath($DestinationDir)
 $DestinationDirHost = $DestinationDir + "\Jarvis.DocumentStore.Host"
 $DestinationDirJobs = $DestinationDir + "\Jarvis.DocumentStore.Jobs"
+$DestinationDirConfigs = $DestinationDir + "\DocumentStoreConfig"
 
 Write-Host "Destination dir is $DestinationDir"
 
@@ -68,32 +76,74 @@ Get-ChildItem $DestinationDirHost -Recurse -Include *.xml | foreach ($_) {remove
 
 
 Write-Host "Copying file for jobs"
-Copy-Item ".\artifacts\jobs\" `
+Copy-Item ".\artifacts\jobs\*" `
     $DestinationDirJobs `
     -Force -Recurse
 
 Write-Host "Cleaning up $DestinationDirJobs"
 Get-ChildItem $DestinationDirJobs -Recurse -Include *.xml | foreach ($_) {remove-item $_.fullname}
 
-Write-Host "Compressing everything with 7z"
-if (-not (test-path "$env:ProgramFiles\7-Zip\7z.exe")) {throw "$env:ProgramFiles\7-Zip\7z.exe needed"} 
-set-alias sz "$env:ProgramFiles\7-Zip\7z.exe"  
+Write-Host "Compressing everything"
+$sevenZipExe = "c:\Program Files\7-Zip\7z.exe"
+if (-not (test-path $sevenZipExe)) 
+{
+    $sevenZipExe =  "C:\Program Files (x86)\7-Zip\7z.exe"
+    if (-not (test-path $sevenZipExe)) 
+    {
+        throw "$env:ProgramFiles\7-Zip\7z.exe needed"
+        Exit 
+    }
+
+} 
+
+Write-Host "Copying base configuration file"
+Copy-Item ".\assets\configs\default" `
+    "$DestinationDirConfigs\default" `
+    -Force -Recurse
+
+Write-Host "Copying configurations paramters sample"
+New-Item -Path "$DestinationDirConfigs\paramsample\" -ItemType Directory
+Copy-Item ".\assets\configs\parameters.documentstore.config.sample" `
+    "$DestinationDirConfigs\paramsample\parameters.documentstore.config.sample" `
+    -Force -Recurse
+
+Write-Host "Copying default configuration file"
+Copy-Item ".\assets\configs\defaultParameters.config" `
+    "$DestinationDirConfigs\defaultParameters.config" `
+    -Force -Recurse
+
+set-alias sz $sevenZipExe 
+
+$extension = ".7z"
+if ($StandardZipFormatBool -eq $true) 
+{
+    Write-Output "Choose standard ZIP format instead of 7Z"
+    $extension = ".zip"
+}
+ 
 
 $Source = $DestinationDirHost + "\*"
-$Target = $DestinationDir + "\Jarvis.DocumentStore.Host.7z"
+$Target = $DestinationDir + "\Jarvis.DocumentStore.Host" + $extension
 
 #sz a -m0=lzma2 -mx=9 -aoa $Target $Source
 sz a -mx=5 $Target $Source
 
 $Source = $DestinationDirJobs + "\*"
-$Target = $DestinationDir + "\Jarvis.DocumentStore.Jobs.7z"
+$Target = $DestinationDir + "\Jarvis.DocumentStore.Jobs" + $extension
 
 #sz a -m0=lzma2 -mx=9 -aoa $Target $Source
 sz a -mx=5 $Target $Source
 
-if ($DeleteOriginalAfterZip -eq $true) 
+$Source = $DestinationDirConfigs + "\*"
+$Target = $DestinationDir + "\DocumentStoreConfig" + $extension
+
+#sz a -m0=lzma2 -mx=9 -aoa $Target $Source
+sz a -mx=5 $Target $Source
+
+if ($DeleteOriginalAfterZipBool -eq $true) 
 {
     Remove-Item $DestinationDirHost  -Recurse -Force
 	Remove-Item $DestinationDirJobs  -Recurse -Force
+    Remove-Item $DestinationDirConfigs  -Recurse -Force
 }
 
