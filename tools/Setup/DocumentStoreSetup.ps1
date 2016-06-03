@@ -23,12 +23,12 @@ if(-not(Get-Module -name jarvisUtils))
     Import-Module -Name "$runningDirectory\\jarvisUtils"
 }
 
-Write-Host 'Stopping Service Jarvis - Document Store'
+Write-Output 'Stopping Service Jarvis - Document Store'
 
 $service = Get-Service -Name "Jarvis - Document Store" -ErrorAction SilentlyContinue 
 if ($service -ne $null) 
 {
-    Write-Host "Stopping Document Store Service"
+    Write-Output "Stopping Document Store Service"
     Stop-Service "Jarvis - Document Store"
     $service.WaitForStatus("Stopped")
 }
@@ -40,7 +40,7 @@ if (Test-Path $jobsLog4net)
     Copy-Item -Path $jobsLog4net -Destination $latestJobsLog4net -Force
 }
 
-Write-Host "Removing all file in jobs directory"
+Write-Output "Removing all file in jobs directory"
 if (Test-Path -Path $jobsInstallDir) 
 {
 $allJobsFile = Get-ChildItem -Path $jobsInstallDir -Recurse
@@ -48,16 +48,16 @@ $oldDeletedFile = $allJobsFile | where {!$_.FullName.EndsWith(".exe.config") -an
 
 }
 
-Write-Host "Expanding jobs file $deployJobsFile to $jobsInstallDir"
+Write-Output "Expanding jobs file $deployJobsFile to $jobsInstallDir"
 Expand-WithFramework -zipFile $deployJobsFile -destinationFolder $jobsInstallDir -deleteOld $false
-Write-Host "Expanding configuration file $deployConfigurationFile to $configInstallDir"
+Write-Output "Expanding configuration file $deployConfigurationFile to $configInstallDir"
 Expand-WithFramework -zipFile $deployConfigurationFile -destinationFolder $configInstallDir
-Write-Host "Expanding host file $deployHostFile to $hostInstallDir"
+Write-Output "Expanding host file $deployHostFile to $hostInstallDir"
 Expand-WithFramework -zipFile $deployHostFile -destinationFolder $hostInstallDir
 
 if (!(Test-Path $configReleaseInstall) -or $overwriteConfigBool) 
 {
-    Write-Host "Ovewriting old configuration in $configReleaseInstall"
+    Write-Output "Ovewriting old configuration in $configReleaseInstall"
     Copy-Item $configInstallDir -Destination $configReleaseInstall -Recurse -Force
 }
 else
@@ -65,7 +65,7 @@ else
     $answer = Get-YesNoAnswer -question "Do you want to overwrite latest configuration? [y/N]" -default "n"
     if ($answer -eq 'y')
     {
-        Write-Host "Ovewriting old configuration in $configReleaseInstall"
+        Write-Output "Ovewriting old configuration in $configReleaseInstall"
         Remove-Item $configReleaseInstall -Recurse -Force
         Copy-Item $configInstallDir -Destination $configReleaseInstall -Recurse -Force
     }
@@ -78,7 +78,7 @@ foreach($file in $allOriginalConfig)
     $realConfigFile = $file.FullName.Substring(0, $file.FullName.Length - ".original".Length)
     if (!(Test-Path $realConfigFile))
     {
-        Write-Host "No config file $realConfigFile exists, renaming .original"
+        Write-Output "No config file $realConfigFile exists, renaming .original"
         [System.IO.File]::Move($file.FullName, $realConfigFile)
     }
 }
@@ -95,7 +95,7 @@ if (Test-Path $latestJobsLog4net)
 
 if ($service -eq $null) 
 {
-    Write-Host "Starting the service in $hostInstallDir\Jarvis.DocumentStore.Host.exe"
+    Write-Output "Starting the service in $hostInstallDir\Jarvis.DocumentStore.Host.exe"
 
     & "$hostInstallDir\Jarvis.DocumentStore.Host.exe" install
 } 
@@ -106,15 +106,15 @@ if ($service -eq $null)
  $documentStoreMarkerFile = "$installationRoot\documentstore.application"
  if (!(Test-Path $documentStoreMarkerFile)) 
  {
-        Write-Host "Writing marker file $documentStoreMarkerFile"
+        Write-Output "Writing marker file $documentStoreMarkerFile"
                [System.IO.File]::WriteAllText($documentStoreMarkerFile, "#jarvis-config
 application-name:documentstore
 base-server-address:http://localhost:55555")
 }
 
 $body = "{""ApplicationName"" : ""DocumentStore"", ""RedirectFolder"" : """ + $configInstallDir.Replace("\", "\\") + """}"
-Write-Host "Adding application to configuration manager $body" 
-Write-Host $body
+Write-Output "Adding application to configuration manager $body" 
+Write-Output $body
 Invoke-RestMethod -Uri "http://localhost:55555/api/applications/DocumentStore" `
     -Method "PUT" `
     -Body $body `
@@ -128,18 +128,18 @@ Invoke-RestMethod -Uri "http://localhost:55555/api/defaultparameters/DocumentSto
 
 
 $sampleParameter = [System.IO.File]::ReadAllText("$configInstallDir\paramsample\parameters.documentstore.config.sample")
-Write-Host "Updating default configuration to configuration manager" 
+Write-Output "Updating default configuration to configuration manager" 
 Invoke-RestMethod -Uri "http://localhost:55555/api/defaultparameters/DocumentStore/$env:computername" `
     -Method "PUT" `
     -Body $sampleParameter `
     -ContentType "application/json"
 
 $defaultConfigurationContent = [System.IO.File]::ReadAllText("$configInstallDir\defaultParameters.config")
-Write-Host "Updating default configuration to configuration manager $configInstallDir\DefaultParameters.config" 
+Write-Output "Updating default configuration to configuration manager $configInstallDir\DefaultParameters.config" 
 Invoke-RestMethod -Uri "http://localhost:55555/api/defaultparameters/DocumentStore/$env:computername" `
     -Method "PUT" `
     -Body $defaultConfigurationContent `
     -ContentType "application/json"
 
-Write-Host "Jarvis Document Store Installed"
+Write-Output "Jarvis Document Store Installed"
 
