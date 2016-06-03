@@ -63,7 +63,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             //check each 10 minutes if some process is dead and was not started.
             // _monitorTimer = new Timer(CheckProcesses, null, 30 * 1000, 10 * 60 * 1000);
 
-            _monitorTimer = new Timer(CheckProcesses, null, 1000, 10 * 1000);
+            _monitorTimer = new Timer(CheckProcesses, null, 10 * 1000, 10 * 60 * 1000);
         }
 
 
