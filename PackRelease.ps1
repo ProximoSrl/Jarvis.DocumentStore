@@ -76,7 +76,7 @@ Get-ChildItem $DestinationDirHost -Recurse -Include *.xml | foreach ($_) {remove
 
 
 Write-Host "Copying file for jobs"
-Copy-Item ".\artifacts\jobs\" `
+Copy-Item ".\artifacts\jobs\*" `
     $DestinationDirJobs `
     -Force -Recurse
 
