@@ -26,6 +26,7 @@ elseif ($DestinationDir.StartsWith("."))
 $DestinationDir = [System.IO.Path]::GetFullPath($DestinationDir)
 $DestinationDirHost = $DestinationDir + "\Jarvis.DocumentStore.Host"
 $DestinationDirJobs = $DestinationDir + "\Jarvis.DocumentStore.Jobs"
+$DestinationDirConfigs = $DestinationDir + "\DocumentStoreConfig"
 
 Write-Host "Destination dir is $DestinationDir"
 
@@ -94,6 +95,23 @@ if (-not (test-path $sevenZipExe))
     }
 
 } 
+
+Write-Host "Copying base configuration file"
+Copy-Item ".\assets\configs\default" `
+    "$DestinationDirConfigs\default" `
+    -Force -Recurse
+
+Write-Host "Copying configurations paramters sample"
+New-Item -Path "$DestinationDirConfigs\paramsample\" -ItemType Directory
+Copy-Item ".\assets\configs\parameters.documentstore.config.sample" `
+    "$DestinationDirConfigs\paramsample\parameters.documentstore.config.sample" `
+    -Force -Recurse
+
+Write-Host "Copying default configuration file"
+Copy-Item ".\assets\configs\defaultParameters.config" `
+    "$DestinationDirConfigs\defaultParameters.config" `
+    -Force -Recurse
+
 set-alias sz $sevenZipExe 
 
 $extension = ".7z"
@@ -116,9 +134,16 @@ $Target = $DestinationDir + "\Jarvis.DocumentStore.Jobs" + $extension
 #sz a -m0=lzma2 -mx=9 -aoa $Target $Source
 sz a -mx=5 $Target $Source
 
+$Source = $DestinationDirConfigs + "\*"
+$Target = $DestinationDir + "\DocumentStoreConfig" + $extension
+
+#sz a -m0=lzma2 -mx=9 -aoa $Target $Source
+sz a -mx=5 $Target $Source
+
 if ($DeleteOriginalAfterZipBool -eq $true) 
 {
     Remove-Item $DestinationDirHost  -Recurse -Force
 	Remove-Item $DestinationDirJobs  -Recurse -Force
+    Remove-Item $DestinationDirConfigs  -Recurse -Force
 }
 
