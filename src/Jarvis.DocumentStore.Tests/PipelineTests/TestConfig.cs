@@ -12,7 +12,14 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         public static readonly string TempFolder;
         static TestConfig()
         {
-            DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\Docs")).FullName;
+            DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Docs")).FullName;
+            var aDocTestFile = Path.Combine(DocumentsFolder, "A Word Document.docx");
+            if (!Directory.Exists(DocumentsFolder) || !File.Exists(aDocTestFile))
+            {
+                //we do not have Docs folder, use doc folder on source.
+                DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\Docs")).FullName;
+            }
+
             TempFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             ServerAddress = new Uri("http://localhost:5123");
             Tenant = "tests";
