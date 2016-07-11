@@ -286,7 +286,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 if (activeProcess != null && !activeProcess.Process.HasExited)
                     return false; //Cannot start, it is already started
             }
-           
+
+            if (activeProcess == null)
+            {
+                Logger.WarnFormat("Cannot restart workder {0} because it is not present in queue list", jobHandle);
+                return false;
+            }
             //If we reach here, we should start same job with the same handle.
             InnerStart(activeProcess.QueueId, activeProcess.CustomParameters, activeProcess.DocStoreAddresses, jobHandle);
             return true;

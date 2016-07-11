@@ -34,7 +34,13 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             base.QueueName = "tika";
         }
 
-        protected abstract ITikaAnalyzer BuildAnalyzer();
+        /// <summary>
+        /// the process can create a list of analyzer, because it could happen that one analyzer
+        /// failed analysis and then he need to try with the next one.
+        /// </summary>
+        /// <param name="analyzerProgressive"></param>
+        /// <returns></returns>
+        protected abstract ITikaAnalyzer BuildAnalyzer(Int32 analyzerProgressive);
 
         protected override int ThreadNumber
         {
@@ -57,9 +63,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             }
 
             Logger.DebugFormat("Starting tika on job: {0}, file extension {1}", parameters.JobId, parameters.FileExtension);
-            var analyzer = BuildAnalyzer();
-            Logger.DebugFormat("Downloading blob for job: {0}, on local path {1}", parameters.JobId, workingFolder);
 
+            Logger.DebugFormat("Downloading blob for job: {0}, on local path {1}", parameters.JobId, workingFolder);
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
 
             pathToFile = ProcessFile(pathToFile, workingFolder);
@@ -73,28 +78,46 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             Logger.DebugFormat("Search for password JobId:{0}", parameters.JobId);
             var passwords = ClientPasswordSet.GetPasswordFor(parameters.FileName).ToArray();
             String content = "";
-            if (passwords.Any())
+            Int32 analyzerOrdinal = 0;
+            Boolean success = false;
+
+            var analyzer = BuildAnalyzer(analyzerOrdinal);
+            do
             {
-                //Try with all the password
-                foreach (var password in passwords)
+                try
                 {
-                    try
+                    if (passwords.Any())
                     {
-                        content = analyzer.GetHtmlContent(pathToFile, password) ?? "";
-                        break; //first password that can decrypt file break the list of password to try
+                        //Try with all the password
+                        foreach (var password in passwords)
+                        {
+                            try
+                            {
+                                content = analyzer.GetHtmlContent(pathToFile, password) ?? "";
+                                break; //first password that can decrypt file break the list of password to try
+                            }
+                            catch (Exception)
+                            {
+                                Logger.ErrorFormat("Error opening file {0} with password", parameters.FileName);
+                            }
+                        }
                     }
-                    catch (Exception)
+                    else
                     {
-                        Logger.ErrorFormat("Error opening file {0} with password", parameters.FileName);
+                        //Simply analyze file without password
+                        Logger.DebugFormat("Analyze content JobId: {0} -> Path: {1}", parameters.JobId, pathToFile);
+                        content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
                     }
+                    success = true;
                 }
-            }
-            else
-            {
-                //Simply analyze file without password
-                Logger.DebugFormat("Analyze content JobId: {0} -> Path: {1}", parameters.JobId, pathToFile);
-                content = analyzer.GetHtmlContent(pathToFile, "") ?? "";
-            }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat(ex, "Error extracting tika with analyzer {0} on file {1}", analyzer.Describe(), parameters.FileName, parameters.JobId);
+                    analyzer = BuildAnalyzer(++analyzerOrdinal);
+                    if (analyzer != null) Logger.InfoFormat("Retry job  {0} with analyzer {1}", parameters.JobId, analyzer.Describe());
+                }
+            } while (analyzer != null && success == false);
+
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
             String sanitizedContent = content;
             if (!string.IsNullOrWhiteSpace(content))
@@ -204,12 +227,23 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         {
         }
 
-        protected override ITikaAnalyzer BuildAnalyzer()
+        protected override ITikaAnalyzer BuildAnalyzer(Int32 analyzerOrdinal)
         {
-            return new TikaAnalyzer(JobsHostConfiguration)
+            switch (analyzerOrdinal)
             {
-                Logger = this.Logger
-            };
+                case 0:
+                    return new TikaAnalyzer(JobsHostConfiguration)
+                    {
+                        Logger = this.Logger
+                    };
+                case 1:
+                    return new TikaNetAnalyzer()
+                    {
+                        Logger = this.Logger
+                    };
+            }
+
+            return null;
         }
 
         public override bool IsActive
@@ -227,12 +261,23 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         {
         }
 
-        protected override ITikaAnalyzer BuildAnalyzer()
+        protected override ITikaAnalyzer BuildAnalyzer(Int32 analyzerOrdinal)
         {
-            return new TikaNetAnalyzer()
+            switch (analyzerOrdinal)
             {
-                Logger = this.Logger
-            };
+                case 0:
+                    return new TikaNetAnalyzer()
+                    {
+                        Logger = this.Logger
+                    };
+                case 1:
+                    return new TikaAnalyzer(JobsHostConfiguration)
+                    {
+                        Logger = this.Logger
+                    };
+            }
+
+            return null;
         }
 
         public override bool IsActive
