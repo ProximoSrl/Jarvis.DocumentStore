@@ -17,6 +17,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
     public class TikaNetAnalyzer : ITikaAnalyzer
     {
         public ILogger Logger = NullLogger.Instance;
+
         /// <summary>
         /// 
         /// </summary>
@@ -92,6 +93,11 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 
                 throw new TextExtractionException("Extraction failed.", ex);
             }
+        }
+
+        public string Describe()
+        {
+            return "Tika on DotNet based extractor";
         }
     }
 }
