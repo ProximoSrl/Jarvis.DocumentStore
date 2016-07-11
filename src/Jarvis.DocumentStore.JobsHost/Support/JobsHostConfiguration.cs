@@ -51,17 +51,6 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             return pathToJavaExe;
         }
 
-        public string GetPathToTika()
-        {
-            var pathToTika = GetConfigValue("TIKA_HOME");
-            if (!File.Exists(pathToTika))
-            {
-                throw new Exception(string.Format("Tika not found on {0}", pathToTika));
-            }
-
-            return pathToTika;
-        }
-        
         public string GetWorkingFolder(string tenantId, string blobId)
         {
             if (tenantId == null) throw new ArgumentNullException("tenantId");
@@ -76,7 +65,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), tenantId, queueName));
         }
 
-        string GetConfigValue(string key, string defaultValue = null)
+        public string GetConfigValue(string key, string defaultValue = null)
         {
             return ConfigurationManager.AppSettings[key] ??
                     Environment.GetEnvironmentVariable(key) ??

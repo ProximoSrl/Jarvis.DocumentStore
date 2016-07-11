@@ -86,7 +86,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
     {
         protected override ITikaAnalyzer BuildAnalyzer()
         {
-            return new TikaNetAnalyzer()
+            return new TikaAnalyzer(new JobsHost.Support.JobsHostConfiguration() { })
             {
                 Logger = NullLogger.Instance
             };
