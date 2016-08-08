@@ -29,6 +29,10 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using Jarvis.Framework.TestHelpers;
+
+using Jarvis.Framework.Shared.Helpers;
+
+
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
@@ -49,7 +53,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
             mngr.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
 
-            EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
+            MongoFlatIdSerializerHelper.Initialize(mngr);
 
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();

@@ -4,8 +4,9 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Shared.ReadModel;
-using MongoDB.Driver.Builders;
 
+using MongoDB.Driver;
+using Jarvis.Framework.Shared.Helpers;
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
     public class DocumentDescriptorByHashReader
@@ -32,8 +33,9 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public IEnumerable<Match> FindDocumentByHash(FileHash hash)
         {
             return _reader.Collection
-                .Find(Query<DocumentDescriptorReadModel>.EQ(x => x.Hash, hash))
-                .SetSortOrder(SortBy<DocumentDescriptorReadModel>.Ascending(x=>x.SequenceNumber))
+                .Find(Builders<DocumentDescriptorReadModel>.Filter.Eq(x => x.Hash, hash))
+                .Sort(Builders<DocumentDescriptorReadModel>.Sort.Ascending(x=>x.SequenceNumber))
+                .ToList()
                 .Select(x => new Match(x.Id, x.GetOriginalBlobId()));
         }
     }

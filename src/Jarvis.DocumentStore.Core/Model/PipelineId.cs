@@ -8,7 +8,7 @@ namespace Jarvis.DocumentStore.Core.Model
     /// <summary>
     /// PipelineId
     /// </summary>
-    [BsonSerializer(typeof(StringValueBsonSerializer))]
+    [BsonSerializer(typeof(TypedStringValueBsonSerializer<PipelineId>))]
     [TypeConverter(typeof(StringValueTypeConverter<PipelineId>))]
     public class PipelineId : LowercaseStringValue
     {

@@ -16,6 +16,7 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.TestHelpers;
 using NUnit.Framework;
+using Jarvis.Framework.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
@@ -39,12 +40,13 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         [SetUp]
         public void SetUp()
         {
+            MongoFlatMapper.EnableFlatMapping(true);
             MongoDbTestConnectionProvider.ReadModelDb.Drop();
 
             var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
             mngr.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
 
-            EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
+            MongoFlatIdSerializerHelper.Initialize(mngr);
 
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentDescriptorId>();
             EventStoreIdentityCustomBsonTypeMapper.Register<DocumentId>();

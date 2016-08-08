@@ -4,7 +4,8 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
-using MongoDB.Driver.Builders;
+using MongoDB.Driver;
+
 using NEventStore;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,12 +51,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override void SetUp()
         {
-            _documents.CreateIndex(IndexKeys<DocumentDescriptorReadModel>.Ascending(x => x.Hash));
+            _documents.CreateIndex("Hash", Builders<DocumentDescriptorReadModel>.IndexKeys.Ascending(x => x.Hash));
         }
 
         public void On(DocumentDescriptorInitialized e)
         {
-            var longCheckpoint = LongCheckpoint.Parse(e.CheckpointToken).LongValue;
+            var longCheckpoint = e.CheckpointToken;
             var document = new DocumentDescriptorReadModel(longCheckpoint, (DocumentDescriptorId)e.AggregateId, e.BlobId)
             {
                 Hash = e.Hash

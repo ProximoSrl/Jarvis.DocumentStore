@@ -22,14 +22,14 @@ namespace Jarvis.DocumentStore.Core.Support
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             var logUrl = new MongoUrl(_config.LogsConnectionString);
-            var logDb = new MongoClient(logUrl).GetServer().GetDatabase(logUrl.DatabaseName);
+            var logDb = new MongoClient(logUrl).GetDatabase(logUrl.DatabaseName);
           
                
             container.Register(
                  Component
                     .For<IMessagesTracker>()
                     .ImplementedBy<MongoDbMessagesTracker>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(logDb)),
+                    .DependsOn(Dependency.OnValue<IMongoDatabase>(logDb)),
                 Component
                     .For<ICommandBus, IInProcessCommandBus>()
                     .ImplementedBy<DocumentStoreMultiTenantCommandBus>()

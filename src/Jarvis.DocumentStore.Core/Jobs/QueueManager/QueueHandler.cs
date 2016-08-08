@@ -3,7 +3,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +15,7 @@ using MongoDB.Driver.Linq;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.Framework.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -24,42 +25,34 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// </summary>
     public class QueueHandler
     {
-        readonly MongoCollection<QueuedJob> _collection;
+        readonly IMongoCollection<QueuedJob> _collection;
         readonly QueueInfo _info;
         readonly BsonDocument _statsAggregationQuery;
-        private readonly AggregateArgs _aggregation;
+
         private readonly MetricHeartBeatHealthCheck _healthCheck;
 
         public ILogger Logger { get; set; }
         public String Name { get; private set; }
 
-        public QueueHandler(QueueInfo info, MongoDatabase database)
+        public QueueHandler(QueueInfo info, IMongoDatabase database)
         {
             _collection = database.GetCollection<QueuedJob>("queue." + info.Name);
-            _collection.CreateIndex(
-                IndexKeys<QueuedJob>.Ascending(x => x.Status, x => x.StreamId, x => x.SchedulingTimestamp),
-                IndexOptions.SetName("ForGetNextJobQuery"));
-            //This index was unique to avoid same job to be executed for
-            //same blob and tenant, but when we introduced the ability to
-            //re-schedule a job, this constraint was removed.
-            if (_collection.IndexExistsByName("UniqueTenantAndBlob"))
-            {
-                _collection.DropIndexByName("UniqueTenantAndBlob");
-            }
+            _collection.Indexes.CreateOne(
+                Builders<QueuedJob>.IndexKeys.Ascending(x => x.Status).Ascending(x => x.StreamId).Ascending(x => x.SchedulingTimestamp),
+                new CreateIndexOptions() { Name = "ForGetNextJobQuery" });
+        
+            _collection.Indexes.CreateOne(
+               Builders<QueuedJob>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.BlobId),
+                new CreateIndexOptions() { Name = "TenantAndBlob", Unique = false });
 
-            _collection.CreateIndex(
-               IndexKeys<QueuedJob>.Ascending(x => x.TenantId, x => x.BlobId),
-               IndexOptions.SetName("TenantAndBlob").SetUnique(false));
             _info = info;
             Name = info.Name;
 
-            _statsAggregationQuery = BsonDocument.Parse(@"
-{   $group : 
+            _statsAggregationQuery = BsonDocument.Parse(@" 
        { 
           _id : '$Status',
           c : {$sum:1}
-       }
-}");
+       }");
             //timeout of polling time is the maximum timeout allowed before a job is considered to be locked
             //but give 10 seconds to each job to start
             var millisecondTimeout = info.JobLockTimeout * 60 * 1000;
@@ -68,10 +61,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 millisecondTimeout,
                 TimeSpan.FromMilliseconds(millisecondTimeout - 10000));
                 
-            _aggregation = new AggregateArgs()
-            {
-                Pipeline = new[] { _statsAggregationQuery }
-            };
             Logger = NullLogger.Instance;
         }
 
@@ -88,9 +77,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     //because if a job with the same blobid was already fired for this queue there is no need
                     //to re-issue
                     var existing = _collection.Find(
-                        Query.And(
-                            Query<QueuedJob>.EQ(j => j.BlobId, streamElement.FormatInfo.BlobId),
-                            Query<QueuedJob>.EQ(j => j.TenantId, tenantId)
+                        Builders< QueuedJob>.Filter.And(
+                            Builders< QueuedJob>.Filter.Eq(j => j.BlobId, streamElement.FormatInfo.BlobId),
+                            Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
                         )
                     ).Count() > 0;
                     if (existing) return;
@@ -120,44 +109,46 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     }
                 }
 
-                _collection.Save(job);
+                _collection.InsertOne(job);
             }
         }
 
         public QueuedJob GetNextJob(String identity, String handle, TenantId tenantId, Dictionary<String, Object> customData)
         {
             if (_healthCheck != null) _healthCheck.Pulse();
-            IMongoQuery query = Query.Or(
-                    Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Idle),
-                    Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.ReQueued)
+            var query = Builders<QueuedJob>.Filter.Or(
+                    Builders< QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.Idle),
+                    Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.ReQueued)
                 );
             if (tenantId != null && tenantId.IsValid()) 
             {
-                query = Query.And(query, Query<QueuedJob>.EQ(j => j.TenantId, tenantId));
+                query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId));
             }
             if (customData != null && customData.Count > 0) 
             {
                 foreach (var filter in customData)
                 {
-                    query = Query.And(query, Query.EQ("HandleCustomData." + filter.Key, BsonValue.Create( filter.Value)));
+                    query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq("HandleCustomData." + filter.Key, BsonValue.Create( filter.Value)));
                 }
             }
-            var result = _collection.FindAndModify(new FindAndModifyArgs()
-            {
-                Query = query,
-                SortBy = SortBy<QueuedJob>.Ascending(j => j.SchedulingTimestamp),
-                Update = Update<QueuedJob>
+            var result = _collection.FindOneAndUpdate(
+                query,
+                 //SortBy = SortBy<QueuedJob>.Ascending(j => j.SchedulingTimestamp),
+                 Builders<QueuedJob>.Update
                     .Set(j => j.Status, QueuedJobExecutionStatus.Executing)
                     .Set(j => j.ExecutionStartTime, DateTime.Now)
                     .Set(j => j.ExecutingIdentity, identity)
                     .Set(j => j.ExecutingHandle, handle)
-                    .Set(j => j.ExecutionError, null)
-            });
-            if (result.Ok)
+                    .Set(j => j.ExecutionError, null),
+                 new FindOneAndUpdateOptions<QueuedJob, QueuedJob>() {
+                     Sort = Builders<QueuedJob>.Sort.Ascending(j => j.SchedulingTimestamp),
+                     ReturnDocument = ReturnDocument.After
+                 });
+            if (result != null)
             {
-                if (result.Response["value"] is BsonNull) return null;
-                return _collection.FindOneById(BsonValue.Create(result.Response["value"]["_id"]));
+                return result;
             }
+            return null;
             throw new ApplicationException("Error in Finding next job.");
         }
 
@@ -189,7 +180,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 job.Status = QueuedJobExecutionStatus.Succeeded;
             }
             job.ExecutionEndTime = DateTime.Now;
-            _collection.Save(job);
+
+            _collection.ReplaceOne(
+                 Builders<QueuedJob>.Filter.Eq("_id", job.Id),
+                 job,
+                 new UpdateOptions { IsUpsert = true });
             return true;
         }
 
@@ -202,9 +197,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             var limit = DateTime.Now.AddMinutes(-_info.JobLockTimeout);
             var existing = _collection.Find(
-                Query.And(
-                    Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Executing),
-                    Query<QueuedJob>.LT(j => j.ExecutionStartTime, limit)
+                Builders< QueuedJob>.Filter.And(
+                     Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.Executing),
+                     Builders<QueuedJob>.Filter.Lt(j => j.ExecutionStartTime, limit)
                 )).ToList();
 
             return existing;
@@ -212,7 +207,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         internal IEnumerable<QueueStatInfo> GetStatus()
         {
-            return _collection.Aggregate(_aggregation)
+            return _collection.Aggregate()
+                .Group(_statsAggregationQuery)
+                .ToList()
                 .Select(x => new QueueStatInfo(
                     (QueuedJobExecutionStatus)Convert.ToInt32(x["_id"]),
                      Convert.ToInt32(x["c"]))
@@ -226,13 +223,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         internal Boolean ReScheduleFailed()
         {
-            var result = _collection.Update(
-                 Query<QueuedJob>.EQ(j => j.Status, QueuedJobExecutionStatus.Failed),
-                 Update<QueuedJob>
+            var result = _collection.UpdateMany(
+                 Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.Failed),
+                 Builders<QueuedJob>.Update
                     .Set(j => j.Status, QueuedJobExecutionStatus.ReQueued)
-                    .Set(j => j.SchedulingTimestamp, DateTime.Now),
-                 UpdateFlags.Multi);
-            return result.Ok;
+                    .Set(j => j.SchedulingTimestamp, DateTime.Now));
+            return result.MatchedCount > 0;
         }
     }
 

@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentHandlers
 {
     public class HandleMapper : AbstractIdentityTranslator<DocumentId>, IHandleMapper
     {
-        public HandleMapper(MongoDatabase db, IIdentityGenerator identityGenerator) : base(db, identityGenerator)
+        public HandleMapper(IMongoDatabase db, IIdentityGenerator identityGenerator) : base(db, identityGenerator)
         {
         }
 

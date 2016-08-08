@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<QueueManager, IQueueManager>()
                     .ImplementedBy<QueueManager>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(queueDb))
+                    .DependsOn(Dependency.OnValue<IMongoDatabase>(queueDb))
                     .LifeStyle.Singleton,
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Core.Support
                 container.Register(Component.For<QueueHandler>()
                     .ImplementedBy<QueueHandler>()
                     .DependsOn(Dependency.OnValue<QueueInfo>(queueInfo))
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(queueDb))
+                    .DependsOn(Dependency.OnValue<IMongoDatabase>(queueDb))
                     .Named("QueueHandler-" + queueInfo.Name));
             }
 
@@ -97,11 +97,11 @@ namespace Jarvis.DocumentStore.Core.Support
             _logger.InfoFormat("Scheduled QueuedJobQuartzMonitor: first execution at {0}.", nextExcution);
         }
 
-        MongoDatabase GetQueueDb()
+        IMongoDatabase GetQueueDb()
         {
             var url = new MongoUrl(_queueStoreConnectionString);
             var client = new MongoClient(url);
-            return client.GetServer().GetDatabase(url.DatabaseName);
+            return client.GetDatabase(url.DatabaseName);
         }
 
         IDictionary<string,string> CreateDefaultConfiguration()

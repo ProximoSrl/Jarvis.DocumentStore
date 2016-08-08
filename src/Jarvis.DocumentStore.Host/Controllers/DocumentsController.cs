@@ -31,7 +31,7 @@ using Jarvis.Framework.Shared.Commands;
 using Jarvis.DocumentStore.Core.Support;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using MongoDB.Driver.Builders;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -731,10 +731,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var handleString = handle.ToString();
             var regex = "/" + handleString.Replace("/", "//") + "/";
             var descriptors = _documentDescriptorReader.Collection
-                .Find(Query.Matches("Documents", new MongoDB.Bson.BsonRegularExpression(regex)));
+                .Find(Builders<DocumentDescriptorReadModel>.Filter.Regex("Documents", new MongoDB.Bson.BsonRegularExpression(regex)));
 
             var retValue = new List<DocumentInfo>();
-            foreach (var d in descriptors)
+            foreach (var d in descriptors.ToEnumerable())
             {
                 var documentHandle = d.Documents.FirstOrDefault(dd => dd.ToString().Contains(handleString));
                 var di = new DocumentInfo()

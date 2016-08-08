@@ -3,14 +3,14 @@ using Jarvis.Framework.TestHelpers;
 
 namespace Jarvis.DocumentStore.Tests.Support
 {
-    internal class ExtendedConsoleLogger : ConsoleLogger, IExtendedLogger
+    internal class ExtendedConsoleLogger : NullLogger, IExtendedLogger
     {
-        public ExtendedConsoleLogger(string name) : base(name)
+        public ExtendedConsoleLogger(string name) 
         {
-  
+            
         }
         public ExtendedConsoleLogger(string name, LoggerLevel loggerLevel)
-            :base(name,loggerLevel)
+            
         {
             
         }

@@ -20,13 +20,16 @@ using Jarvis.DocumentStore.Core.Jobs;
 using MongoDB.Bson.Serialization;
 using Jarvis.DocumentStore.Core;
 using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.Framework.Shared.Helpers;
+using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
     [TestFixture]
     public class QueueHandlerTests
     {
-        MongoDatabase _db = MongoDbTestConnectionProvider.QueueDb;
+        IMongoDatabase _db = MongoDbTestConnectionProvider.QueueDb;
 
 
         [SetUp]
@@ -34,8 +37,9 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         {
             _db.Drop();
 
-
-
+            var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
+            mngr.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
+            MongoFlatIdSerializerHelper.Initialize(mngr);
         }
 
         [Test]
@@ -292,7 +296,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
             var nextJob = sut.GetNextJob("identity", "handle", null, null);
             var collection = _db.GetCollection<QueuedJob>("queue.test");
-            var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
+            var job = collection.Find(Builders<QueuedJob>.Filter.Eq(j => j.Id, nextJob.Id)).SingleOrDefault();
             Assert.That(job.ExecutingIdentity, Is.EqualTo("identity"));
         }
 
@@ -325,7 +329,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(nextJob, Is.Null, "After two failure the job should not be returned anymore");
 
             var collection = _db.GetCollection<QueuedJob>("queue.test");
-            var job = collection.FindOneById(BsonValue.Create(jobId));
+            var job = collection.Find(Builders<QueuedJob>.Filter.Eq(j => j.Id, jobId)).SingleOrDefault();
             Assert.That(job.ExecutionError, Is.EqualTo("Error 42"));
             Assert.That(job.ErrorCount, Is.EqualTo(2));
             Assert.That(job.Status, Is.EqualTo(QueuedJobExecutionStatus.Failed));
@@ -351,7 +355,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var nextJob = sut.GetNextJob("", "handle", null, null);
             sut.SetJobExecuted(nextJob.Id, "Error 42");
             var collection = _db.GetCollection<QueuedJob>("queue.test");
-            var job = collection.FindOneById(BsonValue.Create(nextJob.Id));
+            var job = collection.Find(Builders<QueuedJob>.Filter.Eq(j => j.Id, nextJob.Id)).SingleOrDefault();
             Assert.That(job.ExecutionError, Is.EqualTo("Error 42"));
             Assert.That(job.ErrorCount, Is.EqualTo(1));
             Assert.That(job.Status, Is.EqualTo(QueuedJobExecutionStatus.ReQueued));

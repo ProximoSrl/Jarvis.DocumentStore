@@ -33,31 +33,7 @@ public class GlobalSetupFixture
         //        new StringValueBsonSerializer()
         //   );
         //}
-        try
-        {
-            var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
-            mngr.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
-            mngr.RegisterIdentitiesFromAssembly(typeof(TenantId).Assembly);
-            mngr.RegisterIdentitiesFromAssembly(typeof(QueuedJobId).Assembly);
-
-            EventStoreIdentityBsonSerializer.IdentityConverter = mngr;
-            MongoFlatMapper.EnableFlatMapping();
-        }
-        catch (ReflectionTypeLoadException rle)
-        {
-            foreach (var ex in rle.LoaderExceptions)
-            {
-                Console.WriteLine("Exception In typeloading: " + ex.Message);
-            }
-            Console.WriteLine("Exception in Global Setup: " + rle.ToString());
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Exception in Global Setup: " + ex.ToString());
-            throw;
-        }
-
+       
         var overrideTestDb = Environment.GetEnvironmentVariable("TEST_MONGODB");
         if (String.IsNullOrEmpty(overrideTestDb)) return;
 
@@ -97,6 +73,34 @@ public class GlobalSetupFixture
 
         config.Save();
         ConfigurationManager.RefreshSection("connectionStrings");
+
+        try
+        {
+            var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));
+            mngr.RegisterIdentitiesFromAssembly(typeof(DocumentDescriptorId).Assembly);
+            mngr.RegisterIdentitiesFromAssembly(typeof(TenantId).Assembly);
+            mngr.RegisterIdentitiesFromAssembly(typeof(QueuedJobId).Assembly);
+
+            MongoFlatIdSerializerHelper.Initialize(mngr);
+            //BsonSerializer.RegisterSerializationProvider(new EventStoreIdentitySerializationProvider());
+            //BsonSerializer.RegisterSerializationProvider(new StringValueSerializationProvider());
+            MongoFlatMapper.EnableFlatMapping(true);
+
+        }
+        catch (ReflectionTypeLoadException rle)
+        {
+            foreach (var ex in rle.LoaderExceptions)
+            {
+                Console.WriteLine("Exception In typeloading: " + ex.Message);
+            }
+            Console.WriteLine("Exception in Global Setup: " + rle.ToString());
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Exception in Global Setup: " + ex.ToString());
+            throw;
+        }
     }
 
     private static void RewriteConnection(

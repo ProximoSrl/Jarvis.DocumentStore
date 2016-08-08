@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.LinkDocument(
                 e.Handle,
                 e.DocumentId,
-                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                e.CheckpointToken
             );
         }
 
@@ -61,7 +61,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.CreateIfMissing(
                  e.HandleInfo.Handle,
                  e.Id,
-                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                 e.CheckpointToken
              );
         }
 
@@ -75,18 +75,18 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.CreateIfMissing(
                 e.Handle,
                 null,
-                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                e.CheckpointToken
             );
         }
 
         public void On(DocumentDeleted e)
         {
-            _writer.Delete(e.Handle, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
+            _writer.Delete(e.Handle, e.CheckpointToken);
         }
 
         public void On(DocumentFileNameSet e)
         {
-            _writer.SetFileName(e.Handle, e.FileName, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
+            _writer.SetFileName(e.Handle, e.FileName, e.CheckpointToken);
         }
 
         public void On(DocumentDescriptorHasBeenDeduplicated e)
@@ -96,7 +96,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 e.HandleInfo.Handle,
                 null,
                 (DocumentDescriptorId)e.AggregateId,
-                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                e.CheckpointToken
             );
         }
     }

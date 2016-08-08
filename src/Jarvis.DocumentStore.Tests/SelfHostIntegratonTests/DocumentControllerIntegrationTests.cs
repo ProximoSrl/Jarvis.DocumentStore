@@ -28,7 +28,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Tests.ProjectionTests;
-using MongoDB.Driver.Builders;
+
 using NSubstitute;
 using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
 using System.Net;
@@ -39,18 +39,20 @@ using MongoDB.Bson;
 using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 using Jarvis.DocumentStore.Core.Domain.Document;
 
+using Jarvis.Framework.Shared.Helpers;
+
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
-    [TestFixture("v1")]
-    [TestFixture("v2")]
+    //[TestFixture("v1")]
+    [TestFixture("v3")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
-        private MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
-        private MongoCollection<DocumentReadModel> _documentCollection;
-        private MongoCollection<BsonDocument> _commitCollection;
+        private IMongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
+        private IMongoCollection<DocumentReadModel> _documentCollection;
+        private IMongoCollection<BsonDocument> _commitCollection;
 
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
@@ -466,10 +468,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             // wait background projection polling
             await UpdateAndWaitAsync();
 
-            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
-            var handle = _documentDescriptorCollection.Find(Query.EQ("Documents", "father")).SingleOrDefault();
+            var handle = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { 
                 new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1")
@@ -495,13 +497,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToOpenDocumentText));
             await UpdateAndWaitAsync();
 
-            var document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_1")).SingleOrDefault();
+            var document = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with first child handle was not find.");
 
-            document = _documentDescriptorCollection.Find(Query.EQ("Documents", "content_2")).SingleOrDefault();
+            document = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "content_2")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with second child handle was not find.");
 
-            var handle = _documentDescriptorCollection.Find(Query.EQ("Documents", "father")).SingleOrDefault();
+            var handle = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
             Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { new Core.Model.DocumentHandle("content_1"), new Core.Model.DocumentHandle("content_2") }));
         }
@@ -573,8 +575,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.DeleteAsync(fatherHandle);
             await UpdateAndWaitAsync();
 
-            Assert.That(_documentDescriptorCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
-            Assert.That(_documentCollection.Count(), Is.EqualTo(0), "Attachment should be deleted.");
+            Assert.That(_documentDescriptorCollection.AsQueryable().Count(), Is.EqualTo(0), "Attachment should be deleted.");
+            Assert.That(_documentCollection.AsQueryable().Count(), Is.EqualTo(0), "Attachment should be deleted.");
 
 
         }

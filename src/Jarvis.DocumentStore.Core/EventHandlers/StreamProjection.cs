@@ -14,6 +14,7 @@ using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using MongoDB.Driver.Builders;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -75,7 +76,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public override void SetUp()
         {
-            _streamReadModelCollection.CreateIndex(IndexKeys<StreamReadModel>
+            _streamReadModelCollection.CreateIndex("StreamReadModel", Builders<StreamReadModel>.IndexKeys
                 .Ascending(x => x.EventType)
                 .Ascending(x => x.Id));
         }
@@ -90,7 +91,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             });
 
             //Now doc is not duplicated anymore, we should generate format added to document events.
-            var doc = _documentDescriptorReadModel.FindOneById((DocumentDescriptorId) e.AggregateId);
+            var doc = _documentDescriptorReadModel
+                .AllUnsorted
+                .Where(r => r.Id == e.AggregateId)
+                .SingleOrDefault();
+
             if (doc.Documents == null || !doc.Documents.Any())
                 return; //no handle in this document descriptor
 

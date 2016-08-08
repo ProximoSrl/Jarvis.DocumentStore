@@ -80,13 +80,14 @@ namespace Jarvis.DocumentStore.Tools
             var urlQueue = new MongoUrl(ConfigurationManager.ConnectionStrings["queuesDb"].ConnectionString);
             var clientQueue = new MongoClient(urlQueue);
 
-            var dbQueue = clientQueue.GetServer().GetDatabase(urlQueue.DatabaseName);
-            MongoCollection<BsonDocument> _queueCollection = dbQueue.GetCollection("queue.tika");
+            var dbQueue = clientQueue.GetDatabase(urlQueue.DatabaseName);
+            IMongoCollection<BsonDocument> _queueCollection = dbQueue.GetCollection<BsonDocument>("queue.tika");
 
             HashSet<String> blobIdQueued = new HashSet<string>();
             var allBlobIdQueued = _queueCollection
-                .FindAll()
-                .SetFields("BlobId");
+                .Find(Builders<BsonDocument>.Filter.Empty)
+                .Project(Builders<BsonDocument>.Projection.Include("BlobId"))
+                .ToList();
 
             foreach (var blobId in allBlobIdQueued)
             {
@@ -96,13 +97,14 @@ namespace Jarvis.DocumentStore.Tools
             var urlDs = new MongoUrl(ConfigurationManager.ConnectionStrings["mainDb"].ConnectionString);
             var clientDs = new MongoClient(urlDs);
 
-            var dbDs = clientDs.GetServer().GetDatabase(urlDs.DatabaseName);
-            MongoCollection<BsonDocument> _ddCollection = dbDs.GetCollection("rm.DocumentDescriptor");
+            var dbDs = clientDs.GetDatabase(urlDs.DatabaseName);
+            IMongoCollection<BsonDocument> _ddCollection = dbDs.GetCollection<BsonDocument>("rm.DocumentDescriptor");
 
             HashSet<String> blobIdDeDuplicated = new HashSet<string>();
             var allBlobIdDeDuplicated = _ddCollection
-                .FindAll()
-                .SetFields("Formats.v.BlobId");
+                .Find(Builders<BsonDocument>.Filter.Empty)
+                .Project(Builders<BsonDocument>.Projection.Include("Formats.v.BlobId"))
+                .ToList();
 
             foreach (var blobId in allBlobIdDeDuplicated)
             {

@@ -21,6 +21,9 @@ using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Metrics;
 using Jarvis.Framework.Kernel.ProjectionEngine.Client;
 using Jarvis.DocumentStore.Host.Controllers;
+using System.Threading;
+using MongoDB.Driver;
+using Jarvis.Framework.Kernel.Support;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -30,10 +33,34 @@ namespace Jarvis.DocumentStore.Host.Support
         IWindsorContainer _container;
         ILogger _logger;
         DocumentStoreConfiguration _config;
+        private Boolean _initialized = false;
+
+        private Boolean isStopped = false;
+        public TenantManager Manager { get; private set; }
+
+        private String[] _databaseNames = new[] { "events", "originals", "artifacts", "system", "readmodel" };
+
         public void Start(DocumentStoreConfiguration config)
         {
             _config = config;
             BuildContainer(config);
+            Manager = BuildTenants(_container, config);
+            //Setup database check.
+            foreach (var tenant in _config.TenantSettings)
+            {
+                foreach (var connection in _databaseNames)
+                {
+                    DatabaseHealthCheck check = new DatabaseHealthCheck(
+                          String.Format("Tenant: {0} [Db:{1}]", tenant.TenantId, connection),
+                          tenant.GetConnectionString(connection));
+                }
+            }
+
+            while (StartupCheck() == false)
+            {
+                _logger.InfoFormat("Some precondition to start the service are not met. Will retry in 3 seconds!");
+                Thread.Sleep(3000);
+            }
 
             if (RebuildSettings.ShouldRebuild && Environment.UserInteractive)
             {
@@ -52,8 +79,47 @@ namespace Jarvis.DocumentStore.Host.Support
                 config.IsReadmodelBuilder
             );
 
-            Manager = BuildTenants(_container, config);
+            InitializeEverything(config);
+        }
 
+        private bool StartupCheck()
+        {
+            var result = CheckDatabase();
+
+            if (!result)
+                _logger.Warn("One or more mongo instances are not operational.");
+
+            return result;
+        }
+
+        private bool CheckDatabase()
+        {
+            //verify all connection to MongoDB. Lots of object initialize everything in constructor and initialization
+            //fails if mongo database is not operational.
+            if (!CheckConnection(_config.QueueConnectionString))
+                return false;
+
+            foreach (var tenant in _config.TenantSettings)
+            {
+                foreach (var connection in _databaseNames)
+                {
+                    if (!CheckConnection(tenant.GetConnectionString(connection)))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private Boolean CheckConnection(String connection)
+        {
+            var url = new MongoUrl(connection);
+            var client = new MongoClient(url);
+            var state = client.Cluster.Description.State;
+            return state == MongoDB.Driver.Core.Clusters.ClusterState.Connected;
+        }
+
+        private void InitializeEverything(DocumentStoreConfiguration config)
+        {
             var installers = new List<IWindsorInstaller>()
             {
                 new CoreInstaller(config),
@@ -127,7 +193,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     _logger.ErrorFormat(ex, "Shutting down {0}", act.GetType().FullName);
                 }
             }
-
+            _initialized = true;
         }
 
         void BuildContainer(DocumentStoreConfiguration config)
@@ -168,9 +234,6 @@ namespace Jarvis.DocumentStore.Host.Support
 
             return manager;
         }
-
-        private Boolean isStopped = false;
-        public TenantManager Manager { get; private set; }
 
         public void Stop()
         {

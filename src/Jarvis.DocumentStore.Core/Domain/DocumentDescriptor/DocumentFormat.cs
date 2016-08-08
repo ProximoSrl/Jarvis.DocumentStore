@@ -10,7 +10,6 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
     /// because it does not depends on BsonSerializer attribute. We want to minimize client dependency to 
     /// third party library
     /// </summary>
-    [BsonSerializer(typeof(StringValueBsonSerializer))]
     [TypeConverter(typeof(StringValueTypeConverter<DocumentFormat>))]
     public class DocumentFormat : LowercaseStringValue
     {

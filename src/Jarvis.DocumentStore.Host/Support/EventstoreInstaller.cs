@@ -1,8 +1,8 @@
 ﻿using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
-using CommonDomain;
-using CommonDomain.Core;
+using NEventStore.Domain;
+using NEventStore.Domain.Core;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.Framework.Kernel.Engine;
@@ -17,7 +17,7 @@ using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 using Jarvis.NEventStoreEx.CommonDomainEx.Persistence.EventStore;
 using MongoDB.Bson.Serialization;
 using NEventStore;
-using NEventStore.Dispatcher;
+
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -79,10 +79,7 @@ namespace Jarvis.DocumentStore.Host.Support
                         .UsingFactory<EventStoreFactory, IStoreEvents>(f =>
                         {
                             var hooks = tenant1.Container.ResolveAll<IPipelineHook>();
-                            var mpOption = new MongoPersistenceOptionWithLog()
-                            {
-                                ServerSideOptimisticLoop = true
-                            };
+
                             return f.BuildEventStore(
                                     tenant1.GetConnectionString("events"),
                                     hooks
@@ -102,9 +99,6 @@ namespace Jarvis.DocumentStore.Host.Support
         static void RegisterGlobalComponents(IWindsorContainer container)
         {
             container.Register(
-                Component
-                    .For<IDispatchCommits>()
-                    .ImplementedBy<NullDispatcher>(),
                 Component
                     .For<IConstructAggregatesEx>()
                     .ImplementedBy<AggregateFactory>(),
@@ -132,8 +126,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
         static void EnableFlatIdMapping(IdentityManager converter)
         {
-            EventStoreIdentityBsonSerializer.IdentityConverter = converter;
-
+            MongoFlatIdSerializerHelper.Initialize(converter);
         }
     }
 }

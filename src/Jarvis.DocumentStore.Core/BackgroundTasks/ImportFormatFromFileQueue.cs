@@ -23,7 +23,7 @@ using Newtonsoft.Json;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using MongoDB.Driver.Builders;
+using Jarvis.Framework.Shared.Helpers;
 
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
@@ -73,8 +73,9 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private readonly string[] _foldersToWatch;
         private readonly ITenantAccessor _tenantAccessor;
         private readonly ICommandBus _commandBus;
-        private readonly ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>
-            _importFailureCollections = new ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>();
+        private readonly ConcurrentDictionary<TenantId, IMongoCollection<ImportFailure>>
+            _importFailureCollections = new ConcurrentDictionary<TenantId, IMongoCollection<ImportFailure>>();
+
         DocumentStoreConfiguration _configuration;
 
         internal bool DeleteTaskFileAfterImport { get; set; }
@@ -249,14 +250,14 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private void MarkImportFailure(ImportFailure failure)
         {
             EnsureFailureConnectionForCurrentTenant();
-            _importFailureCollections[_tenantAccessor.Current.Id].Save(failure);
+            _importFailureCollections[_tenantAccessor.Current.Id].Save(failure, failure.FileName);
         }
 
         private void DeleteImportFailure(String fileName)
         {
             EnsureFailureConnectionForCurrentTenant();
             _importFailureCollections[_tenantAccessor.Current.Id]
-                .Remove(Query.EQ("_id", fileName));
+                .RemoveById(fileName);
         }
 
         private Boolean FileHasImportFailureMarker(String fileName, DateTime fileTimestamp)
@@ -265,11 +266,11 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             //if files has error 
             return _importFailureCollections[_tenantAccessor.Current.Id]
                 .Find(
-                    Query.And(
-                        Query.EQ("_id", fileName),
-                        Query<ImportFailure>.EQ(i => i.ImportFileTimestampTicks, fileTimestamp.Ticks)
+                    Builders<ImportFailure>.Filter.And(
+                        Builders<ImportFailure>.Filter.Eq("_id", fileName),
+                        Builders<ImportFailure>.Filter.Eq(i => i.ImportFileTimestampTicks, fileTimestamp.Ticks)
                     ))
-                .SetFields(Fields.Include("_id"))
+                .Project(Builders<ImportFailure>.Projection.Include("_id"))
                 .Any();
         }
 
@@ -278,7 +279,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             if (!_importFailureCollections.ContainsKey(_tenantAccessor.Current.Id))
             {
                 var tenantSettings = _configuration.TenantSettings.Single(t => t.TenantId == _tenantAccessor.Current.Id);
-                var systemDb = tenantSettings.Get<MongoDatabase>("system.db");
+                var systemDb = tenantSettings.Get<IMongoDatabase>("system.db");
                 _importFailureCollections[_tenantAccessor.Current.Id] =
                     systemDb.GetCollection<ImportFailure>("sys.importFailures");
             }

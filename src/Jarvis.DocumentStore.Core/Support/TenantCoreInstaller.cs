@@ -30,20 +30,28 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<IBlobStore>()
                     .ImplementedBy<GridFsBlobStore>()
                     .Named("originals.filestore")
-                    .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "originals.db")),
+                    .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "originals.db.legacy")),
                 Component
                     .For<IBlobStore>()
                     .ImplementedBy<GridFsBlobStore>()
                     .Named("artifacts.filestore")
-                    .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "artifacts.db")),
+                    .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "artifacts.db.legacy")),
                 Component
-                    .For<MongoDatabase>()
+                    .For<IMongoDatabase>()
                     .Named("originals.db")
-                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("originals.db")),
+                    .UsingFactoryMethod(k => _tenant.Get<IMongoDatabase>("originals.db")),
+                Component
+                    .For<IMongoDatabase>()
+                    .Named("artifacts.db")
+                    .UsingFactoryMethod(k => _tenant.Get<IMongoDatabase>("artifacts.db")),
+                 Component
+                    .For<MongoDatabase>()
+                    .Named("originals.db.legacy")
+                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("originals.db.legacy")),
                 Component
                     .For<MongoDatabase>()
-                    .Named("artifacts.db")
-                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("artifacts.db"))
+                    .Named("artifacts.db.legacy")
+                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("artifacts.db.legacy"))
                 );
         }
     }

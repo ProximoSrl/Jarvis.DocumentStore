@@ -8,7 +8,7 @@ namespace Jarvis.DocumentStore.Core.Model
     /// <summary>
     /// Public document handle
     /// </summary>
-    [BsonSerializer(typeof(StringValueBsonSerializer))]
+    [BsonSerializer(typeof(TypedStringValueBsonSerializer<DocumentHandle>))]
     [TypeConverter(typeof(StringValueTypeConverter<DocumentHandle>))]
     public class DocumentHandle : LowercaseStringValue
     {

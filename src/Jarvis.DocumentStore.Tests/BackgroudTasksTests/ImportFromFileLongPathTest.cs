@@ -19,9 +19,13 @@ using NSubstitute;
 using NUnit.Framework;
 using MongoDB.Driver;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Shared.Helpers;
+
+
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+
 
 namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 {
@@ -73,12 +77,12 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 
             container.Resolve<IBlobStore>().Returns(_blobstore);
             container.Resolve<IIdentityGenerator>().Returns(identityGenerator);
-            container.Resolve<MongoDatabase>().Returns(MongoDbTestConnectionProvider.ReadModelDb);
+            container.Resolve<IMongoDatabase>().Returns(MongoDbTestConnectionProvider.ReadModelDb);
             var collection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<ImportFailure>("sys.importFailures");
             collection.Drop();
             DocumentStoreTestConfiguration config = new DocumentStoreTestConfiguration(tenantId : "tests");
             config.SetFolderToMonitor(longFolderName);
-            var sysDb = config.TenantSettings.Single(t => t.TenantId == "tests").Get<MongoDatabase>("system.db");
+            var sysDb = config.TenantSettings.Single(t => t.TenantId == "tests").Get<IMongoDatabase>("system.db");
             sysDb.Drop();
             _queue = new ImportFormatFromFileQueue(config, accessor, _commandBus)
             {

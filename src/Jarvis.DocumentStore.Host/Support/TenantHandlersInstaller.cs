@@ -24,13 +24,13 @@ namespace Jarvis.DocumentStore.Host.Support
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            var sysDb = _tenant.Get<MongoDatabase>("system.db");
+            var sysDb = _tenant.Get<IMongoDatabase>("system.db");
             
             container.Register(
                 Component
                     .For<IHandleMapper>()
                     .ImplementedBy<HandleMapper>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(sysDb)),
+                    .DependsOn(Dependency.OnValue<IMongoDatabase>(sysDb)),
                 Classes
                     .FromAssemblyContaining<DocumentDescriptor>()
                     .BasedOn(typeof(ICommandHandler<>))

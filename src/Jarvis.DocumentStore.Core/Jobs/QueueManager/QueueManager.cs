@@ -6,7 +6,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,6 +18,7 @@ using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.Framework.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -63,7 +64,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
 
-        private MongoCollection<StreamCheckpoint> _checkpointCollection;
+        private IMongoCollection<StreamCheckpoint> _checkpointCollection;
 
         private QueueTenantInfo[] _queueTenantInfos;
 
@@ -72,7 +73,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public ILogger Logger { get; set; }
 
         public QueueManager(
-            MongoDatabase mongoDatabase,
+            IMongoDatabase mongoDatabase,
             ITenantAccessor tenantAccessor,
             QueueHandler[] queueHandlers,
             DocumentStoreConfiguration configuration)
@@ -88,7 +89,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         private long FindLastCheckpointForTenant(TenantId tenantId)
         {
             var dbCheckpoint = _checkpointCollection.Find(
-                        Query<StreamCheckpoint>.EQ(t => t.TenantId, tenantId)
+                        Builders<StreamCheckpoint>.Filter.Eq(t => t.TenantId, tenantId)
                    ).SingleOrDefault();
             return dbCheckpoint != null ? dbCheckpoint.Checkpoint : 0L;
         }
@@ -234,7 +235,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                             }
                         }
                         info.Checkpoint = blockOfStreamData[blockOfStreamData.Count - 1].Id;
-                        _checkpointCollection.Save(new StreamCheckpoint() { Checkpoint = info.Checkpoint, TenantId = info.TenantId });
+                        var cp = new StreamCheckpoint() { Checkpoint = info.Checkpoint, TenantId = info.TenantId };
+                        _checkpointCollection.Save(cp, cp.TenantId);
                     }
                 }
             } while (hasNewData);

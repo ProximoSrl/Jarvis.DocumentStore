@@ -1,6 +1,6 @@
 {
 	"baseConnectionString" : "mongodb://localhost/ds",
-	
+	"nes-engine-version" : "v3",
 	"tenants": ["docs", "demo"],
     "connectionStrings": {
         "ds-queues": "%baseConnectionString%-queues",

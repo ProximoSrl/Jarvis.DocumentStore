@@ -51,7 +51,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Id = (string)blobId
             });
 
-            return new BlobWriter(blobId, stream,fname);
+            return new BlobWriter(blobId, stream, fname);
         }
 
         public Stream CreateNew(BlobId blobId, FileNameWithExtension fname)
@@ -138,8 +138,8 @@ namespace Jarvis.DocumentStore.Core.Storage
                 .ToArray();
 
             return new BlobStoreInfo(
-                allInfos.Sum(x=>x.size),
-                allInfos.Sum(x=>x.files)
+                allInfos.Sum(x => x.size),
+                allInfos.Sum(x => x.files)
             );
         }
 

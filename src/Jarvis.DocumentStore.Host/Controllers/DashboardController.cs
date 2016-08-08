@@ -36,12 +36,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         {
             var totals = BlobStore.GetInfo();
 
-            var aggregation = new AggregateArgs()
-            {
-                Pipeline = new[] { BsonDocument.Parse("{$group:{_id:1, bytes:{$sum:'$Bytes'}, documents:{$sum:'$Files'}}}") }
-            };
-
-            var result = DocStats.Aggregate(aggregation).SingleOrDefault();
+            var result = DocStats.Collection.Aggregate()
+                .Group(BsonDocument.Parse("{_id:1, bytes:{$sum:'$Bytes'}, documents:{$sum:'$Files'}}"))
+                .SingleOrDefault();
 
             int documents = result != null ? result["documents"].AsInt32 : 0;
             long bytes = result != null ? result["bytes"].AsInt64 : 0;
