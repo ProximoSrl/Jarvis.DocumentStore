@@ -1,0 +1,26 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Jarvis.DocumentStore.Host</id>
+	<title>Jarvis Document Store</title>
+    <version>1.3.2</version>
+    <authors>Proximo S.r.L.</authors>
+    <owners>Proximo S.r.L.</owners>
+    <description>Jarvis Document Store Host Server</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2015 - Proximo S.r.L.</copyright>
+    <tags>DocumentStore,DMS,Jarvis</tags>
+	<licenseUrl>https://raw.githubusercontent.com/ProximoSrl/Jarvis.DocumentStore/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+	
+  </metadata>
+
+   <files>
+		<file src="Tools\Setup\chocolateyInstall.ps1" target="Tools" />
+		<file src="Tools\Setup\DocumentStoreSetup.ps1" target="Tools" />
+		<file src="Tools\Setup\JarvisUtils.psm1" target="Tools" />
+		<file src="release\Jarvis.DocumentStore.Host.zip" target="Artifacts" />
+		<file src="release\Jarvis.DocumentStore.Jojbs.zip" target="Artifacts" />
+  </files>
+
+</package>
