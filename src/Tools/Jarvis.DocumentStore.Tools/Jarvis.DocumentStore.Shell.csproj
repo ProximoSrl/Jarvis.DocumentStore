@@ -50,12 +50,12 @@
       <HintPath>..\..\packages\fasterflect.2.1.3\lib\net40\Fasterflect.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.Framework.Shared, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Jarvis.Framework.Shared.1.2.0-unstable0178\lib\Jarvis.Framework.Shared.dll</HintPath>
+    <Reference Include="Jarvis.Framework.Shared, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Jarvis.Framework.Shared.2.0.0-beta0237\lib\Jarvis.Framework.Shared.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.NEventStoreEx, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Jarvis.Framework.NEventStoreEx.1.2.0-unstable0178\lib\Jarvis.NEventStoreEx.dll</HintPath>
+    <Reference Include="Jarvis.NEventStoreEx, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Jarvis.Framework.NEventStoreEx.2.0.0-beta0237\lib\Jarvis.NEventStoreEx.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Metrics, Version=0.3.7.0, Culture=neutral, processorArchitecture=MSIL">
@@ -79,11 +79,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NEventStore, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NEventStore.6.0.0-unstable0085\lib\net40\NEventStore.dll</HintPath>
+      <HintPath>..\..\packages\NEventStore.6.0.0-unstable0091\lib\net40\NEventStore.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NEventStore.Persistence.MongoDB, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NEventStore.Persistence.MongoDB.6.0.0-unstable0058\lib\net40\NEventStore.Persistence.MongoDB.dll</HintPath>
+      <HintPath>..\..\packages\NEventStore.Persistence.MongoDB.6.0.0-unstable0077\lib\net40\NEventStore.Persistence.MongoDB.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

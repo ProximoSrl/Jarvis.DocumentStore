@@ -142,7 +142,15 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
         public void Create(DocumentHandleInfo handleInfo)
         {
             if (InternalState.Created)
+            {
+                if (handleInfo.Equals(InternalState.CreationDocumentHandleInfo))
+                {
+                    //idempotency, already initialized
+                    return;
+                }
                 throw new DomainException(this.Id, "Already created");
+            }
+
             RaiseEvent(new DocumentDescriptorCreated(InternalState.BlobId, handleInfo));
             Attach(handleInfo);
         }

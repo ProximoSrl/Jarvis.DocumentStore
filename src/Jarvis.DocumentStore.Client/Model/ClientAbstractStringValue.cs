@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Jarvis.DocumentStore.Client.Model
 {
-    [Serializable]
+
     public abstract class ClientAbstractStringValue : IEquatable<ClientAbstractStringValue>
     {
         string _value;
@@ -75,7 +75,7 @@ namespace Jarvis.DocumentStore.Client.Model
         }
     }
 
-    [Serializable]
+
     public abstract class LowercaseClientAbstractStringValue : ClientAbstractStringValue
     {
         protected LowercaseClientAbstractStringValue(string value)

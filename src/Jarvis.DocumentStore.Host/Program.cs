@@ -16,7 +16,7 @@ using Jarvis.Framework.Shared.Commands;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Jarvis.Framework.Shared.IdentitySupport;
-using Jarvis.Framework.Shared.Storage;
+using Jarvis.Framework.Kernel.Support;
 
 namespace Jarvis.DocumentStore.Host
 {

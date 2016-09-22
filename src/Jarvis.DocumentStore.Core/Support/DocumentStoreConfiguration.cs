@@ -100,6 +100,16 @@ namespace Jarvis.DocumentStore.Core.Support
 
         #endregion
 
+        #region Framework
+
+        public Boolean EnableSingleAggregateRepositoryCache { get; set; }
+
+        public Boolean EnableSnapshotCache { get; set; }
+
+                   
+
+        #endregion
+
         public IList<TenantSettings> TenantSettings { get; private set; }
 
         public virtual void CreateLoggingFacility(LoggingFacility f)
