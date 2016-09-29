@@ -262,8 +262,8 @@
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Pri.LongPath, Version=2.0.11.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Pri.LongPath.2.0.11\lib\net45\Pri.LongPath.dll</HintPath>
+    <Reference Include="Pri.LongPath, Version=2.0.32.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Pri.LongPath.2.0.32\lib\net45\Pri.LongPath.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Quartz">
@@ -441,7 +441,9 @@
     <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">

@@ -42,9 +42,13 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             return MyFile.GetLastWriteTimeUtc(pathToFile);
         }
 
-        public static bool Exists(string pathToTika)
+        public static bool Exists(string path)
         {
-            return MyFile.Exists(pathToTika);
+            //https://github.com/peteraritchie/LongPath/issues/48
+            if (path != null && path.Length < 240)
+                return System.IO.File.Exists(path);
+
+            return MyFile.Exists(path);
         }
 
         public static FileStream Open(string path, FileMode fileMode, FileAccess fileAccess)
