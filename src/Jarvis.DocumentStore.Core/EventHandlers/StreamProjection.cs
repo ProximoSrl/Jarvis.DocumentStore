@@ -205,7 +205,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {
-                var handleReadMode = _documentWriter.FindOneById(handle);
+                var handleReadModel = _documentWriter.FindOneById(handle);
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
@@ -221,7 +221,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             : new PipelineId("original"),
                     },
                     EventType = HandleStreamEventTypes.DocumentHasNewFormat,
-                    DocumentCustomData = handleReadMode.CustomData,
+                    DocumentCustomData = handleReadModel != null ? handleReadModel.CustomData : new Domain.Document.DocumentCustomData(),
                 });
             }
         }

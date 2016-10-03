@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
     public class DocumentDescriptorDeletedException : DomainException
     {
-        public DocumentDescriptorDeletedException(IIdentity id) : base(id)
+        public DocumentDescriptorDeletedException(IIdentity id, String message) : base(id, message)
         {
         }
     }
@@ -30,7 +30,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
             FileHash hash, 
             String fileName)
         {
-            ThrowIfDeleted();
+            ThrowIfDeleted(String.Format("Initialize with blob {0} and fileName {1}", blobId, fileName));
 
             if (HasBeenCreated)
                 throw new DomainException(Id, "Already initialized");
@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
            DocumentHandle fatherHandle, 
            DocumentDescriptorId fatherDocumentDescriptorId)
         {
-            ThrowIfDeleted();
+            ThrowIfDeleted(String.Format("Initialize as attach with blob {0} and fileName {1}", blobId, fileName));
 
             if (HasBeenCreated)
                 throw new DomainException(Id, "Already initialized");
@@ -64,7 +64,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         public void AddFormat(DocumentFormat documentFormat, BlobId blobId, PipelineId createdBy)
         {
-            ThrowIfDeleted();
+            ThrowIfDeleted(String.Format("Add format {0} and blob {1} - CreatedBy {2}", documentFormat, blobId, createdBy));
             if (InternalState.HasFormat(documentFormat))
             {
                 RaiseEvent(new DocumentFormatHasBeenUpdated(documentFormat, blobId, createdBy));
@@ -77,7 +77,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         public void DeleteFormat(DocumentFormat documentFormat)
         {
-            ThrowIfDeleted();
+            ThrowIfDeleted(String.Format("Delete format {0}", documentFormat));
             if (InternalState.HasFormat(documentFormat))
             {
                 RaiseEvent(new DocumentFormatHasBeenDeleted(documentFormat));
@@ -126,17 +126,17 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
             DocumentDescriptorId otherDocumentDescriptorId, 
             DocumentHandleInfo handleInfo)
         {
-            ThrowIfDeleted();
+            ThrowIfDeleted(String.Format("Deduplicate with {0}", otherDocumentDescriptorId));
             RaiseEvent(new DocumentDescriptorHasBeenDeduplicated(
                 otherDocumentDescriptorId,
                 handleInfo));
             Attach(handleInfo);
         }
 
-        void ThrowIfDeleted()
+        void ThrowIfDeleted(String operation)
         {
             if (InternalState.HasBeenDeleted)
-                throw new DocumentDescriptorDeletedException(this.Id);
+                throw new DocumentDescriptorDeletedException(this.Id, operation);
         }
 
         public void Create(DocumentHandleInfo handleInfo)
@@ -157,7 +157,7 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 
         internal void AddAttachment(DocumentHandle attachmentDocumentHandle, String attachmentPath)
         {
-            ThrowIfDeleted();
+            ThrowIfDeleted(String.Format("Add attachment {0} with path {1}", attachmentDocumentHandle, attachmentPath));
             if (InternalState.Attachments.Contains(attachmentDocumentHandle)) return;
 
             RaiseEvent(new DocumentDescriptorHasNewAttachment(attachmentDocumentHandle, attachmentPath));
