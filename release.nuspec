@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Jarvis.DocumentStore.Host</id>
-	<title>Jarvis Document Store</title>
+	  <title>Jarvis Document Store</title>
     <version>1.3.2</version>
     <authors>Proximo S.r.L.</authors>
     <owners>Proximo S.r.L.</owners>
@@ -10,7 +10,7 @@
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2015 - Proximo S.r.L.</copyright>
     <tags>DocumentStore,DMS,Jarvis</tags>
-	<licenseUrl>https://raw.githubusercontent.com/ProximoSrl/Jarvis.DocumentStore/master/LICENSE</licenseUrl>
+	  <licenseUrl>https://raw.githubusercontent.com/ProximoSrl/Jarvis.DocumentStore/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	
   </metadata>

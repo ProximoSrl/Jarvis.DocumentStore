@@ -31,6 +31,7 @@ using Jarvis.NEventStoreEx;
 using Jarvis.Framework.Shared;
 using System.Threading.Tasks;
 using MongoDB.Driver.Core.Clusters;
+using Jarvis.DocumentStore.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -245,8 +246,11 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
 
-
             _container.AddFacility<LoggingFacility>(config.CreateLoggingFacility);
+
+#if DEBUG
+            UdpAppender.AppendToConfiguration();
+#endif
 
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
