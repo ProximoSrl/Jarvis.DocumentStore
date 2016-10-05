@@ -16,6 +16,7 @@ using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.Framework.Shared.Helpers;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -64,6 +65,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             Logger = NullLogger.Instance;
         }
 
+        /// <summary>
+        /// Handle a <see cref="StreamReadModel" /> and generates job for the queue
+        /// if needed.
+        /// </summary>
+        /// <param name="streamElement"></param>
+        /// <param name="tenantId"></param>
+        /// <param name="forceReSchedule"></param>
         public void Handle(
             StreamReadModel streamElement, 
             TenantId tenantId,
@@ -91,7 +99,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 job.SchedulingTimestamp = DateTime.Now;
                 job.StreamId = streamElement.Id;
                 job.TenantId = tenantId;
-                job.DocumentId = streamElement.DocumentId;
+                job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
                 job.BlobId = streamElement.FormatInfo.BlobId;
                 job.Handle = new DocumentHandle( streamElement.Handle);
                 job.Parameters = new Dictionary<string, string>();
@@ -203,6 +211,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 )).ToList();
 
             return existing;
+        }
+
+        /// <summary>
+        /// when a document descriptor is deleted there is no need to continue
+        /// scheduling jobs, so all jobs should be deleted.
+        /// </summary>
+        /// <param name="documentDescriptorId"></param>
+        internal void DeletedJobForDescriptor(DocumentDescriptorId documentDescriptorId)
+        {
+            _collection.DeleteMany(
+                Builders<QueuedJob>.Filter.Eq(j => j.DocumentDescriptorId, documentDescriptorId));
         }
 
         internal IEnumerable<QueueStatInfo> GetStatus()

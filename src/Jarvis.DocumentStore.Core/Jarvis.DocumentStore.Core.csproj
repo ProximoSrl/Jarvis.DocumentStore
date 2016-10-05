@@ -182,7 +182,6 @@
     <Compile Include="Domain\Document\Commands\CreateDocumentAsCopy.cs" />
     <Compile Include="Domain\Document\Commands\DeleteDocument.cs" />
     <Compile Include="Domain\Document\Commands\LinkDocumentToDocumentDescriptor.cs" />
-    <Compile Include="Domain\Document\Events\AttachmentDeleted.cs" />
     <Compile Include="Domain\Document\Events\DocumentCopied.cs" />
     <Compile Include="Domain\Document\Events\DocumentCustomDataSet.cs" />
     <Compile Include="Domain\Document\Events\DocumentFileNameSet.cs" />

@@ -48,6 +48,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         Boolean ReScheduleFailed(String queueName);
 
+        /// <summary>
+        /// When a job descriptor is deleted because no handle references it
+        /// it is time to delete every jobs in the queue.
+        /// </summary>
+        /// <param name="documentDescriptorId"></param>
+        void DeletedJobForDescriptor(DocumentDescriptorId documentDescriptorId);
+
         void Start();
 
         void Stop();
@@ -228,10 +235,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                             foreach (var qh in _queueHandlers)
                             {
                                 //In this version we are interested only in event for new formats
-                                if (streamData.EventType != HandleStreamEventTypes.DocumentHasNewFormat &&
-                                    streamData.EventType != HandleStreamEventTypes.DocumentFormatUpdated) continue;
-
-                                qh.Value.Handle(streamData, info.TenantId);
+                                if (streamData.EventType == HandleStreamEventTypes.DocumentHasNewFormat ||
+                                    streamData.EventType == HandleStreamEventTypes.DocumentFormatUpdated)
+                                {
+                                    qh.Value.Handle(streamData, info.TenantId);
+                                }
+                                else if (streamData.EventType == HandleStreamEventTypes.DocumentDescriptorDeleted)
+                                {
+                                    qh.Value.DeletedJobForDescriptor(streamData.DocumentDescriptorId);
+                                }
                             }
                         }
                         info.Checkpoint = blockOfStreamData[blockOfStreamData.Count - 1].Id;
@@ -272,7 +284,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public Boolean ReScheduleFailed(String queueName)
         {
             return ExecuteWithQueueHandler("reschedule failed jobs", queueName, qh => qh.ReScheduleFailed());
+        }
 
+        public void DeletedJobForDescriptor(DocumentDescriptorId documentDescriptorId)
+        {
+            foreach (var qh in _queueHandlers)
+            {
+                qh.Value.DeletedJobForDescriptor(documentDescriptorId);
+            }
         }
 
         private T ExecuteWithQueueHandler<T>(

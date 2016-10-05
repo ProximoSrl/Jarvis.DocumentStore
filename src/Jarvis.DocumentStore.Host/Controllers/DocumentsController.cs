@@ -276,10 +276,23 @@ namespace Jarvis.DocumentStore.Host.Controllers
                         HttpStatusCode.BadRequest,
                         String.Format("Job id {0} not found in queue {1}", jobId, queueName));
                 }
-                documentId = job.DocumentId;
+                documentId = job.DocumentDescriptorId;
                 if (documentId == null)
                 {
-                    Logger.ErrorFormat("Trying to add a format for Job Id {0} queue {1} - Job has DocumentId null", jobId, queueName);
+                    Logger.ErrorFormat("Trying to add a format for Job Id {0} queue {1} - Job has DocumentDescriptorId null", jobId, queueName);
+                    return Request.CreateErrorResponse(
+                       HttpStatusCode.BadRequest,
+                       ""
+                   );
+                }
+                //need to check if the descriptor is deleted
+                var exists = _documentDescriptorReader
+                    .AllUnsorted
+                    .Where(d => d.Id == documentId)
+                    .Any();
+                if (!exists)
+                {
+                    Logger.ErrorFormat("Trying to add a format for Job Id {0} queue {1} - DocumentDescriptor does not exists or was deleted!", jobId, queueName);
                     return Request.CreateErrorResponse(
                        HttpStatusCode.BadRequest,
                        ""

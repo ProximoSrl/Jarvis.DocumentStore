@@ -26,7 +26,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public TenantId TenantId { get; set; }
 
-        public DocumentDescriptorId DocumentId { get; set; }
+        public DocumentDescriptorId DocumentDescriptorId { get; set; }
 
         public DocumentHandle Handle { get; set; }
 

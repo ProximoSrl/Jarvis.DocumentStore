@@ -13,12 +13,12 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
     {
         public class Match
         {
-            public DocumentDescriptorId DocumentId { get; private set; }
+            public DocumentDescriptorId DocumentDescriptorId { get; private set; }
             public BlobId BlobId { get; private set; }
 
-            public Match(DocumentDescriptorId documentId, BlobId blobId)
+            public Match(DocumentDescriptorId documentDescriptorId, BlobId blobId)
             {
-                DocumentId = documentId;
+                DocumentDescriptorId = documentDescriptorId;
                 BlobId = blobId;
             }
         }

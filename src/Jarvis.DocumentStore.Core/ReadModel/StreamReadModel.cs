@@ -14,7 +14,7 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public FormatInfo FormatInfo { get; internal set; }
 
-        public DocumentDescriptorId DocumentId { get; internal set; }
+        public DocumentDescriptorId DocumentDescriptorId { get; internal set; }
 
         public FileNameWithExtension Filename { get; internal set; }
 

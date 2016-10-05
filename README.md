@@ -12,6 +12,7 @@ Jarvis.DocumentStore
 ### Wiki
 
 - [Release Notes](/wiki/ReleaseNotes.md)
+- [Manual database Upgrades](/wiki/BreakingChangesDb.md)
 
 ###Standard handler to grab document
 

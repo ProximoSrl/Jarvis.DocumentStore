@@ -15,6 +15,7 @@ namespace Jarvis.DocumentStore.Shared.Model
         DocumentFileNameSet = 4,
         DocumentFormatUpdated = 5,
         DocumentHasNewAttachment = 6,
+        DocumentDescriptorDeleted = 7,
     }
 
     public static class StreamReadModelEventDataKeys
