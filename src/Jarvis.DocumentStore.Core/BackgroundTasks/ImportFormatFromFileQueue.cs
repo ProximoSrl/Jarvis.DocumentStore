@@ -91,7 +91,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             _foldersToWatch = _configuration.FoldersToMonitor;
             _tenantAccessor = tenantAccessor;
             _commandBus = commandBus;
-            
+
         }
 
         private Boolean _stopped = false;
@@ -118,11 +118,11 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 };
 
                 var files = Directory.GetFiles(
-                    folder, 
-                    JobExtension, 
+                    folder,
+                    JobExtension,
                     SearchOption.AllDirectories);
                 Parallel.ForEach(
-                    files, 
+                    files,
                     options,
                     file =>
                 {
@@ -141,36 +141,36 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                                 );
                             }
 
-                            UploadFile(task);
+                            UploadFile(file, task);
                         }
                     }
                 });
             }
         }
 
-        internal void UploadFile(DocumentImportTask task)
+
+        internal void UploadFile(String jobFile, DocumentImportTask task)
         {
-            if (!task.Uri.IsFile)
-            {
-                Logger.ErrorFormat("Uri is not a file: {0}", task.Uri);
-                return;
-            }
-
-            var fname = task.Uri.LocalPath;
-            if (!File.Exists(fname))
-            {
-                Logger.ErrorFormat("File missing: {0}", fname);
-                return;
-            }            
-
+            String fname = "";
             try
             {
                 TenantContext.Enter(task.Tenant);
 
+                if (!task.Uri.IsFile)
+                {
+                    LogAndThrow("Error importing task file {0}: Uri is not a file: {1}", jobFile, task.Uri);
+                }
+
+                fname = task.Uri.LocalPath;
+
                 if (FileHasImportFailureMarker(fname, task.FileTimestamp))
                 {
-                    Logger.WarnFormat("Tenant {0} - file {1} has import errors and will be skipped.", task.Tenant, fname);
                     return;
+                }
+
+                if (!File.Exists(fname))
+                {
+                    LogAndThrow("Error importing task file {0}: File missing: {1}", jobFile, fname);
                 }
 
                 var blobStore = GetBlobStoreForTenant();
@@ -232,6 +232,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
             catch (Exception ex)
             {
+                Logger.ErrorFormat(ex, "Job Import Queue - Error importing {0} - {1}", jobFile, ex.Message);
                 ImportFailure failure = new ImportFailure()
                 {
                     Error = ex.ToString(),
@@ -245,6 +246,13 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             {
                 TenantContext.Exit();
             }
+        }
+
+        private void LogAndThrow(String errorMessage, params Object[] parameters)
+        {
+            var formattedMessage = String.Format(errorMessage, parameters);
+            Logger.Error(formattedMessage);
+            throw new ApplicationException(formattedMessage);
         }
 
         private void MarkImportFailure(ImportFailure failure)

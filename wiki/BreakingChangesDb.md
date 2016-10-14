@@ -17,4 +17,4 @@ Property DocumentId of queues was renamed during release of Version 2 to Documen
 
 This query should be run against all tenants db to rename DocumentDb property of readmodel to DocumentDescriptorId
 
-	db.getCollection('rm.stream').update({}, {$rename : {"DocumentId" : "DocumentDescriptorId"}}, {multi : true})
+	db.getCollection('rm.Stream').update({}, {$rename : {"DocumentId" : "DocumentDescriptorId"}}, {multi : true})
