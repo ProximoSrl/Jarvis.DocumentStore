@@ -130,7 +130,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
         {
             _queue.DeleteTaskFileAfterImport = true;
             var descriptor = _queue.LoadTask(_pathToTask);
-            _queue.UploadFile(descriptor);
+            _queue.UploadFile(_pathToTask, descriptor);
             Assert.That(File.Exists(_pathToTask), Is.False);
         }
 
