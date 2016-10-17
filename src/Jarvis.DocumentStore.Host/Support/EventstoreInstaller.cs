@@ -21,6 +21,9 @@ using Jarvis.Framework.Kernel.Support;
 using System;
 using Jarvis.DocumentStore.Core.Support;
 using MongoDB.Driver;
+using NEventStore.Persistence.MongoDB;
+using NEventStore.Persistence.MongoDB.Support;
+using MongoDB.Bson;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -74,51 +77,60 @@ namespace Jarvis.DocumentStore.Host.Support
                 var esComponentName = tenant.Id + "-es";
                 var readModelDb = tenant1.Get<IMongoDatabase>("readmodel.db");
 
+                var mongoPersistenceOptions = new MongoPersistenceOptions();
+                mongoPersistenceOptions.DisableSnapshotSupport = true;
+                mongoPersistenceOptions.ConcurrencyStrategy = ConcurrencyExceptionStrategy.FillHole;
+                var nesUrl = new MongoUrl(tenant1.GetConnectionString("events"));
+                var nesDb = new MongoClient(nesUrl).GetDatabase(nesUrl.DatabaseName);
+                var eventsCollection = nesDb.GetCollection<BsonDocument>("Commits");
+                mongoPersistenceOptions.CheckpointGenerator = new MultiProcessCheckpointGenerator(eventsCollection);
+
                 tenant1.Container.Register(
-                    Classes
-                        .FromAssemblyContaining<DocumentDescriptor>()
-                        .BasedOn<IPipelineHook>()
-                        .WithServiceAllInterfaces(),
-                    Component
-                        .For<IStoreEvents>()
-                        .Named(esComponentName)
-                        .UsingFactory<EventStoreFactory, IStoreEvents>(f =>
-                        {
-                            var hooks = tenant1.Container.ResolveAll<IPipelineHook>();
+                            Classes
+                                .FromAssemblyContaining<DocumentDescriptor>()
+                                .BasedOn<IPipelineHook>()
+                                .WithServiceAllInterfaces(),
+                            Component
+                                .For<IStoreEvents>()
+                                .Named(esComponentName)
+                                .UsingFactory<EventStoreFactory, IStoreEvents>(f =>
+                                {
+                                    var hooks = tenant1.Container.ResolveAll<IPipelineHook>();
 
-                            return f.BuildEventStore(
-                                    tenant1.GetConnectionString("events"),
-                                    hooks
-                                );
-                        })
-                        .LifestyleSingleton(),
+                                    return f.BuildEventStore(
+                                            tenant1.GetConnectionString("events"),
+                                            hooks,
+                                            mongoPersistenceOptions : mongoPersistenceOptions
+                                        );
+                                })
+                                .LifestyleSingleton(),
 
-                    Component
-                        .For<IRepositoryEx, RepositoryEx>()
-                        .ImplementedBy<RepositoryEx>()
-                        .Named(tenant.Id + ".repository")
-                        .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
-                        .LifestyleTransient(),
+                            Component
+                                .For<IRepositoryEx, RepositoryEx>()
+                                .ImplementedBy<RepositoryEx>()
+                                .Named(tenant.Id + ".repository")
+                                .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
+                                .LifestyleTransient(),
 
-                    Component
-                        .For<Func<IRepositoryEx>>()
-                        .Instance(() => tenant1.Container.Resolve<IRepositoryEx>()),
-                    Component
-                        .For<ISnapshotManager>()
-                        .DependsOn(Dependency.OnValue("cacheEnabled", _config.EnableSnapshotCache))
-                        .ImplementedBy<CachedSnapshotManager>(),
-                    Component
-                        .For<IAggregateCachedRepositoryFactory>()
-                        .ImplementedBy<AggregateCachedRepositoryFactory>()
-                        .DependsOn(Dependency.OnValue("cacheDisabled", false)),
-                    Component
-                        .For<ISnapshotPersistenceStrategy>()
-                        .ImplementedBy<NumberOfCommitsShapshotPersistenceStrategy>()
-                        .DependsOn(Dependency.OnValue("commitsThreshold", 100)),
-                     Component.For<ISnapshotPersister>()
-                            .ImplementedBy<MongoSnapshotPersisterProvider>()
-                            .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb))
-                    );
+                            Component
+                                .For<Func<IRepositoryEx>>()
+                                .Instance(() => tenant1.Container.Resolve<IRepositoryEx>()),
+                            Component
+                                .For<ISnapshotManager>()
+                                .DependsOn(Dependency.OnValue("cacheEnabled", _config.EnableSnapshotCache))
+                                .ImplementedBy<CachedSnapshotManager>(),
+                            Component
+                                .For<IAggregateCachedRepositoryFactory>()
+                                .ImplementedBy<AggregateCachedRepositoryFactory>()
+                                .DependsOn(Dependency.OnValue("cacheDisabled", false)),
+                            Component
+                                .For<ISnapshotPersistenceStrategy>()
+                                .ImplementedBy<NumberOfCommitsShapshotPersistenceStrategy>()
+                                .DependsOn(Dependency.OnValue("commitsThreshold", 100)),
+                             Component.For<ISnapshotPersister>()
+                                    .ImplementedBy<MongoSnapshotPersisterProvider>()
+                                    .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb))
+                            );
             }
         }
 
