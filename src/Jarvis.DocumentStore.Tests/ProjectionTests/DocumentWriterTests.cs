@@ -12,6 +12,7 @@ using NUnit.Framework;
 using System.Linq;
 using System.Collections.Generic;
 using Jarvis.DocumentStore.Shared.Jobs;
+using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
@@ -71,7 +72,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.CreateIfMissing(_handle1, null, 1);
             _writer.Promise(_handle1, 1);
             _writer.LinkDocument(_handle1, _doc1, 2);
-        
+
             var h = _writer.FindOneById(_handle1);
             Assert.AreEqual(_doc1, h.DocumentDescriptorId);
         }
@@ -82,7 +83,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _writer.CreateIfMissing(_handle1, null, 1);
             _writer.LinkDocument(_handle1, _doc1, 2);
             _writer.Promise(_handle1, 1);
-        
+
             var h = _writer.FindOneById(_handle1);
             Assert.AreEqual(_doc1, h.DocumentDescriptorId);
         }
@@ -118,6 +119,33 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             var h = _writer.FindOneById(_handle1);
             Assert.NotNull(h);
             Assert.IsNull(h.DocumentDescriptorId);
+        }
+
+        /// <summary>
+        /// Probably this test is not the very best you can do, because
+        /// it is not guarantee to fail if we have multithread concurrency,
+        /// but it fails almost all the time when we have bug so it is better
+        /// than nothin.
+        /// </summary>
+        [Test]
+        public void verify_that_create_if_missing_is_thread_safe()
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                try
+                {
+                    var sequence = Enumerable.Range(0, 10);
+                    Parallel.ForEach(sequence, j =>
+                    {
+                        var handle = new DocumentHandle("handle: " + i.ToString());
+                        _writer.CreateIfMissing(handle, null, 1);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail("Exception at iteration " + i + ": " + ex.ToString());
+                }
+            }
         }
     }
 }

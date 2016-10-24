@@ -242,20 +242,32 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void CreateIfMissing(DocumentHandle handle, DocumentDescriptorId documentDescriptorId, long createdAt)
         {
             Logger.DebugFormat("CreateIfMissing on handle {0} [{1}]", handle, createdAt);
+            Int32 iteration = 0;
+            do
+            {
+                try
+                {
+                    var result = _collection.FindOneAndUpdate(
+                        Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
+                        Builders<DocumentReadModel>.Update
+                            .SetOnInsert(x => x.CustomData, null)
+                            .SetOnInsert(x => x.ProjectedAt, 0)
+                            .SetOnInsert(x => x.DocumentDescriptorId, documentDescriptorId)
+                            .SetOnInsert(x => x.CreatetAt, createdAt)
+                            .SetOnInsert(x => x.FileName, null),
+                        new FindOneAndUpdateOptions<DocumentReadModel, DocumentReadModel>()
+                        {
+                            ReturnDocument = ReturnDocument.After,
+                            IsUpsert = true
+                        });
+                }
+                catch (MongoCommandException ex)
+                {
+                    if (ex.Message.Contains("E11000") == false)
+                        throw;
+                }
+            } while (iteration++ < 3);
            
-            var result = _collection.FindOneAndUpdate(
-                Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
-                 Builders<DocumentReadModel>.Update
-                    .SetOnInsert(x => x.CustomData, null)
-                    .SetOnInsert(x => x.ProjectedAt, 0)
-                    .SetOnInsert(x => x.DocumentDescriptorId, documentDescriptorId)
-                    .SetOnInsert(x => x.CreatetAt, createdAt)
-                    .SetOnInsert(x => x.FileName, null),
-          new FindOneAndUpdateOptions<DocumentReadModel, DocumentReadModel>()
-          {
-              ReturnDocument = ReturnDocument.After,
-              IsUpsert = true
-          });
         }
 
         public DocumentReadModel FindOneById(DocumentHandle handle)
