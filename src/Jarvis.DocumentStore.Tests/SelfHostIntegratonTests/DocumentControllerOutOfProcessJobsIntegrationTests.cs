@@ -357,7 +357,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        [Explicit("This test fails often on the build controller, we need to understand why")]
         public async void verify_tika_job_with_password()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
@@ -444,8 +443,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
-            var handleClient = new DocumentHandle("verify_tika_job");
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job_multiple");
+            var handleClient = new DocumentHandle("verify_tika_job_multiple");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToPasswordProtectedPdf,
                handleClient,
