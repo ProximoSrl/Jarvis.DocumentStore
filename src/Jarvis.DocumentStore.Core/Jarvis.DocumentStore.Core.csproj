@@ -192,6 +192,7 @@
     <Compile Include="Domain\Document\Events\DocumentInitialized.cs" />
     <Compile Include="Domain\Document\Events\DocumentLinked.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
+    <Compile Include="ReadModel\DocumentDeletedReadModel.cs" />
     <Compile Include="Support\DateTimeService.cs" />
     <Compile Include="Support\DocumentStoreMultiTenantCommandBus.cs" />
     <Compile Include="Support\DsDisposableAction.cs" />

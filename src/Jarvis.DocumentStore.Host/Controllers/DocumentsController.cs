@@ -46,6 +46,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private readonly IDocumentFormatTranslator _documentFormatTranslator;
 
         readonly IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
+        readonly IMongoDbReader<DocumentDeletedReadModel, String> _documentDeletedReader;
         readonly IQueueManager _queueDispatcher;
 
         public ILogger Logger { get; set; }
@@ -61,6 +62,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             DocumentStoreConfiguration configService,
             IIdentityGenerator identityGenerator,
             IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
+            IMongoDbReader<DocumentDeletedReadModel, String> documentDeletedReader,
             IInProcessCommandBus commandBus,
             IDocumentWriter handleWriter,
             IQueueManager queueDispatcher,
@@ -71,6 +73,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             _configService = configService;
             _identityGenerator = identityGenerator;
             _documentDescriptorReader = documentDescriptorReader;
+            _documentDeletedReader = documentDeletedReader;
             _handleWriter = handleWriter;
             _queueDispatcher = queueDispatcher;
             _counterService = counterService;
@@ -563,7 +566,15 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             //If mapping is not present return not found
             if (mapping == null || mapping.DocumentDescriptorId == null)
-                return DocumentNotFound(handle);
+            {
+                var deleted = _documentDeletedReader.AllUnsorted.Where(d => d.Handle == handle).ToList();
+
+                if (deleted.Count == 0)
+                    return DocumentNotFound(handle);
+
+                return DocumentDeleted(handle, deleted);
+            }
+               
 
             var document = _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
 
@@ -627,6 +638,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return Request.CreateErrorResponse(
                 HttpStatusCode.NotFound,
                 string.Format("Document {0} not found", handle)
+                );
+        }
+
+        HttpResponseMessage DocumentDeleted(DocumentHandle handle, IEnumerable<DocumentDeletedReadModel> deletions)
+        {
+            return Request.CreateErrorResponse(
+                HttpStatusCode.NotFound,
+                string.Format("Document {0} was deleted at: {1}", handle, String.Join(", ", deletions.Select(d => d.DeletionDate)))
                 );
         }
 

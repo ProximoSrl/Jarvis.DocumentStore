@@ -26,6 +26,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         protected IIdentityGenerator IdentityGenerator;
         protected ICounterService CounterService;
         protected IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> DocumentReader;
+        protected IMongoDbReader<DocumentDeletedReadModel, String> DocumentDeletedReader;
         protected TenantId _tenantId = new TenantId("docs");
         IDocumentWriter _handleWriter;
         protected IQueueManager QueueDispatcher;
@@ -36,7 +37,9 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             IdentityGenerator = Substitute.For<IIdentityGenerator>();
             _handleWriter = Substitute.For<IDocumentWriter>();
             DocumentReader = Substitute.For<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
-            QueueDispatcher= Substitute.For<IQueueManager>();
+            DocumentDeletedReader = Substitute.For<IMongoDbReader<DocumentDeletedReadModel, String>>();
+
+            QueueDispatcher = Substitute.For<IQueueManager>();
             CounterService = Substitute.For<ICounterService>();
             var bus = Substitute.For<IInProcessCommandBus>();
             var configuration =  new DocumentStoreTestConfiguration();
@@ -44,7 +47,8 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 BlobStore,
                configuration, 
                 IdentityGenerator, 
-                DocumentReader, 
+                DocumentReader,
+                DocumentDeletedReader,
                 bus, 
                 _handleWriter,
                 QueueDispatcher,
