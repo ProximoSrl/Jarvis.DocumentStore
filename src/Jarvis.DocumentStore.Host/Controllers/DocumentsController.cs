@@ -763,7 +763,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var handleString = handle.ToString();
             var regex = "/" + handleString.Replace("/", "//") + "/";
             var descriptors = _documentDescriptorReader.Collection
-                .Find(Builders<DocumentDescriptorReadModel>.Filter.Regex("Documents", new MongoDB.Bson.BsonRegularExpression(regex)));
+                .Find(Builders<DocumentDescriptorReadModel>.Filter.Regex("Documents", new MongoDB.Bson.BsonRegularExpression(regex)))
+                .Limit(20);
 
             var retValue = new List<DocumentInfo>();
             foreach (var d in descriptors.ToEnumerable())

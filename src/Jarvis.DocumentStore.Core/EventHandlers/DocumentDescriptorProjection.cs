@@ -52,6 +52,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public override void SetUp()
         {
             _documents.CreateIndex("Hash", Builders<DocumentDescriptorReadModel>.IndexKeys.Ascending(x => x.Hash));
+            _documents.CreateIndex("Documents", Builders<DocumentDescriptorReadModel>.IndexKeys.Ascending(x => x.Documents));
         }
 
         public void On(DocumentDescriptorInitialized e)
