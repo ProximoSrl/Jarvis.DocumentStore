@@ -83,7 +83,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 var nesUrl = new MongoUrl(tenant1.GetConnectionString("events"));
                 var nesDb = new MongoClient(nesUrl).GetDatabase(nesUrl.DatabaseName);
                 var eventsCollection = nesDb.GetCollection<BsonDocument>("Commits");
-                mongoPersistenceOptions.CheckpointGenerator = new MultiProcessCheckpointGenerator(eventsCollection);
+                mongoPersistenceOptions.CheckpointGenerator = new InMemoryCheckpointGenerator(eventsCollection);
 
                 tenant1.Container.Register(
                             Classes
