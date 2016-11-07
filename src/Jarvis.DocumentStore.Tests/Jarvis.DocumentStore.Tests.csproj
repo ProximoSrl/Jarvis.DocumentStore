@@ -385,7 +385,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Docs\A Powerpoint Document.pdf" />
     <None Include="Docs\Architecture_files\css" />
     <None Include="Docs\Document_copy.pdf" />
     <None Include="Docs\Lorem ipsum.pdf" />

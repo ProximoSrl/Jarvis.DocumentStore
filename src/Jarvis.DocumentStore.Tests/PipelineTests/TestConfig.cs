@@ -208,6 +208,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "sample.rar"); }
         }
 
+        public static string PathToLoremIpsumTxt
+        {
+            get { return Path.Combine(DocumentsFolder, "lorem.txt"); }
+        }
+
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }
         private  static string GenerateQueueFolder()
