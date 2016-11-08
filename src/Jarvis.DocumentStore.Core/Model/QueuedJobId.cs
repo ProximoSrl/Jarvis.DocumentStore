@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Model
 {
-    [BsonSerializer(typeof(StringValueBsonSerializer))]
+    [BsonSerializer(typeof(TypedStringValueBsonSerializer<QueuedJobId>))]
     [TypeConverter(typeof(StringValueTypeConverter<QueuedJobId>))]
     public class QueuedJobId : LowercaseStringValue
     {

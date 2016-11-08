@@ -11,7 +11,7 @@ using log4net;
 using log4net.Repository.Hierarchy;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
+
 using MongoDB.Driver.Linq;
 
 namespace Jarvis.DocumentStore.Host.Controllers
@@ -46,7 +46,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
     public class LogController : ApiController
     {
-        private static MongoCollection Logs { get; set; }
+        private static IMongoCollection<BsonDocument> Logs { get; set; }
 
         static LogController()
         {
@@ -64,42 +64,41 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public LogSearchResponse Get(LogSearchRequest request)
         {
             request = request ?? new LogSearchRequest();
-
-            MongoCursor<BsonDocument> cursor;
-
+            IFindFluent<BsonDocument, BsonDocument> cursor;
             if (!request.IsEmpty)
             {
-                var and = new List<IMongoQuery>();
-
+                List<FilterDefinition<BsonDocument>> queries = new List<FilterDefinition<BsonDocument>>();
+                
                 if (!String.IsNullOrWhiteSpace(request.Query))
                 {
                     var queryExpr = new BsonRegularExpression(new Regex(request.Query, RegexOptions.IgnoreCase));
-                    and.Add(Query.Or(
-                        Query.Matches(FieldNames.Message, queryExpr),
-                        Query.Matches(FieldNames.Loggername, queryExpr)
+                    queries.Add(Builders< BsonDocument>.Filter.Or(
+                        Builders< BsonDocument>.Filter.Regex(FieldNames.Message, queryExpr),
+                        Builders<BsonDocument>.Filter.Regex(FieldNames.Loggername, queryExpr)
                     ));
                 }
 
                 if (!String.IsNullOrWhiteSpace(request.Level))
                 {
                     var levels = request.Level.Split(',').Select(x => x.Trim()).ToArray();
-                    and.Add(Query.In(FieldNames.Level, levels.Select(BsonValue.Create)));
+                    queries.Add(Builders<BsonDocument>.Filter.In(FieldNames.Level, levels.Select(BsonValue.Create)));
                 }
 
-                cursor = Logs.FindAs<BsonDocument>(Query.And(and));
+               cursor = Logs.Find(Builders<BsonDocument>.Filter.And(queries));
 
             }
             else
             {
-                cursor = Logs.FindAllAs<BsonDocument>();
+                cursor = Logs.Find(Builders<BsonDocument>.Filter.Empty);
             }
 
             var response = new LogSearchResponse
             {
                 Items = cursor
-                    .SetSortOrder(SortBy.Descending(FieldNames.Timestamp))
-                    .SetSkip(request.LogsPerPage*(request.Page - 1))
-                    .SetLimit(request.LogsPerPage)
+                    .Sort(Builders<BsonDocument>.Sort.Descending(FieldNames.Timestamp))
+                    .Skip(request.LogsPerPage*(request.Page - 1))
+                    .Limit(request.LogsPerPage)
+                    .ToList()
                     .Select(x => x.ToDictionary()),
                 Count = cursor.Count()
             };

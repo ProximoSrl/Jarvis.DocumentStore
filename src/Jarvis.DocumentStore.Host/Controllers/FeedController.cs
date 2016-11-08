@@ -51,6 +51,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             var result = baseQuery.Take(numOfResults)
+                .ToList()
                 .Select(rm => new FeedForStreamReadModel(rm))
                 .ToList();
             var sc = new StringContent(JsonConvert.SerializeObject(result));

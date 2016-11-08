@@ -6,7 +6,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.Email
 {
-    public class AnalyzeEmailOutOfProcessJob: AbstractOutOfProcessPollerJob
+    public class AnalyzeEmailOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
         public AnalyzeEmailOutOfProcessJob()
         {

@@ -11,7 +11,7 @@ namespace Jarvis.DocumentStore.Core.Model
     /// <summary>
     /// Internal file handle
     /// </summary>
-    [BsonSerializer(typeof(StringValueBsonSerializer))]
+    [BsonSerializer(typeof(TypedStringValueBsonSerializer<BlobId>))]
     [TypeConverter(typeof(StringValueTypeConverter<BlobId>))]
     public class BlobId : LowercaseStringValue
     {

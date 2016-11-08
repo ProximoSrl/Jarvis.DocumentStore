@@ -7,6 +7,9 @@ using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using NEventStore;
+using System;
+using Jarvis.Framework.Shared.ReadModel;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -20,14 +23,18 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         , IEventHandler<DocumentDescriptorInitialized>
     {
         readonly IDocumentWriter _writer;
-        private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorCollectionWrapper;
+        private readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
+        private readonly ICollectionWrapper<DocumentDeletedReadModel, String> _documentDeletedWrapper;
 
         public DocumentProjection(
-            IDocumentWriter writer, 
-            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorCollectionWrapper)
+            IDocumentWriter writer,
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
+            ICollectionWrapper<DocumentDeletedReadModel, String> documentDeletedWrapper)
         {
             _writer = writer;
-            _documentDescriptorCollectionWrapper = documentDescriptorCollectionWrapper;
+            _documentDescriptorReader = documentDescriptorReader;
+            _documentDeletedWrapper = documentDeletedWrapper;
+            _documentDeletedWrapper.Attach(this, false);
         }
 
         public override int Priority
@@ -43,6 +50,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public override void SetUp()
         {
             _writer.Init();
+            _documentDeletedWrapper.CreateIndex("Handle",
+                Builders<DocumentDeletedReadModel>.IndexKeys.Ascending(d => d.Handle));
         }
 
         public void On(DocumentLinked e)
@@ -50,7 +59,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.LinkDocument(
                 e.Handle,
                 e.DocumentId,
-                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                e.CheckpointToken
             );
         }
 
@@ -61,7 +70,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.CreateIfMissing(
                  e.HandleInfo.Handle,
                  e.Id,
-                 LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                 e.CheckpointToken
              );
         }
 
@@ -75,28 +84,36 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             _writer.CreateIfMissing(
                 e.Handle,
                 null,
-                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                e.CheckpointToken
             );
         }
 
         public void On(DocumentDeleted e)
         {
-            _writer.Delete(e.Handle, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
+            _writer.Delete(e.Handle, e.CheckpointToken);
+            _documentDeletedWrapper.Insert(e, new DocumentDeletedReadModel()
+            {
+                Id = e.Handle + "+" + e.DocumentDescriptorId + "+" + e.CheckpointToken,
+                DeletionDate = e.CommitStamp,
+                Handle = e.Handle,
+                DocumentDescriptorId = e.DocumentDescriptorId
+            },
+            false);
         }
 
         public void On(DocumentFileNameSet e)
         {
-            _writer.SetFileName(e.Handle, e.FileName, LongCheckpoint.Parse(e.CheckpointToken).LongValue);
+            _writer.SetFileName(e.Handle, e.FileName, e.CheckpointToken);
         }
 
         public void On(DocumentDescriptorHasBeenDeduplicated e)
         {
-            var originalDocumentDescriptor = _documentDescriptorCollectionWrapper.All.Single(d => d.Id == e.AggregateId); 
+            var originalDocumentDescriptor = _documentDescriptorReader.AllUnsorted.Single(d => d.Id == e.AggregateId); 
             _writer.DocumentDeDuplicated(
                 e.HandleInfo.Handle,
                 null,
                 (DocumentDescriptorId)e.AggregateId,
-                LongCheckpoint.Parse(e.CheckpointToken).LongValue
+                e.CheckpointToken
             );
         }
     }

@@ -6,6 +6,8 @@ using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Tests.PipelineTests;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Tests.ControllerTests
 {
@@ -17,7 +19,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         {
             var documentHandle = new DocumentHandle("not_in_store");
             var format = new DocumentFormat("any_format");
-
+            DocumentDeletedReader.AllUnsorted.Returns(new List<DocumentDeletedReadModel>().AsQueryable());
             var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);

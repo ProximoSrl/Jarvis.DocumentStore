@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Core.EvenstoreHooks
             {
                 _handleWriter.Promise(
                     docCreated.HandleInfo.Handle,
-                    LongCheckpoint.Parse(committed.CheckpointToken).LongValue
+                    committed.CheckpointToken
                 );
             }
         }

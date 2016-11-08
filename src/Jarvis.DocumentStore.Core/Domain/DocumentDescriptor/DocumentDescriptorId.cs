@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor
 {
-    [BsonSerializer(typeof(EventStoreIdentityBsonSerializer))]
+    [BsonSerializer(typeof(TypedEventStoreIdentityBsonSerializer<DocumentDescriptorId>))]
     public class DocumentDescriptorId : EventStoreIdentity
     {
         [JsonConstructor]

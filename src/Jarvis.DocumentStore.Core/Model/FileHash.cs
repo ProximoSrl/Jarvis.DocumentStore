@@ -8,7 +8,7 @@ namespace Jarvis.DocumentStore.Core.Model
     /// <summary>
     /// Public file handle
     /// </summary>
-    [BsonSerializer(typeof(StringValueBsonSerializer))]
+    [BsonSerializer(typeof(TypedStringValueBsonSerializer<FileHash>))]
     [TypeConverter(typeof(StringValueTypeConverter<FileHash>))]
     public class FileHash : LowercaseStringValue
     {

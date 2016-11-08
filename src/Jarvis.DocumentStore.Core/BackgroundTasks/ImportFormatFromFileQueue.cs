@@ -23,7 +23,7 @@ using Newtonsoft.Json;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using MongoDB.Driver.Builders;
+using Jarvis.Framework.Shared.Helpers;
 
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
@@ -73,8 +73,9 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private readonly string[] _foldersToWatch;
         private readonly ITenantAccessor _tenantAccessor;
         private readonly ICommandBus _commandBus;
-        private readonly ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>
-            _importFailureCollections = new ConcurrentDictionary<TenantId, MongoCollection<ImportFailure>>();
+        private readonly ConcurrentDictionary<TenantId, IMongoCollection<ImportFailure>>
+            _importFailureCollections = new ConcurrentDictionary<TenantId, IMongoCollection<ImportFailure>>();
+
         DocumentStoreConfiguration _configuration;
 
         internal bool DeleteTaskFileAfterImport { get; set; }
@@ -90,7 +91,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             _foldersToWatch = _configuration.FoldersToMonitor;
             _tenantAccessor = tenantAccessor;
             _commandBus = commandBus;
-            
+
         }
 
         private Boolean _stopped = false;
@@ -117,11 +118,11 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 };
 
                 var files = Directory.GetFiles(
-                    folder, 
-                    JobExtension, 
+                    folder,
+                    JobExtension,
                     SearchOption.AllDirectories);
                 Parallel.ForEach(
-                    files, 
+                    files,
                     options,
                     file =>
                 {
@@ -140,36 +141,36 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                                 );
                             }
 
-                            UploadFile(task);
+                            UploadFile(file, task);
                         }
                     }
                 });
             }
         }
 
-        internal void UploadFile(DocumentImportTask task)
+
+        internal void UploadFile(String jobFile, DocumentImportTask task)
         {
-            if (!task.Uri.IsFile)
-            {
-                Logger.ErrorFormat("Uri is not a file: {0}", task.Uri);
-                return;
-            }
-
-            var fname = task.Uri.LocalPath;
-            if (!File.Exists(fname))
-            {
-                Logger.ErrorFormat("File missing: {0}", fname);
-                return;
-            }            
-
+            String fname = "";
             try
             {
                 TenantContext.Enter(task.Tenant);
 
+                if (!task.Uri.IsFile)
+                {
+                    LogAndThrow("Error importing task file {0}: Uri is not a file: {1}", jobFile, task.Uri);
+                }
+
+                fname = task.Uri.LocalPath;
+
                 if (FileHasImportFailureMarker(fname, task.FileTimestamp))
                 {
-                    Logger.WarnFormat("Tenant {0} - file {1} has import errors and will be skipped.", task.Tenant, fname);
                     return;
+                }
+
+                if (!File.Exists(fname))
+                {
+                    LogAndThrow("Error importing task file {0}: File missing: {1}", jobFile, fname);
                 }
 
                 var blobStore = GetBlobStoreForTenant();
@@ -231,6 +232,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
             catch (Exception ex)
             {
+                Logger.ErrorFormat(ex, "Job Import Queue - Error importing {0} - {1}", jobFile, ex.Message);
                 ImportFailure failure = new ImportFailure()
                 {
                     Error = ex.ToString(),
@@ -246,17 +248,24 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
         }
 
+        private void LogAndThrow(String errorMessage, params Object[] parameters)
+        {
+            var formattedMessage = String.Format(errorMessage, parameters);
+            Logger.Error(formattedMessage);
+            throw new ApplicationException(formattedMessage);
+        }
+
         private void MarkImportFailure(ImportFailure failure)
         {
             EnsureFailureConnectionForCurrentTenant();
-            _importFailureCollections[_tenantAccessor.Current.Id].Save(failure);
+            _importFailureCollections[_tenantAccessor.Current.Id].Save(failure, failure.FileName);
         }
 
         private void DeleteImportFailure(String fileName)
         {
             EnsureFailureConnectionForCurrentTenant();
             _importFailureCollections[_tenantAccessor.Current.Id]
-                .Remove(Query.EQ("_id", fileName));
+                .RemoveById(fileName);
         }
 
         private Boolean FileHasImportFailureMarker(String fileName, DateTime fileTimestamp)
@@ -265,11 +274,11 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             //if files has error 
             return _importFailureCollections[_tenantAccessor.Current.Id]
                 .Find(
-                    Query.And(
-                        Query.EQ("_id", fileName),
-                        Query<ImportFailure>.EQ(i => i.ImportFileTimestampTicks, fileTimestamp.Ticks)
+                    Builders<ImportFailure>.Filter.And(
+                        Builders<ImportFailure>.Filter.Eq("_id", fileName),
+                        Builders<ImportFailure>.Filter.Eq(i => i.ImportFileTimestampTicks, fileTimestamp.Ticks)
                     ))
-                .SetFields(Fields.Include("_id"))
+                .Project(Builders<ImportFailure>.Projection.Include("_id"))
                 .Any();
         }
 
@@ -278,7 +287,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             if (!_importFailureCollections.ContainsKey(_tenantAccessor.Current.Id))
             {
                 var tenantSettings = _configuration.TenantSettings.Single(t => t.TenantId == _tenantAccessor.Current.Id);
-                var systemDb = tenantSettings.Get<MongoDatabase>("system.db");
+                var systemDb = tenantSettings.Get<IMongoDatabase>("system.db");
                 _importFailureCollections[_tenantAccessor.Current.Id] =
                     systemDb.GetCollection<ImportFailure>("sys.importFailures");
             }

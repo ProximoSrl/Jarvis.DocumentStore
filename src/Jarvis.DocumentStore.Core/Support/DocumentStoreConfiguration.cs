@@ -18,7 +18,7 @@ namespace Jarvis.DocumentStore.Core.Support
         protected DocumentStoreConfiguration()
         {
             TenantSettings = new List<TenantSettings>();
-            EngineVersion = "v1";
+            EngineVersion = "v3";
         }
 
         #region BasicSettings
@@ -97,6 +97,16 @@ namespace Jarvis.DocumentStore.Core.Support
         public Int32 DelayedStartInMilliseconds { get; set; }
 
         public String Boost { get; set; }
+
+        #endregion
+
+        #region Framework
+
+        public Boolean EnableSingleAggregateRepositoryCache { get; set; }
+
+        public Boolean EnableSnapshotCache { get; set; }
+
+                   
 
         #endregion
 

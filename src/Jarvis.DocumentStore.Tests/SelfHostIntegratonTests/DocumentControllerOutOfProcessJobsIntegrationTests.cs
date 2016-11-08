@@ -38,10 +38,13 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using MongoDB.Bson;
 using Jarvis.DocumentStore.Jobs.LibreOffice;
 using Jarvis.DocumentStore.Jobs.Tika.Filters;
-using MongoDB.Driver.Builders;
+
 using NSubstitute;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+
+using Jarvis.Framework.Shared.Helpers;
+
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
@@ -52,7 +55,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     /// 3) verify the outcome.
     /// </summary>
     //[TestFixture("v1")] //Uncomment this if you want to test with old projection engine
-    [TestFixture("v2")]
+    [TestFixture("v3")]
     [Category("integration_full")]
     //[Explicit("This integration test is slow because it wait for polling")]
     public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase
@@ -61,11 +64,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected DocumentStoreBootstrapper _documentStoreService;
         protected DocumentStoreServiceClient _documentStoreClient;
-        protected MongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
-        protected MongoCollection<DocumentReadModel> _documentCollection;
-        protected MongoCollection<StreamReadModel> _streamCollection;
-        protected MongoCollection<QueuedJob> _tikaQueue;
-        protected MongoCollection<StreamCheckpoint> _queueCheckpoint;
+        protected IMongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
+        protected IMongoCollection<DocumentReadModel> _documentCollection;
+        protected IMongoCollection<StreamReadModel> _streamCollection;
+        protected IMongoCollection<QueuedJob> _tikaQueue;
+        protected IMongoCollection<StreamCheckpoint> _queueCheckpoint;
         protected DocumentStoreTestConfigurationForPollQueue _config;
         protected JobsHostConfiguration _jobsHostConfiguration;
         protected IBlobStore _blobStore;
@@ -88,27 +91,36 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo(), _engineVersion);
-            _jobsHostConfiguration = new JobsHostConfiguration();
-            MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
-            _config.SetTestAddress(TestConfig.ServerAddress);
-            _documentStoreService = new DocumentStoreBootstrapper();
-            _documentStoreService.Start(_config);
-            _documentStoreClient = new DocumentStoreServiceClient(
-                TestConfig.ServerAddress,
-                TestConfig.Tenant
-            );
-            _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
-            _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
-            _streamCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<StreamReadModel>("rm.Stream");
+            try
+            {
+                _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo(), _engineVersion);
+                _jobsHostConfiguration = new JobsHostConfiguration();
+                MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
+                _config.SetTestAddress(TestConfig.ServerAddress);
+                _documentStoreService = new DocumentStoreBootstrapper();
+                _documentStoreService.Start(_config);
+                _documentStoreClient = new DocumentStoreServiceClient(
+                    TestConfig.ServerAddress,
+                    TestConfig.Tenant
+                );
+                _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
+                _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
+                _streamCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<StreamReadModel>("rm.Stream");
 
-            _tikaQueue = MongoDbTestConnectionProvider.QueueDb.GetCollection<QueuedJob>("queue.tika");
-            _queueCheckpoint = MongoDbTestConnectionProvider.QueueDb.GetCollection<StreamCheckpoint>("stream.checkpoints");
+                _tikaQueue = MongoDbTestConnectionProvider.QueueDb.GetCollection<QueuedJob>("queue.tika");
+                _queueCheckpoint = MongoDbTestConnectionProvider.QueueDb.GetCollection<StreamCheckpoint>("stream.checkpoints");
 
-            TenantContext.Enter(new TenantId(TestConfig.Tenant));
-            var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
-            _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
-            _blobStore = tenant.Container.Resolve<IBlobStore>();
+                TenantContext.Enter(new TenantId(TestConfig.Tenant));
+                var tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
+                _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
+                _blobStore = tenant.Container.Resolve<IBlobStore>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+            
         }
 
         protected abstract QueueInfo[] OnGetQueueInfo();
@@ -431,8 +443,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
-            var handleClient = new DocumentHandle("verify_tika_job");
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job_multiple");
+            var handleClient = new DocumentHandle("verify_tika_job_multiple");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToPasswordProtectedPdf,
                handleClient,
@@ -526,7 +538,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             await UpdateAndWait();
             var allStream = _streamCollection.FindAll();
-            var maxCheckpoint = allStream.Select(s => s.Id).Max();
+            var maxCheckpoint = allStream.ToList().Select(s => s.Id).Max();
             StreamCheckpoint checkpoint;
             DateTime startWait = DateTime.Now;
             do
@@ -542,7 +554,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 Assert.Fail("Queue Manager unable to process all stream readmodel record!!");
             }
-            Assert.That(_tikaQueue.Count(), Is.EqualTo(1), "Job generated for duplicate document, error");
+            Assert.That(_tikaQueue.AsQueryable().Count(), Is.EqualTo(1), "Job generated for duplicate document, error");
         }
 
 
@@ -1078,7 +1090,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 4)
                 {
                     var doc = _documentDescriptorCollection.Find(
-                        Query.EQ("Documents", handleClient.ToString()))
+                        Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", handleClient.ToString()))
                         .Single();
                     Assert.That(doc.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                         new Core.Model.DocumentHandle("content_zip_1"),
@@ -1298,7 +1310,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 {
                     //all attachment are unzipped correctly
                         var doc = _documentDescriptorCollection.Find(
-                        Query.EQ("Documents", handleClient.ToString()))
+                        Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", handleClient.ToString()))
                         .Single();
                     Assert.That(doc.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                         new Core.Model.DocumentHandle("attachment_email_1") }));
@@ -1361,7 +1373,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 {
                     //all attachment are unzipped correctly
                     var doc = _documentDescriptorCollection.Find(
-                        Query.EQ("Documents", handleClient.ToString()))
+                        Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", handleClient.ToString()))
                         .Single();
                     Assert.That(doc.Attachments, Has.Count.EqualTo(2), "primary document has wrong number of attachments");
                     return;
@@ -1439,7 +1451,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 docDescriptorCount = _documentDescriptorCollection.AsQueryable().Count();
                 Assert.That(docDescriptorCount, Is.EqualTo(0));
 
-                var docCount = _documentCollection.Count();
+                var docCount = _documentCollection.AsQueryable().Count();
                 Assert.That(docCount, Is.EqualTo(0));
                 return;
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);

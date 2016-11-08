@@ -16,6 +16,7 @@ using Jarvis.Framework.Shared.Commands;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Kernel.Support;
 
 namespace Jarvis.DocumentStore.Host
 {
@@ -29,9 +30,15 @@ namespace Jarvis.DocumentStore.Host
             if (File.Exists(lastErrorFileName)) File.Delete(lastErrorFileName);
             try
             {
+                MongoRegistration.RegisterMongoConversions(
+                    "NEventStore.Persistence.MongoDB"
+                    );
+
+                MongoFlatMapper.EnableFlatMapping(true);
+
                 CommandsExtensions.EnableDiagnostics = true;
                 Native.DisableWindowsErrorReporting();
-                MongoFlatMapper.EnableFlatMapping(); //before any chanche that the driver scan any type.
+                MongoFlatMapper.EnableFlatMapping(true); //before any chanche that the driver scan any type.
                 Int32 executionExitCode;
                 if (args.Length == 1 && (args[0] == "install" || args[0] == "uninstall"))
                 {
@@ -55,10 +62,8 @@ namespace Jarvis.DocumentStore.Host
         {
             var exitCode = HostFactory.Run(host =>
             {
-              
                 host.Service<Object>(service =>
                 {
-                    
                     service.ConstructUsing(() => new Object());
                     service.WhenStarted(s => Console.WriteLine("Start fake for install"));
                     service.WhenStopped(s => Console.WriteLine("Stop fake for install"));

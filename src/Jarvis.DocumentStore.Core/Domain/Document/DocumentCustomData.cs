@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Options;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Jarvis.DocumentStore.Core.Domain.Document
 {
+
     public class DocumentCustomData : Dictionary<string, object>
     {
         public DocumentCustomData()
@@ -28,6 +32,16 @@ namespace Jarvis.DocumentStore.Core.Domain.Document
                 return false;
 
             return dic1.Count == dic2.Count && !dic1.Except(dic2).Any();
+        }
+
+        internal DocumentCustomData Clone()
+        {
+            DocumentCustomData cloned = new DocumentCustomData();
+            foreach (var kvp in this)
+            {
+                cloned.Add(kvp.Key, kvp.Value);
+            }
+            return cloned;
         }
     }
 }

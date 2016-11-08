@@ -12,7 +12,7 @@ namespace Jarvis.DocumentStore.Host.Model
         public int Sequence { get; private set; }
         public DateTime Date { get; private set; }
         public Guid CommitId { get; private set; }
-        public string CheckPoint { get; private set; }
+        public Int64 CheckPoint { get; private set; }
         
         public IDictionary<string, object> Headers { get; private set; }
         public IList<EventMessage> Events { get; private set; }

@@ -80,5 +80,12 @@ namespace Jarvis.DocumentStore.Core.Model
         {
             return (string) this;
         }
+
+        internal FileNameWithExtension Clone()
+        {
+            return new FileNameWithExtension(this.FileName, this.Extension);
+        }
+
+
     }
 }

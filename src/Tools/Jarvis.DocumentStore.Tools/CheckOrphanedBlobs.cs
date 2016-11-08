@@ -66,7 +66,7 @@ namespace Jarvis.DocumentStore.Tools
         private static void PurgeOrphanedBlobs(HashSet<String> blobsToDelete, String connectionString, String format)
         {
             Console.WriteLine("Found {0} orphaned blobs in BlobStorage named {1}", blobsToDelete.Count, format);
-            if (blobsToDelete.Count > 0) 
+            if (blobsToDelete.Count > 0)
             {
                 Console.WriteLine("Press y if you want to delete them, any other key to list without deletion");
                 var key = Console.ReadKey();
@@ -96,7 +96,7 @@ namespace Jarvis.DocumentStore.Tools
                     }
                 }
             }
-            
+
         }
 
         private static HashSet<String> CheckBlobStore(
@@ -118,7 +118,7 @@ namespace Jarvis.DocumentStore.Tools
                 var id = blob["_id"].AsString;
                 DateTime uploadDate = blob["uploadDate"].AsDateTime;
                 if (!allValidBlobs.Contains(id) &&
-                    uploadDate< _dateLimit )
+                    uploadDate < _dateLimit)
                 {
                     blobToDelete.Add(id);
                 }

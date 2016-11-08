@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            MongoFlatMapper.EnableFlatMapping();
+            MongoFlatMapper.EnableFlatMapping(true);
         }
 
         [Test]

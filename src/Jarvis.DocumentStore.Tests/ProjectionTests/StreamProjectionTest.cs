@@ -195,7 +195,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _sut.Handle(evt, false); //Handle is linked to document.
             Assert.That(rmStream, Has.Count.EqualTo(1));
 
-            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
+            Assert.That(rmStream[0].DocumentDescriptorId, Is.EqualTo(new DocumentDescriptorId(1)));
         }
 
         [Test]
@@ -332,7 +332,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
-            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
+            Assert.That(rmStream[0].DocumentDescriptorId, Is.EqualTo(new DocumentDescriptorId(1)));
 
             Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
@@ -342,7 +342,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[1].FormatInfo.BlobId, Is.EqualTo(new BlobId("test")));
-            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
+            Assert.That(rmStream[1].DocumentDescriptorId, Is.EqualTo(new DocumentDescriptorId(1)));
         }
 
         [Test]
@@ -374,7 +374,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[0].Filename.FileName, Is.EqualTo("test"));
             Assert.That(rmStream[0].Filename.Extension, Is.EqualTo("txt"));
             Assert.That(rmStream[0].FormatInfo.BlobId, Is.EqualTo(new BlobId("file_1")));
-            Assert.That(rmStream[0].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
+            Assert.That(rmStream[0].DocumentDescriptorId, Is.EqualTo(new DocumentDescriptorId(1)));
 
             Assert.That(rmStream[1].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentHasNewFormat));
             Assert.That(rmStream[1].Handle, Is.EqualTo("rev_1"));
@@ -383,7 +383,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[1].FormatInfo.PipelineId.ToString(), Is.EqualTo("tika"));
             Assert.That(rmStream[1].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
             Assert.That(rmStream[1].Filename.Extension, Is.EqualTo("txt"));
-            Assert.That(rmStream[1].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
+            Assert.That(rmStream[1].DocumentDescriptorId, Is.EqualTo(new DocumentDescriptorId(1)));
 
             Assert.That(rmStream[2].EventType, Is.EqualTo(HandleStreamEventTypes.DocumentFormatUpdated));
             Assert.That(rmStream[2].Handle, Is.EqualTo("rev_1"));
@@ -392,7 +392,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.That(rmStream[2].FormatInfo.PipelineId.ToString(), Is.EqualTo("tika"));
             Assert.That(rmStream[2].Filename.FileName, Is.EqualTo("test")); //expectation returns always the same handle
             Assert.That(rmStream[2].Filename.Extension, Is.EqualTo("txt"));
-            Assert.That(rmStream[2].DocumentId, Is.EqualTo(new DocumentDescriptorId(1)));
+            Assert.That(rmStream[2].DocumentDescriptorId, Is.EqualTo(new DocumentDescriptorId(1)));
         }
     }
 }

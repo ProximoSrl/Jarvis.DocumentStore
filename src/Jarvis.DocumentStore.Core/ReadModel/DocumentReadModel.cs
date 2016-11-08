@@ -7,11 +7,13 @@ using Jarvis.Framework.Shared.ReadModel;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
+
 using MongoDB.Driver.Linq;
 using System.Collections.Generic;
 using System;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.Framework.Shared.Helpers;
+using MongoDB.Driver.Linq;
 
 namespace Jarvis.DocumentStore.Core.ReadModel
 {
@@ -96,10 +98,10 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             set { _logger = value; }
         }
 
-        readonly MongoCollection<DocumentReadModel> _collection;
+        readonly IMongoCollection<DocumentReadModel> _collection;
         private ILogger _logger = NullLogger.Instance;
 
-        public DocumentWriter(MongoDatabase readModelDb)
+        public DocumentWriter(IMongoDatabase readModelDb)
         {
             _collection = readModelDb.GetCollection<DocumentReadModel>(CollectionNames.GetCollectionName<DocumentReadModel>());
         }
@@ -107,30 +109,30 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void Promise(DocumentHandle handle, long createdAt)
         {
             Logger.DebugFormat("Promise on handle {0} [{1}]", handle, createdAt);
-            var args = new FindAndModifyArgs
-            {
-                Query = Query.And(
-                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
-                    Query<DocumentReadModel>.LT(x => x.ProjectedAt, createdAt)
-                ),
-                Update = Update<DocumentReadModel>
-                    .SetOnInsert(x => x.CustomData, null)
-                    .SetOnInsert(x => x.ProjectedAt, 0)
-                    .Set(x => x.DocumentDescriptorId, null)
-                    .Set(x => x.CreatetAt, createdAt)
-                    .Set(x => x.FileName, null),
-                Upsert = true,
-                VersionReturned = FindAndModifyDocumentVersion.Modified
-            };
-
+            
             try
             {
-                var result = _collection.FindAndModify(args);
+                var result = _collection.FindOneAndUpdate(
+                     Builders<DocumentReadModel>.Filter.And(
+                        Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
+                        Builders<DocumentReadModel>.Filter.Lt(x => x.ProjectedAt, createdAt)
+                    ),
+                     Builders < DocumentReadModel >.Update
+                        .SetOnInsert(x => x.CustomData, null)
+                        .SetOnInsert(x => x.ProjectedAt, 0)
+                        .Set(x => x.DocumentDescriptorId, null)
+                        .Set(x => x.CreatetAt, createdAt)
+                        .Set(x => x.FileName, null),
+                     new FindOneAndUpdateOptions<DocumentReadModel, DocumentReadModel>()
+                     {
+                         ReturnDocument = ReturnDocument.After,
+                         IsUpsert = true,
+                     }
+                    );
 
                 if (Logger.IsDebugEnabled)
                 {
-                    Logger.DebugFormat("Promise on handle {0} [{1}] : {2}", handle, createdAt,
-                        result.ModifiedDocument != null ? result.ModifiedDocument.ToJson() : "null");
+                    Logger.DebugFormat("Promise on handle {0} [{1}] : {2}", handle, createdAt, result != null);
                 }
 
             }
@@ -143,22 +145,25 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void SetFileName(DocumentHandle handle, FileNameWithExtension fileName, long projectedAt)
         {
             Logger.DebugFormat("SetFilename on handle {0} [{1}]", handle, projectedAt);
-            var args = new FindAndModifyArgs
-            {
-                Query = Query.And(
-                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
-                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
-                ),
-                Update = Update<DocumentReadModel>
-                    .Set(x => x.FileName, fileName)
-                    .Set(x => x.ProjectedAt, projectedAt)
-            };
-            _collection.FindAndModify(args);
+            var result = _collection.FindOneAndUpdate(
+                    Builders<DocumentReadModel>.Filter.And(
+                       Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
+                       Builders<DocumentReadModel>.Filter.Lte(x => x.CreatetAt, projectedAt)
+                   ),
+                    Builders<DocumentReadModel>.Update
+                       .Set(x => x.FileName, fileName)
+                        .Set(x => x.ProjectedAt, projectedAt),
+                    new FindOneAndUpdateOptions<DocumentReadModel, DocumentReadModel>()
+                    {
+                        ReturnDocument = ReturnDocument.After
+                    }
+                   );
+
         }
 
         public long Count()
         {
-            return _collection.Count();
+            return _collection.AsQueryable().Count();
         }
 
         public void LinkDocument(DocumentHandle handle, DocumentDescriptorId id, long projectedAt)
@@ -178,29 +183,27 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         private Boolean InnerCreateLinkToDocument(DocumentHandle handle, DocumentDescriptorId id, Boolean? deDuplication, long projectedAt)
         {
             Logger.DebugFormat("LinkDocument on handle {0} [{1}]", handle, projectedAt);
-            var update = Update<DocumentReadModel>
-                    .Set(x => x.DocumentDescriptorId, id)
-                    .Set(x => x.ProjectedAt, projectedAt);
 
-            var query = Query.And(
-                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
-                    Query<DocumentReadModel>.NE(x => x.DocumentDescriptorId, id),
-                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
-                );
-            var args = new FindAndModifyArgs
-            {
-                Query = query,
-                Update = update,
-                VersionReturned = FindAndModifyDocumentVersion.Modified
-            };
-            var result = _collection.FindAndModify(args);
+            var result = _collection.FindOneAndUpdate(
+               Builders<DocumentReadModel>.Filter.And(
+                  Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
+                  Builders<DocumentReadModel>.Filter.Ne(x => x.DocumentDescriptorId, id),
+                  Builders<DocumentReadModel>.Filter.Lte(x => x.CreatetAt, projectedAt)
+              ),
+               Builders<DocumentReadModel>.Update
+                   .Set(x => x.DocumentDescriptorId, id)
+                   .Set(x => x.ProjectedAt, projectedAt),
+            new FindOneAndUpdateOptions<DocumentReadModel, DocumentReadModel>()
+               {
+                   ReturnDocument = ReturnDocument.After
+               }
+              );
 
             if (Logger.IsDebugEnabled)
             {
-                Logger.DebugFormat("LinkDocument on handle {0} [{1}] : {2}", handle, projectedAt,
-                    result.ModifiedDocument != null ? result.ModifiedDocument.ToJson() : "null");
+                Logger.DebugFormat("LinkDocument on handle {0} [{1}] : {2}", handle, projectedAt, result != null);
             }
-            return result.ModifiedDocument != null;
+            return result != null;
         }
 
         
@@ -209,28 +212,25 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void UpdateCustomData(DocumentHandle handle, DocumentCustomData customData)
         {
             Logger.DebugFormat("UpdateCustomData on handle {0}", handle);
-            var args = new FindAndModifyArgs
+
+            var result = _collection.FindOneAndUpdate(
+               Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
+               Builders<DocumentReadModel>.Update.Set(x => x.CustomData, customData),
+            new FindOneAndUpdateOptions<DocumentReadModel, DocumentReadModel>()
             {
-                Query = Query.And(
-                    Query<DocumentReadModel>.EQ(x => x.Handle, handle)
-                ),
-                Update = Update<DocumentReadModel>
-                    .Set(x => x.CustomData, customData)
-            };
-            _collection.FindAndModify(args);
+                ReturnDocument = ReturnDocument.After
+            });
         }
 
         public void Delete(DocumentHandle handle, long projectedAt)
         {
             Logger.DebugFormat("Delete on handle {0} [{1}]", handle, projectedAt);
-            var args = new FindAndRemoveArgs()
-            {
-                Query = Query.And(
-                    Query<DocumentReadModel>.EQ(x => x.Handle, handle),
-                    Query<DocumentReadModel>.LTE(x => x.CreatetAt, projectedAt)
-                )
-            };
-            _collection.FindAndRemove(args);
+
+            var result = _collection.FindOneAndDelete(
+               Builders<DocumentReadModel>.Filter.And(
+                  Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
+                  Builders<DocumentReadModel>.Filter.Lte(x => x.CreatetAt, projectedAt)
+              ));
 
         }
 
@@ -242,24 +242,37 @@ namespace Jarvis.DocumentStore.Core.ReadModel
         public void CreateIfMissing(DocumentHandle handle, DocumentDescriptorId documentDescriptorId, long createdAt)
         {
             Logger.DebugFormat("CreateIfMissing on handle {0} [{1}]", handle, createdAt);
-            var args = new FindAndModifyArgs
+            Int32 iteration = 0;
+            do
             {
-                Query = Query<DocumentReadModel>
-                    .EQ(x => x.Handle, handle),
-                Update = Update<DocumentReadModel>
-                    .SetOnInsert(x => x.CustomData, null)
-                    .SetOnInsert(x => x.ProjectedAt, 0)
-                    .SetOnInsert(x => x.DocumentDescriptorId, documentDescriptorId)
-                    .SetOnInsert(x => x.CreatetAt, createdAt)
-                    .SetOnInsert(x => x.FileName, null),
-                Upsert = true
-            };
-            _collection.FindAndModify(args);
+                try
+                {
+                    var result = _collection.FindOneAndUpdate(
+                        Builders<DocumentReadModel>.Filter.Eq(x => x.Handle, handle),
+                        Builders<DocumentReadModel>.Update
+                            .SetOnInsert(x => x.CustomData, null)
+                            .SetOnInsert(x => x.ProjectedAt, 0)
+                            .SetOnInsert(x => x.DocumentDescriptorId, documentDescriptorId)
+                            .SetOnInsert(x => x.CreatetAt, createdAt)
+                            .SetOnInsert(x => x.FileName, null),
+                        new FindOneAndUpdateOptions<DocumentReadModel, DocumentReadModel>()
+                        {
+                            ReturnDocument = ReturnDocument.After,
+                            IsUpsert = true
+                        });
+                }
+                catch (MongoCommandException ex)
+                {
+                    if (ex.Message.Contains("E11000") == false)
+                        throw;
+                }
+            } while (iteration++ < 3);
+           
         }
 
         public DocumentReadModel FindOneById(DocumentHandle handle)
         {
-            return _collection.FindOneById(BsonValue.Create(handle));
+            return _collection.Find(Builders<DocumentReadModel>.Filter.Eq(d => d.Handle, handle)).SingleOrDefault();
         }
 
         public void Drop()
@@ -269,12 +282,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
 
         public void Init()
         {
-            _collection.CreateIndex(IndexKeys<DocumentReadModel>.Ascending(x => x.Handle, x => x.CreatetAt));
+            _collection.Indexes.CreateOne(Builders<DocumentReadModel>.IndexKeys.Ascending(x => x.Handle).Ascending(x => x.CreatetAt));
         }
 
         public void Create(DocumentHandle documentHandle)
         {
-            _collection.Insert(new DocumentReadModel(documentHandle));
+            _collection.InsertOne(new DocumentReadModel(documentHandle));
         }
 
 

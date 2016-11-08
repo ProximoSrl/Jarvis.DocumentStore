@@ -53,17 +53,17 @@ namespace Jarvis.DocumentStore.Core.Support
 
           
 
-            var readModelDb = _tenant.Get<MongoDatabase>("readmodel.db");
+            var readModelDb = _tenant.Get<IMongoDatabase>("readmodel.db");
 
             container.Register(
                 Component
                     .For<IDocumentWriter>()
                     .ImplementedBy<DocumentWriter>()
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
+                    .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb)),
                 Component
                     .For(typeof(IReader<,>), typeof(IMongoDbReader<,>))
                     .ImplementedBy(typeof(MongoReaderForProjections<,>))
-                    .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
+                    .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb))
             );
 
             container.Register(
@@ -93,7 +93,7 @@ namespace Jarvis.DocumentStore.Core.Support
                Component
                    .For<IConcurrentCheckpointTracker>()
                    .ImplementedBy<ConcurrentCheckpointTracker>()
-                   .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
+                   .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb)),
                Component
                    .For(new[]
                    {
@@ -101,7 +101,7 @@ namespace Jarvis.DocumentStore.Core.Support
                         typeof (IReadOnlyCollectionWrapper<,>)
                    })
                    .ImplementedBy(typeof(CollectionWrapper<,>))
-                   .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
+                   .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb)),
                Component
                    .For<IRebuildContext>()
                    .ImplementedBy<RebuildContext>()
@@ -109,7 +109,7 @@ namespace Jarvis.DocumentStore.Core.Support
                Component
                    .For<IMongoStorageFactory>()
                    .ImplementedBy<MongoStorageFactory>()
-                   .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb)),
+                   .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb)),
                Component
                    .For<DocumentDescriptorByHashReader>(),
                Component
@@ -117,7 +117,7 @@ namespace Jarvis.DocumentStore.Core.Support
                Component
                    .For<IRecycleBin>()
                    .ImplementedBy<RecycleBin>()
-                   .DependsOn(Dependency.OnValue<MongoDatabase>(readModelDb))
+                   .DependsOn(Dependency.OnValue<IMongoDatabase>(readModelDb))
                );
 
             if (!_config.IsReadmodelBuilder)
@@ -129,32 +129,56 @@ namespace Jarvis.DocumentStore.Core.Support
             //correctly.
             if (config.EngineVersion == "v1")
             {
-                container.Register(
-                    Component
-                      .For<IPollingClient>()
-                      .ImplementedBy<PollingClientWrapper>()
-                      .DependsOn(Dependency.OnConfigValue("boost", _config.Boost)),
-                    Component
-                        .For<ConcurrentProjectionsEngine, ITriggerProjectionsUpdate>()
-                        .ImplementedBy<ConcurrentProjectionsEngine>()
-                        .LifestyleSingleton()
-                        .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
-                        .StartUsingMethod(x => x.Start)
-                        .StopUsingMethod(x => x.Stop)
-                );
+                throw new NotSupportedException("V1 projection engine not supported anymore");
+                //container.Register(
+                //    Component
+                //      .For<IPollingClient>()
+                //      .ImplementedBy<PollingClientWrapper>()
+                //      .DependsOn(Dependency.OnConfigValue("boost", _config.Boost)),
+                //    Component
+                //        .For<ConcurrentProjectionsEngine, ITriggerProjectionsUpdate>()
+                //        .ImplementedBy<ConcurrentProjectionsEngine>()
+                //        .LifestyleSingleton()
+                //        .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
+                //        .StartUsingMethod(x => x.Start)
+                //        .StopUsingMethod(x => x.Stop)
+                //);
             }
             else if (config.EngineVersion == "v2")
+            {
+                throw new NotSupportedException("V2 projection engine not supported anymore because of NES6 dropping standard commit polling client");
+                //container.Register(
+                //    Component.For<ProjectionEngineConfig>()
+                //        .Instance(config),
+                //   Component
+                //       .For<ICommitPollingClient>()
+                //       .ImplementedBy<CommitPollingClient>()
+                //       .DependsOn(Dependency.OnValue("id", "Main-Poller"))
+                //       .LifeStyle.Transient,
+                //    Component
+                //        .For<Func<IPersistStreams, ICommitPollingClient>>()
+                //        .Instance(ps => container.Resolve<ICommitPollingClient>(new { persistStreams = ps })),
+                //  Component
+                //        .For<ProjectionEngine, ITriggerProjectionsUpdate>()
+                //        .ImplementedBy<ProjectionEngine>()
+                //        .LifestyleSingleton()
+                //        .StartUsingMethod(x => x.Start)
+                //        .StopUsingMethod(x => x.Stop)
+                //        );
+            }
+            else if (config.EngineVersion == "v3")
             {
                 container.Register(
                     Component.For<ProjectionEngineConfig>()
                         .Instance(config),
                    Component
-                       .For<CommitPollingClient>()
-                       .ImplementedBy<CommitPollingClient>()
+                       .For<ICommitPollingClient>()
+                       .ImplementedBy<CommitPollingClient2>()
+                       .DependsOn(Dependency.OnValue("id", "Main-Poller"))
                        .LifeStyle.Transient,
                     Component
-                        .For<Func<IPersistStreams, CommitPollingClient>>()
-                        .Instance(ps => container.Resolve<CommitPollingClient>(new { persistStreams = ps })),
+                        .For<Func<IPersistStreams, ICommitPollingClient>>()
+                        .Instance(ps => container.Resolve<ICommitPollingClient>(new { persistStreams = ps })),
                   Component
                         .For<ProjectionEngine, ITriggerProjectionsUpdate>()
                         .ImplementedBy<ProjectionEngine>()
@@ -162,7 +186,7 @@ namespace Jarvis.DocumentStore.Core.Support
                         .StartUsingMethod(x => x.Start)
                         .StopUsingMethod(x => x.Stop)
                         );
-            }  
+            }
         }
     }
 }

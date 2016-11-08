@@ -1,7 +1,7 @@
 using Jarvis.ConfigurationService.Client;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
-using MongoDB.Driver.GridFS;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -28,6 +28,16 @@ namespace Jarvis.DocumentStore.Host.Support
             Set("originals.db", GetDatabase("originals"));
             Set("artifacts.db", GetDatabase("artifacts"));
             Set("readmodel.db", GetDatabase("readmodel"));
+
+            Set("originals.db.legacy", GetLegacyDatabase("originals"));
+            Set("artifacts.db.legacy", GetLegacyDatabase("artifacts"));
+        }
+
+        private MongoDatabase GetLegacyDatabase(string connectionStringName)
+        {
+            MongoUrl url = new MongoUrl(this.GetConnectionString(connectionStringName));
+            MongoClient client = new MongoClient(url);
+            return client.GetServer().GetDatabase(url.DatabaseName);
         }
     }
 }

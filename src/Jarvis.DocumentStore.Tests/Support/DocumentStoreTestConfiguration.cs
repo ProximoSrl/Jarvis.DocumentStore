@@ -12,8 +12,9 @@ namespace Jarvis.DocumentStore.Tests.Support
 {
     public class DocumentStoreTestConfiguration : DocumentStoreConfiguration
     {
-        public DocumentStoreTestConfiguration(String engineVersion = "v1", String tenantId = "tests")
+        public DocumentStoreTestConfiguration(String engineVersion = "v3", String tenantId = "tests")
         {
+            if (engineVersion != "v3") throw new NotSupportedException("Only v3 is supported with this version of NES");
             EngineVersion = engineVersion;
             IsApiServer = true;
             IsWorker = false;
@@ -56,7 +57,7 @@ namespace Jarvis.DocumentStore.Tests.Support
 
     public class DocumentStoreTestConfigurationForPollQueue : DocumentStoreTestConfiguration
     {
-        public DocumentStoreTestConfigurationForPollQueue( QueueInfo[] queueInfo, String engineVersion = "v1")
+        public DocumentStoreTestConfigurationForPollQueue( QueueInfo[] queueInfo, String engineVersion = "v3")
         {
             IsQueueManager = true;
             QueueJobsPollInterval = 50; //poll each 50 milliseconds.

@@ -21,6 +21,9 @@ using MongoDB.Driver;
 using Jarvis.DocumentStore.Tests.Support;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+
+using Jarvis.Framework.Shared.Helpers;
+
 namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 {
     [TestFixture]
@@ -64,12 +67,12 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 
             container.Resolve<IBlobStore>().Returns(_blobstore);
             container.Resolve<IIdentityGenerator>().Returns(identityGenerator);
-            container.Resolve<MongoDatabase>().Returns(MongoDbTestConnectionProvider.ReadModelDb);
+            container.Resolve<IMongoDatabase>().Returns(MongoDbTestConnectionProvider.ReadModelDb);
             var collection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<ImportFailure>("sys.importFailures");
             collection.Drop();
             DocumentStoreTestConfiguration config = new DocumentStoreTestConfiguration(tenantId : "tests");
             config.SetFolderToMonitor(TestConfig.QueueFolder);
-            var sysDb = config.TenantSettings.Single(t => t.TenantId == "tests").Get<MongoDatabase>("system.db");
+            var sysDb = config.TenantSettings.Single(t => t.TenantId == "tests").Get<IMongoDatabase>("system.db");
             sysDb.Drop();
             _queue = new ImportFormatFromFileQueue(config, accessor, _commandBus)
             {
@@ -117,7 +120,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
         {
             _queue.DeleteTaskFileAfterImport = true;
             var descriptor = _queue.LoadTask(_pathToTask);
-            _queue.UploadFile(descriptor);
+            _queue.UploadFile(_pathToTask, descriptor);
             Assert.That(File.Exists(_pathToTask), Is.False);
         }
 

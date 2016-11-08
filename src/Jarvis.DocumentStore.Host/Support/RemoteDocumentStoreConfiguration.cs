@@ -69,7 +69,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 AddMetersOptions((string)binding.Name, (string)binding.Value);
             }
 
-            EngineVersion = ConfigurationServiceClient.Instance.GetSetting("projection-engine-version", "v1");
+            EngineVersion = ConfigurationServiceClient.Instance.GetSetting("nes-engine-version", "v3");
             ConfigurationServiceClient.Instance.WithArraySetting("poller-buckets", buckets =>
             {
                 if (buckets != null)
@@ -107,6 +107,9 @@ namespace Jarvis.DocumentStore.Host.Support
                 listOfFolders.Add((string)folder);
             }
             MonitorFolders(listOfFolders.ToArray());
+
+            EnableSnapshotCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-snapshot-cache", "true"), StringComparison.OrdinalIgnoreCase);
+            EnableSingleAggregateRepositoryCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-single-aggregate-repository-cache", "true"), StringComparison.OrdinalIgnoreCase);
         }
 
         private static void FillQueueList(List<QueueInfo> queueInfoList)

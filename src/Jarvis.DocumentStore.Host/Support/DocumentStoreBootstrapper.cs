@@ -21,6 +21,17 @@ using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Metrics;
 using Jarvis.Framework.Kernel.ProjectionEngine.Client;
 using Jarvis.DocumentStore.Host.Controllers;
+using System.Threading;
+using MongoDB.Driver;
+using Jarvis.Framework.Kernel.Support;
+using Castle.Windsor.Diagnostics;
+using Castle.MicroKernel;
+using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
+using Jarvis.NEventStoreEx;
+using Jarvis.Framework.Shared;
+using System.Threading.Tasks;
+using MongoDB.Driver.Core.Clusters;
+using Jarvis.DocumentStore.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -30,10 +41,53 @@ namespace Jarvis.DocumentStore.Host.Support
         IWindsorContainer _container;
         ILogger _logger;
         DocumentStoreConfiguration _config;
+        private Boolean _initialized = false;
+
+        private Boolean isStopped = false;
+        public TenantManager Manager { get; private set; }
+
+        private String[] _databaseNames = new[] { "events", "originals", "artifacts", "system", "readmodel" };
+
         public void Start(DocumentStoreConfiguration config)
         {
             _config = config;
+
+            if (_config.EnableSingleAggregateRepositoryCache)
+            {
+                JarvisFrameworkGlobalConfiguration.EnableSingleAggregateRepositoryCache();
+            }
+            else
+            {
+                JarvisFrameworkGlobalConfiguration.DisableSingleAggregateRepositoryCache();
+            }
+            if (_config.EnableSnapshotCache)
+            {
+                JarvisFrameworkGlobalConfiguration.EnableSingleAggregateRepositoryCache();
+            }
+            else
+            {
+                JarvisFrameworkGlobalConfiguration.DisableSingleAggregateRepositoryCache();
+            }
+
+
             BuildContainer(config);
+            Manager = BuildTenants(_container, config);
+            //Setup database check.
+            foreach (var tenant in _config.TenantSettings)
+            {
+                foreach (var connection in _databaseNames)
+                {
+                    DatabaseHealthCheck check = new DatabaseHealthCheck(
+                          String.Format("Tenant: {0} [Db:{1}]", tenant.TenantId, connection),
+                          tenant.GetConnectionString(connection));
+                }
+            }
+
+            while (StartupCheck() == false)
+            {
+                _logger.InfoFormat("Some precondition to start the service are not met. Will retry in 3 seconds!");
+                Thread.Sleep(3000);
+            }
 
             if (RebuildSettings.ShouldRebuild && Environment.UserInteractive)
             {
@@ -52,12 +106,65 @@ namespace Jarvis.DocumentStore.Host.Support
                 config.IsReadmodelBuilder
             );
 
-            Manager = BuildTenants(_container, config);
+            InitializeEverything(config);
 
+            //Check if container misconfigured
+            _container.CheckConfiguration();          
+        }
+
+        private bool StartupCheck()
+        {
+            var result = CheckDatabase();
+
+            if (!result)
+                _logger.Warn("One or more mongo instances are not operational.");
+
+            return result;
+        }
+
+        private bool CheckDatabase()
+        {
+            //verify all connection to MongoDB. Lots of object initialize everything in constructor and initialization
+            //fails if mongo database is not operational.
+            if (!CheckConnection(_config.QueueConnectionString))
+                return false;
+
+            foreach (var tenant in _config.TenantSettings)
+            {
+                foreach (var connection in _databaseNames)
+                {
+                    if (!CheckConnection(tenant.GetConnectionString(connection)))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private Boolean CheckConnection(String connection)
+        {
+            var url = new MongoUrl(connection);
+            var client = new MongoClient(url);
+            Task.Factory.StartNew(() =>
+            {
+                var allDb = client.ListDatabases();
+            }); //forces a database connection
+            Int32 spinCount = 0;
+            ClusterState clusterState;
+
+            while ((clusterState = client.Cluster.Description.State) != ClusterState.Connected &&
+                spinCount++ < 100)
+            {
+                Thread.Sleep(20);
+            }
+            return clusterState == MongoDB.Driver.Core.Clusters.ClusterState.Connected;
+        }
+
+        private void InitializeEverything(DocumentStoreConfiguration config)
+        {
             var installers = new List<IWindsorInstaller>()
             {
                 new CoreInstaller(config),
-                new EventStoreInstaller(Manager),
+                new EventStoreInstaller(Manager, config),
                 new SchedulerInstaller(false),
                 new BackgroundTasksInstaller(config),
                 new QueueInfrasctructureInstaller(config.QueueConnectionString, config.QueueInfoList),
@@ -109,6 +216,7 @@ namespace Jarvis.DocumentStore.Host.Support
                 _logger.DebugFormat("Configured Projections for tenant {0}", tenant.Id);
 
                 tenant.Container.Install(tenantInstallers.ToArray());
+                tenant.Container.CheckConfiguration();
 
             }
 
@@ -127,7 +235,7 @@ namespace Jarvis.DocumentStore.Host.Support
                     _logger.ErrorFormat(ex, "Shutting down {0}", act.GetType().FullName);
                 }
             }
-
+            _initialized = true;
         }
 
         void BuildContainer(DocumentStoreConfiguration config)
@@ -138,8 +246,11 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.Kernel.Resolver.AddSubResolver(new CollectionResolver(_container.Kernel, true));
             _container.Kernel.Resolver.AddSubResolver(new ArrayResolver(_container.Kernel, true));
 
-
             _container.AddFacility<LoggingFacility>(config.CreateLoggingFacility);
+
+#if DEBUG
+            UdpAppender.AppendToConfiguration();
+#endif
 
             _container.AddFacility<StartableFacility>();
             _container.AddFacility<TypedFactoryFacility>();
@@ -168,9 +279,6 @@ namespace Jarvis.DocumentStore.Host.Support
 
             return manager;
         }
-
-        private Boolean isStopped = false;
-        public TenantManager Manager { get; private set; }
 
         public void Stop()
         {
