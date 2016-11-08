@@ -55,11 +55,15 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             StringValueCustomBsonTypeMapper.Register<FileHash>();
 
             _writer = new DocumentWriter(MongoDbTestConnectionProvider.ReadModelDb);
-            var _documentDescriptorCollection = new CollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId>
+            var _documentDescriptorCollection = new MongoReaderForProjections<DocumentDescriptorReadModel, DocumentDescriptorId>
                 (
                 new MongoStorageFactory(MongoDbTestConnectionProvider.ReadModelDb, 
-                    new RebuildContext(true)), null);
-            _sut = new DocumentProjection(_writer, _documentDescriptorCollection);
+                    new RebuildContext(true)));
+            var _documentDeletedCollection = new CollectionWrapper<DocumentDeletedReadModel, String>
+               (
+               new MongoStorageFactory(MongoDbTestConnectionProvider.ReadModelDb,
+                   new RebuildContext(true)), null);
+            _sut = new DocumentProjection(_writer, _documentDescriptorCollection, _documentDeletedCollection);
         }
 
         [Test]

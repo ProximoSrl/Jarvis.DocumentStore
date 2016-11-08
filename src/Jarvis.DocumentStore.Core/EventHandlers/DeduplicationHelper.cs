@@ -38,17 +38,17 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             Logger.DebugFormat("Deduplicating document {0}", sourceDocumentId);
             foreach (var match in matches)
             {
-                if (match.DocumentId == sourceDocumentId)
+                if (match.DocumentDescriptorId == sourceDocumentId)
                     continue;
 
-                Logger.DebugFormat("Checking document {0}", match.DocumentId);
+                Logger.DebugFormat("Checking document {0}", match.DocumentDescriptorId);
 
                 var candidate = this._blobStore.GetDescriptor(match.BlobId);
                 // only within same content type!
                 if (candidate.ContentType != original.ContentType)
                 {
                     Logger.DebugFormat("document {0} has different ContentType ({1}), skipping",
-                        match.DocumentId, candidate.ContentType
+                        match.DocumentDescriptorId, candidate.ContentType
                         );
                     continue;
                 }
@@ -57,7 +57,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                 if (candidate.Length != original.Length)
                 {
                     Logger.DebugFormat("document {0} has different length ({1}), skipping",
-                        match.DocumentId, candidate.Length
+                        match.DocumentDescriptorId, candidate.Length
                         );
                     continue;
                 }
@@ -69,14 +69,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     if (StreamHelper.StreamsContentsAreEqual(candidateStream, originalStream))
                     {
                         Logger.DebugFormat("{0} has same content of {1}: match found!",
-                            match.DocumentId, sourceDocumentId
+                            match.DocumentDescriptorId, sourceDocumentId
                             );
-                        return match.DocumentId;
+                        return match.DocumentDescriptorId;
                     }
                     else
                     {
                         Logger.DebugFormat("{0} has different content of {1}, skipping",
-                            match.DocumentId, sourceDocumentId
+                            match.DocumentDescriptorId, sourceDocumentId
                             );                        
                     }
                 }

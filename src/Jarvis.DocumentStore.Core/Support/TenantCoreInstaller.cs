@@ -1,9 +1,12 @@
+using Castle.Core.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.Framework.Shared.Logging;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver;
+using NEventStore.Logging;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -18,6 +21,9 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            ILogger baseLogger = container.Resolve<ILogger>();
+            var log = new NEventStoreLog4NetLogger(baseLogger);
+
             container.Register(
                 Component
                     .For<IBlobStore>()
@@ -51,7 +57,10 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<MongoDatabase>()
                     .Named("artifacts.db.legacy")
-                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("artifacts.db.legacy"))
+                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("artifacts.db.legacy")),
+                 Component
+                    .For<ILog>()
+                    .Instance(log)
                 );
         }
     }

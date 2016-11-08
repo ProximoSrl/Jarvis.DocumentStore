@@ -58,7 +58,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void upload_pdf_copyHandle()
         {
-            _docs.CopyHandleAsync(DocumentHandle.FromString("Rev_1"), DocumentHandle.FromString("Rev_1_copied"));
+            _docs.CopyHandleAsync(DocumentHandle.FromString("Rev_1"), DocumentHandle.FromString("Rev_1_copied")).Wait();
+        }
+
+        [Test]
+        public void upload_txt_document()
+        {
+            _docs.UploadAsync(TestConfig.PathToLoremIpsumTxt, DocumentHandle.FromString("text_document")).Wait();
         }
 
         [Test]
@@ -68,7 +74,23 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Thread.Sleep(3000);
             _docs.DeleteAsync(DocumentHandle.FromString("Revision_42")).Wait();
         }
-          
+
+        [Test]
+        public void upload_many_docs()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Doc1")).Wait();
+            _docs.UploadAsync(TestConfig.PathTo7Zip, DocumentHandle.FromString("Doc2")).Wait();
+            _docs.UploadAsync(TestConfig.PathToEml, DocumentHandle.FromString("Doc3")).Wait();
+        }
+
+        [Test]
+        public void upload_many_docs_delete()
+        {
+            _docs.DeleteAsync(DocumentHandle.FromString("Doc1")).Wait();
+            _docs.DeleteAsync(DocumentHandle.FromString("Doc2")).Wait();
+            _docs.DeleteAsync(DocumentHandle.FromString("Doc3")).Wait();
+        }
+
         [Test]
         public void upload_many_pdf()
         {

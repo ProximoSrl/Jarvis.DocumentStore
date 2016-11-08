@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Jarvis.Framework.Shared.Domain;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace Jarvis.DocumentStore.Core.Model
 {

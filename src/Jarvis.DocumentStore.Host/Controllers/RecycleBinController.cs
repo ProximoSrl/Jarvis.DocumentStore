@@ -139,6 +139,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public List<RecycleBinData> Documents { get; set; }
     }
+
     public class RecycleBinData
     {
         public String Handle { get; set; }

@@ -160,7 +160,7 @@
       <HintPath>..\..\packages\IvanAkcheurov.NTextCat.Lib.0.2.1.1\lib\net40\IvanAkcheurov.NTextCat.Lib.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Jarvis.Framework.MongoAppender2.1.1.28\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
+      <HintPath>..\..\packages\Jarvis.Framework.MongoAppender2.1.1.29\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Jarvis.Framework.UdpAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">

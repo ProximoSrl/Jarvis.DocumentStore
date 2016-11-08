@@ -6,8 +6,13 @@ Jarvis.DocumentStore
 ### Main documentation
 
 1. [Configuration Readme](/assets/Configs/README.md)
-2. [Prerequisites](/src/Prerequisites.md)
-2. [How to write jobs](/src/Jarvis.DocumentStore.Jobs/readme.md)
+1. [Prerequisites](/src/Prerequisites.md)
+1. [How to write jobs](/src/Jarvis.DocumentStore.Jobs/readme.md)
+
+### Wiki
+
+- [Release Notes](/wiki/ReleaseNotes.md)
+- [Manual database Upgrades](/wiki/BreakingChangesDb.md)
 
 ###Standard handler to grab document
 

@@ -107,6 +107,9 @@ namespace Jarvis.DocumentStore.Host.Support
                 listOfFolders.Add((string)folder);
             }
             MonitorFolders(listOfFolders.ToArray());
+
+            EnableSnapshotCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-snapshot-cache", "true"), StringComparison.OrdinalIgnoreCase);
+            EnableSingleAggregateRepositoryCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-single-aggregate-repository-cache", "true"), StringComparison.OrdinalIgnoreCase);
         }
 
         private static void FillQueueList(List<QueueInfo> queueInfoList)

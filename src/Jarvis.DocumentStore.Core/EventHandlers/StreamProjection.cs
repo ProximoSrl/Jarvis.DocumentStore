@@ -26,7 +26,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
          IEventHandler<FormatAddedToDocumentDescriptor>,
          IEventHandler<DocumentFileNameSet>,
          IEventHandler<DocumentFormatHasBeenUpdated>,
-         IEventHandler<DocumentDescriptorHasNewAttachment>
+         IEventHandler<DocumentDescriptorHasNewAttachment>,
+         IEventHandler<DocumentDescriptorDeleted>
     {
         private readonly ICollectionWrapper<StreamReadModel, Int64> _streamReadModelCollection;
         private readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReadModel;
@@ -111,7 +112,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                         Id = GetNewId(),
                         Handle = handle,
                         Filename = descriptor.FileNameWithExtension,
-                        DocumentId = (DocumentDescriptorId)e.AggregateId,
+                        DocumentDescriptorId = (DocumentDescriptorId)e.AggregateId,
                         FormatInfo = new FormatInfo()
                         {
                             BlobId = e.BlobId,
@@ -178,7 +179,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     Id = GetNewId(),
                     Handle = e.Handle,
                     Filename = descriptor.FileNameWithExtension,
-                    DocumentId = e.DocumentId,
+                    DocumentDescriptorId = e.DocumentId,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = format.Value.BlobId,
@@ -205,13 +206,13 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             var descriptor = _blobStore.GetDescriptor(e.BlobId);
             foreach (var handle in allHandles)
             {
-                var handleReadMode = _documentWriter.FindOneById(handle);
+                var handleReadModel = _documentWriter.FindOneById(handle);
                 _streamReadModelCollection.Insert(e, new StreamReadModel()
                 {
                     Id = GetNewId(),
                     Handle = handle,
                     Filename = descriptor.FileNameWithExtension,
-                    DocumentId = (DocumentDescriptorId)e.AggregateId,
+                    DocumentDescriptorId = (DocumentDescriptorId)e.AggregateId,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = e.BlobId,
@@ -221,7 +222,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                             : new PipelineId("original"),
                     },
                     EventType = HandleStreamEventTypes.DocumentHasNewFormat,
-                    DocumentCustomData = handleReadMode.CustomData,
+                    DocumentCustomData = handleReadModel != null ? handleReadModel.CustomData : new Domain.Document.DocumentCustomData(),
                 });
             }
         }
@@ -240,7 +241,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                     Id = GetNewId(),
                     Handle = handle,
                     Filename = descriptor.FileNameWithExtension,
-                    DocumentId = (DocumentDescriptorId)e.AggregateId,
+                    DocumentDescriptorId = (DocumentDescriptorId)e.AggregateId,
                     FormatInfo = new FormatInfo()
                     {
                         BlobId = e.BlobId,
@@ -264,12 +265,22 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
             {
                 Id = GetNewId(),
                 Handle = e.Attachment,
-                DocumentId = attachmentDescriptor.Id,
+                DocumentDescriptorId = attachmentDescriptor.Id,
                 EventType = HandleStreamEventTypes.DocumentHasNewAttachment,            
             };
             streamReadModel.AddEventData(StreamReadModelEventDataKeys.ChildHandle, e.Attachment);
            
             _streamReadModelCollection.Insert(e, streamReadModel);
+        }
+
+        public void On(DocumentDescriptorDeleted e)
+        {
+            _streamReadModelCollection.Insert(e, new StreamReadModel()
+            {
+                Id = GetNewId(),
+                DocumentDescriptorId = (DocumentDescriptorId) e.AggregateId,
+                EventType = HandleStreamEventTypes.DocumentDescriptorDeleted
+            });
         }
     }
 }

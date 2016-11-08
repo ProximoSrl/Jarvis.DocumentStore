@@ -7,6 +7,9 @@ using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.Framework.Kernel.Events;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using NEventStore;
+using System;
+using Jarvis.Framework.Shared.ReadModel;
+using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers
 {
@@ -20,14 +23,18 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         , IEventHandler<DocumentDescriptorInitialized>
     {
         readonly IDocumentWriter _writer;
-        private readonly ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorCollectionWrapper;
+        private readonly IReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
+        private readonly ICollectionWrapper<DocumentDeletedReadModel, String> _documentDeletedWrapper;
 
         public DocumentProjection(
-            IDocumentWriter writer, 
-            ICollectionWrapper<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorCollectionWrapper)
+            IDocumentWriter writer,
+            IReader<DocumentDescriptorReadModel, DocumentDescriptorId> documentDescriptorReader,
+            ICollectionWrapper<DocumentDeletedReadModel, String> documentDeletedWrapper)
         {
             _writer = writer;
-            _documentDescriptorCollectionWrapper = documentDescriptorCollectionWrapper;
+            _documentDescriptorReader = documentDescriptorReader;
+            _documentDeletedWrapper = documentDeletedWrapper;
+            _documentDeletedWrapper.Attach(this, false);
         }
 
         public override int Priority
@@ -43,6 +50,8 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public override void SetUp()
         {
             _writer.Init();
+            _documentDeletedWrapper.CreateIndex("Handle",
+                Builders<DocumentDeletedReadModel>.IndexKeys.Ascending(d => d.Handle));
         }
 
         public void On(DocumentLinked e)
@@ -82,6 +91,14 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentDeleted e)
         {
             _writer.Delete(e.Handle, e.CheckpointToken);
+            _documentDeletedWrapper.Insert(e, new DocumentDeletedReadModel()
+            {
+                Id = e.Handle + "+" + e.DocumentDescriptorId + "+" + e.CheckpointToken,
+                DeletionDate = e.CommitStamp,
+                Handle = e.Handle,
+                DocumentDescriptorId = e.DocumentDescriptorId
+            },
+            false);
         }
 
         public void On(DocumentFileNameSet e)
@@ -91,7 +108,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
 
         public void On(DocumentDescriptorHasBeenDeduplicated e)
         {
-            var originalDocumentDescriptor = _documentDescriptorCollectionWrapper.All.Single(d => d.Id == e.AggregateId); 
+            var originalDocumentDescriptor = _documentDescriptorReader.AllUnsorted.Single(d => d.Id == e.AggregateId); 
             _writer.DocumentDeDuplicated(
                 e.HandleInfo.Handle,
                 null,
