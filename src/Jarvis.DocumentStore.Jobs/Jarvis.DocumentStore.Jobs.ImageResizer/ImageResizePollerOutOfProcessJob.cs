@@ -6,6 +6,7 @@ using System;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using System.Drawing.Imaging;
+using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Jobs.ImageResizer
 {
@@ -17,7 +18,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
             base.QueueName = "imgResize";
         }
 
-        protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             var fileExtension = parameters.All[JobKeys.ThumbnailFormat];
             ImageFormat format = GetFormatFromExtension(fileExtension);
@@ -60,7 +61,7 @@ namespace Jarvis.DocumentStore.Jobs.ImageResizer
             }
 
             Logger.DebugFormat("Ended resize job for {0} - {1}", parameters.JobId, sizesAsString);
-            return true;
+            return ProcessResult.Ok;
         }
 
         private ImageFormat GetFormatFromExtension(string fileExtension)

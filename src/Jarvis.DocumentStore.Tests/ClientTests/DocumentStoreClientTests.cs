@@ -17,6 +17,7 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
     {
         private static readonly DocumentHandle Doc = new DocumentHandle("doc");
         private static readonly Guid TaskId = new Guid("9a29d730-f57a-41e4-92ba-55b7d99712a2");
+
         [Test]
         public void should_create_a_valid_document_import_data()
         {

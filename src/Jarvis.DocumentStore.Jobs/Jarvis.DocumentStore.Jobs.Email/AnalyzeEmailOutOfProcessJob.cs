@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Jobs.Email
         }
 
 
-        protected async override Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             var task = new MailMessageToHtmlConverterTask()
             {
@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Jobs.Email
               zipFile,
               new Dictionary<string, object>());
             
-            return true;
+            return ProcessResult.Ok;
         }
     }
 }

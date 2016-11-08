@@ -6,6 +6,8 @@ using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Threading.Tasks;
+
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
 {
     public class HtmlToPdfOutOfProcessJob : AbstractOutOfProcessPollerJob
@@ -16,7 +18,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
             base.QueueName = "htmlzip";
         }
 
-        protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
             String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
@@ -35,7 +37,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
                 new  DocumentFormat(DocumentFormats.Pdf), 
                 pdfConvertedFileName, 
                 new Dictionary<string, object>());
-            return true;
+            return ProcessResult.Ok;
         }
     }
 }

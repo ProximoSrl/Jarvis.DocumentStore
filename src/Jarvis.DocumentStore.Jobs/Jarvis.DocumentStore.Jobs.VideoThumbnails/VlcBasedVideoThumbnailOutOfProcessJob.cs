@@ -8,6 +8,8 @@ using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Shared.Helpers;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Threading.Tasks;
+
 namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 {
     public class VlcBasedVideoThumbnailOutOfProcessJob : AbstractOutOfProcessPollerJob
@@ -19,7 +21,7 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
             base.QueueName = "videoThumb";
         }
 
-        protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             String format = parameters.All.GetOrDefault(JobKeys.ThumbnailFormat) ?? "png";
             Int32 secondsOffset = Int32.Parse(parameters.All.GetOrDefault("thumb_seconds_offset") ?? "10");
@@ -56,7 +58,7 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 
                 Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.JobId, format);
             }
-            return true;
+            return ProcessResult.Ok;
         }
 
     }

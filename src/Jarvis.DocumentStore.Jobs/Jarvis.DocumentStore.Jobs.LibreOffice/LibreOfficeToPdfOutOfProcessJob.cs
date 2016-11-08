@@ -2,6 +2,7 @@
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
+using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Jobs.LibreOffice
 {
@@ -21,7 +22,7 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
             _conversion.Initialize();
         }
 
-        protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             Logger.DebugFormat(
                "Delegating conversion of file {0} to libreoffice",
@@ -41,7 +42,7 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
                 new DocumentFormat(DocumentFormats.Pdf),
                 outputFile,
                 new Dictionary<string, object>());
-            return true;
+            return ProcessResult.Ok;
         }
     }
 }

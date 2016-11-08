@@ -390,6 +390,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Docs\Architecture_files\css" />
+    <None Include="Docs\binary.bin" />
     <None Include="Docs\Document_copy.pdf" />
     <None Include="Docs\Lorem ipsum.pdf" />
     <None Include="Docs\Mail with attachments.msg">
@@ -547,6 +548,7 @@
     <Content Include="Docs\lang\de.txt" />
     <Content Include="Docs\lang\en.txt" />
     <Content Include="Docs\lang\it.txt" />
+    <Content Include="Docs\lorem.txt" />
     <Content Include="Docs\medium_image.jpg" />
     <Content Include="Docs\pdf.tika.html" />
     <None Include="Docs\WrongFiles\FileWithNumbers.txt">

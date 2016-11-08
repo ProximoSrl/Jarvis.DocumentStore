@@ -422,6 +422,17 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, data.CustomData);
         }
 
+        [Route("{tenantId}/documents/{handle}/@filename")]
+        [HttpGet]
+        public HttpResponseMessage GetFileName(TenantId tenantId, DocumentHandle handle)
+        {
+            var data = _handleWriter.FindOneById(handle);
+            if (data == null)
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Document not found");
+            var name = data.FileName != null ? data.FileName.FileName : "";
+            return Request.CreateResponse(HttpStatusCode.OK, new { FileName = name });
+        }
+
         [Route("{tenantId}/documents/{handle}")]
         [HttpGet]
         public async Task<HttpResponseMessage> GetFormatList(
