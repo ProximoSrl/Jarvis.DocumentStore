@@ -50,19 +50,19 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             foreach (var slot in list)
             {
-                Logger.DebugFormat("Deleting slot {0}", slot.Id.StreamId);
+                Logger.InfoFormat("Deleting slot {0} because it is in recyclebin and was deleted at {0}", slot.Id.StreamId, slot.DeletedAt);
                 var blobIds = (BlobId[])slot.Data["files"];
                 foreach (var blobId in blobIds.Distinct())
                 {
-                    Logger.DebugFormat("....deleting file {0}", blobId);
+                    Logger.InfoFormat("....deleting file {0}", blobId);
                     BlobStore.Delete(blobId);
                 }
 
                 RecycleBin.Purge(slot.Id);
 
-                Logger.DebugFormat("....deleting stream {0}.{1}", slot.Id.BucketId, slot.Id.StreamId);
+                Logger.InfoFormat("....deleting stream {0}.{1}", slot.Id.BucketId, slot.Id.StreamId);
                 Store.Advanced.DeleteStream(slot.Id.BucketId, slot.Id.StreamId);
-                Logger.DebugFormat("Slot {0} deleted", slot.Id.StreamId);
+                Logger.InfoFormat("Slot {0} deleted", slot.Id.StreamId);
             }
         }
 
@@ -76,13 +76,13 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             foreach (var slot in list)
             {
-                Logger.DebugFormat("Deleting slot {0}", slot.Id.StreamId);
+                Logger.InfoFormat("Deleting slot {0} because it is in recyclebin and was deleted at {0}", slot.Id.StreamId, slot.DeletedAt);
                 
                 RecycleBin.Purge(slot.Id);
 
-                Logger.DebugFormat("....deleting stream {0}.{1}", slot.Id.BucketId, slot.Id.StreamId);
+                Logger.InfoFormat("....deleting stream {0}.{1}", slot.Id.BucketId, slot.Id.StreamId);
                 Store.Advanced.DeleteStream(slot.Id.BucketId, slot.Id.StreamId);
-                Logger.DebugFormat("Slot {0} deleted", slot.Id.StreamId);
+                Logger.InfoFormat("Slot {0} deleted", slot.Id.StreamId);
             }
         }
 
