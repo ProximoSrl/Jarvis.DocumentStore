@@ -890,35 +890,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(aggregate.Version, Is.EqualTo(0));
         }
 
-        [Test]
-        public async void verify_composition_of_pdf_file()
-        {
-            var repo = _tenant.Container.Resolve<IRepositoryEx>();
-            await _documentStoreClient.UploadAsync(
-                TestConfig.PathToDocumentPdf, 
-                new DocumentHandle("first"));
-            await _documentStoreClient.UploadAsync(
-                TestConfig.PathToLoremIpsumTxt,
-                new DocumentHandle("second"));
-
-            await UpdateAndWaitAsync();
-
-            await _documentStoreClient.ComposePdf(
-                new DocumentHandle("Resulting"), 
-                new DocumentHandle("first"), 
-                new DocumentHandle("second"));
-            await UpdateAndWaitAsync();
-
-            DateTime waitStart = DateTime.Now;
-            DocumentReadModel result;
-            do
-            {
-                result = _documentCollection.AsQueryable().SingleOrDefault(
-                    d => d.Handle == new DocumentHandle("Resulting"));
-            } while (result != null && DateTime.Now.Subtract(waitStart).TotalSeconds < 10);
-
-            Assert.That(result, Is.Not.Null);
-        }
+       
 
         #region Helpers
 

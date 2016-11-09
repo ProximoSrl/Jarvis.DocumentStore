@@ -486,6 +486,10 @@
       <Project>{9b18cf88-8758-44e9-bed8-e5fd53504c8b}</Project>
       <Name>Jarvis.DocumentStore.Jobs.LibreOffice</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.PdfComposer\Jarvis.DocumentStore.Jobs.PdfComposer.csproj">
+      <Project>{3e3bec2f-f45e-4286-b780-3490ee4be091}</Project>
+      <Name>Jarvis.DocumentStore.Jobs.PdfComposer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.PdfThumbnails\Jarvis.DocumentStore.Jobs.PdfThumbnails.csproj">
       <Project>{b2c4ec5c-b514-4745-8cce-233f1e05dd1c}</Project>
       <Name>Jarvis.DocumentStore.Jobs.PdfThumbnails</Name>
