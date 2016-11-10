@@ -385,7 +385,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
                 if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(tikaFormat))
+                    documentDescriptor.Formats.ContainsKey(tikaFormat) &&
+                    documentDescriptor.Formats.ContainsKey(contentFormat))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[tikaFormat];
@@ -464,7 +465,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
                 if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(tikaFormat))
+                    documentDescriptor.Formats.ContainsKey(tikaFormat) &&
+                    documentDescriptor.Formats.ContainsKey(contentFormat))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[tikaFormat];
