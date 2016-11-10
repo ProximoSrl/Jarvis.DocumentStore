@@ -40,6 +40,7 @@ using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 using Jarvis.DocumentStore.Core.Domain.Document;
 
 using Jarvis.Framework.Shared.Helpers;
+using Jarvis.Framework.Shared.IdentitySupport;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -86,6 +87,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
             _commitCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<BsonDocument>("Commits");
             _blobStore = _tenant.Container.Resolve<IBlobStore>();
+
+            MongoFlatMapper.EnableFlatMapping(true);
         }
 
         [TearDown]

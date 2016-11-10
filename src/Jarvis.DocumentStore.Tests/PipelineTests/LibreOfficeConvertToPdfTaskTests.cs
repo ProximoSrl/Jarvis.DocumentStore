@@ -23,29 +23,38 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
-            MongoDbTestConnectionProvider.DropTestsTenant();
-
-            _mapping["docx"] = TestConfig.PathToWordDocument;
-            _mapping["xlsx"] = TestConfig.PathToExcelDocument;
-            _mapping["pptx"] = TestConfig.PathToPowerpointDocument;
-            _mapping["ppsx"] = TestConfig.PathToPowerpointShow;
-            _mapping["txt"] = TestConfig.PathToTextDocument;
-            _mapping["odt"] = TestConfig.PathToOpenDocumentText;
-            _mapping["ods"] = TestConfig.PathToOpenDocumentSpreadsheet;
-            _mapping["odp"] = TestConfig.PathToOpenDocumentPresentation;
-            _mapping["rtf"] = TestConfig.PathToRTFDocument;
-
-            _withLibreOfficeConversion = new LibreOfficeConversion(new JobsHostConfiguration())
+            try
             {
-                Logger = new ConsoleLogger()
-            };
+                MongoDbTestConnectionProvider.DropTestsTenant();
 
-            _unoConversion = new LibreOfficeUnoConversion(new JobsHostConfiguration())
+                _mapping["docx"] = TestConfig.PathToWordDocument;
+                _mapping["xlsx"] = TestConfig.PathToExcelDocument;
+                _mapping["pptx"] = TestConfig.PathToPowerpointDocument;
+                _mapping["ppsx"] = TestConfig.PathToPowerpointShow;
+                _mapping["txt"] = TestConfig.PathToTextDocument;
+                _mapping["odt"] = TestConfig.PathToOpenDocumentText;
+                _mapping["ods"] = TestConfig.PathToOpenDocumentSpreadsheet;
+                _mapping["odp"] = TestConfig.PathToOpenDocumentPresentation;
+                _mapping["rtf"] = TestConfig.PathToRTFDocument;
+
+                _withLibreOfficeConversion = new LibreOfficeConversion(new JobsHostConfiguration())
+                {
+                    Logger = new ConsoleLogger()
+                };
+
+                _unoConversion = new LibreOfficeUnoConversion(new JobsHostConfiguration())
+                {
+                    Logger = new ConsoleLogger()
+                };
+
+                _unoConversion.CloseOpenOffice();
+            }
+            catch (Exception ex)
             {
-                Logger = new ConsoleLogger()
-            };
-
-            _unoConversion.CloseOpenOffice();
+                Console.WriteLine(ex);
+                throw;
+            }
+           
         }
 
         [SetUp]
