@@ -9,7 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Host", "Jarvis.DocumentStore.Host\Jarvis.DocumentStore.Host.csproj", "{26EE5189-77AD-4D18-BD4E-313E024E8941}"
 	ProjectSection(ProjectDependencies) = postProject
+		{7318FF00-B255-40A0-B80A-3FECD379D4D0} = {7318FF00-B255-40A0-B80A-3FECD379D4D0}
 		{65411E15-6EC3-455F-A5E4-34446A808474} = {65411E15-6EC3-455F-A5E4-34446A808474}
+		{3E3BEC2F-F45E-4286-B780-3490EE4BE091} = {3E3BEC2F-F45E-4286-B780-3490EE4BE091}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Client", "Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj", "{A7B56DEE-8009-47B2-89E4-C9F7A5C67236}"
@@ -58,6 +60,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.VideoThumbnails", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.VideoThumbnails\Jarvis.DocumentStore.Jobs.VideoThumbnails.csproj", "{28C9F1E9-9780-478E-BDCB-B7DFD91C290F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.PdfConverter", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.PdfConverter\Jarvis.DocumentStore.Jobs.PdfConverter.csproj", "{7318FF00-B255-40A0-B80A-3FECD379D4D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.PdfComposer", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.PdfComposer\Jarvis.DocumentStore.Jobs.PdfComposer.csproj", "{3E3BEC2F-F45E-4286-B780-3490EE4BE091}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +141,10 @@ Global
 		{7318FF00-B255-40A0-B80A-3FECD379D4D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7318FF00-B255-40A0-B80A-3FECD379D4D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7318FF00-B255-40A0-B80A-3FECD379D4D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E3BEC2F-F45E-4286-B780-3490EE4BE091}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E3BEC2F-F45E-4286-B780-3490EE4BE091}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E3BEC2F-F45E-4286-B780-3490EE4BE091}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E3BEC2F-F45E-4286-B780-3490EE4BE091}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,5 +163,6 @@ Global
 		{CA9AD683-00E1-4CB4-B2B0-8BAB5019024A} = {52D0F625-04DB-48F8-AB17-99D33F93CD82}
 		{28C9F1E9-9780-478E-BDCB-B7DFD91C290F} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{7318FF00-B255-40A0-B80A-3FECD379D4D0} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
+		{3E3BEC2F-F45E-4286-B780-3490EE4BE091} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 	EndGlobalSection
 EndGlobal

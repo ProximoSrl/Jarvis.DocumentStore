@@ -41,6 +41,10 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             BuildContainer(config);
 
             var allPollers = _container.ResolveAll<IPollerJob>();
+            if (allPollers.Length == 0)
+            {
+                _logger.Error("No poller configured, jobs assembly does not contains class that inherits from AbstractOutOfProcessPollerJob or the name of assemblies does not contains Jobs in the name.");
+            }
             foreach (var poller in allPollers)
             {
                 _logger.InfoFormat("Poller: {0} - IsOutOfProcess {1} - IsActive {2} - Type {3}", poller.QueueName, poller.IsOutOfProcess, poller.IsActive, poller.GetType().Name);
@@ -122,7 +126,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                     .BasedOn<IPollerTest>()
                     .WithServiceFirstInterface() ,
 
-                //Register from dll that contains Jobs in name.
+                //Rgister from dll that contains Jobs in name.
                 Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*")) 
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface(),

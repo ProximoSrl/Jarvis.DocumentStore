@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter
             base.QueueName = "pdfConverter";
         }
 
-        protected async override Task<bool> OnPolling(
+        protected async override Task<ProcessResult> OnPolling(
             Shared.Jobs.PollerJobParameters parameters,
             string workingFolder)
         {
@@ -33,14 +33,14 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter
             if (converter == null)
             {
                 Logger.InfoFormat("No converter for extension {0}", Path.GetExtension(pathToFile));
-                return true;
+                return ProcessResult.Ok;
             }
 
             string outFile = Path.Combine(workingFolder, Guid.NewGuid() + ".pdf");
             if (!converter.Convert(pathToFile, outFile))
             {
                 Logger.ErrorFormat("Error converting file {0} to pdf", pathToFile);
-                return false;
+                return ProcessResult.Fail;
             }
 
             await AddFormatToDocumentFromFile(
@@ -50,8 +50,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter
                outFile,
                new Dictionary<string, object>());
 
-
-            return true;
+            return ProcessResult.Ok;
         }
     }
 }

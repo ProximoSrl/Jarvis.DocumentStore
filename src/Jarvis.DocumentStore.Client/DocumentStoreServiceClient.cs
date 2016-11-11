@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Jobs;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 #if DisablePriLongPath
 using Path = System.IO.Path;
@@ -444,6 +445,18 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
+        public async Task<string> GetFileNameAsync(DocumentHandle documentHandle)
+        {
+            using (var client = new HttpClient())
+            {
+                var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@filename");
+
+                var json = await client.GetStringAsync(endPoint);
+                var response = FromJson<JObject>(json);
+                return response["fileName"].Value<String>();
+            }
+        }
+
         /// <summary>
         /// Open a file on DocumentStore
         /// </summary>
@@ -615,6 +628,39 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
+        public async Task<String[]> GetPendingJobsAsync(DocumentHandle handle)
+        {
+            var hasPendingJobsUri = new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
+            using (var client = new WebClient())
+            {
+                var result = await client.DownloadStringTaskAsync(hasPendingJobsUri);
+                var listOfJobs = ((JArray)JsonConvert.DeserializeObject(result))
+                    .Select(e => e.ToString())
+                    .ToArray();
+                return listOfJobs;
+            }
+        }
+    
+
+        public async Task<Boolean> ComposePdf(
+            DocumentHandle destinationHandle, 
+            params DocumentHandle[] handleList)
+        {
+            var composePdfUri = new Uri(_documentStoreUri, Tenant + "/compose");
+            using (var client = new WebClient())
+            {
+                var parameter = new ComposeDocumentsModel()
+                {
+                    DocumentToCreate = destinationHandle,
+                    ListOfDocumentsToCompose = handleList
+                };
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                var result = await client.UploadStringTaskAsync(composePdfUri, JsonConvert.SerializeObject(parameter));
+                var resultJson = (JObject) JsonConvert.DeserializeObject(result);
+                return resultJson["result"].Value<String>() == "ok";
+            }
+        }
+
         private Uri GenerateUriForFeed(long startFeed, int numOfFeeds, HandleStreamEventTypes[] types)
         {
             var uriString = Tenant + "/feed/" + startFeed + "/" + numOfFeeds;
@@ -632,5 +678,7 @@ namespace Jarvis.DocumentStore.Client
             var endPoint = new Uri(_documentStoreUri, uriString);
             return endPoint;
         }
+
+
     }
 }

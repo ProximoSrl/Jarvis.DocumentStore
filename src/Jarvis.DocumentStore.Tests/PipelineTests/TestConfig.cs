@@ -36,6 +36,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             get { return Path.Combine(DocumentsFolder, "Document.pdf"); }
         }
 
+        public static string PathToBinaryDocument
+        {
+            get { return Path.Combine(DocumentsFolder, "binary.bin"); }
+        }
+
         public static string PathToPasswordProtectedPdf
         {
             get { return Path.Combine(DocumentsFolder, "passwordprotected.pdf"); }

@@ -46,6 +46,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                Builders<QueuedJob>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.BlobId),
                 new CreateIndexOptions() { Name = "TenantAndBlob", Unique = false });
 
+            _collection.Indexes.CreateOne(
+             Builders<QueuedJob>.IndexKeys.Ascending(x => x.Handle).Ascending(x => x.Status),
+              new CreateIndexOptions() { Name = "HandleAndStatus", Unique = false });
+
             _info = info;
             Name = info.Name;
 
@@ -121,13 +125,29 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
+        /// <summary>
+        /// This function add a job from external code. Usually jobs are automatically
+        /// created after an handle is loaded in document store or after a new 
+        /// format is present, but some queue, as PdfComposer, creates job only from
+        /// manual input.
+        /// </summary>
+        /// <param name="job"></param>
+        public Boolean QueueJob(QueuedJob job)
+        {
+            _collection.InsertOne(job);
+            return true;
+        }
+
         public QueuedJob GetNextJob(String identity, String handle, TenantId tenantId, Dictionary<String, Object> customData)
         {
             if (_healthCheck != null) _healthCheck.Pulse();
-            var query = Builders<QueuedJob>.Filter.Or(
-                    Builders< QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.Idle),
-                    Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.ReQueued)
-                );
+            var query = Builders<QueuedJob>.Filter.And(
+                        Builders<QueuedJob>.Filter.Or(
+                            Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.Idle),
+                            Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.ReQueued)
+                        ),
+                        Builders<QueuedJob>.Filter.Lte(j => j.SchedulingTimestamp, DateTime.Now)
+                ); 
             if (tenantId != null && tenantId.IsValid()) 
             {
                 query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId));
@@ -161,32 +181,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         }
 
        
-        public Boolean SetJobExecuted(String jobId, String errorMessage) 
+        public Boolean SetJobExecuted(String jobId, String errorMessage)
         {
             var job = _collection.FindOneById(BsonValue.Create(jobId));
-            if (job == null) 
+            if (job == null)
             {
                 Logger.ErrorFormat("Request SetJobExecuted for unexisting job id {0}", jobId);
                 return false;
             }
-            if (!String.IsNullOrEmpty(errorMessage)) 
-            {
-                job.ErrorCount += 1;
-                job.ExecutionError = errorMessage;
-                if (job.ErrorCount >= _info.MaxNumberOfFailure)
-                {
-                    job.Status = QueuedJobExecutionStatus.Failed;
-                }
-                else
-                {
-                    job.Status = QueuedJobExecutionStatus.ReQueued;
-                }
-                job.SchedulingTimestamp = DateTime.Now; //this will move failing job to the end of the queue.
-            }
-            else
-            {
-                job.Status = QueuedJobExecutionStatus.Succeeded;
-            }
+            SetErrorInfoToJob(job, errorMessage);
             job.ExecutionEndTime = DateTime.Now;
 
             _collection.ReplaceOne(
@@ -196,6 +199,25 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return true;
         }
 
+        internal bool ReQueueJob(string jobId, string errorMessage, TimeSpan timeSpan)
+        {
+            var job = _collection.FindOneById(BsonValue.Create(jobId));
+            if (job == null)
+            {
+                Logger.ErrorFormat("Request ReQueueJob for unexisting job id {0}", jobId);
+                return false;
+            }
+            SetErrorInfoToJob(job, errorMessage);
+            job.Status = QueuedJobExecutionStatus.ReQueued;
+            job.SchedulingTimestamp = DateTime.Now.Add(timeSpan);
+
+            _collection.ReplaceOne(
+                 Builders<QueuedJob>.Filter.Eq("_id", job.Id),
+                 job);
+            return true;
+        }
+
+   
         /// <summary>
         /// Return the list of all jobs that are blocked, a job is blocked if it is in
         /// Executing state more than a certain amount of time.
@@ -248,6 +270,41 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     .Set(j => j.Status, QueuedJobExecutionStatus.ReQueued)
                     .Set(j => j.SchedulingTimestamp, DateTime.Now));
             return result.MatchedCount > 0;
+        }
+
+        internal Boolean HasPendingJob(TenantId tenantId, DocumentHandle handle)
+        {
+            return _collection.Find(
+                Builders<QueuedJob>.Filter.And(
+                    Builders<QueuedJob>.Filter.Eq(j => j.Handle, handle),
+                    Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId),
+                    Builders<QueuedJob>.Filter.Ne(j => j.Status, QueuedJobExecutionStatus.Succeeded),
+                    Builders<QueuedJob>.Filter.Ne(j => j.Status, QueuedJobExecutionStatus.Failed)
+                ))
+                .Limit(1)
+                .Any();
+        }
+
+        private void SetErrorInfoToJob(QueuedJob job, String errorMessage)
+        {
+            if (!String.IsNullOrEmpty(errorMessage))
+            {
+                job.ErrorCount += 1;
+                job.ExecutionError = errorMessage;
+                if (job.ErrorCount >= _info.MaxNumberOfFailure)
+                {
+                    job.Status = QueuedJobExecutionStatus.Failed;
+                }
+                else
+                {
+                    job.Status = QueuedJobExecutionStatus.ReQueued;
+                }
+                job.SchedulingTimestamp = DateTime.Now; //this will move failing job to the end of the queue.
+            }
+            else
+            {
+                job.Status = QueuedJobExecutionStatus.Succeeded;
+            }
         }
     }
 

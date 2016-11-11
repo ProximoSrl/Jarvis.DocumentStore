@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
             _sevenZipExtractorFunctions = sevenZipFunctions;
         }
 
-        protected async override Task<bool> OnPolling(Shared.Jobs.PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(Shared.Jobs.PollerJobParameters parameters, string workingFolder)
         {
             string localFile = await DownloadBlob(
                  parameters.TenantId,
@@ -120,7 +120,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
             }
            
 
-            return true;
+            return ProcessResult.Ok;
         }
 
         private async Task<Int32> UploadAttachmentListToDocumentStore(PollerJobParameters parameters, string[] permittedExtension, string unzippingDirectory, IEnumerable<string> files)

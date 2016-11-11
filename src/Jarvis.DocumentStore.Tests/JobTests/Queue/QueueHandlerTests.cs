@@ -63,7 +63,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         [Test]
         public void verify_id_is_opaque_and_not_contains_blob_id()
         {
-            var info = new QueueInfo("test", "", "");
+            var info = new QueueInfo("test", "", "docx");
             QueueHandler sut = new QueueHandler(info, _db);
             StreamReadModel rm = new StreamReadModel()
             {
@@ -96,7 +96,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         [Test]
         public void verify_job_parameters_contains_mime_type()
         {
-            var info = new QueueInfo("test", "", "");
+            var info = new QueueInfo("test", "", "docx");
             QueueHandler sut = new QueueHandler(info, _db);
             StreamReadModel rm = new StreamReadModel()
             {

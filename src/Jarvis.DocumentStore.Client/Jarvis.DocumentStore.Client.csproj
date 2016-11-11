@@ -58,6 +58,7 @@
     <Compile Include="Model\ClientAttachmentInfo.cs" />
     <Compile Include="Model\ClientAbstractStringValue.cs" />
     <Compile Include="Model\ClientFeed.cs" />
+    <Compile Include="Model\ComposeDocumentModel.cs" />
     <Compile Include="Model\DocumentAttachmentsFat.cs" />
     <Compile Include="Model\DocumentAttachments.cs" />
     <Compile Include="Model\DocumentFormats.cs" />

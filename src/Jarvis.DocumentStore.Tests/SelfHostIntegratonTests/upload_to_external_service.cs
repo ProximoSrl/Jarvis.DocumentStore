@@ -493,5 +493,29 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 _docs.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html"))
             );
         }
+
+        [Test]
+        public void pdf_composer()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("pdfC1")).Wait();
+            _docs.UploadAsync(TestConfig.PathToLoremIpsumTxt, DocumentHandle.FromString("pdfC2")).Wait();
+            _docs.ComposePdf(
+                DocumentHandle.FromString("pdfCresult"),
+                DocumentHandle.FromString("pdfC1"),
+                DocumentHandle.FromString("pdfC2")).Wait();
+        }
+
+        [Test]
+        public void pdf_composer_with_format_without_pdf()
+        {
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("pdfD1")).Wait();
+            _docs.UploadAsync(TestConfig.PathToBinaryDocument, DocumentHandle.FromString("pdfD2")).Wait();
+            _docs.UploadAsync(TestConfig.PathToLoremIpsumTxt, DocumentHandle.FromString("pdfD3")).Wait();
+            _docs.ComposePdf(
+                DocumentHandle.FromString("pdf-d-result"),
+                DocumentHandle.FromString("pdfD1"),
+                DocumentHandle.FromString("pdfD2"),
+                DocumentHandle.FromString("pdfD3")).Wait();
+        }
     }
 }

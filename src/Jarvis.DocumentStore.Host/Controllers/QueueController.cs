@@ -47,13 +47,39 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
         }
 
+        /// <summary>
+        /// For a given handle, it simply return the list of jobs that still are
+        /// pending or executing. It is necessary to understand if a specific handle
+        /// has finished all the conversion.
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("queue/getPending/{tenantId}/{handle}")]
+        public String[] GetPending(TenantId tenantId, DocumentHandle handle)
+        {
+            using (Metric.Timer("queue-getPending", Unit.Requests).NewContext(handle))
+            {
+                if (QueueManager == null) return null;
+                return QueueManager.GetPendingJobs(tenantId, handle);
+            }
+        }
+
         [HttpPost]
         [Route("queue/setjobcomplete")]
         public Boolean SetComplete(FinishedJobParameter parameter)
         {
             using (Metric.Timer("queue-complete", Unit.Requests).NewContext(parameter.QueueName))
             {
-                return QueueManager.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
+                if (parameter.ReQueue)
+                {
+                    var timespan = TimeSpan.FromSeconds(parameter.ReScheduleTimespanInSeconds);
+                    return QueueManager.ReQueueJob(parameter.QueueName, parameter.JobId, parameter.ErrorMessage, timespan);
+                }
+                else
+                {
+                    return QueueManager.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
+                }
             }
         }
 
@@ -65,7 +91,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         }
     }
 
-    public class GetNextJobParameter 
+    public class GetNextJobParameter
     {
         public String QueueName { get; set; }
 
@@ -78,12 +104,24 @@ namespace Jarvis.DocumentStore.Host.Controllers
         public Dictionary<String, Object> CustomData { get; set; }
     }
 
-    public class FinishedJobParameter 
+    public class FinishedJobParameter
     {
         public String QueueName { get; set; }
 
         public String ErrorMessage { get; set; }
 
         public String JobId { get; set; }
+
+        /// <summary>
+        /// True if queue manager should re-schedule the job in 
+        /// the future
+        /// </summary>
+        public Boolean ReQueue { get; set; }
+
+        /// <summary>
+        /// If <paramref name="ReQueue"/> is true, this is the Timespan
+        /// in seconds to reschedule the job.
+        /// </summary>
+        public Int32 ReScheduleTimespanInSeconds { get; set; }
     }
 }

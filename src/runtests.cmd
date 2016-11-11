@@ -1,2 +1,2 @@
-.\packages\Machine.Specifications.Runner.Console.0.9.0\tools\mspec-x86-clr4.exe --xml .\mspec-output.xml .\Jarvis.DocumentStore.Tests\bin\Debug\Jarvis.DocumentStore.Tests.dll 
+.\packages\Machine.Specifications.Runner.Console.0.9.2\tools\mspec-x86-clr4.exe --xml .\mspec-output.xml .\Jarvis.DocumentStore.Tests\bin\Debug\Jarvis.DocumentStore.Tests.dll 
 .\packages\NUnit.Runners.2.6.4\tools\nunit-console-x86.exe /xml:nunit-output.xml /framework:net-4.5 .\Jarvis.DocumentStore.Tests\bin\Debug\Jarvis.DocumentStore.Tests.dll 
