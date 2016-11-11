@@ -22,7 +22,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter.Converters
         }
 
         const bool unicode = false;
-        const PdfFontEmbedding embedding = PdfFontEmbedding.Always;
+        const PdfSharp.Pdf.PdfFontEmbedding embedding = PdfSharp.Pdf.PdfFontEmbedding.Always;
 
         public Boolean Convert(String inputFileName, String outputFileName)
         {

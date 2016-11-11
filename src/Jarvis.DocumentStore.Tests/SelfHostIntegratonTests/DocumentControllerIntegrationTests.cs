@@ -40,6 +40,7 @@ using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 using Jarvis.DocumentStore.Core.Domain.Document;
 
 using Jarvis.Framework.Shared.Helpers;
+using Jarvis.Framework.Shared.IdentitySupport;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -86,6 +87,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
             _commitCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<BsonDocument>("Commits");
             _blobStore = _tenant.Container.Resolve<IBlobStore>();
+
+            MongoFlatMapper.EnableFlatMapping(true);
         }
 
         [TearDown]
@@ -481,12 +484,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async void add_multiple_attachment_to_existing_handle()
         {
-
-            for (int i = 0; i < 20; i++)
-            {
-                Thread.Sleep(1000);
-            }
-
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
@@ -889,6 +886,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var aggregate = repo.GetById<Document>(new DocumentId(1L));
             Assert.That(aggregate.Version, Is.EqualTo(0));
         }
+
+       
 
         #region Helpers
 

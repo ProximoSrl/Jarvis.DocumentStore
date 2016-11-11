@@ -66,6 +66,22 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(sut.ShouldCreateJob(sr), Is.EqualTo(expected));
         }
 
+        [TestCase("", "", "", "test.txt")]
+        public void queue_with_only_manual_execution(
+            String mimetypes, 
+            String extensions,
+            String pipeline, 
+            String fileName)
+        {
+            QueueInfo sut = new QueueInfo("TEST", 
+                extensions: extensions, 
+                mimeTypes: mimetypes,
+                pipeline : pipeline);
+            StreamReadModel sr = new StreamReadModel();
+            sr.Filename = new Core.Model.FileNameWithExtension(fileName);
+            Assert.That(sut.ShouldCreateJob(sr), Is.EqualTo(false));
+        }
+
         [Test]
         public void verify_basic_deserialization_with_all_properties()
         {

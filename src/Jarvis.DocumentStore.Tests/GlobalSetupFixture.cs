@@ -35,45 +35,46 @@ public class GlobalSetupFixture
         //}
        
         var overrideTestDb = Environment.GetEnvironmentVariable("TEST_MONGODB");
-        if (String.IsNullOrEmpty(overrideTestDb)) return;
+        if (!String.IsNullOrEmpty(overrideTestDb))
+        {
 
-        var overrideTestDbQueryString = Environment.GetEnvironmentVariable("TEST_MONGODB_QUERYSTRING");
-        var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-        var connectionStringsSection = (ConnectionStringsSection)config.GetSection("connectionStrings");
+            var overrideTestDbQueryString = Environment.GetEnvironmentVariable("TEST_MONGODB_QUERYSTRING");
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var connectionStringsSection = (ConnectionStringsSection)config.GetSection("connectionStrings");
 
 
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "log", "ds-tests-logs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.quartz", "ds-tests-quartz");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.queue", "ds-tests-queues");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "log", "ds-tests-logs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.quartz", "ds-tests-quartz");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.queue", "ds-tests-queues");
 
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.log.host", "ds-logs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.quartz.host", "ds-quartz");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.queue.host", "ds-queues");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.log.host", "ds-logs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.quartz.host", "ds-quartz");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.queue.host", "ds-queues");
 
-        //<!-- Tenant 1-->
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.originals", "ds-tests-ori-fs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.artifacts", "ds-tests-art-fs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.system", "ds-tests");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.events", "ds-tests");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.readmodel", "ds-tests");
+            //<!-- Tenant 1-->
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.originals", "ds-tests-ori-fs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.artifacts", "ds-tests-art-fs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.system", "ds-tests");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.events", "ds-tests");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.readmodel", "ds-tests");
 
-        //<!-- Tenant DOCS -->
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.originals", "ds-docs-ori-fs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.artifacts", "ds-docs-art-fs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.system", "ds-docs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.events", "ds-docs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.readmodel", "ds-docs");
+            //<!-- Tenant DOCS -->
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.originals", "ds-docs-ori-fs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.artifacts", "ds-docs-art-fs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.system", "ds-docs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.events", "ds-docs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.readmodel", "ds-docs");
 
-        //<!-- Tenant DEMO -->
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.originals", "ds-demo-ori-fs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.artifacts", "ds-demo-art-fs");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.system", "ds-demo");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.events", "ds-demo");
-        RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.readmodel", "ds-demo");
+            //<!-- Tenant DEMO -->
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.originals", "ds-demo-ori-fs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.artifacts", "ds-demo-art-fs");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.system", "ds-demo");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.events", "ds-demo");
+            RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.readmodel", "ds-demo");
 
-        config.Save();
-        ConfigurationManager.RefreshSection("connectionStrings");
-
+            config.Save();
+            ConfigurationManager.RefreshSection("connectionStrings");
+        }
         try
         {
             var mngr = new IdentityManager(new CounterService(MongoDbTestConnectionProvider.ReadModelDb));

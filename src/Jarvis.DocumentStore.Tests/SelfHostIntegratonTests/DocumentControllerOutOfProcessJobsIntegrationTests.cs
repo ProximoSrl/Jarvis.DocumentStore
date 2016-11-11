@@ -44,6 +44,7 @@ using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 using Jarvis.Framework.Shared.Helpers;
+using Jarvis.DocumentStore.Jobs.PdfComposer;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -384,7 +385,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
                 if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(tikaFormat))
+                    documentDescriptor.Formats.ContainsKey(tikaFormat) &&
+                    documentDescriptor.Formats.ContainsKey(contentFormat))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[tikaFormat];
@@ -436,7 +438,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_tika_job_with_password()
+        public async void verify_tika_job_with_multiple_password()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
@@ -463,7 +465,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
                 if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(tikaFormat))
+                    documentDescriptor.Formats.ContainsKey(tikaFormat) &&
+                    documentDescriptor.Formats.ContainsKey(contentFormat))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[tikaFormat];
@@ -1464,6 +1467,79 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             return new QueueInfo[]
             {
                 new QueueInfo("attachments", mimeTypes : MimeTypes.GetMimeTypeByExtension("zip")),
+            };
+        }
+    }
+
+    [TestFixture]
+    [Category("integration_full")]
+    public class verify_composition_of_pdf_file : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+
+        public verify_composition_of_pdf_file(String engineVersion)
+            : base(engineVersion)
+        {
+
+        }
+
+        [Test]
+        public async void basic_composition()
+        {
+
+            _sutBase = new PdfComposerOutOfProcessJob();
+            PrepareJob();
+
+            var handle1 = DocumentHandle.FromString("h1");
+            var handle1Server = new Jarvis.DocumentStore.Core.Model.DocumentHandle("h1");
+            var handle2 = DocumentHandle.FromString("h2");
+            var handle2Server = new Jarvis.DocumentStore.Core.Model.DocumentHandle("h2");
+
+            var handleResult = DocumentHandle.FromString("result");
+            var handleResultServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("result");
+
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToDocumentPdf,
+               handle1,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+            await _documentStoreClient.UploadAsync(
+               TestConfig.PathToLoremIpsumTxt,
+               handle2,
+               new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            await _documentStoreClient.ComposePdf(handleResult, handle1, handle2);
+
+            DateTime startWait = DateTime.Now;
+            Int32 docCount;
+            do
+            {
+                await UpdateAndWait();
+                docCount = _documentCollection.AsQueryable().Count();
+                if (docCount == 3)
+                {
+                    //all attachment are unzipped correctly
+                    var doc = _documentCollection.Find(
+                        Builders<DocumentReadModel>.Filter.Eq("_id", handleResult.ToString())
+                    ) .Single();
+                           
+                    return;
+                }
+
+            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            Assert.Fail("Pdf creator did not worked");
+        }
+
+        protected override QueueInfo[] OnGetQueueInfo()
+        {
+            return new QueueInfo[]
+            {
+                new QueueInfo("pdfComposer"),
             };
         }
     }

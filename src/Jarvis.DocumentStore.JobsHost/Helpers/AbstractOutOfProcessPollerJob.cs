@@ -38,11 +38,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         public Boolean Started { get; private set; }
 
-        private String _identity;
+        private readonly String _identity;
 
         private String _handle;
 
-        JsonSerializerSettings _settings;
+        readonly JsonSerializerSettings _settings;
 
         public const Int32 MaxFileNameLength = 220;
 
@@ -70,10 +70,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private class DsEndpoint
         {
-            public DsEndpoint(string getNextJobUrl, string setJobCompleted, Uri baseUrl)
+            public DsEndpoint(string getNextJobUrl, string setJobCompleted, String reQueueJob, Uri baseUrl)
             {
                 GetNextJobUrl = getNextJobUrl;
                 SetJobCompleted = setJobCompleted;
+                ReQueueJob = reQueueJob;
                 BaseUrl = baseUrl;
             }
 
@@ -81,7 +82,45 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
             public String SetJobCompleted { get; private set; }
 
+            public String ReQueueJob { get; private set; }
+
             public Uri BaseUrl { get; set; }
+        }
+
+        protected class ProcessResult
+        {
+            public static readonly ProcessResult Ok;
+            public static readonly ProcessResult Fail;
+
+            static ProcessResult()
+            {
+                Ok = new ProcessResult(true);
+                Fail = new ProcessResult(false);
+            }
+
+            public ProcessResult(Boolean result)
+            {
+                Result = result;
+            }
+
+            public ProcessResult(TimeSpan posticipationTimestamp)
+            {
+                Result = false;
+                Posticipate = true;
+                PosticipateExecutionTimestamp = posticipationTimestamp;
+            }
+
+            public Boolean Result { get; private set; }
+
+            public Boolean Posticipate { get; private set; }
+
+            /// <summary>
+            /// If Result is false, the job could ask to the engine 
+            /// to posticipate execution to some time in the future
+            /// because probably the queue job could be executed in the
+            /// future.
+            /// </summary>
+            public TimeSpan PosticipateExecutionTimestamp { get; private set; }
         }
 
         public void Start(List<String> documentStoreAddressUrls, String handle)
@@ -93,6 +132,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 .Select(addr => new DsEndpoint(
                         addr.TrimEnd('/') + "/queue/getnextjob",
                         addr.TrimEnd('/') + "/queue/setjobcomplete",
+                        addr.TrimEnd('/') + "/queue/reQueue", 
                         new Uri(addr)))
                 .ToList();
             Start(JobsHostConfiguration.QueueJobsPollInterval);
@@ -192,8 +232,16 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 try
                 {
                     var task = OnPolling(baseParameters, workingFolder);
-                    Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, task.Result);
-                    DsSetJobExecuted(QueueName, nextJob.Id, "");
+                    var result = task.Result;
+                    Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, result);
+                    if (result.Posticipate == false)
+                    {
+                        DsSetJobExecuted(QueueName, nextJob.Id, "");
+                    }
+                    else
+                    {
+                        DsReQueueJob(QueueName, nextJob.Id, "", result.PosticipateExecutionTimestamp);
+                    }
                 }
                 catch (AggregateException aex)
                 {
@@ -241,19 +289,47 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 pollerResult = client.UploadString(firstUrl.SetJobCompleted, payload);
                 Logger.DebugFormat("SetJobExecuted Result: {0}", pollerResult);
             }
+        }
 
+        private void DsReQueueJob(string queueName, string jobId, string message, TimeSpan timeSpan)
+        {
+            string pollerResult;
+            using (WebClientEx client = new WebClientEx())
+            {
+                //TODO: use round robin if a document store is down.
+                var firstUrl = _dsEndpoints.First();
+                var payload = JsonConvert.SerializeObject(new
+                {
+                    QueueName = queueName,
+                    JobId = jobId,
+                    ErrorMessage = message,
+                    ReQueue = true,
+                    ReScheduleTimespanInSeconds = (Int32) timeSpan.TotalSeconds
+                });
+                Logger.DebugFormat("ReQueuedJob url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                pollerResult = client.UploadString(firstUrl.SetJobCompleted, payload);
+                Logger.DebugFormat("SetJobExecuted Result: {0}", pollerResult);
+            }
         }
 
         private static PollerJobParameters ExtractJobParameters(QueuedJobDto nextJob)
         {
             PollerJobParameters parameters = new PollerJobParameters();
-            parameters.FileExtension = nextJob.Parameters[JobKeys.FileExtension];
-            parameters.FileName = nextJob.Parameters[JobKeys.FileName];
-            parameters.InputDocumentFormat = new DocumentFormat(nextJob.Parameters[JobKeys.Format]);
+            parameters.FileExtension = SafeGetParameter(nextJob, JobKeys.FileExtension);
+            parameters.FileName = SafeGetParameter(nextJob, JobKeys.FileName);
+            parameters.InputDocumentFormat = new DocumentFormat(SafeGetParameter(nextJob, JobKeys.Format));
             parameters.JobId = nextJob.Id;
-            parameters.TenantId = nextJob.Parameters[JobKeys.TenantId];
+            parameters.TenantId = SafeGetParameter(nextJob, JobKeys.TenantId);
             parameters.All = nextJob.Parameters;
             return parameters;
+        }
+
+        private static string SafeGetParameter(QueuedJobDto nextJob, String parameter)
+        {
+            if (nextJob.Parameters.ContainsKey(parameter))
+                return nextJob.Parameters[parameter];
+            return String.Empty;
         }
 
         private DateTime _lastCommunicationError = DateTime.MinValue;
@@ -311,8 +387,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             string pathToFile,
             IDictionary<string, object> customData)
         {
-            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
-               _dsEndpoints.First().BaseUrl, tenantId);
+            DocumentStoreServiceClient client = GetDocumentStoreClient(tenantId);
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel
             {
                 CreatedById = this.PipelineId,
@@ -334,8 +409,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
               String originalFileName,
               IDictionary<string, object> customData)
         {
-            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
-               _dsEndpoints.First().BaseUrl, tenantId);
+            DocumentStoreServiceClient client = GetDocumentStoreClient(tenantId);
             AddFormatFromObjectToDocumentModel model = new AddFormatFromObjectToDocumentModel
             {
                 CreatedById = this.PipelineId,
@@ -357,8 +431,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             String relativePath,
             IDictionary<string, object> customData)
         {
-            DocumentStoreServiceClient client = new DocumentStoreServiceClient(
-               _dsEndpoints.First().BaseUrl, tenantId);
+            DocumentStoreServiceClient client = GetDocumentStoreClient( tenantId);
 
             var response = await client.UploadAttachmentAsync(pathToFile, this.QueueName, jobId, source, relativePath,  customData);
             return response != null;
@@ -388,7 +461,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             //too long file names. Max file name is 260, but some libraries or task can append some more char
             //ex tika.html
             fileName = SanitizeFileNameForLength(fileName);
-            DocumentStoreServiceClient client = new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
+            DocumentStoreServiceClient client = GetDocumentStoreClient(tenantId);
             var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
             using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write))
             {
@@ -403,9 +476,14 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             String tenantId,
             String jobId)
         {
-            DocumentStoreServiceClient client = new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
+            DocumentStoreServiceClient client = GetDocumentStoreClient(tenantId);
             var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
             return await reader.OpenStream();
+        }
+
+        protected DocumentStoreServiceClient GetDocumentStoreClient(string tenantId)
+        {
+            return new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
         }
 
         protected String GetBlobUriForJob(String tenantId, String jobId) 
@@ -434,7 +512,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         }
 
 
-        protected abstract Task<Boolean> OnPolling(
+        protected abstract Task<ProcessResult> OnPolling(
             PollerJobParameters parameters,
             String workingFolder);
     }

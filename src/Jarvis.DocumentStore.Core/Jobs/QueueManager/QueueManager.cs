@@ -26,7 +26,34 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     {
         QueuedJob GetNextJob(String queueName, String identity, String callerHandle, TenantId tenant, Dictionary<String, Object> customData);
 
+        /// <summary>
+        /// Set the job as executed
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <param name="jobId"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
         Boolean SetJobExecuted(String queueName, String jobId, String errorMessage);
+
+        /// <summary>
+        /// This function add a job from external code. Usually jobs are automatically
+        /// created after an handle is loaded in document store or after a new 
+        /// format is present, but some queue, as PdfComposer, creates job only from
+        /// manual input.
+        /// </summary>
+        /// <param name="queueName">The name of the queue.</param>
+        /// <param name="job"></param>
+        Boolean QueueJob(String queueName, QueuedJob job);
+
+        /// <summary>
+        /// When a job is executing it can ask the system to requeue job because it
+        /// is not capable of hanling it right now.
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <param name="jobId"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+        Boolean ReQueueJob(String queueName, String jobId, String errorMessage, TimeSpan timestpan);
 
         /// <summary>
         /// Internally used to grab a job reference from its id.
@@ -35,6 +62,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <param name="jobId"></param>
         /// <returns></returns>
         QueuedJob GetJob(String queueName, String jobId);
+
+        /// <summary>
+        /// Return queues that has pending jobs for a specific handle.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <returns></returns>
+        String[] GetPendingJobs(TenantId tenantId, DocumentHandle handle);
 
         /// <summary>
         /// Given an handle, ask to queue manager to schedule
@@ -213,6 +247,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return true;
         }
 
+        public bool ReQueueJob(string queueName, string jobId, string errorMessage, TimeSpan timeSpan)
+        {
+            return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.ReQueueJob(jobId, errorMessage, timeSpan));
+        }
+
+        public bool QueueJob(String queueName, QueuedJob job)
+        {
+            return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.QueueJob(job));
+
+        }
+
         private void Poll()
         {
             //do a poll for every tenant.
@@ -294,6 +339,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
+        public string[] GetPendingJobs(TenantId tenantId, DocumentHandle handle)
+        {
+            return _queueHandlers.Values
+                .Where(q => q.HasPendingJob(tenantId, handle))
+                .Select(q => q.Name)
+                .ToArray();
+        }
+
         private T ExecuteWithQueueHandler<T>(
             String operationName, 
             String queueName, 
@@ -320,5 +373,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _isRebuilding = false;
         }
+
+       
     }
+
 }

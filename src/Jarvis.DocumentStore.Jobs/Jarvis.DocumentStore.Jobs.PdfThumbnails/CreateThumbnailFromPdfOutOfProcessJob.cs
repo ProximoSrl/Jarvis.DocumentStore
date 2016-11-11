@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 
         private Func<CreateImageFromPdfTask> _taskFactory;
 
-        protected async override System.Threading.Tasks.Task<bool> OnPolling(PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             String format = parameters.All[JobKeys.ThumbnailFormat];
 
@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 
 
             Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.JobId, format);
-            return true;
+            return ProcessResult.Ok;
         }
 
         public async Task<Boolean> Write(String workerFolder, PollerJobParameters parameters, String format, int pageIndex, Stream stream)

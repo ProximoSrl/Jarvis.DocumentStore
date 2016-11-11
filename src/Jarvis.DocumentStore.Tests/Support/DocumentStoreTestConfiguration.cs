@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             ForcedGcSecondsInterval = 0;
             EngineSlots = new String[] { "*" };
             PollingMsInterval = 100;
-            AllowedFileTypes = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip".Split('|');
+            AllowedFileTypes = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip|txt".Split('|');
             IsDeduplicationActive = true;
         }
 

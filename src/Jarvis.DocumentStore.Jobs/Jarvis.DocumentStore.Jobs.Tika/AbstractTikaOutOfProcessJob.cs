@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             }
         }
 
-        protected async override Task<bool> OnPolling(
+        protected async override Task<ProcessResult> OnPolling(
             PollerJobParameters parameters,
             String workingFolder)
         {
@@ -59,7 +59,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             if (!_formats.Contains(parameters.FileExtension))
             {
                 Logger.DebugFormat("Document for job Id {0} has an extension not supported, setting null content", parameters.JobId);
-                return await AddNullContentFormat(parameters, contentFileName);
+                return new ProcessResult(await AddNullContentFormat(parameters, contentFileName));
             }
 
             Logger.DebugFormat("Starting tika on job: {0}, file extension {1}", parameters.JobId, parameters.FileExtension);
@@ -73,7 +73,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             if (!shouldAnalyze)
             {
                 Logger.InfoFormat("File {0} for job {1} was discharded!", parameters.FileName, parameters.JobId);
-                return await AddNullContentFormat(parameters, contentFileName);
+                return new ProcessResult(await AddNullContentFormat(parameters, contentFileName));
             }
             Logger.DebugFormat("Search for password JobId:{0}", parameters.JobId);
             var passwords = ClientPasswordSet.GetPasswordFor(parameters.FileName).ToArray();
@@ -164,8 +164,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 new Dictionary<string, object>());
             Logger.DebugFormat("Added format {0} to jobId {1}, result: {2}", DocumentFormats.Tika, parameters.JobId, result);
 
-
-            return true;
+            return ProcessResult.Ok;
         }
 
         private string ProcessFile(string pathToFile, string workingFolder)
