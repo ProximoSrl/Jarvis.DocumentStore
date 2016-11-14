@@ -9,8 +9,10 @@ namespace Jarvis.DocumentStore.Host.Model
 {
     public class ComposeDocumentsModel
     {
-        public DocumentHandle[] ListOfDocumentsToCompose { get; set; }
+        public DocumentHandle[] DocumentList { get; set; }
 
-        public DocumentHandle DocumentToCreate { get; set; }
+        public DocumentHandle ResultingDocumentHandle { get; set; }
+
+        public String ResultingDocumentFileName { get; set; }
     }
 }

@@ -51,26 +51,29 @@ namespace Jarvis.DocumentStore.Host.Support
         public void Start(DocumentStoreConfiguration config)
         {
             _config = config;
+            BuildContainer(config);
 
             if (_config.EnableSingleAggregateRepositoryCache)
             {
+                _logger.InfoFormat("Single Aggregate Repository Cache - ENABLED");
                 JarvisFrameworkGlobalConfiguration.EnableSingleAggregateRepositoryCache();
             }
             else
             {
+                _logger.InfoFormat("Single Aggregate Repository Cache - DISABLED");
                 JarvisFrameworkGlobalConfiguration.DisableSingleAggregateRepositoryCache();
             }
-            if (_config.EnableSnapshotCache)
+            if (_config.DisableRepositoryLockOnAggregateId)
             {
-                JarvisFrameworkGlobalConfiguration.EnableSingleAggregateRepositoryCache();
+                _logger.InfoFormat("Repository lock on Aggregate Id - DISABLED");
+                NeventStoreExGlobalConfiguration.DisableRepositoryLockOnAggregateId();
             }
             else
             {
-                JarvisFrameworkGlobalConfiguration.DisableSingleAggregateRepositoryCache();
+                _logger.InfoFormat("Repository lock on Aggregate Id - ENABLED");
+                NeventStoreExGlobalConfiguration.EnableRepositoryLockOnAggregateId();
             }
 
-
-            BuildContainer(config);
             Manager = BuildTenants(_container, config);
             //Setup database check.
             foreach (var tenant in _config.TenantSettings)

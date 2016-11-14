@@ -185,7 +185,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 if (!String.IsNullOrEmpty(task.FileName))
                 {
                     //use the real file name from the task not the name of the file
-                    using (FileStream fs = File.Open(fname, FileMode.Open))
+                    using (FileStream fs = File.Open(fname, FileMode.Open, FileAccess.Read))
                     {
                         blobId = blobStore.Upload(task.Format, new FileNameWithExtension(task.FileName), fs);
                     }

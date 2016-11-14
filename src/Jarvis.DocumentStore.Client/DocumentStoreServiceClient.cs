@@ -630,36 +630,56 @@ namespace Jarvis.DocumentStore.Client
 
         public async Task<String[]> GetPendingJobsAsync(DocumentHandle handle)
         {
-            var hasPendingJobsUri = new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
+            var hasPendingJobsUri = GenerateUriForPendingJobs(handle);
             using (var client = new WebClient())
             {
                 var result = await client.DownloadStringTaskAsync(hasPendingJobsUri);
-                var listOfJobs = ((JArray)JsonConvert.DeserializeObject(result))
-                    .Select(e => e.ToString())
-                    .ToArray();
-                return listOfJobs;
+                return GenerateArrayOfPendingJobs(result);
             }
         }
-    
 
-        public async Task<Boolean> ComposePdf(
-            DocumentHandle destinationHandle, 
-            params DocumentHandle[] handleList)
+        public String[] GetPendingJobs(DocumentHandle handle)
         {
-            var composePdfUri = new Uri(_documentStoreUri, Tenant + "/compose");
+            var hasPendingJobsUri = new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
             using (var client = new WebClient())
             {
-                var parameter = new ComposeDocumentsModel()
-                {
-                    DocumentToCreate = destinationHandle,
-                    ListOfDocumentsToCompose = handleList
-                };
-                client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                var result = await client.UploadStringTaskAsync(composePdfUri, JsonConvert.SerializeObject(parameter));
-                var resultJson = (JObject) JsonConvert.DeserializeObject(result);
-                return resultJson["result"].Value<String>() == "ok";
+                var result = client.DownloadString(hasPendingJobsUri);
+                return GenerateArrayOfPendingJobs(result);
             }
         }
+
+
+        public async Task<Boolean> ComposeDocumentsAsync(
+            DocumentHandle resultingDocumentHandle,
+            String resultingDocumentFileName, 
+            params DocumentHandle[] documentList)
+        {
+            Uri composePdfUri = GenerateUriForComposePdf();
+            using (var client = new WebClient())
+            {
+                ComposeDocumentsModel parameter = CreateParameterForComposeDocuments(resultingDocumentHandle, resultingDocumentFileName, documentList);
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                var result = await client.UploadStringTaskAsync(composePdfUri, JsonConvert.SerializeObject(parameter));
+                return CreateReturnObjectForComposeDocuments(result);
+            }
+        }
+
+        public Boolean ComposeDocuments(
+                DocumentHandle resultingDocumentHandle, 
+                String resultingDocumentFileName,
+                params DocumentHandle[] documentList)
+        {
+            Uri composePdfUri = GenerateUriForComposePdf();
+            using (var client = new WebClient())
+            {
+                ComposeDocumentsModel parameter = CreateParameterForComposeDocuments(resultingDocumentHandle, resultingDocumentFileName, documentList);
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                var result = client.UploadString(composePdfUri, JsonConvert.SerializeObject(parameter));
+                return CreateReturnObjectForComposeDocuments(result);
+            }
+        }
+
+        #region Helper functions
 
         private Uri GenerateUriForFeed(long startFeed, int numOfFeeds, HandleStreamEventTypes[] types)
         {
@@ -678,7 +698,44 @@ namespace Jarvis.DocumentStore.Client
             var endPoint = new Uri(_documentStoreUri, uriString);
             return endPoint;
         }
+        private Uri GenerateUriForPendingJobs(DocumentHandle handle)
+        {
+            return new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
+        }
 
+        private static string[] GenerateArrayOfPendingJobs(string result)
+        {
+            return ((JArray)JsonConvert.DeserializeObject(result))
+                                .Select(e => e.ToString())
+                                .ToArray();
+        }
+
+        private Uri GenerateUriForComposePdf()
+        {
+            return new Uri(_documentStoreUri, Tenant + "/compose");
+        }
+
+        private static ComposeDocumentsModel CreateParameterForComposeDocuments(
+            DocumentHandle resultingDocumentHandle, 
+            String resultingDocumentFileName,
+            DocumentHandle[] documentList)
+        {
+            return new ComposeDocumentsModel()
+            {
+                ResultingDocumentHandle = resultingDocumentHandle,
+                ResultingDocumentFileName = resultingDocumentFileName,
+                DocumentList = documentList,
+            };
+        }
+
+        private static bool CreateReturnObjectForComposeDocuments(string result)
+        {
+            var resultJson = (JObject)JsonConvert.DeserializeObject(result);
+            return resultJson["result"].Value<String>() == "ok";
+        }
+
+
+        #endregion
 
     }
 }
