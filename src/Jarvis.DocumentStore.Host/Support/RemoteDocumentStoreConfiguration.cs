@@ -110,6 +110,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
             EnableSnapshotCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-snapshot-cache", "true"), StringComparison.OrdinalIgnoreCase);
             EnableSingleAggregateRepositoryCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-single-aggregate-repository-cache", "true"), StringComparison.OrdinalIgnoreCase);
+            DisableRepositoryLockOnAggregateId = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("disable-lock-on-aggregate-id", "false"), StringComparison.OrdinalIgnoreCase);
         }
 
         private static void FillQueueList(List<QueueInfo> queueInfoList)
