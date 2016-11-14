@@ -1512,7 +1512,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 }
             );
 
-            await _documentStoreClient.ComposePdf(handleResult, handle1, handle2);
+            await _documentStoreClient.ComposeDocumentsAsync(handleResult, handle1, handle2);
 
             DateTime startWait = DateTime.Now;
             Int32 docCount;

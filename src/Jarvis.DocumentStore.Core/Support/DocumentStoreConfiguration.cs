@@ -106,7 +106,8 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public Boolean EnableSnapshotCache { get; set; }
 
-                   
+        public Boolean DisableRepositoryLockOnAggregateId { get; set; }
+
 
         #endregion
 

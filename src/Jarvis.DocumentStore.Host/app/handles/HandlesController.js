@@ -11,6 +11,7 @@
         vm.searchText = '';
 
         vm.search = function () {
+            vm.data = null;
             console.log("SEARCH: " + vm.searchText);
             handlesData.get(vm.tenantId, vm.searchText)
                 .then(function (data) {
