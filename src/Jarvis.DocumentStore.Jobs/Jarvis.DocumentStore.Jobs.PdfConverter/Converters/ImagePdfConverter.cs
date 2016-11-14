@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter.Converters
                         var widthRatio = (gfx.PageSize.Width - border * 2) / image.PixelWidth;
                         var heightRatio = (gfx.PageSize.Height - border) / image.PixelHeight;
                         var scaling = Math.Min(widthRatio, heightRatio);
-                        gfx.DrawImage(image, border, border, image.PixelWidth * scaling, image.PixelWidth * scaling);
+                        gfx.DrawImage(image, border, border, image.PixelWidth * scaling, image.PixelHeight * scaling);
                         doc.Save(outputFileName);
                     }
                 }
