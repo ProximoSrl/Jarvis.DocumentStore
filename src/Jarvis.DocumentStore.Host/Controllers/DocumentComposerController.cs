@@ -43,8 +43,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             job.StreamId = 0;
             job.TenantId = tenantId;
             job.Parameters = new Dictionary<string, string>();
-            job.Parameters.Add("documentList", String.Join<Object>("|", dto.ListOfDocumentsToCompose));
-            job.Parameters.Add("resultingDocumentHandle", dto.DocumentToCreate);
+            job.Parameters.Add("documentList", String.Join<Object>("|", dto.DocumentList));
+            job.Parameters.Add("resultingDocumentHandle", dto.ResultingDocumentHandle);
+            job.Parameters.Add("resultingDocumentFileName", dto.ResultingDocumentFileName ?? dto.ResultingDocumentHandle);
             job.Parameters.Add(JobKeys.TenantId, tenantId);
             _queueDispatcher.QueueJob("pdfComposer", job);
             return Request.CreateResponse(

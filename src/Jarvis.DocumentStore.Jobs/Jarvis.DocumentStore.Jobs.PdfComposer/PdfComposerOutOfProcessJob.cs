@@ -29,6 +29,11 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             var client = GetDocumentStoreClient(parameters.TenantId);
             var handles = parameters.All["documentList"].Split('|');
             var destinationHandle = parameters.All["resultingDocumentHandle"];
+            var destinationFileName = parameters.All["resultingDocumentFileName"];
+            if (!destinationFileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                destinationFileName = Path.ChangeExtension(destinationFileName, ".pdf");
+            }
             List<FileToComposeData> files = new List<FileToComposeData>();
             foreach (var handle in handles)
             {
@@ -87,7 +92,9 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
 
             manipulator.AddPageNumber();
 
-            String finalFileName = Path.Combine(workingFolder, Guid.NewGuid() + ".pdf");
+            String outputDirectory = Path.Combine(workingFolder, Guid.NewGuid().ToString());
+            Directory.CreateDirectory(outputDirectory);
+            var finalFileName = Path.Combine(outputDirectory, destinationFileName);
             manipulator.Save(finalFileName);
 
             var result = await client.UploadAsync(finalFileName, new DocumentHandle(destinationHandle));
