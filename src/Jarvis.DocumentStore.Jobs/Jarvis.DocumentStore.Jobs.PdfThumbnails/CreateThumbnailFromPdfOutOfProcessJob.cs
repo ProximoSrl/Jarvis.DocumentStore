@@ -7,6 +7,8 @@ using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System.Linq;
+
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class CreateThumbnailFromPdfOutOfProcessJob : AbstractOutOfProcessPollerJob
@@ -22,8 +24,12 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 
         protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
-            String format = parameters.All[JobKeys.ThumbnailFormat];
+            //if this handle already has rasterImage we do not need to do anything
+            var formats = GetFormats(parameters.TenantId, parameters.JobId);
+            if (formats.Any(f => f == DocumentFormats.RasterImage))
+                return ProcessResult.Ok;
 
+            String format = parameters.All[JobKeys.ThumbnailFormat];
             Logger.DebugFormat("Conversion for jobId {0} in format {1} starting", parameters.JobId, format);
 
             var task = _taskFactory();

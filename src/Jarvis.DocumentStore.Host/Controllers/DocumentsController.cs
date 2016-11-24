@@ -644,6 +644,37 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return StreamFile(job.BlobId);
         }
 
+        /// <summary>
+        /// Verify if the Document for a job already has a given format
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="jobId"></param>
+        /// <param name="queueName">Name of the queue</param>
+        /// <returns></returns>
+        [Route("{tenantId}/documents/jobs/formats/{queueName}/{jobId}")]
+        [HttpGet]
+        public async Task<HttpResponseMessage> GetFormatsForJob(
+            TenantId tenantId,
+            String queueName,
+            String jobId)
+        {
+            var job = _queueDispatcher.GetJob(queueName, jobId);
+            if (job == null)
+                return Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    string.Format("Job {0} not found", jobId)
+                    ); 
+
+            var readModel = _documentDescriptorReader.FindOneById(job.DocumentDescriptorId);
+            if (readModel == null)
+                return Request.CreateErrorResponse(
+                        HttpStatusCode.NotFound,
+                        string.Format("Job {0} have invalid document descriptor", jobId)
+                        );
+
+            return Request.CreateResponse(HttpStatusCode.OK, readModel.Formats.Keys.ToArray());
+        }
+
         HttpResponseMessage DocumentNotFound(DocumentHandle handle)
         {
             return Request.CreateErrorResponse(
