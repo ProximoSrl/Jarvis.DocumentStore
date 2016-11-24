@@ -328,6 +328,7 @@
     <Compile Include="ControllerTests\DownloadTests.cs" />
     <Compile Include="ControllerTests\HttpResponseMessageExtensions.cs" />
     <Compile Include="ControllerTests\UploadTests.cs" />
+    <Compile Include="DocumentStoreCore\Support\StandardDocumentFormatTranslatorTests.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_adding_multiple_handle_as_attachment.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\when_adding_attachment_to_descriptor.cs" />
     <Compile Include="DomainSpecs\DocumentDescriptorSpecs\DocumentDescriptorSpecifications.cs" />
@@ -553,6 +554,7 @@
     <Content Include="Docs\lang\en.txt" />
     <Content Include="Docs\lang\it.txt" />
     <Content Include="Docs\lorem.txt" />
+    <Content Include="Docs\mao.jpg" />
     <Content Include="Docs\medium_image.jpg" />
     <Content Include="Docs\pdf.tika.html" />
     <None Include="Docs\WrongFiles\FileWithNumbers.txt">
@@ -562,9 +564,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

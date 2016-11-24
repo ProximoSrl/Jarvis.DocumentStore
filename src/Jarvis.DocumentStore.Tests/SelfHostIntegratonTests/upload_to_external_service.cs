@@ -470,6 +470,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void upload_mao_jpg_to_verify_resize()
+        {
+            _docs.UploadAsync(TestConfig.PathToMaoImage, DocumentHandle.FromString("mao")).Wait();
+            var feed = _docs.GetFeed(0, 20);
+            Assert.That(feed.Count(), Is.GreaterThan(1));
+        }
+
+        [Test]
         public void verify_typed_get_of_feed()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_3")).Wait();

@@ -1,5 +1,6 @@
 ﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Jarvis.DocumentStore.Core.Support
@@ -16,10 +17,18 @@ namespace Jarvis.DocumentStore.Core.Support
 
     public class StandardDocumentFormatTranslator : IDocumentFormatTranslator 
     {
+        private HashSet<String> imageFormatExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif"
+        };
 
         public DocumentFormat GetFormatFromFileName(string fileName)
         {
-            if (Path.GetExtension(fileName) == ".pdf") return new DocumentFormat("pdf");
+            var extension = Path.GetExtension(fileName);
+
+            if (".pdf".Equals(extension, StringComparison.OrdinalIgnoreCase)) return new DocumentFormat("pdf");
+
+            if (imageFormatExtensions.Contains(extension)) return new DocumentFormat("rasterimage");
 
             return null;
         }
