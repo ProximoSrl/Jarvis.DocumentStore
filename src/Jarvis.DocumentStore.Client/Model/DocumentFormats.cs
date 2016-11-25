@@ -31,7 +31,7 @@ namespace Jarvis.DocumentStore.Client.Model
 
     public class DocumentFormats
     {
-        public static readonly DocumentFormat RasterImage = new DocumentFormat("RasterImage");
+        public static readonly DocumentFormat RasterImage = new DocumentFormat("rasterimage");
         public static readonly DocumentFormat Pdf = new DocumentFormat("pdf");
         public static readonly DocumentFormat Original = new DocumentFormat("original");
         public static readonly DocumentFormat Email = new DocumentFormat("email");

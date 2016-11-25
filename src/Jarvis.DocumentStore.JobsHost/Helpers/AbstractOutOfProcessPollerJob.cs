@@ -481,14 +481,35 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             return await reader.OpenStream();
         }
 
+        protected String[] GetFormats(String tenantId, String jobId)
+        {
+            using (WebClientEx client = new WebClientEx())
+            {
+                //TODO: use round robin if a document store is down.
+                var url = GetBlobUriForJobFormats(tenantId, jobId);
+                var result = client.DownloadString(url);
+                var formats = JsonConvert.DeserializeObject<String[]>(result);
+                return formats;
+            }
+        }
+
         protected DocumentStoreServiceClient GetDocumentStoreClient(string tenantId)
         {
             return new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
         }
 
-        protected String GetBlobUriForJob(String tenantId, String jobId) 
+        protected String GetBlobUriForJobBlob(String tenantId, String jobId) 
         {
             return String.Format("{0}/{1}/documents/jobs/blob/{2}/{3}",
+                _dsEndpoints.First().BaseUrl,
+                tenantId,
+                QueueName,
+                jobId);
+        }
+
+        protected String GetBlobUriForJobFormats(String tenantId, String jobId)
+        {
+            return String.Format("{0}/{1}/documents/jobs/formats/{2}/{3}",
                 _dsEndpoints.First().BaseUrl,
                 tenantId,
                 QueueName,

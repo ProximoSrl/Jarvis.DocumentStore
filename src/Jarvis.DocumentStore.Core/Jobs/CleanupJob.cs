@@ -32,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
         public void Execute(IJobExecutionContext context)
         {
-            Logger.DebugFormat("Running cleanup on {0} ",
+            Logger.InfoFormat("Running cleanup Job on {0} ",
                 context.JobDetail.JobDataMap.GetString(JobKeys.TenantId),
                 RecycleBin);
             DateTime checkDate = DateTimeService.UtcNow.AddDays(-15);
@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             foreach (var slot in list)
             {
-                Logger.InfoFormat("Deleting slot {0} because it is in recyclebin and was deleted at {0}", slot.Id.StreamId, slot.DeletedAt);
+                Logger.InfoFormat("Deleting slot {0} because it is in recyclebin and was deleted at {1}", slot.Id.StreamId, slot.DeletedAt);
                 var blobIds = (BlobId[])slot.Data["files"];
                 foreach (var blobId in blobIds.Distinct())
                 {
@@ -76,7 +76,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
 
             foreach (var slot in list)
             {
-                Logger.InfoFormat("Deleting slot {0} because it is in recyclebin and was deleted at {0}", slot.Id.StreamId, slot.DeletedAt);
+                Logger.InfoFormat("Deleting slot {0} because it is in recyclebin and was deleted at {1}", slot.Id.StreamId, slot.DeletedAt);
                 
                 RecycleBin.Purge(slot.Id);
 
