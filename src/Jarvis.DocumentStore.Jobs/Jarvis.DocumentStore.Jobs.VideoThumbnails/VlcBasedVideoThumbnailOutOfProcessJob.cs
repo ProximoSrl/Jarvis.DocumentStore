@@ -40,7 +40,7 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 
             var worker = new VlcCommandLineThumbnailCreator(vlcExecutable, format, Logger);
 
-            String networkStream = base.GetBlobUriForJob(parameters.TenantId, parameters.JobId);
+            String networkStream = base.GetBlobUriForJobBlob(parameters.TenantId, parameters.JobId);
             String thumbNail = worker.CreateThumbnail(networkStream, workingFolder, secondsOffset);
 
             if (String.IsNullOrEmpty(thumbNail))

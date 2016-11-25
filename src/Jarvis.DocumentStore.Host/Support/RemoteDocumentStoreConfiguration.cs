@@ -138,7 +138,8 @@ namespace Jarvis.DocumentStore.Host.Support
             ConfigurationServiceClient.AppDomainInitializer(
                     LoggerFunction,
                     "JARVIS_CONFIG_SERVICE",
-                    defaultConfigFile: new FileInfo(defaultParameterFileName)
+                    defaultParameterFile: new FileInfo(defaultParameterFileName),
+                    missingParametersAction: ConfigurationManagerMissingParametersAction.Blank
                 );
         }
 
