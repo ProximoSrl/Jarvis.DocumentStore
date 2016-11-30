@@ -169,6 +169,11 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentLinked e)
         {
             var doc = _documentDescriptorReadModel.FindOneById(e.DocumentId);
+            if (doc == null)
+            {
+                Logger.InfoFormat("Document {0} is linked to document descriptor {1} that was not found. Probably the document descriptor was de-duplicated.", e.AggregateId, e.DocumentId);
+                return;
+            }
             if (!doc.Created) return; //Still not deduplicated.
             var handle = _documentWriter.FindOneById(e.Handle);
             foreach (var format in doc.Formats)
