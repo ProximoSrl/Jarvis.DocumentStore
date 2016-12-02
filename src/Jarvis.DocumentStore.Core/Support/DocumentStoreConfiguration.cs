@@ -25,12 +25,13 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public bool IsApiServer { get; protected set; }
         public bool IsWorker { get; protected set; }
-        
+
         public bool HasMetersEnabled {
-            get { return MetersOptions.Any(); }
+            get { return MetersOptions.ContainsKey("enabled") && MetersOptions["enabled"].Equals("true", StringComparison.OrdinalIgnoreCase); }
         }
+
         private readonly IList<String> _addresses = new List<String>();
-        public readonly IDictionary<string,string> MetersOptions = new Dictionary<string, string>();
+        private readonly IDictionary<string,string> MetersOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public String[] ServerAddresses
         {
@@ -40,7 +41,7 @@ namespace Jarvis.DocumentStore.Core.Support
         public String GetServerAddressForJobs()
         {
             //TODO: Handle multiple document store application
-            var serverAddress = ServerAddresses.First();
+            var serverAddress = ServerAddresses[0];
             if (serverAddress.StartsWith("http://+:"))
             {
                 serverAddress = serverAddress.Replace("+", Environment.MachineName);
@@ -83,7 +84,6 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public List<BucketInfo> BucketInfo { get; set; }
 
-
         public Boolean Rebuild { get; set; }
 
         public String[] EngineSlots { get; set; }
@@ -108,6 +108,15 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public Boolean DisableRepositoryLockOnAggregateId { get; set; }
 
+        #endregion
+
+        #region Storage
+
+        public StorageType StorageType { get; set; }
+
+        public String StorageUserName { get; set; }
+
+        public String StoragePassword { get; set; }
 
         #endregion
 
@@ -125,7 +134,7 @@ namespace Jarvis.DocumentStore.Core.Support
         public void MonitorFolders(string[] folders)
         {
             FoldersToMonitor = folders;
-            EnableImportFormFileSystem = folders.Any();
+            EnableImportFormFileSystem = folders.Length > 0;
         }
 
         protected String Expand(String address)
@@ -149,7 +158,7 @@ namespace Jarvis.DocumentStore.Core.Support
         {
             if (value.Contains("machine_name"))
                 value = value.Replace("machine_name", Environment.MachineName);
-            
+
             MetersOptions.Add(name, value);
         }
 
@@ -168,4 +177,9 @@ namespace Jarvis.DocumentStore.Core.Support
         public Boolean WindowVisible { get; set; }
     }
 
+    public enum StorageType
+    {
+        GridFs = 0, //The default
+        FileSystem = 1, //Storage in filesystem
+    }
 }

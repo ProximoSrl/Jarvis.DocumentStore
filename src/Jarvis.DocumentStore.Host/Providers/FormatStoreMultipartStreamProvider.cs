@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.Host.Providers
 
         IBlobWriter _writer;
         public FormatStoreMultipartStreamProvider(
-            IBlobStore store, 
+            IBlobStore store,
             DocumentFormat format
         ) : base(Path.GetTempPath())
         {

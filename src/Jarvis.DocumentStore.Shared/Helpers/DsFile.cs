@@ -95,6 +95,11 @@ namespace Jarvis.DocumentStore.Shared.Helpers
             return MyFile.Open(path, fileMode, fileAccess);
         }
 
+        public static void Move(String sourcePath, String destinationPath)
+        {
+            MyFile.Move(sourcePath, destinationPath);
+        }
+
         public static FileStream Open(string path, FileMode fileMode)
         {
             //https://github.com/peteraritchie/LongPath/issues/48

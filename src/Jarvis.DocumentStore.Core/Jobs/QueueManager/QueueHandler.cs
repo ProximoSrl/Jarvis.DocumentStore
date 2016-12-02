@@ -145,11 +145,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                         ),
                         Builders<QueuedJob>.Filter.Lte(j => j.SchedulingTimestamp, DateTime.Now)
                 );
-            if (tenantId != null && tenantId.IsValid())
+            if (tenantId?.IsValid() == true)
             {
                 query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId));
             }
-            if (customData != null && customData.Count > 0)
+            if (customData?.Count > 0)
             {
                 foreach (var filter in customData)
                 {
@@ -170,21 +170,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                      Sort = Builders<QueuedJob>.Sort.Ascending(j => j.SchedulingTimestamp),
                      ReturnDocument = ReturnDocument.After
                  });
-            if (result != null)
-            {
-                return result;
-            }
-            return null;
-            throw new ApplicationException("Error in Finding next job.");
+            return result;
         }
-
 
         public Boolean SetJobExecuted(String jobId, String errorMessage, Dictionary<String, String> parametersToModify)
         {
             var job = _collection.FindOneById(BsonValue.Create(jobId));
             if (job == null)
             {
-                Logger.ErrorFormat("Request SetJobExecuted for unexisting job id {0}", jobId);
+                Logger.Error($"Request SetJobExecuted for unexisting job id {jobId} for queue {_info.Name}");
                 return false;
             }
             SetErrorInfoToJob(job, errorMessage);
@@ -210,7 +204,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             var job = _collection.FindOneById(BsonValue.Create(jobId));
             if (job == null)
             {
-                Logger.ErrorFormat("Request ReQueueJob for unexisting job id {0}", jobId);
+                Logger.Error($"Request ReQueueJob for unexisting job id {jobId} for queue {_info.Name}");
                 return false;
             }
             SetErrorInfoToJob(job, errorMessage);
@@ -229,7 +223,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                  job);
             return true;
         }
-
 
         /// <summary>
         /// Return the list of all jobs that are blocked, a job is blocked if it is in
@@ -302,7 +295,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             if (!String.IsNullOrEmpty(errorMessage))
             {
-                job.ErrorCount += 1;
+                job.ErrorCount++;
                 job.ExecutionError = errorMessage;
                 if (job.ErrorCount >= _info.MaxNumberOfFailure)
                 {

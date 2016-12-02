@@ -3,7 +3,7 @@ using System.IO;
 using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Driver.GridFS;
 
-namespace Jarvis.DocumentStore.Core.Storage
+namespace Jarvis.DocumentStore.Core.Storage.GridFs
 {
     public class GridFsBlobDescriptor : IBlobDescriptor
     {

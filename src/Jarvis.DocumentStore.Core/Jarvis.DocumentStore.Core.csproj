@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -96,9 +96,8 @@
     <Reference Include="NEventStore.Persistence.MongoDB, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NEventStore.Persistence.MongoDB.6.0.0-beta0093\lib\net40\NEventStore.Persistence.MongoDB.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Pri.LongPath, Version=2.0.32.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Pri.LongPath.2.0.32\lib\net45\Pri.LongPath.dll</HintPath>
@@ -191,6 +190,12 @@
     <Compile Include="Domain\Document\Events\DocumentLinked.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
     <Compile Include="ReadModel\DocumentDeletedReadModel.cs" />
+    <Compile Include="Storage\FileSystem\PinvokeWindowsNetworking.cs" />
+    <Compile Include="Storage\FileSystem\DirectoryManager.cs" />
+    <Compile Include="Storage\FileSystem\FileSystemBlobDescriptor.cs" />
+    <Compile Include="Storage\FileSystem\FileSystemBlobStore.cs" />
+    <Compile Include="Storage\FileSystem\FileSystemBlobStoreWritableStream.cs" />
+    <Compile Include="Storage\FileSystem\FileSystemBlobWriter.cs" />
     <Compile Include="Support\DateTimeService.cs" />
     <Compile Include="Support\DocumentStoreMultiTenantCommandBus.cs" />
     <Compile Include="Support\DsDisposableAction.cs" />
@@ -238,8 +243,8 @@
     <Compile Include="Storage\BlobStoreExtensions.cs" />
     <Compile Include="Storage\IBlobWriter.cs" />
     <Compile Include="Storage\FsBlobDescriptor.cs" />
-    <Compile Include="Storage\GridFsBlobStore.cs" />
-    <Compile Include="Storage\GridFsBlobDescriptor.cs" />
+    <Compile Include="Storage\GridFs\GridFsBlobStore.cs" />
+    <Compile Include="Storage\GridFs\GridFsBlobDescriptor.cs" />
     <Compile Include="Storage\IBlobStore.cs" />
     <Compile Include="Storage\IBlobDescriptor.cs" />
     <Compile Include="Support\CoreInstaller.cs" />
@@ -262,8 +267,12 @@
     <Compile Include="Support\TenantJobsInstaller.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">

@@ -4,6 +4,9 @@ using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Core.Storage
 {
+    /// <summary>
+    /// Abstract the writing on a blob.
+    /// </summary>
     public class BlobWriter : IBlobWriter
     {
         public BlobId BlobId { get; private set; }

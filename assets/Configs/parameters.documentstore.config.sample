@@ -1,10 +1,21 @@
 {
 	"enable-snapshot-cache" : true,
-    "enable-single-aggregate-repository-cache" : true,
+    "enable-single-aggregate-repository-cache" : false,
 	"disable-lock-on-aggregate-id" : false,
 	"baseConnectionString" : "mongodb://localhost/ds",
 	"nes-engine-version" : "v3",
 	"tenants": ["docs", "demo"],
+	"storage" : {
+		"type" : "FileSystem", //"type" : "GridFs"
+		"fileSystem" : {
+			"username" : "domain\username",
+			"password" : "the password",
+			"docs-originals-baseDirectory" : "z:\\temp\\docs",
+			"docs-artifacts-baseDirectory" : "z:\\temp\\docs\\artifacts",
+			"tickets-originals-baseDirectory" : "z:\\temp\\docs",
+			"tickets-artifacts-baseDirectory" : "z:\\temp\\docs\\artifacts"
+		}
+	},
     "connectionStrings": {
         "ds-queues": "%baseConnectionString%-queues",
         "ds-logs": "%baseConnectionString%-logs",

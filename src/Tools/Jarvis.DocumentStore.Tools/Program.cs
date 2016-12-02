@@ -1,34 +1,145 @@
-﻿using MongoDB.Bson;
+﻿using Jarvis.ConfigurationService.Client;
+using Jarvis.Framework.Shared.IdentitySupport;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tools
 {
-    public class Program
+    class Program
     {
-        static void Main(string[] args)
+        static Int32 Main(string[] args)
         {
-            Menu();
-            CommandLoop(c =>
+            try
             {
-                switch (c)
+                RunShell();
+                return 0;
+            }
+            catch (ReflectionTypeLoadException rex)
+            {
+                StringBuilder error = new StringBuilder();
+
+                error.AppendLine(@"
+------------------------------------------------------------------------------
+                UNABLE TO LOAD TYPES
+
+One of the standard reason why this happens is that in jarvis.shell.exe.config
+in runtime section redirection for Newtonsoft is missing. To fix the problem
+if the error is newtonsoft, check the version of newtonsoft.dll that is present
+in the directory, then fix accordingly the config file, inserting the right 
+version in runtime section.
+
+As example, if the exeption tells you that newtonsoft 6.0.0 is missing, and
+the dll in the directory is version 8.0.0. you probably have this in the config
+
+<dependentAssembly>
+    <assemblyIdentity name=""Newtonsoft.Json"" publicKeyToken=""30ad4fe6b2a6aeed"" culture=""neutral"" />
+    <bindingRedirect oldVersion=""0.0.0.0-6.0.0.0"" newVersion=""6.0.0.0"" />
+</dependentAssembly>
+
+this should be changed to 
+<dependentAssembly>
+    <assemblyIdentity name=""Newtonsoft.Json"" publicKeyToken=""30ad4fe6b2a6aeed"" culture=""neutral"" />
+    <bindingRedirect oldVersion=""0.0.0.0-8.0.0.0"" newVersion=""8.0.0.0"" />
+</dependentAssembly>
+
+------------------------------------------------------------------------------
+");
+                foreach (var ex in rex.LoaderExceptions)
                 {
-                    case "1":
-                        CheckQueueScheduledJob();
-                        break;
-                    case "2":
-                        CheckOrphanedBlobs.PerformCheck(DateTime.UtcNow);
-                        break;
-                    case "q":
-                        return true;
+                    error.AppendLine("LOADER EXCEPTION");
+                    error.AppendLine(ex.ToString());
+                    error.AppendLine("\n\n");
+                }
+                ;
+                error.AppendLine("UNABLE TO LOAD: ");
+                foreach (var t in rex.Types.Where(t => t != null))
+                {
+                    error.AppendLine(t.FullName);
                 }
 
-                Menu();
+                error.AppendLine("\n\n" + rex.ToString());
+                File.WriteAllText("_lasterror.txt", error.ToString());
+            }
+            catch (Exception ex)
+            {
+                File.WriteAllText("_lasterror.txt", ex.ToString());
+            }
+
+            Console.WriteLine("Error during execution, consult file _lasterror.txt. Press a key to close and open log file.");
+            Console.ReadKey();
+            Process.Start("_lasterror.txt");
+            return 1;
+
+        }
+
+        private static void RunShell()
+        {
+            MongoFlatMapper.EnableFlatMapping();
+            ConfigurationServiceClient.AppDomainInitializer(
+                (message, isError, exception) =>
+                {
+                    if (isError) Console.Error.WriteLine(message + "\n" + exception);
+                    else Console.WriteLine(message);
+                },
+                "JARVIS_CONFIG_SERVICE",
+                null,
+                new FileInfo("defaultParameters.config"),
+                missingParametersAction: ConfigurationManagerMissingParametersAction.Blank);
+
+            //LoadBretonProject test = new LoadBretonProject();
+            //test.Import(@"Z:\Secure\breton\940304_Smartflex\940304_Smartflex.xlsx", "jarvis");
+
+            var commands = new Dictionary<String, Func<Boolean>>();
+            commands.Add("Check oprhaned blob", () =>
+            {
+                CheckOrphanedBlobs.PerformCheck(DateTime.UtcNow);
+                return false;
+            });
+            commands.Add("Check tika scheduled job", () =>
+            {
+                CheckQueuedTikaScheduledJobs.PerformCheck();
+                return false;
+            });
+
+            commands.Add("Start sync artifacts job", () =>
+            {
+                FullArtifactSyncJob.StartSync();
+                return false;
+            });
+
+            //commands.Add("Start sync artifacts using rmStream", () =>
+            //{
+            //    RmStreamArtifactSyncJob.StartSync();
+            //    return false;
+            //});
+
+            Menu(commands.Keys.ToList());
+            CommandLoop(c =>
+            {
+                int menuSelection = 0;
+                if (Int32.TryParse(c, out menuSelection))
+                {
+                    var func = commands.ElementAtOrDefault(menuSelection);
+                    Console.WriteLine("Selected {0}", func.Key);
+                    func.Value();
+                }
+                else
+                {
+                    if (String.Equals(c, "q", StringComparison.InvariantCultureIgnoreCase))
+                        return true;
+                    Console.WriteLine("Comando non valido! Premere un tasto per continuare");
+                    Console.ReadKey();
+                }
+                Menu(commands.Keys.ToList());
                 return false;
             });
         }
@@ -49,11 +160,12 @@ namespace Jarvis.DocumentStore.Tools
             }
         }
 
+     
         static void Message(string msg)
         {
             Console.WriteLine("");
             Console.WriteLine(msg);
-            Console.WriteLine("(return to continue)");
+            Console.WriteLine("(invio per continuare)");
             Console.ReadLine();
         }
 
@@ -64,78 +176,17 @@ namespace Jarvis.DocumentStore.Tools
             Console.WriteLine("-----------------------------");
         }
 
-        static void Menu()
+        static void Menu(List<string> headers)
         {
             Console.Clear();
             Banner("Menu");
-            Console.WriteLine("1 - Check tika scheduled job");
-            Console.WriteLine("2 - Find orphaned blobs");
+            for (int i = 0; i < headers.Count; i++)
+            {
+                Console.WriteLine("{0} - {1}", i, headers[i]);
+            }
+
             Console.WriteLine("");
             Console.WriteLine("Q - esci");
-        }
-
-        static void CheckQueueScheduledJob()
-        {
-            Console.WriteLine("Check all queued tika job that have no original in document descriptor");
-            var urlQueue = new MongoUrl(ConfigurationManager.ConnectionStrings["queuesDb"].ConnectionString);
-            var clientQueue = new MongoClient(urlQueue);
-
-            var dbQueue = clientQueue.GetDatabase(urlQueue.DatabaseName);
-            IMongoCollection<BsonDocument> _queueCollection = dbQueue.GetCollection<BsonDocument>("queue.tika");
-
-            HashSet<String> blobIdQueued = new HashSet<string>();
-            var allBlobIdQueued = _queueCollection
-                .Find(Builders<BsonDocument>.Filter.Empty)
-                .Project(Builders<BsonDocument>.Projection.Include("BlobId"))
-                .ToList();
-
-            foreach (var blobId in allBlobIdQueued)
-            {
-                blobIdQueued.Add(blobId["BlobId"].AsString);
-            }
-
-            var urlDs = new MongoUrl(ConfigurationManager.ConnectionStrings["mainDb"].ConnectionString);
-            var clientDs = new MongoClient(urlDs);
-
-            var dbDs = clientDs.GetDatabase(urlDs.DatabaseName);
-            IMongoCollection<BsonDocument> _ddCollection = dbDs.GetCollection<BsonDocument>("rm.DocumentDescriptor");
-
-            HashSet<String> blobIdDeDuplicated = new HashSet<string>();
-            var allBlobIdDeDuplicated = _ddCollection
-                .Find(Builders<BsonDocument>.Filter.Empty)
-                .Project(Builders<BsonDocument>.Projection.Include("Formats.v.BlobId"))
-                .ToList();
-
-            foreach (var blobId in allBlobIdDeDuplicated)
-            {
-                var blobIdOriginal = blobId["Formats"].AsBsonArray
-                    .Select(b => b["v"]["BlobId"].AsString)
-                    .Where(s => s.StartsWith("original"))
-                    .Distinct();
-                foreach (var id in blobIdOriginal)
-                {
-                    blobIdDeDuplicated.Add(id);
-                }
-                if (blobIdOriginal.Count() > 1)
-                {
-                    Console.WriteLine("Descriptor with more than one original {0}", blobId["_id"]);
-                }
-            }
-
-            //now check
-            Int32 nonExisting = 0;
-            foreach (var blobId in blobIdQueued)
-            {
-                if (!blobIdDeDuplicated.Contains(blobId))
-                {
-                    Console.WriteLine("Blob {0} queued but it does not belongs to any descriptor", blobId);
-                    nonExisting++;
-                }
-            }
-
-            Console.WriteLine("Found {0} blob id in tika.queue that does not belongs to any descriptor", nonExisting);
-            Console.WriteLine("Press a key to continue");
-            Console.ReadKey();
         }
     }
 }

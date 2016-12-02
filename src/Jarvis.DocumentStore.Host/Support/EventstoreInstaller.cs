@@ -106,7 +106,6 @@ namespace Jarvis.DocumentStore.Host.Support
                                         );
                                 })
                                 .LifestyleSingleton(),
-
                             Component
                                 .For<IRepositoryEx, RepositoryEx>()
                                 .ImplementedBy<RepositoryEx>()
@@ -114,16 +113,9 @@ namespace Jarvis.DocumentStore.Host.Support
                                 .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
                                 .LifestyleTransient(),
                             Component
-                                .For<IRepositoryExFactory>()
-                                .AsFactory(),
-                            Component
                                 .For<ISnapshotManager>()
                                 .DependsOn(Dependency.OnValue("cacheEnabled", _config.EnableSnapshotCache))
                                 .ImplementedBy<CachedSnapshotManager>(),
-                            Component
-                                .For<ICommitPollingClientFactory>()
-                                .AsFactory(),
-
                             Component
                                 .For<IAggregateCachedRepositoryFactory>()
                                 .ImplementedBy<AggregateCachedRepositoryFactory>()

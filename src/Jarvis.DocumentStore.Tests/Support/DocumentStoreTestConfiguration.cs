@@ -37,6 +37,7 @@ namespace Jarvis.DocumentStore.Tests.Support
             PollingMsInterval = 100;
             AllowedFileTypes = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|htmlzip|eml|msg|jpeg|jpg|png|zip|txt".Split('|');
             IsDeduplicationActive = true;
+            StorageType = StorageType.GridFs;
         }
 
         public override void CreateLoggingFacility(LoggingFacility f)

@@ -42,19 +42,21 @@ namespace Jarvis.DocumentStore.Host.Support
                 ConfigureAdmin(application);
             }
 
-
-            Metric
-                .Config
-                .WithOwin(middleware => application.Use(middleware),
-                           config => config
-                    .WithRequestMetricsConfig(c => c.WithAllOwinMetrics())
-                    .WithMetricsEndpoint(endpointConfig => endpointConfig
-                        .MetricsEndpoint("metrics/metrics")
-                        .MetricsTextEndpoint("metrics/text")
-                        .MetricsHealthEndpoint("metrics/health")
-                        .MetricsJsonEndpoint("metrics/json")
-                        .MetricsPingEndpoint("metrics/ping")
-                    ));
+            if (_config.HasMetersEnabled)
+            {
+                Metric
+                    .Config
+                    .WithOwin(middleware => application.Use(middleware),
+                               config => config
+                        .WithRequestMetricsConfig(c => c.WithAllOwinMetrics())
+                        .WithMetricsEndpoint(endpointConfig => endpointConfig
+                            .MetricsEndpoint("metrics/metrics")
+                            .MetricsTextEndpoint("metrics/text")
+                            .MetricsHealthEndpoint("metrics/health")
+                            .MetricsJsonEndpoint("metrics/json")
+                            .MetricsPingEndpoint("metrics/ping")
+                        ));
+            }
         }
 
 

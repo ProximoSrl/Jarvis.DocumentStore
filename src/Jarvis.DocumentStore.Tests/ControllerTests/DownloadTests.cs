@@ -103,7 +103,6 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             Assert.AreEqual("File file_1 not found", response.GetError().Message);
         }
 
-
         [Test]
         public void should_download_original_file()
         {

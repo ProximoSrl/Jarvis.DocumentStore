@@ -16,21 +16,69 @@ using Jarvis.DocumentStore.Shared.Model;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
-    public class upload_drop_all_tenants
+    public class Load_test
     {
+        private DocumentStoreServiceClient _docs;
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            _docs = new DocumentStoreServiceClient(
+                TestConfig.ServerAddress,
+                TestConfig.DocsTenant
+            );
+        }
+
         [Test]
-        public void execute()
+        public void Drop_all_tenant()
         {
             MongoDbTestConnectionProvider.DropAll();
+            if (Directory.Exists(@"Z:\temp\docsstorage"))
+                Directory.Delete(@"Z:\temp\docsstorage", true);
+        }
+
+        [Test]
+        public void Upload_TempDirectory()
+        {
+            var files = Directory.GetFiles(@"X:\temp\testupload", "*.*", SearchOption.AllDirectories);
+            Parallel.ForEach(files, file =>
+            {
+                {
+                    if (!Path.GetFileName(file).StartsWith("."))
+                    {
+                        _docs.UploadAsync(file, DocumentHandle.FromString(SanitizeFileName(file))).Wait();
+                    }
+                }
+            });
+        }
+
+        private static string SanitizeFileName(string file)
+        {
+            return file.Replace("/", "_").Replace("\\", "_").Replace("#", "_");
+        }
+
+        [Test]
+        public void Upload_TempDirectory_FLOOD()
+        {
+            var files = Directory.GetFiles(@"X:\temp\testupload", "*.*", SearchOption.AllDirectories);
+            List<Task> taskList = new List<Task>();
+            foreach (var file in files.Where(f => !Path.GetFileName(f).StartsWith(".")))
+            {
+                //NO WAIT. This will FLOOD documentstore
+                var task = _docs.UploadAsync(file, DocumentHandle.FromString(SanitizeFileName(file)));
+                taskList.Add(task);
+                if (taskList.Count > 100)
+                {
+                    Task.WaitAll(taskList.ToArray());
+                    taskList.Clear();
+                }
+            }
         }
     }
 
     [TestFixture, Explicit]
-    public class upload_to_external_service
+    public class Upload_to_external_service
     {
-
-       
-
         private DocumentStoreServiceClient _docs;
         private DocumentStoreServiceClient _demo;
 
@@ -38,31 +86,30 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void TestFixtureSetUp()
         {
             _docs = new DocumentStoreServiceClient(
-                TestConfig.ServerAddress, 
+                TestConfig.ServerAddress,
                 TestConfig.DocsTenant
             );
 
             _demo = new DocumentStoreServiceClient(
-                TestConfig.ServerAddress, 
+                TestConfig.ServerAddress,
                 TestConfig.DemoTenant
             );
         }
 
-
         [Test]
-        public void upload_pdf()
+        public void Upload_pdf()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Rev_1")).Wait();
         }
 
         [Test]
-        public void upload_pdf_copyHandle()
+        public void Upload_pdf_copyHandle()
         {
             _docs.CopyHandleAsync(DocumentHandle.FromString("Rev_1"), DocumentHandle.FromString("Rev_1_copied")).Wait();
         }
 
         [Test]
-        public void upload_pdf_copyHandle_then_delete()
+        public void Upload_pdf_copyHandle_then_delete()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Rev_1")).Wait();
             _docs.CopyHandleAsync(DocumentHandle.FromString("Rev_1"), DocumentHandle.FromString("Rev_1_copied")).Wait();
@@ -70,13 +117,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_txt_document()
+        public void Upload_txt_document()
         {
             _docs.UploadAsync(TestConfig.PathToLoremIpsumTxt, DocumentHandle.FromString("text_document")).Wait();
         }
 
         [Test]
-        public void upload_pdf_then_delete()
+        public void Upload_pdf_then_delete()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Revision_42")).Wait();
             Thread.Sleep(3000);
@@ -84,7 +131,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_many_docs()
+        public void Upload_many_docs()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Doc1")).Wait();
             _docs.UploadAsync(TestConfig.PathTo7Zip, DocumentHandle.FromString("Doc2")).Wait();
@@ -92,7 +139,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_many_docs_delete()
+        public void Upload_many_docs_delete()
         {
             _docs.DeleteAsync(DocumentHandle.FromString("Doc1")).Wait();
             _docs.DeleteAsync(DocumentHandle.FromString("Doc2")).Wait();
@@ -100,7 +147,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_many_pdf()
+        public void Upload_many_pdf()
         {
             for (int i = 0; i < 100; i++)
             {
@@ -109,7 +156,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_many_pdf_delete()
+        public void Upload_many_pdf_delete()
         {
             for (int i = 0; i < 100; i++)
             {
@@ -118,32 +165,32 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void remove_tika_from_pdf()
+        public void Remove_tika_from_pdf()
         {
             _docs.RemoveFormatFromDocument(DocumentHandle.FromString("Rev_1"), new DocumentFormat("tika")).Wait();
         }
 
         [Test]
-        public void upload__temp_pdf()
+        public void Upload__temp_pdf()
         {
             _docs.UploadAsync(@"c:\temp\temppdf.pdf", DocumentHandle.FromString("temp_pdf")).Wait();
         }
 
         [Test]
-        public void upload__temp_excel()
+        public void Upload__temp_excel()
         {
             _docs.UploadAsync(@"c:\temp\excel.xlsx", DocumentHandle.FromString("temp_excel")).Wait();
         }
 
 
         [Test]
-        public void upload__temp_text()
+        public void Upload__temp_text()
         {
             _docs.UploadAsync(@"c:\temp\temp.txt", DocumentHandle.FromString("temp_txt")).Wait();
         }
 
         [Test]
-        public void upload_list_files_in_temp()
+        public void Upload_list_files_in_temp()
         {
             var fileList = File.ReadAllText(@"c:\temp\filelist.txt");
             foreach (var line in fileList.Split('\n'))
@@ -151,29 +198,28 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 FileInfo finfo = new FileInfo(line);
                 _docs.UploadAsync(finfo.FullName, DocumentHandle.FromString(finfo.Name)).Wait();
             }
-            
         }
 
         [Test]
-        public void upload_pdf_with_password()
+        public void Upload_pdf_with_password()
         {
             _docs.UploadAsync(TestConfig.PathToPasswordProtectedPdf, DocumentHandle.FromString("pdf_password")).Wait();
         }
 
         [Test]
-        public void zipped_file_upload()
+        public void Zipped_file_upload()
         {
             _docs.UploadAsync(TestConfig.PathToZipFile, DocumentHandle.FromString("zipsimple")).Wait();
         }
 
         [Test]
-        public void upload_seven_zip()
+        public void Upload_seven_zip()
         {
             _docs.UploadAsync(TestConfig.PathTo7Zip, DocumentHandle.FromString("7zip")).Wait();
         }
 
         [Test]
-        public void zipped_file_withFolders_upload()
+        public void Zipped_file_withFolders_upload()
         {
             _docs.UploadAsync(TestConfig.PathToZipFileWithFolders, DocumentHandle.FromString("zip_with_folders")).Wait();
         }
@@ -184,12 +230,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         /// chain
         /// </summary>
         [Test]
-        public void zipped_files_sequence_for_deduplication()
+        public void Zipped_files_sequence_for_deduplication()
         {
             _docs.UploadAsync(TestConfig.PathToZipFile, DocumentHandle.FromString("zipfile")).Wait();
             Thread.Sleep(4000); //Give time to attachment job to do its job, then upload
-            //a zip document that contains the first one.
-            _docs.UploadAsync(TestConfig.PathToZipFileThatContainsOtherZip, 
+                                //a zip document that contains the first one.
+            _docs.UploadAsync(TestConfig.PathToZipFileThatContainsOtherZip,
                 DocumentHandle.FromString("zipcontainer")).Wait();
             //you can test on 
             //http://localhost:5123/docs/documents/attachments_fat/zipcontainer
@@ -197,25 +243,25 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void attachment_complex_email_upload()
+        public void Attachment_complex_email_upload()
         {
             _docs.UploadAsync(TestConfig.PathToMsgWithComplexAttachment, DocumentHandle.FromString("msg_with_complex_attach")).Wait();
         }
 
         [Test]
-        public void email_msg_with_zip_with_folders_upload()
+        public void Email_msg_with_zip_with_folders_upload()
         {
             _docs.UploadAsync(TestConfig.PathToMsgWithComplexAttachmentAndZipFileWithFolders, DocumentHandle.FromString("msg_with_zip_folder")).Wait();
         }
 
         [Test]
-        public void email_eml_with_zip_with_folders_upload()
+        public void Email_eml_with_zip_with_folders_upload()
         {
             _docs.UploadAsync(TestConfig.PathToEmlWithComplexAttachmentAndZipFileWithFolders, DocumentHandle.FromString("eml_with_zip_folder")).Wait();
         }
 
         [Test]
-        public void zip_with_nested_zip_file_upload()
+        public void Zip_with_nested_zip_file_upload()
         {
             _docs.UploadAsync(TestConfig.PathToZipFileThatContainsOtherZip, DocumentHandle.FromString("zipchain")).Wait();
         }
@@ -227,21 +273,20 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_ppt_with_link()
+        public void Upload_ppt_with_link()
         {
             //the file for this test is in trello card https://trello.com/c/SKGrSdAQ/156-libreoffice-dialog
             _docs.UploadAsync("c:\\temp\\KPC_QCI_Training_English_4_4_06.ppt", DocumentHandle.FromString("Rev_1")).Wait();
-
         }
 
         [Test]
-        public void upload_lorem_ipsum()
+        public void Upload_lorem_ipsum()
         {
             _docs.UploadAsync(TestConfig.PathToLoremIpsumPdf, DocumentHandle.FromString("lorem")).Wait();
         }
 
         [Test]
-        public void upload_pdf_to_demo_and_docs_tenants()
+        public void Upload_pdf_to_demo_and_docs_tenants()
         {
             Task.WaitAll(
                 _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Rev_1")),
@@ -250,14 +295,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_same_pdf_with_two_handles()
+        public void Upload_same_pdf_with_two_handles()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Pdf_1")).Wait();
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Pdf_2")).Wait();
         }
 
         [Test]
-        public void upload_same_pdf_with_two_handles_then_reuse_second_handle()
+        public void Upload_same_pdf_with_two_handles_then_reuse_second_handle()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_1")).Wait();
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_2")).Wait();
@@ -266,7 +311,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_same_pdf_100_times_with_unique_handle()
+        public void Upload_same_pdf_100_times_with_unique_handle()
         {
             var uploads = Enumerable
                 .Range(1, 100)
@@ -275,9 +320,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Task.WaitAll(uploads);
         }
-        
+
         [Test]
-        public void upload_same_pdf_100_times_with_same_handle()
+        public void Upload_same_pdf_100_times_with_same_handle()
         {
             var uploads = Enumerable
                 .Range(1, 100)
@@ -287,36 +332,36 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Task.WaitAll(uploads);
         }
 
-           [Test]
-        public void upload_doc()
+        [Test]
+        public void Upload_doc()
         {
             _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc")).Wait();
         }
 
         [Test]
-        public void upload_doc_with_metadata()
+        public void Upload_doc_with_metadata()
         {
             _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc"),
-                new Dictionary<String, object>() 
-                { 
+                new Dictionary<String, object>()
+                {
                     {"param1" , "this is a test"},
                     {"the answer", 42},
                 }).Wait();
         }
 
         [Test]
-        public void upload_text_with_metadata()
+        public void Upload_text_with_metadata()
         {
             _docs.UploadAsync(TestConfig.PathToTextDocument, DocumentHandle.FromString("txt_test"),
-                new Dictionary<String, object>() 
-                { 
+                new Dictionary<String, object>()
+                {
                     {"param1" , "this is a test"},
                     {"the answer", 42},
                 }).Wait();
         }
 
         [Test]
-        public void upload_doc_then_add_format_to_doc()
+        public void Upload_doc_then_add_format_to_doc()
         {
             _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc_2")).Wait();
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -327,9 +372,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             _docs.AddFormatToDocument(model, null).Wait();
         }
 
-
         [Test]
-        public void upload_same_doc_100_times_with_unique_handle()
+        public void Upload_same_doc_100_times_with_unique_handle()
         {
             var uploads = Enumerable
                 .Range(1, 100)
@@ -340,7 +384,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_same_doc_100_times_with_same_handle()
+        public void Upload_same_doc_100_times_with_same_handle()
         {
             var uploads = Enumerable
                 .Range(1, 100)
@@ -351,30 +395,29 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_pdf_with_handleA_and_handleB()
+        public void Upload_pdf_with_handleA_and_handleB()
         {
             List<Task> tasks = new List<Task>();
             tasks.Add(_docs.UploadAsync(TestConfig.PathToDocumentCopyPdf, DocumentHandle.FromString("a")));
             Thread.Sleep(500);
-            tasks.Add( _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("b")));
+            tasks.Add(_docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("b")));
             Task.WaitAll(tasks.ToArray());
         }
 
         [Test]
-        public void upload_html()
+        public void Upload_html()
         {
             _docs.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html")).Wait();
         }
 
-
         [Test]
-        public void upload_mime_html()
+        public void Upload_mime_html()
         {
             _docs.UploadAsync(TestConfig.PathToMht, DocumentHandle.FromString("mhtml")).Wait();
         }
 
         [Test]
-        public void upload_simple_html()
+        public void Upload_simple_html()
         {
             var taskFolder = @"c:\temp\dsqueue";
 
@@ -390,7 +433,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_html_zipped()
+        public void Upload_html_zipped()
         {
             var zipped = _docs.ZipHtmlPage(TestConfig.PathToHtml);
 
@@ -404,73 +447,73 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_excel()
+        public void Upload_excel()
         {
             _docs.UploadAsync(TestConfig.PathToExcelDocument, DocumentHandle.FromString("xlsx")).Wait();
         }
 
         [Test]
-        public void upload_ppt()
+        public void Upload_ppt()
         {
             _docs.UploadAsync(TestConfig.PathToPowerpointDocument, DocumentHandle.FromString("pptx")).Wait();
         }
 
         [Test]
-        public void upload_pps()
+        public void Upload_pps()
         {
             _docs.UploadAsync(TestConfig.PathToPowerpointShow, DocumentHandle.FromString("ppsx")).Wait();
         }
 
         [Test]
-        public void upload_odt()
+        public void Upload_odt()
         {
             _docs.UploadAsync(TestConfig.PathToOpenDocumentText, DocumentHandle.FromString("odt")).Wait();
         }
 
         [Test]
-        public void upload_ods()
+        public void Upload_ods()
         {
             _docs.UploadAsync(TestConfig.PathToOpenDocumentSpreadsheet, DocumentHandle.FromString("ods")).Wait();
         }
 
         [Test]
-        public void upload_odp()
+        public void Upload_odp()
         {
             _docs.UploadAsync(TestConfig.PathToOpenDocumentPresentation, DocumentHandle.FromString("odp")).Wait();
         }
 
         [Test]
-        public void upload_rtf()
+        public void Upload_rtf()
         {
             _docs.UploadAsync(TestConfig.PathToRTFDocument, DocumentHandle.FromString("rtf")).Wait();
         }
 
         [Test]
-        public void upload_msg()
+        public void Upload_msg()
         {
             _docs.UploadAsync(TestConfig.PathToMsg, DocumentHandle.FromString("outlook_1")).Wait();
         }
 
         [Test]
-        public void upload_video()
+        public void Upload_video()
         {
             _docs.UploadAsync("C:\\temp\\rainingblood.mp4", DocumentHandle.FromString("slayer_raining_blood")).Wait();
         }
 
         [Test]
-        public void upload_eml()
+        public void Upload_eml()
         {
             _docs.UploadAsync(TestConfig.PathToEml, DocumentHandle.FromString("eml_1")).Wait();
         }
 
         [Test]
-        public void upload_medium_jpg()
+        public void Upload_medium_jpg()
         {
             _docs.UploadAsync(TestConfig.PathToMediumJpg, DocumentHandle.FromString("jpg_1")).Wait();
         }
 
         [Test]
-        public void verify_get_of_feed()
+        public void Verify_get_of_feed()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_2")).Wait();
             var feed = _docs.GetFeed(0, 20);
@@ -478,7 +521,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_mao_jpg_to_verify_resize()
+        public void Upload_mao_jpg_to_verify_resize()
         {
             _docs.UploadAsync(TestConfig.PathToMaoImage, DocumentHandle.FromString("mao")).Wait();
             var feed = _docs.GetFeed(0, 20);
@@ -486,7 +529,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void verify_typed_get_of_feed()
+        public void Verify_typed_get_of_feed()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("handle_3")).Wait();
             var feed = _docs.GetFeed(0, 20, HandleStreamEventTypes.DocumentCreated);
@@ -495,7 +538,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void upload_multi()
+        public void Upload_multi()
         {
             Task.WaitAll(
                 _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("docx")),
@@ -511,7 +554,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void pdf_composer()
+        public void Pdf_composer()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("pdfC1")).Wait();
             _docs.UploadAsync(TestConfig.PathToLoremIpsumTxt, DocumentHandle.FromString("pdfC2")).Wait();
@@ -523,7 +566,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void pdf_composer_with_format_without_pdf()
+        public void Pdf_composer_with_format_without_pdf()
         {
             _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("pdfD1")).Wait();
             _docs.UploadAsync(TestConfig.PathToBinaryDocument, DocumentHandle.FromString("pdfD2")).Wait();

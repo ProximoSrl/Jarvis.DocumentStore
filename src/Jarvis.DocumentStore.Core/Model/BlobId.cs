@@ -16,27 +16,45 @@ namespace Jarvis.DocumentStore.Core.Model
     public class BlobId : LowercaseStringValue
     {
         public BlobId(DocumentFormat format, long value)
-            : base(format +"." + value)
+            : base(format + "." + value)
         {
         }
 
         [BsonIgnore]
         [JsonIgnore]
-        public DocumentFormat Format {
+        public DocumentFormat Format
+        {
             get
             {
-                var dotPos =  Value.LastIndexOf('.');
+                var dotPos = Value.LastIndexOf('.');
                 if (dotPos <= 0)
                     throw new Exception("Invalid BlobId, missing format!");
 
                 return new DocumentFormat(Value.Substring(0, dotPos));
-            } 
+            }
         }
 
         public BlobId(string value) : base(value)
         {
             //if (value == null) 
             //    throw new ArgumentNullException("value");
+        }
+
+        public Int64 Id
+        {
+            get
+            {
+                var dotPosition = Value.LastIndexOf(".");
+                if (dotPosition >= 0)
+                {
+                    var numericPart = Value.Substring(dotPosition + 1);
+                    Int64 retValue;
+                    if (Int64.TryParse(numericPart, out retValue))
+                        return retValue;
+                }
+
+                throw new ArgumentException("The format of blob is invalid, it should be format.id where id is numeric.");
+            }
         }
 
         public static readonly BlobId Null = new BlobId("null");

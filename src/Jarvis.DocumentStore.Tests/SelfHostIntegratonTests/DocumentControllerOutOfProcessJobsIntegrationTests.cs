@@ -45,6 +45,7 @@ using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 using Jarvis.Framework.Shared.Helpers;
 using Jarvis.DocumentStore.Jobs.PdfComposer;
+using Jarvis.DocumentStore.Shared.Helpers;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -94,6 +95,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             try
             {
+                UdpAppender.AppendToConfiguration();
                 _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo(), _engineVersion);
                 _jobsHostConfiguration = new JobsHostConfiguration();
                 MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
