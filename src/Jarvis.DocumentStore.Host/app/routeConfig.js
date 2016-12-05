@@ -22,6 +22,9 @@
                     configService : 'configService',
                     tenants: function (configService) {
                         return configService.getTenants();
+                    },
+                    version: function (configService) {
+                        return configService.getVersion();
                     }
                 }
             })
