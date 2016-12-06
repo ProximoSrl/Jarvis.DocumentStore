@@ -4,11 +4,12 @@
     angular.module('admin.shared')
             .factory('configService', configService);
 
-    configService.$inject = ['$http','$q'];
+    configService.$inject = ['$http', '$q'];
 
-    function configService($http,$q) {
+    function configService($http, $q) {
         var service = {
-            getTenants: getTenants
+            getTenants: getTenants,
+            getVersion: getVersion
         };
 
         return service;
@@ -19,7 +20,7 @@
         function getTenants() {
             var d = $q.defer();
 
-            if (tenantsCache){
+            if (tenantsCache) {
                 d.resolve(tenantsCache);
             }
             else {
@@ -33,6 +34,12 @@
 
             return d.promise;
         }
+
+        function getVersion() {
+            return $http.get('/config/getVersion').then(function (r) {
+                return r.data;
+            });
+        };
     }
 
 })(window, window.angular);

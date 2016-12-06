@@ -3,9 +3,9 @@
 
     angular
         .module('admin.layout')
-        .directive('dsHeader', dsHeader);
+        .directive('dsHeader', ['configService', dsHeader]);
 
-    function dsHeader() {
+    function dsHeader(configService) {
         var directive = {
             link: link,
             templateUrl: '/layout/header.html',
@@ -16,6 +16,11 @@
         return directive;
 
         function link(scope, element, attrs) {
+            configService.getVersion().then(function (res) {
+                scope.info = res;
+                console.log('INFO_HEADER', scope.info);
+            });
+            
         }
     };
 })(window, window.angular);
