@@ -1505,7 +1505,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 }
             );
             await _documentStoreClient.UploadAsync(
-               TestConfig.PathToLoremIpsumTxt,
+               TestConfig.PathToDocumentCopyPdf,
                handle2,
                new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
