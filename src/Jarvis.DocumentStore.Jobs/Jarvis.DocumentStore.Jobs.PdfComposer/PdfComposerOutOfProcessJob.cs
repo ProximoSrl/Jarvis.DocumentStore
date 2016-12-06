@@ -21,6 +21,15 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             base.QueueName = "pdfComposer";
         }
 
+        /// <summary>
+        /// These are the extension that trigger office queue, remember that office queue
+        /// is the queue that is capable of converting an office document into pdf.
+        /// </summary>
+        private HashSet<String> officeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "xls", "xlsx", "docx", "doc", "ppt", "pptx", "pps", "ppsx", "rtf", "odt", "ods", "odp"
+        };
+
         protected async override Task<ProcessResult> OnPolling(
             Shared.Jobs.PollerJobParameters parameters,
             string workingFolder)
@@ -58,9 +67,13 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
 
                 if (!pdfExists)
                 {
-                    //need to check if this file has some job pending.
-                    var pendingJobs = await client.GetPendingJobsAsync(documentHandle);
-                    if (pendingJobs.Length > 0)
+                    //need to check if this file has some job pending that can generate pdf.
+                    var pendingJobs = await client.GetJobsAsync(documentHandle);
+                    var fileName = await GetfileNameFromHandle(client, documentHandle);
+                    Boolean needWaitForJobToRun = CheckIfSomeJobCanStillProducePdfFormat(pendingJobs, fileName);
+
+                    //need to check if queue that can convert the document are still running. We need to wait for the queue to be stable.
+                    if (needWaitForJobToRun)
                     {
                         //some job is still executing, probably pdf format could be generated in the future
                         return new ProcessResult(TimeSpan.FromSeconds(10));
@@ -68,7 +81,6 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                     else
                     {
                         //This file has no pdf format, mark as missing pdf.
-                        var fileName = await GetfileNameFromHandle(client, documentHandle);
                         files.Add(FileToComposeData.NoPdfFormat(handle, fileName));
                     }
                 }
@@ -77,7 +89,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             PdfManipulator manipulator = new PdfManipulator(Logger); //Create a manipulator
             foreach (var fileToCompose in files)
             {
-                String pdfFileToAppend = fileToCompose.PdfFileName;   
+                String pdfFileToAppend = fileToCompose.PdfFileName;
                 if (!fileToCompose.HasPdfFormat)
                 {
                     pdfFileToAppend = GeneratePlaceholderFile(workingFolder, fileToCompose.FileName, fileToCompose.DocumentHandle);
@@ -101,6 +113,40 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             return ProcessResult.Ok;
         }
 
+        private bool CheckIfSomeJobCanStillProducePdfFormat(Shared.Jobs.QueuedJobInfo[] pendingJobs, String fileName)
+        {
+            if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "pdfConverter"))
+            {
+                //PdfConverter did not run, need to wait
+                return true;
+            }
+
+            var extension = Path.GetExtension(fileName);
+            if (!String.IsNullOrEmpty(extension) && officeExtensions.Contains(extension.Trim('.')))
+            {
+                //this is a file that can be converted with office.
+                if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "office"))
+                {
+                    //The extension is an extension of office, but office queue still did not run.
+                    return true;
+                }
+            }
+
+            //all queue that can produce a pdf ran, so the pdf format is not present for this file.
+            return false;
+        }
+
+        private bool CheckIfQueueJobShouldStillBeExecuted(Shared.Jobs.QueuedJobInfo[] pendingJobs, String queueName)
+        {
+            var job = pendingJobs.FirstOrDefault(j => j.QueueName == queueName);
+            if (job == null || job.Executed == false)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private static string GeneratePlaceholderFile(string workingFolder, string fileName, string documentHandle)
         {
             string pdfFileToAppend = Path.Combine(workingFolder, Guid.NewGuid() + ".pdf");
@@ -116,7 +162,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                     XFont font = new XFont("Verdana", 14, XFontStyle.Bold);
 
                     // Draw the text
-                    gfx.DrawString("Handle " + documentHandle + " fileName " + fileName +  " has no pdf format",
+                    gfx.DrawString("Handle " + documentHandle + " fileName " + fileName + " has no pdf format",
                         font,
                         XBrushes.Black,
                       new XRect(0, 0, page.Width, page.Height),

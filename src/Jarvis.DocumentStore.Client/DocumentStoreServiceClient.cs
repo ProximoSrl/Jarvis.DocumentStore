@@ -223,6 +223,24 @@ namespace Jarvis.DocumentStore.Client
             }            
         }
 
+        /// <summary>
+        /// copy an handle to another handle without forcing the client
+        /// to download and re-upload the same file
+        /// </summary>
+        /// <param name="originalHandle">Handle you want to copy</param>
+        /// <param name="copiedHandle">Copied handle that will point to the very
+        /// same content of the original one.</param>
+        /// <returns></returns>
+        public String CopyHandle(
+            DocumentHandle originalHandle,
+            DocumentHandle copiedHandle)
+        {
+            using (var client = new WebClient())
+            {
+                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
+                return client.DownloadString(resourceUri);
+            }
+        }
 
         private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, IDictionary<string, object> customData)
         {
@@ -254,8 +272,7 @@ namespace Jarvis.DocumentStore.Client
         private async Task<UploadedDocumentResponse> InnerUploadAsync(
             Uri endPoint,
             string pathToFile,
-            IDictionary<string, object> customData
-        )
+            IDictionary<string, object> customData)
         {
             string fileNameWithExtension = Path.GetFileName(pathToFile);
             using (var sourceStream = File.OpenRead(pathToFile))
@@ -628,23 +645,23 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        public async Task<String[]> GetPendingJobsAsync(DocumentHandle handle)
+        public async Task<QueuedJobInfo[]> GetJobsAsync(DocumentHandle handle)
         {
-            var hasPendingJobsUri = GenerateUriForPendingJobs(handle);
+            var getJobsUri = GenerateUriForGetJobs(handle);
             using (var client = new WebClient())
             {
-                var result = await client.DownloadStringTaskAsync(hasPendingJobsUri);
-                return GenerateArrayOfPendingJobs(result);
+                var result = await client.DownloadStringTaskAsync(getJobsUri);
+                return GenerateArrayOfJobs(result);
             }
         }
 
-        public String[] GetPendingJobs(DocumentHandle handle)
+        public QueuedJobInfo[] GetJobs(DocumentHandle handle)
         {
-            var hasPendingJobsUri = new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
+            var getJobsUri = GenerateUriForGetJobs(handle);
             using (var client = new WebClient())
             {
-                var result = client.DownloadString(hasPendingJobsUri);
-                return GenerateArrayOfPendingJobs(result);
+                var result = client.DownloadString(getJobsUri);
+                return GenerateArrayOfJobs(result);
             }
         }
 
@@ -698,16 +715,14 @@ namespace Jarvis.DocumentStore.Client
             var endPoint = new Uri(_documentStoreUri, uriString);
             return endPoint;
         }
-        private Uri GenerateUriForPendingJobs(DocumentHandle handle)
+        private Uri GenerateUriForGetJobs(DocumentHandle handle)
         {
-            return new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
+            return new Uri(_documentStoreUri, "queue/getJobs/" + Tenant + "/" + handle.ToString());
         }
 
-        private static string[] GenerateArrayOfPendingJobs(string result)
+        private static QueuedJobInfo[] GenerateArrayOfJobs(string result)
         {
-            return ((JArray)JsonConvert.DeserializeObject(result))
-                                .Select(e => e.ToString())
-                                .ToArray();
+            return JsonConvert.DeserializeObject<QueuedJobInfo[]>(result);
         }
 
         private Uri GenerateUriForComposePdf()

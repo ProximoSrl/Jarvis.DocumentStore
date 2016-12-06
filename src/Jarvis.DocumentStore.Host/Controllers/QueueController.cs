@@ -21,6 +21,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
     {
         public IQueueManager QueueManager { get; set; }
 
+        public QueueHandler QueueHandler { get; set; }
+
         public QueueController(IQueueManager queueManager)
         {
             QueueManager = queueManager;
@@ -39,10 +41,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 if (QueueManager == null) return null;
                 return QueueManager.GetNextJob(
+                    new TenantId(parameter.TenantId),
                     parameter.QueueName,
                     parameter.Identity,
                     parameter.Handle,
-                    new TenantId(parameter.TenantId),
                     parameter.CustomData);
             }
         }
@@ -50,18 +52,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// <summary>
         /// For a given handle, it simply return the list of jobs that still are
         /// pending or executing. It is necessary to understand if a specific handle
-        /// has finished all the conversion.
+        /// has some pending job to be executed.
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("queue/getPending/{tenantId}/{handle}")]
-        public String[] GetPending(TenantId tenantId, DocumentHandle handle)
+        [Route("queue/getJobs/{tenantId}/{handle}")]
+        public QueuedJobInfo[] GetJobs(TenantId tenantId, DocumentHandle handle)
         {
             using (Metric.Timer("queue-getPending", Unit.Requests).NewContext(handle))
             {
                 if (QueueManager == null) return null;
-                return QueueManager.GetPendingJobs(tenantId, handle);
+                return QueueManager.GetJobsForHandle(tenantId, handle, null);
             }
         }
 
@@ -87,7 +89,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("queue/requeue/{tenantId}/{handle}")]
         public Boolean ReQueue(TenantId tenantId, DocumentHandle handle)
         {
-            return QueueManager.ReQueueJobs(handle, tenantId);
+            return QueueManager.ReQueueJobs(tenantId, handle);
         }
     }
 
