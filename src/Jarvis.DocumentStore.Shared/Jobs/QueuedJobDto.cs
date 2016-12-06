@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Shared.Jobs
 {
-
+    /// <summary>
+    /// Dto used to return job data to job executor processes.
+    /// </summary>
     public class QueuedJobDto
     {
        

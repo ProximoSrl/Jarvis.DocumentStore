@@ -628,23 +628,23 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        public async Task<String[]> GetPendingJobsAsync(DocumentHandle handle)
+        public async Task<QueuedJobInfo[]> GetJobsAsync(DocumentHandle handle)
         {
-            var hasPendingJobsUri = GenerateUriForPendingJobs(handle);
+            var getJobsUri = GenerateUriForGetJobs(handle);
             using (var client = new WebClient())
             {
-                var result = await client.DownloadStringTaskAsync(hasPendingJobsUri);
-                return GenerateArrayOfPendingJobs(result);
+                var result = await client.DownloadStringTaskAsync(getJobsUri);
+                return GenerateArrayOfJobs(result);
             }
         }
 
-        public String[] GetPendingJobs(DocumentHandle handle)
+        public QueuedJobInfo[] GetJobs(DocumentHandle handle)
         {
-            var hasPendingJobsUri = new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
+            var getJobsUri = GenerateUriForGetJobs(handle);
             using (var client = new WebClient())
             {
-                var result = client.DownloadString(hasPendingJobsUri);
-                return GenerateArrayOfPendingJobs(result);
+                var result = client.DownloadString(getJobsUri);
+                return GenerateArrayOfJobs(result);
             }
         }
 
@@ -698,16 +698,14 @@ namespace Jarvis.DocumentStore.Client
             var endPoint = new Uri(_documentStoreUri, uriString);
             return endPoint;
         }
-        private Uri GenerateUriForPendingJobs(DocumentHandle handle)
+        private Uri GenerateUriForGetJobs(DocumentHandle handle)
         {
-            return new Uri(_documentStoreUri, "queue/getPending/" + Tenant + "/" + handle.ToString());
+            return new Uri(_documentStoreUri, "queue/getJobs/" + Tenant + "/" + handle.ToString());
         }
 
-        private static string[] GenerateArrayOfPendingJobs(string result)
+        private static QueuedJobInfo[] GenerateArrayOfJobs(string result)
         {
-            return ((JArray)JsonConvert.DeserializeObject(result))
-                                .Select(e => e.ToString())
-                                .ToArray();
+            return JsonConvert.DeserializeObject<QueuedJobInfo[]>(result);
         }
 
         private Uri GenerateUriForComposePdf()

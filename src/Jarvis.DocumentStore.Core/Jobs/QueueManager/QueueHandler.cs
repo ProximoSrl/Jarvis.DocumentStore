@@ -3,13 +3,8 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;
 using MongoDB.Driver;
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Linq;
 using MongoDB.Driver.Linq;
 using Castle.Core.Logging;
@@ -22,7 +17,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
 
     /// <summary>
-    /// This is a simple handler for queue that creates jobs in queues based on settings.
+    /// This is a simple handler manager for a single queue, this component 
+    /// is used to manage the queue for a single job. This class has a reference
+    /// on the collection used to manage jobs.
     /// </summary>
     public class QueueHandler
     {
@@ -305,6 +302,22 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 job.Status = QueuedJobExecutionStatus.Succeeded;
             }
+        }
+
+        /// <summary>
+        /// Return all jobs that are present in the system for a specific handle.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <returns></returns>
+        public QueuedJob[] GetJobsForHandle(TenantId tenantId, DocumentHandle handle)
+        {
+            return _collection.Find(
+                Builders<QueuedJob>.Filter.And(
+                    Builders<QueuedJob>.Filter.Eq(j => j.Handle, handle),
+                    Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
+                ))
+                .ToEnumerable()
+                .ToArray();
         }
     }
 

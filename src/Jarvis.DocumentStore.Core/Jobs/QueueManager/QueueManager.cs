@@ -22,9 +22,18 @@ using Jarvis.Framework.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
+    /// <summary>
+    /// This is the generic interface for a manager of jobs queue, its purpose
+    /// is to give access to jobs to external clients, generate jobs monitoring
+    /// the Stream readmodel.
+    /// 
+    /// Its duty is to manage all the single instance of the queues, generating
+    /// jobs for the executor and being an arbiter for the real object that physically
+    /// manage queues, the <see cref="QueueHandler"/> component.
+    /// </summary>
     public interface IQueueManager
     {
-        QueuedJob GetNextJob(String queueName, String identity, String callerHandle, TenantId tenant, Dictionary<String, Object> customData);
+        QueuedJob GetNextJob(TenantId tenantId, String queueName, String identity, String callerHandle, Dictionary<String, Object> customData);
 
         /// <summary>
         /// Set the job as executed
@@ -64,21 +73,26 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         QueuedJob GetJob(String queueName, String jobId);
 
         /// <summary>
-        /// Return queues that has pending jobs for a specific handle.
+        /// This method gets reference for all jobs of selected queues, and return 
+        /// to the caller all data about thejobs.
         /// </summary>
-        /// <param name="handle"></param>
+        /// <param name="tenantId">Tenant</param>
+        /// <param name="handle">Handle of the document</param>
+        /// <param name="queueNames">This contains the list of the queues the caller is interested
+        /// to know the list of jobs. If this value is null or contains no element it means that 
+        /// we want to retrieve jobs for ALL the queue.</param>
         /// <returns></returns>
-        String[] GetPendingJobs(TenantId tenantId, DocumentHandle handle);
+        QueuedJobInfo[] GetJobsForHandle(TenantId tenantId, DocumentHandle handle, IEnumerable<String> queueNames);
 
         /// <summary>
         /// Given an handle, ask to queue manager to schedule
         /// again all jobs as if the handle was just inserted
         /// into the system.
         /// </summary>
+        /// <param name="tenantId"></param>
         /// <param name="handle"></param>
-        /// <param name="tenant"></param>
         /// <returns></returns>
-        Boolean ReQueueJobs(DocumentHandle handle, TenantId tenant);
+        Boolean ReQueueJobs(TenantId tenantId, DocumentHandle handle);
 
         Boolean ReScheduleFailed(String queueName);
 
@@ -221,13 +235,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
-        public Boolean ReQueueJobs(DocumentHandle handle, TenantId tenant)
+        public Boolean ReQueueJobs(TenantId tenantId, DocumentHandle handle)
         {
             //Basically, rescheduling a job just means re-create all the jobs
             //as if the "original" format was added to an handle.
-            var info = _queueTenantInfos.SingleOrDefault(i => i.TenantId == tenant);
+            var info = _queueTenantInfos.SingleOrDefault(i => i.TenantId == tenantId);
             if (info == null)
-                throw new ArgumentException("Invalid tenant " + tenant, "tenant");
+                throw new ArgumentException("Invalid tenant " + tenantId, "tenant");
             var originalFormat = new DocumentFormat("original");
             var lastStream = info.StreamReader.AllUnsorted
                 .Where(s => s.FormatInfo.DocumentFormat == originalFormat &&
@@ -241,7 +255,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             //Pass the information to all queue handlers.
             foreach (var qh in _queueHandlers)
             {
-                qh.Value.Handle(lastStream, info.TenantId, forceReSchedule : true);
+                qh.Value.Handle(lastStream, info.TenantId, forceReSchedule: true);
             }
 
             return true;
@@ -308,17 +322,38 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         private void TimerCallback(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (!_isRebuilding)  PollNow();
+            if (!_isRebuilding) PollNow();
         }
 
-        public QueuedJob GetNextJob(String queueName, String identity, String handle, TenantId tenant, Dictionary<String, Object> customData)
+        public QueuedJob GetNextJob(TenantId tenantId, String queueName, String identity, String handle, Dictionary<String, Object> customData)
         {
-            return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity, handle, tenant, customData)) as QueuedJob;
+            return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity, handle, tenantId, customData)) as QueuedJob;
         }
 
         public QueuedJob GetJob(String queueName, string jobId)
         {
             return ExecuteWithQueueHandler("get job", queueName, qh => qh.GetJob(jobId)) as QueuedJob;
+        }
+
+        public QueuedJobInfo[] GetJobsForHandle(TenantId tenantId, DocumentHandle handle, IEnumerable<string> queueNames)
+        {
+            if (queueNames == null || queueNames.Any() == false)
+            {
+                //we are interested in all queues
+                queueNames = _queueHandlers.Select(h => h.Key).ToArray();
+            }
+
+            List<QueuedJobInfo> retValue = new List<QueuedJobInfo>();
+            foreach (var queueName in queueNames)
+            {
+                var jobs = ExecuteWithQueueHandler("get job for handle", queueName, h => h.GetJobsForHandle(tenantId, handle));
+                retValue.AddRange(jobs.Select(j => new QueuedJobInfo(
+                    j.Id, 
+                    queueName, 
+                    j.Status == QueuedJobExecutionStatus.Succeeded || j.Status == QueuedJobExecutionStatus.Failed,
+                    j.Status == QueuedJobExecutionStatus.Succeeded)));
+            }
+            return retValue.ToArray();
         }
 
         public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
@@ -339,18 +374,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             }
         }
 
-        public string[] GetPendingJobs(TenantId tenantId, DocumentHandle handle)
-        {
-            return _queueHandlers.Values
-                .Where(q => q.HasPendingJob(tenantId, handle))
-                .Select(q => q.Name)
-                .ToArray();
-        }
-
         private T ExecuteWithQueueHandler<T>(
-            String operationName, 
-            String queueName, 
-            Func<QueueHandler, T> executor) 
+            String operationName,
+            String queueName,
+            Func<QueueHandler, T> executor)
         {
             if (_queueHandlers == null || !_queueHandlers.ContainsKey(queueName))
             {
@@ -374,7 +401,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             _isRebuilding = false;
         }
 
-       
     }
 
 }
