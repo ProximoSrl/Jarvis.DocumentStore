@@ -223,6 +223,24 @@ namespace Jarvis.DocumentStore.Client
             }            
         }
 
+        /// <summary>
+        /// copy an handle to another handle without forcing the client
+        /// to download and re-upload the same file
+        /// </summary>
+        /// <param name="originalHandle">Handle you want to copy</param>
+        /// <param name="copiedHandle">Copied handle that will point to the very
+        /// same content of the original one.</param>
+        /// <returns></returns>
+        public String CopyHandle(
+            DocumentHandle originalHandle,
+            DocumentHandle copiedHandle)
+        {
+            using (var client = new WebClient())
+            {
+                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
+                return client.DownloadString(resourceUri);
+            }
+        }
 
         private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, IDictionary<string, object> customData)
         {
@@ -254,8 +272,7 @@ namespace Jarvis.DocumentStore.Client
         private async Task<UploadedDocumentResponse> InnerUploadAsync(
             Uri endPoint,
             string pathToFile,
-            IDictionary<string, object> customData
-        )
+            IDictionary<string, object> customData)
         {
             string fileNameWithExtension = Path.GetFileName(pathToFile);
             using (var sourceStream = File.OpenRead(pathToFile))
