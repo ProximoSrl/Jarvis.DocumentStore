@@ -406,6 +406,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
 
+            if (_sutBase.ClientPasswordSet is NullClientPasswordSet)
+                Assert.Fail("Password manager not correctly set to decrypt passwords");
             Assert.Fail("Tika document not found");
         }
 
@@ -429,7 +431,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
 
         }
-
+       
         protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
         {
             var subPassword = NSubstitute.Substitute.For<IClientPasswordSet>();
@@ -485,6 +487,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 }
 
             } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
+
+            if (_sutBase.ClientPasswordSet is NullClientPasswordSet)
+                Assert.Fail("Password manager not correctly set to decrypt passwords");
 
             Assert.Fail("Tika document not found");
         }
