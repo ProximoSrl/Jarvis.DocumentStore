@@ -121,6 +121,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             /// future.
             /// </summary>
             public TimeSpan PosticipateExecutionTimestamp { get; private set; }
+
+            /// <summary>
+            /// The job can ask for modification of parameters upon execution.
+            /// </summary>
+            public Dictionary<String, String> ParametersToModify { get; set; }
         }
 
         public void Start(List<String> documentStoreAddressUrls, String handle)
@@ -236,11 +241,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                     Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, result);
                     if (result.Posticipate == false)
                     {
-                        DsSetJobExecuted(QueueName, nextJob.Id, "");
+                        DsSetJobExecuted(QueueName, nextJob.Id, "", result.ParametersToModify);
                     }
                     else
                     {
-                        DsReQueueJob(QueueName, nextJob.Id, "", result.PosticipateExecutionTimestamp);
+                        DsReQueueJob(QueueName, nextJob.Id, "", result.PosticipateExecutionTimestamp, result.ParametersToModify);
                     }
                 }
                 catch (AggregateException aex)
@@ -255,13 +260,13 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                         Logger.Error( errorMessage, ex);
                         aggregateMessage.Append(errorMessage);
                     }
-                    DsSetJobExecuted(QueueName, nextJob.Id, aggregateMessage.ToString());
+                    DsSetJobExecuted(QueueName, nextJob.Id, aggregateMessage.ToString(), null);
                 }
                 catch (Exception ex)
                 {
                     Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
                         nextJob.Parameters[JobKeys.TenantId]);
-                    DsSetJobExecuted(QueueName, nextJob.Id, ex.Message);
+                    DsSetJobExecuted(QueueName, nextJob.Id, ex.Message, null);
                 }
                 finally
                 {
@@ -271,7 +276,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             } while (true); //Exit is in the internal loop
         }
 
-        private void DsSetJobExecuted(string queueName, string jobId, string message)
+        private void DsSetJobExecuted(string queueName, string jobId, string message, Dictionary<String, String> parametersToModify)
         {
             string pollerResult;
             using (WebClientEx client = new WebClientEx())
@@ -282,7 +287,8 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 {
                     QueueName = queueName,
                     JobId = jobId,
-                    ErrorMessage = message
+                    ErrorMessage = message,
+                    ParametersToModify = parametersToModify,
                 });
                 Logger.DebugFormat("SetJobExecuted url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
@@ -291,7 +297,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             }
         }
 
-        private void DsReQueueJob(string queueName, string jobId, string message, TimeSpan timeSpan)
+        private void DsReQueueJob(string queueName, string jobId, string message, TimeSpan timeSpan, Dictionary<String, String> parametersToModify)
         {
             string pollerResult;
             using (WebClientEx client = new WebClientEx())
@@ -304,7 +310,8 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                     JobId = jobId,
                     ErrorMessage = message,
                     ReQueue = true,
-                    ReScheduleTimespanInSeconds = (Int32) timeSpan.TotalSeconds
+                    ReScheduleTimespanInSeconds = (Int32) timeSpan.TotalSeconds,
+                    ParametersToModify = parametersToModify
                 });
                 Logger.DebugFormat("ReQueuedJob url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";

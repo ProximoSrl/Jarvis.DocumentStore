@@ -429,7 +429,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var data = _handleWriter.FindOneById(handle);
             if (data == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Document not found");
-            var name = data.FileName != null ? data.FileName.FileName : "";
+            var name = data.FileName != null ? data.FileName.ToString() : "";
             return Request.CreateResponse(HttpStatusCode.OK, new { FileName = name });
         }
 

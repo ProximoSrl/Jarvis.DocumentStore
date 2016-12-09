@@ -41,8 +41,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <param name="queueName"></param>
         /// <param name="jobId"></param>
         /// <param name="errorMessage"></param>
+        /// <param name="parametersToModify">Parameters to modify in job. </param>
         /// <returns></returns>
-        Boolean SetJobExecuted(String queueName, String jobId, String errorMessage);
+        Boolean SetJobExecuted(String queueName, String jobId, String errorMessage, Dictionary<String, String> parametersToModify);
 
         /// <summary>
         /// This function add a job from external code. Usually jobs are automatically
@@ -62,7 +63,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <param name="jobId"></param>
         /// <param name="errorMessage"></param>
         /// <returns></returns>
-        Boolean ReQueueJob(String queueName, String jobId, String errorMessage, TimeSpan timestpan);
+        Boolean ReQueueJob(String queueName, String jobId, String errorMessage, TimeSpan timestpan, Dictionary<String, String> parametersToModify);
 
         /// <summary>
         /// Internally used to grab a job reference from its id.
@@ -261,9 +262,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return true;
         }
 
-        public bool ReQueueJob(string queueName, string jobId, string errorMessage, TimeSpan timeSpan)
+        public bool ReQueueJob(string queueName, string jobId, string errorMessage, TimeSpan timeSpan, Dictionary<String, String> parametersToModify)
         {
-            return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.ReQueueJob(jobId, errorMessage, timeSpan));
+            return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.ReQueueJob(jobId, errorMessage, timeSpan, parametersToModify));
         }
 
         public bool QueueJob(String queueName, QueuedJob job)
@@ -356,9 +357,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return retValue.ToArray();
         }
 
-        public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage)
+        public Boolean SetJobExecuted(String queueName, String jobId, String errorMessage, Dictionary<String, String> parametersToModify)
         {
-            return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.SetJobExecuted(jobId, errorMessage));
+            return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.SetJobExecuted(jobId, errorMessage, parametersToModify));
         }
 
         public Boolean ReScheduleFailed(String queueName)

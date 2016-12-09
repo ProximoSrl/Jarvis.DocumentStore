@@ -34,7 +34,6 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             Shared.Jobs.PollerJobParameters parameters,
             string workingFolder)
         {
-
             var client = GetDocumentStoreClient(parameters.TenantId);
             var handles = parameters.All["documentList"].Split('|');
             var destinationHandle = parameters.All["resultingDocumentHandle"];
@@ -81,6 +80,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                     else
                     {
                         //This file has no pdf format, mark as missing pdf.
+                        Logger.WarnFormat("Handle {0} has no pdf format, status of queue is {1}", handle, String.Join(",", pendingJobs.Select(j => String.Format("{0}[Executed:{1} Success:{2}]", j.QueueName, j.Executed, j.Success))));
                         files.Add(FileToComposeData.NoPdfFormat(handle, fileName));
                     }
                 }
@@ -132,8 +132,10 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                 }
             }
 
-            //all queue that can produce a pdf ran, so the pdf format is not present for this file.
-            return false;
+            var jobThatStillWereNotRun = pendingJobs.Count(j => j.Executed == false);
+            //we do not know if there are some more jobs that can produce pdf, we assume that no pdf format is present
+            //if this handle has no more job to run.
+            return jobThatStillWereNotRun == 0;
         }
 
         private bool CheckIfQueueJobShouldStillBeExecuted(Shared.Jobs.QueuedJobInfo[] pendingJobs, String queueName)
