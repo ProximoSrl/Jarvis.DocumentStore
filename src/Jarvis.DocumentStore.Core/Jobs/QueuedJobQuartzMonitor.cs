@@ -63,7 +63,7 @@ namespace Jarvis.DocumentStore.Core.Jobs
                 {
                     Logger.WarnFormat("Unblock job {0}", job.Id);
                     
-                    qh.SetJobExecuted(job.Id, "Timeout, unblocked by QueuedJobQuartzMonitor");
+                    qh.SetJobExecuted(job.Id, "Timeout, unblocked by QueuedJobQuartzMonitor", null);
                 }
             }
         }
