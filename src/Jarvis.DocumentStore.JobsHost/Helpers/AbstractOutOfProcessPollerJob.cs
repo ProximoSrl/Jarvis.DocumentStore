@@ -110,6 +110,12 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 PosticipateExecutionTimestamp = posticipationTimestamp;
             }
 
+            public ProcessResult(TimeSpan posticipationTimestamp, Dictionary<String, String> parametersToModify)
+                : this (posticipationTimestamp)
+            {
+                ParametersToModify = parametersToModify;
+            }
+
             public Boolean Result { get; private set; }
 
             public Boolean Posticipate { get; private set; }

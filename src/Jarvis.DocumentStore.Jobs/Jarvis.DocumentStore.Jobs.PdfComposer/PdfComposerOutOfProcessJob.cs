@@ -10,11 +10,14 @@ using System.Threading.Tasks;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using PdfSharp.Drawing;
+using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.PdfComposer
 {
     public class PdfComposerOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
+        private const String ReQueueCountParameterName = "requeue_count";
+
         public PdfComposerOutOfProcessJob()
         {
             base.PipelineId = "pdfComposer";
@@ -49,15 +52,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                 Boolean pdfExists = false;
                 try
                 {
-                    var pdfData = client.OpenRead(documentHandle, DocumentFormats.Pdf);
-                    var tempFile = Path.Combine(workingFolder, Guid.NewGuid() + ".pdf");
-                    using (var downloaded = new FileStream(tempFile, FileMode.OpenOrCreate, FileAccess.Write))
-                    {
-                        var stream = await pdfData.OpenStream();
-                        stream.CopyTo(downloaded);
-                    }
-                    files.Add(FileToComposeData.FromDownloadedPdf(tempFile, handle));
-                    pdfExists = true;
+                    pdfExists = await InnerGetPdf(workingFolder, client, files, handle, documentHandle, pdfExists);
                 }
                 catch (System.Net.WebException ex)
                 {
@@ -66,6 +61,10 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
 
                 if (!pdfExists)
                 {
+                    int requeueCount = GetRequeueCount(parameters);
+                    if (requeueCount <= 3) //first 3 times, always retry (lets DS the time to generate jobs)
+                        return GenerateRequeueProcessResult(requeueCount);
+
                     //need to check if this file has some job pending that can generate pdf.
                     var pendingJobs = await client.GetJobsAsync(documentHandle);
                     var fileName = await GetfileNameFromHandle(client, documentHandle);
@@ -74,8 +73,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                     //need to check if queue that can convert the document are still running. We need to wait for the queue to be stable.
                     if (needWaitForJobToRun)
                     {
-                        //some job is still executing, probably pdf format could be generated in the future
-                        return new ProcessResult(TimeSpan.FromSeconds(10));
+                        return GenerateRequeueProcessResult(requeueCount);
                     }
                     else
                     {
@@ -111,6 +109,49 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
 
             var result = await client.UploadAsync(finalFileName, new DocumentHandle(destinationHandle));
             return ProcessResult.Ok;
+        }
+
+        private static ProcessResult GenerateRequeueProcessResult(Int32 requeueCount)
+        {
+            //some job is still executing, probably pdf format could be generated in the future
+
+            Int32 secondsToWait = Math.Min(requeueCount * 2, 30);
+            return new ProcessResult(
+                TimeSpan.FromSeconds(secondsToWait),
+                new Dictionary<String, String>()
+                {
+                      {ReQueueCountParameterName, (requeueCount + 1).ToString() }
+                });
+        }
+
+        private static int GetRequeueCount(Shared.Jobs.PollerJobParameters parameters)
+        {
+            Int32 requeueCount;
+            String requeueCountParameterValue;
+            if (parameters.All.TryGetValue(ReQueueCountParameterName, out requeueCountParameterValue))
+            {
+                requeueCount = Int32.Parse(requeueCountParameterValue);
+            }
+            else
+            {
+                requeueCount = 0;
+            }
+
+            return requeueCount;
+        }
+
+        private static async Task<bool> InnerGetPdf(string workingFolder, DocumentStoreServiceClient client, List<FileToComposeData> files, string handle, DocumentHandle documentHandle, bool pdfExists)
+        {
+            var pdfData = client.OpenRead(documentHandle, DocumentFormats.Pdf);
+            var tempFile = Path.Combine(workingFolder, Guid.NewGuid() + ".pdf");
+            using (var downloaded = new FileStream(tempFile, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                var stream = await pdfData.OpenStream();
+                stream.CopyTo(downloaded);
+            }
+            files.Add(FileToComposeData.FromDownloadedPdf(tempFile, handle));
+            pdfExists = true;
+            return pdfExists;
         }
 
         private bool CheckIfSomeJobCanStillProducePdfFormat(Shared.Jobs.QueuedJobInfo[] pendingJobs, String fileName)
