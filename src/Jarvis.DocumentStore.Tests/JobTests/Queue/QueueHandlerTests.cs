@@ -321,10 +321,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(nextJob, Is.Not.Null);
             var jobId = nextJob.Id;
 
-            sut.SetJobExecuted(nextJob.Id, "Error 42");
+            sut.SetJobExecuted(nextJob.Id, "Error 42", null);
             nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob, Is.Not.Null);
-            sut.SetJobExecuted(nextJob.Id, "Error 42");
+            sut.SetJobExecuted(nextJob.Id, "Error 42", null);
             nextJob = sut.GetNextJob("", "handle", null, null);
             Assert.That(nextJob, Is.Null, "After two failure the job should not be returned anymore");
 
@@ -353,7 +353,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             info.MaxNumberOfFailure = 2;
             QueueHandler sut = CreateAGenericJob(info);
             var nextJob = sut.GetNextJob("", "handle", null, null);
-            sut.SetJobExecuted(nextJob.Id, "Error 42");
+            sut.SetJobExecuted(nextJob.Id, "Error 42", null);
             var collection = _db.GetCollection<QueuedJob>("queue.test");
             var job = collection.Find(Builders<QueuedJob>.Filter.Eq(j => j.Id, nextJob.Id)).SingleOrDefault();
             Assert.That(job.ExecutionError, Is.EqualTo("Error 42"));

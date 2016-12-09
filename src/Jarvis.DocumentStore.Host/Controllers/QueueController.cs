@@ -76,11 +76,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 if (parameter.ReQueue)
                 {
                     var timespan = TimeSpan.FromSeconds(parameter.ReScheduleTimespanInSeconds);
-                    return QueueManager.ReQueueJob(parameter.QueueName, parameter.JobId, parameter.ErrorMessage, timespan);
+                    return QueueManager.ReQueueJob(parameter.QueueName, parameter.JobId, parameter.ErrorMessage, timespan, parameter.ParametersToModify);
                 }
                 else
                 {
-                    return QueueManager.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage);
+                    return QueueManager.SetJobExecuted(parameter.QueueName, parameter.JobId, parameter.ErrorMessage, parameter.ParametersToModify);
                 }
             }
         }
@@ -125,5 +125,12 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// in seconds to reschedule the job.
         /// </summary>
         public Int32 ReScheduleTimespanInSeconds { get; set; }
+
+        /// <summary>
+        /// when a job is executed it can modify/insert some parameters, it could
+        /// be useful both when a job is re-queued, or when a job fail, so it can
+        /// store more information about failure.
+        /// </summary>
+        public Dictionary<String, String> ParametersToModify { get; set; }
     }
 }
