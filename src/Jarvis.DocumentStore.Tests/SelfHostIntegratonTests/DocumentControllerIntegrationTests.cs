@@ -47,6 +47,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     //[TestFixture("v1")]
     [TestFixture("v3")]
+    [Category("Integration")]
+    [Category("Slow")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
