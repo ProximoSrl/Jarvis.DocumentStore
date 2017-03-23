@@ -24,6 +24,8 @@ using MongoDB.Driver;
 using NEventStore.Persistence.MongoDB;
 using NEventStore.Persistence.MongoDB.Support;
 using MongoDB.Bson;
+using Jarvis.Framework.Kernel.ProjectionEngine.Client;
+using Castle.Facilities.TypedFactory;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -111,14 +113,17 @@ namespace Jarvis.DocumentStore.Host.Support
                                 .Named(tenant.Id + ".repository")
                                 .DependsOn(Dependency.OnComponent(typeof(IStoreEvents), esComponentName))
                                 .LifestyleTransient(),
-
                             Component
-                                .For<Func<IRepositoryEx>>()
-                                .Instance(() => tenant1.Container.Resolve<IRepositoryEx>()),
+                                .For<IRepositoryExFactory>()
+                                .AsFactory(),
                             Component
                                 .For<ISnapshotManager>()
                                 .DependsOn(Dependency.OnValue("cacheEnabled", _config.EnableSnapshotCache))
                                 .ImplementedBy<CachedSnapshotManager>(),
+                            Component
+                                .For<ICommitPollingClientFactory>()
+                                .AsFactory(),
+
                             Component
                                 .For<IAggregateCachedRepositoryFactory>()
                                 .ImplementedBy<AggregateCachedRepositoryFactory>()

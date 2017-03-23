@@ -67,25 +67,22 @@
       <HintPath>..\packages\Jarvis.ConfigurationService.Client.1.5.2\lib\NET45\Jarvis.ConfigurationService.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.Framework.Kernel, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.2.0.0-beta0255\lib\Jarvis.Framework.Kernel.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Jarvis.Framework.Kernel, Version=2.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.2.0.9\lib\Jarvis.Framework.Kernel.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.Framework.MongoAppender, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Jarvis.Framework.MongoAppender2.1.1.29\lib\net45\Jarvis.Framework.MongoAppender.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Jarvis.Framework.Shared, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.Shared.2.0.0-beta0255\lib\Jarvis.Framework.Shared.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Jarvis.Framework.Shared, Version=2.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.Shared.2.0.9\lib\Jarvis.Framework.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Jarvis.Framework.UdpAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Jarvis.Framework.UdpAppender.1.0.9\lib\NET45\Jarvis.Framework.UdpAppender.dll</HintPath>
     </Reference>
-    <Reference Include="Jarvis.NEventStoreEx, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Jarvis.Framework.NEventStoreEx.2.0.0-beta0255\lib\Jarvis.NEventStoreEx.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Jarvis.NEventStoreEx, Version=2.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Jarvis.Framework.NEventStoreEx.2.0.9\lib\Jarvis.NEventStoreEx.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
@@ -121,9 +118,8 @@
     <Reference Include="MongoDB.Driver.Core, Version=2.4.0.70, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MongoDB.Driver.Core.2.4.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver.Legacy, Version=2.2.4.26, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\mongocsharpdriver.2.2.4\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="MongoDB.Driver.Legacy, Version=2.4.0.70, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\mongocsharpdriver.2.4.0\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
     </Reference>
     <Reference Include="NEventStore, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NEventStore.6.0.0-unstable0097\lib\net40\NEventStore.dll</HintPath>
@@ -134,8 +130,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NEventStore.Persistence.MongoDB, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NEventStore.Persistence.MongoDB.6.0.0-unstable0090\lib\net40\NEventStore.Persistence.MongoDB.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\NEventStore.Persistence.MongoDB.6.0.0-beta0092\lib\net40\NEventStore.Persistence.MongoDB.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
