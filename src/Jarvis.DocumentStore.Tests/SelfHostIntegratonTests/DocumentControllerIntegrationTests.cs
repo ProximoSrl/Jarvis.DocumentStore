@@ -85,7 +85,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.Tenant
             );
             _tenant = ContainerAccessor.Instance.Resolve<TenantManager>().GetTenant(new TenantId(TestConfig.Tenant));
+
+            //Issue: https://github.com/ProximoSrl/Jarvis.DocumentStore/issues/26
+            //you need to resolve the IReader that in turns resolves the ProjectionEngine, becauase if you
+            //directly resolve the ITriggerProjectionsUpdate, projection engine will be resolved multiple times.
+            _tenant.Container.Resolve<IReader<StreamReadModel, Int64>>();
             _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
+
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
             _commitCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<BsonDocument>("Commits");

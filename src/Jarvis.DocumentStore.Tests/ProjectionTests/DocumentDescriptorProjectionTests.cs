@@ -24,6 +24,8 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System;
+
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
     [TestFixture]
@@ -50,7 +52,13 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _bus = tenant.Container.Resolve<ICommandBus>();
             _filestore = tenant.Container.Resolve<IBlobStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
+
+            //Issue: https://github.com/ProximoSrl/Jarvis.DocumentStore/issues/26
+            //you need to resolve the IReader that in turns resolves the ProjectionEngine, becauase if you
+            //directly resolve the ITriggerProjectionsUpdate, projection engine will be resolved multiple times.
+            tenant.Container.Resolve<IReader<StreamReadModel, Int64>>();
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
+
             _handleWriter = tenant.Container.Resolve<IDocumentWriter>();
             _documentReader = tenant.Container.Resolve<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
         }
