@@ -47,6 +47,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     //[TestFixture("v1")]
     [TestFixture("v3")]
+    [Category("Integration")]
+    [Category("Slow")]
     public class DocumentControllerIntegrationTests
     {
         DocumentStoreBootstrapper _documentStoreService;
@@ -58,12 +60,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private ITriggerProjectionsUpdate _projections;
         private ITenant _tenant;
         private IBlobStore _blobStore;
-        private String _engineVersion;
+        private readonly String _engineVersion;
 
         public DocumentControllerIntegrationTests(String engineVersion)
         {
             _engineVersion = engineVersion;
         }
+
         private async Task UpdateAndWaitAsync()
         {
             await _projections.UpdateAndWait();
@@ -81,8 +84,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 TestConfig.ServerAddress,
                 TestConfig.Tenant
             );
-            _tenant = ContainerAccessor.Instance.Resolve<TenantManager>().Current;
+            _tenant = ContainerAccessor.Instance.Resolve<TenantManager>().GetTenant(new TenantId(TestConfig.Tenant));
+
+            //Issue: https://github.com/ProximoSrl/Jarvis.DocumentStore/issues/26
+            //you need to resolve the IReader that in turns resolves the ProjectionEngine, becauase if you
+            //directly resolve the ITriggerProjectionsUpdate, projection engine will be resolved multiple times.
+            _tenant.Container.Resolve<IReader<StreamReadModel, Int64>>();
             _projections = _tenant.Container.Resolve<ITriggerProjectionsUpdate>();
+
             _documentDescriptorCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentDescriptorReadModel>("rm.DocumentDescriptor");
             _documentCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<DocumentReadModel>("rm.Document");
             _commitCollection = MongoDbTestConnectionProvider.ReadModelDb.GetCollection<BsonDocument>("Commits");
@@ -99,7 +108,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void should_get_info_without_content()
+        public async Task should_get_info_without_content()
         {
             var documentHandle = DocumentHandle.FromString("Pdf_2");
 
@@ -128,7 +137,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void should_download_with_range_header()
+        public async Task should_download_with_range_header()
         {
             var documentHandle = DocumentHandle.FromString("Pdf_2");
 
@@ -176,7 +185,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void should_upload_and_download_original_format()
+        public async Task should_upload_and_download_original_format()
         {
             await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
@@ -218,7 +227,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
 
         [Test]
-        public async void should_upload_file_with_custom_data()
+        public async Task should_upload_file_with_custom_data()
         {
             var response = await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
@@ -241,7 +250,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void should_upload_with_a_stream()
+        public async Task should_upload_with_a_stream()
         {
             var handle = DocumentHandle.FromString("Pdf_4");
 
@@ -260,7 +269,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void should_get_document_formats()
+        public async Task should_get_document_formats()
         {
             var handle = new DocumentHandle("Formats");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
@@ -275,7 +284,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
 
         [Test]
-        public async void can_add_new_format_with_api()
+        public async Task can_add_new_format_with_api()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
@@ -302,7 +311,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void can_add_new_format_with_api_and_automatic_format_detection()
+        public async Task can_add_new_format_with_api_and_automatic_format_detection()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
@@ -329,7 +338,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void can_add_new_format_with_api_from_object()
+        public async Task can_add_new_format_with_api_from_object()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
@@ -366,7 +375,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void removing_format_from_document()
+        public async Task removing_format_from_document()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
@@ -407,7 +416,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void adding_two_time_same_format_overwrite_older()
+        public async Task adding_two_time_same_format_overwrite_older()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
@@ -429,9 +438,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             //get blobId of the original format
             var descriptor = _documentDescriptorCollection.FindAll().Single();
-            var blobId = descriptor.Formats
-                .Where(f => f.Key == new DocumentFormat("tika"))
-                .Single().Value.BlobId;
+            BlobId blobId = descriptor.Formats
+                .Single(f => f.Key == new DocumentFormat("tika"))
+                .Value.BlobId;
 
             //now add same format with different content.
             model = new AddFormatFromFileToDocumentModel();
@@ -457,7 +466,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
 
         [Test]
-        public async void can_add_attachment_to_existing_handle()
+        public async Task can_add_attachment_to_existing_handle()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
@@ -482,7 +491,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void add_multiple_attachment_to_existing_handle()
+        public async Task add_multiple_attachment_to_existing_handle()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
@@ -506,7 +515,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void add_multiple_time_same_handle_with_same_payload()
+        public async Task add_multiple_time_same_handle_with_same_payload()
         {
             //Upload father
             var theHandle = new DocumentHandle("a_pdf_file");
@@ -532,32 +541,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(document.Created, Is.True, "Document descriptor should be in created-state.");
         }
 
-        //Delete by source type is not anymore supported
-        //[Test]
-        //public async void add_multiple_attachment_to_existing_handle_then_delete_by_source()
-        //{
-        //    //Upload father
-        //    var fatherHandle = new DocumentHandle("father");
-        //    await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-        //    await UpdateAndWaitAsync();
-
-        //    //upload attachments
-        //    await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "sourcea", Path.GetFileName(TestConfig.PathToDocumentPng));
-        //    await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "sourceb", Path.GetFileName(TestConfig.PathToOpenDocumentText));
-        //    await UpdateAndWaitAsync();
-
-        //    await _documentStoreClient.DeleteAttachmentsAsync(fatherHandle, "sourceb");
-        //    await UpdateAndWaitAsync();
-
-        //    var handle = _documentCollection.Find(Query.EQ("_id", "sourcea_1")).SingleOrDefault();
-        //    Assert.That(handle, Is.Not.Null, "SourceA attachment should not be deleted.");
-
-        //    handle = _documentCollection.Find(Query.EQ("_id", "sourceb_1")).SingleOrDefault();
-        //    Assert.That(handle, Is.Null, "SourceB attachment should be deleted.");
-        //}
-
         [Test]
-        public async void add_multiple_attachment_to_existing_handle_then_delete_handle()
+        public async Task add_multiple_attachment_to_existing_handle_then_delete_handle()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
@@ -579,7 +564,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void can_retrieve_attachments()
+        public async Task can_retrieve_attachments()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
@@ -601,7 +586,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_de_duplication_delete_original_blob()
+        public async Task verify_de_duplication_delete_original_blob()
         {
             DateTime now = DateTime.UtcNow.AddDays(+30);
 
@@ -622,7 +607,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_de_duplication__not_delete_original_blob_before_15_days()
+        public async Task verify_de_duplication__not_delete_original_blob_before_15_days()
         {
             DateTime now = DateTime.UtcNow.AddDays(+14);
 
@@ -641,7 +626,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void attachments_not_retrieve_nested_attachment()
+        public async Task attachments_not_retrieve_nested_attachment()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
@@ -668,7 +653,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void attachments_fat_retrieve_nested_attachment()
+        public async Task attachments_fat_retrieve_nested_attachment()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
@@ -728,7 +713,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void should_upload_get_metadata_and_delete_a_document()
+        public async Task should_upload_get_metadata_and_delete_a_document()
         {
             var handle = DocumentHandle.FromString("Pdf_3");
 
@@ -766,7 +751,43 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void can_upload_document_with_name_greater_than_250_char()
+        public async Task upload_copy_handle_then_delete_original_handle()
+        {
+            var handle = DocumentHandle.FromString("PdfHandleToCopy");
+            var copiedHandle = DocumentHandle.FromString("PdfHandleCopied");
+
+            await _documentStoreClient.UploadAsync(
+                TestConfig.PathToDocumentPdf,
+                handle,
+                new Dictionary<string, object>{
+                    { "callback", "http://localhost/demo"}
+                }
+            );
+
+            // wait background projection polling
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.CopyHandleAsync(handle, copiedHandle);
+
+            await UpdateAndWaitAsync();
+
+            await _documentStoreClient.DeleteAsync(handle);
+
+            await UpdateAndWaitAsync();
+
+            // check readmodel
+            var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
+            var tenant = tenantAccessor.GetTenant(new TenantId(TestConfig.Tenant));
+            var docReader = tenant.Container.Resolve<IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
+
+            var allDocuments = docReader.AllUnsorted;
+            Assert.AreEqual(1, allDocuments.Count());
+            var singleDoc = docReader.AllUnsorted.Single();
+            Assert.That(singleDoc.Documents.Select(h => h.ToString()), Is.EquivalentTo(new[] { copiedHandle.ToString() }));
+        }
+
+        [Test]
+        public async Task can_upload_document_with_name_greater_than_250_char()
         {
             var handle = DocumentHandle.FromString("Pdf_3");
             String longFileName = Path.Combine(
@@ -776,7 +797,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 File.Copy(TestConfig.PathToDocumentPdf, longFileName);
             }
-            
+
             await _documentStoreClient.UploadAsync(longFileName, handle);
 
             // wait background projection polling
@@ -791,26 +812,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.AreEqual(1, allDocuments);
         }
 
-        //        [Test, Explicit]
-        public void should_upload_all_documents()
-        {
-            Task.WaitAll(
-                _documentStoreClient.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("docx")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToExcelDocument, DocumentHandle.FromString("xlsx")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointDocument, DocumentHandle.FromString("pptx")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToPowerpointShow, DocumentHandle.FromString("ppsx")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, DocumentHandle.FromString("odt")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentSpreadsheet, DocumentHandle.FromString("ods")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentPresentation, DocumentHandle.FromString("odp")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToRTFDocument, DocumentHandle.FromString("rtf")),
-                _documentStoreClient.UploadAsync(TestConfig.PathToHtml, DocumentHandle.FromString("html"))
-            );
-
-            Debug.WriteLine("Done");
-        }
-
         [Test]
-        public async void verify_de_duplication_not_link_to_deleted_handles()
+        public async Task verify_de_duplication_not_link_to_deleted_handles()
         {
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
             await UpdateAndWaitAsync();
@@ -829,7 +832,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_de_duplication_not_link_to_deleted_handles_same_handle()
+        public async Task verify_de_duplication_not_link_to_deleted_handles_same_handle()
         {
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
             await UpdateAndWaitAsync();
@@ -848,7 +851,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_delete_then_re_add_handle()
+        public async Task verify_delete_then_re_add_handle()
         {
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
             await UpdateAndWaitAsync();
@@ -867,7 +870,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_delete_remove_document_with_cleanup()
+        public async Task verify_delete_remove_document_with_cleanup()
         {
             DateTime now = DateTime.UtcNow.AddDays(+30);
             var repo = _tenant.Container.Resolve<IRepositoryEx>();
@@ -887,8 +890,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(aggregate.Version, Is.EqualTo(0));
         }
 
-       
-
         #region Helpers
 
         private void ExecuteCleanupJob()
@@ -904,6 +905,5 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         #endregion
-
     }
 }

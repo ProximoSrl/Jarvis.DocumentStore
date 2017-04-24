@@ -26,7 +26,7 @@ If you want to manually test tika with command line you can use the following co
 You need also to create an environment variable TIKA_HOME that contains the full name of the tika jar file you previsously downloaded.
 
 ### Ghostscript
-Download and install 32 bits version of Ghostscript http://downloads.ghostscript.com/public/gs907w32.exe
+Download and install 32 bits version of Ghostscript [http://downloads.ghostscript.com/public/old-gs-releases/gs907w32.exe](http://downloads.ghostscript.com/public/old-gs-releases/gs907w32.exe)
 
 ***
 
