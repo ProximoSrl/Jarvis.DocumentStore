@@ -176,9 +176,6 @@ namespace Jarvis.DocumentStore.Core.Support
                        .ImplementedBy<CommitPollingClient2>()
                        .DependsOn(Dependency.OnValue("id", "Main-Poller"))
                        .LifeStyle.Transient,
-                    Component
-                        .For<Func<IPersistStreams, ICommitPollingClient>>()
-                        .Instance(ps => container.Resolve<ICommitPollingClient>(new { persistStreams = ps })),
                   Component
                         .For<ProjectionEngine, ITriggerProjectionsUpdate>()
                         .ImplementedBy<ProjectionEngine>()

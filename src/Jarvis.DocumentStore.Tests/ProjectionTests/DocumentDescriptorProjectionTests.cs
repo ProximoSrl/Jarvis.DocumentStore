@@ -24,6 +24,8 @@ using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Docum
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using System;
+
 namespace Jarvis.DocumentStore.Tests.ProjectionTests
 {
     [TestFixture]
@@ -50,7 +52,13 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             _bus = tenant.Container.Resolve<ICommandBus>();
             _filestore = tenant.Container.Resolve<IBlobStore>();
             Assert.IsTrue(_bus is IInProcessCommandBus);
+
+            //Issue: https://github.com/ProximoSrl/Jarvis.DocumentStore/issues/26
+            //you need to resolve the IReader that in turns resolves the ProjectionEngine, becauase if you
+            //directly resolve the ITriggerProjectionsUpdate, projection engine will be resolved multiple times.
+            tenant.Container.Resolve<IReader<StreamReadModel, Int64>>();
             _projections = tenant.Container.Resolve<ITriggerProjectionsUpdate>();
+
             _handleWriter = tenant.Container.Resolve<IDocumentWriter>();
             _documentReader = tenant.Container.Resolve<IReader<DocumentDescriptorReadModel, DocumentDescriptorId>>();
         }
@@ -92,7 +100,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public async void should_deduplicate()
+        public async Task should_deduplicate()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPng);
@@ -109,7 +117,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public async void should_remove_handle_previous_document()
+        public async Task should_remove_handle_previous_document()
         {
             CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
@@ -123,7 +131,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public async void should_remove_orphaned_document()
+        public async Task should_remove_orphaned_document()
         {
             CreateDocument(1, "handle_bis", TestConfig.PathToDocumentPng);
             CreateDocument(2, "handle_bis", TestConfig.PathToDocumentPdf);
@@ -138,7 +146,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public async void should_deduplicate_twice()
+        public async Task should_deduplicate_twice()
         {
             CreateDocument(9, "handle", TestConfig.PathToDocumentPdf);
             CreateDocument(10, "handle", TestConfig.PathToDocumentPdf);
@@ -154,13 +162,13 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
             Assert.IsNotNull(original);
             Assert.IsNull(copy);
             Assert.IsNull(copy2);
-            
+
             Assert.IsNotNull(handle);
             Assert.AreEqual(handle.DocumentDescriptorId, new DocumentDescriptorId(9));
-        }       
-        
+        }
+
         [Test]
-        public async void should_deduplicate_a_document_with_same_content_and_handle()
+        public async Task should_deduplicate_a_document_with_same_content_and_handle()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
             CreateDocument(2, "handle", TestConfig.PathToDocumentPdf);
@@ -178,7 +186,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }     
         
         [Test]
-        public async void should_create_a_documentDescriptor()
+        public async Task should_create_a_documentDescriptor()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPdf);
             await _projections.UpdateAndWait();
@@ -192,7 +200,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public async void should_add_format_to_document()
+        public async Task should_add_format_to_document()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
             var format = new DocumentFormat("tika");
@@ -207,7 +215,7 @@ namespace Jarvis.DocumentStore.Tests.ProjectionTests
         }
 
         [Test]
-        public async void adding_twice_same_format_overwrite_format()
+        public async Task adding_twice_same_format_overwrite_format()
         {
             CreateDocument(1, "handle", TestConfig.PathToDocumentPng);
             var format = new DocumentFormat("tika");
