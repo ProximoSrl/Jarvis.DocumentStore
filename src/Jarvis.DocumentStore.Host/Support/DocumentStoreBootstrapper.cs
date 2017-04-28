@@ -1,48 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using Castle.Core.Logging;
+﻿using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
-using Castle.Facilities.TypedFactory;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
-using Castle.Services.Logging.Log4netIntegration;
 using Castle.Windsor;
-using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
+using Jarvis.Framework.Kernel.ProjectionEngine.Client;
+using Jarvis.Framework.Kernel.Support;
+using Jarvis.Framework.Shared;
+using Jarvis.Framework.Shared.Helpers;
 using Jarvis.Framework.Shared.Messages;
 using Jarvis.Framework.Shared.MultitenantSupport;
-using Microsoft.Owin.Hosting;
-using Rebus.Logging;
-using Jarvis.DocumentStore.Core.Jobs.QueueManager;
-using Metrics;
-using Jarvis.Framework.Kernel.ProjectionEngine.Client;
-using Jarvis.DocumentStore.Host.Controllers;
-using System.Threading;
-using MongoDB.Driver;
-using Jarvis.Framework.Kernel.Support;
-using Castle.Windsor.Diagnostics;
-using Castle.MicroKernel;
-using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 using Jarvis.NEventStoreEx;
-using Jarvis.Framework.Shared;
-using System.Threading.Tasks;
+using Microsoft.Owin.Hosting;
+using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
-using Jarvis.DocumentStore.Shared.Helpers;
-using Jarvis.Framework.Shared.Helpers;
-using Owin.Metrics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
     public class DocumentStoreBootstrapper
     {
-        IDisposable _webApplication;
-        IWindsorContainer _container;
-        ILogger _logger;
-        DocumentStoreConfiguration _config;
+        private IDisposable _webApplication;
+        private IWindsorContainer _container;
+        private ILogger _logger;
+        private DocumentStoreConfiguration _config;
 
         private Boolean isStopped = false;
         public TenantManager Manager { get; private set; }

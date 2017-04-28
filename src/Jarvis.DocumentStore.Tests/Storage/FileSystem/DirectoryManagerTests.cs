@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Tests.Storage.FileSystem
         {
             _tempLocalDirectory = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(_tempLocalDirectory);
-            _sut = new DirectoryManager(_tempLocalDirectory);
+            _sut = new DirectoryManager(_tempLocalDirectory, 3);
         }
 
         [TearDown]
@@ -53,8 +53,8 @@ namespace Jarvis.DocumentStore.Tests.Storage.FileSystem
         [Test]
         public void Verify_ability_to_create_base_directory()
         {
-            var notExistingBaseDirectory = Path.GetTempPath() + Guid.NewGuid().ToString();
-            new DirectoryManager(notExistingBaseDirectory);
+            var notExistingBaseDirectory  = Path.GetTempPath() + Guid.NewGuid().ToString();
+            new DirectoryManager(notExistingBaseDirectory, 3);
             Assert.That(Directory.Exists(notExistingBaseDirectory));
         }
 

@@ -38,8 +38,8 @@ namespace Jarvis.DocumentStore.Core.Support
                     .For<IBlobStore>()
                     .ImplementedBy<BlobStoreByFormat>()
                     .DependsOn(
-                        Dependency.OnComponent("originals", "originals.filestore"),
-                        Dependency.OnComponent("artifacts", "artifacts.filestore")
+                        Dependency.OnComponent("originals", StorageConstants.OriginalBlobStorageComponentName),
+                        Dependency.OnComponent("artifacts", StorageConstants.ArtifactsBlobStorageComponentName)
                     ),
                  Component
                     .For<ILog>()
@@ -63,12 +63,12 @@ namespace Jarvis.DocumentStore.Core.Support
                   Component
                     .For<IBlobStore>()
                     .ImplementedBy<GridFsBlobStore>()
-                    .Named("originals.filestore")
+                    .Named(StorageConstants.OriginalBlobStorageComponentName)
                     .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "originals.db.legacy")),
                 Component
                     .For<IBlobStore>()
                     .ImplementedBy<GridFsBlobStore>()
-                    .Named("artifacts.filestore")
+                    .Named(StorageConstants.ArtifactsBlobStorageComponentName)
                     .DependsOn(Dependency.OnComponent(typeof(MongoDatabase), "artifacts.db.legacy")),
                 Component
                     .For<IMongoDatabase>()
@@ -99,16 +99,16 @@ namespace Jarvis.DocumentStore.Core.Support
                   Component
                     .For<IBlobStore>()
                     .ImplementedBy<FileSystemBlobStore>()
-                    .Named("originals.filestore")
+                    .Named(StorageConstants.OriginalBlobStorageComponentName)
                     .DependsOn(Dependency.OnComponent(typeof(IMongoDatabase), "fsdescriptor.db"))
-                    .DependsOn(Dependency.OnConfigValue("collectionName", "originals.descriptor"))
+                    .DependsOn(Dependency.OnConfigValue("collectionName", FileSystemBlobStore.OriginalDescriptorStorageCollectionName))
                     .DependsOn(Dependency.OnValue("baseDirectory", _tenantSettings.Get<String>("storage.fs.originals"))),
                 Component
                     .For<IBlobStore>()
                     .ImplementedBy<FileSystemBlobStore>()
-                    .Named("artifacts.filestore")
+                    .Named(StorageConstants.ArtifactsBlobStorageComponentName)
                     .DependsOn(Dependency.OnComponent(typeof(IMongoDatabase), "fsdescriptor.db"))
-                    .DependsOn(Dependency.OnConfigValue("collectionName", "artifacts.descriptor"))
+                    .DependsOn(Dependency.OnConfigValue("collectionName", FileSystemBlobStore.ArtifactsDescriptorStorageCollectionName))
                     .DependsOn(Dependency.OnValue("baseDirectory", _tenantSettings.Get<String>("storage.fs.artifacts")))
              );
         }

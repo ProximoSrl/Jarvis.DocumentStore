@@ -152,6 +152,10 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 
         public static string ConnectToRemote(string remoteUNC, string username, string password, bool promptUser)
         {
+            if (String.IsNullOrEmpty(username))
+                return null;
+
+            Console.WriteLine("Mapping {0} with user {1} and password {2} ", remoteUNC, username, new string('*', password.Length));
             NETRESOURCE nr = new NETRESOURCE();
             nr.dwType = RESOURCETYPE_DISK;
             nr.lpRemoteName = remoteUNC;

@@ -1,6 +1,8 @@
 ﻿using Castle.Core.Logging;
 using Jarvis.ConfigurationService.Client;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.LiveBackup.Support;
+using MongoDB.Bson.Serialization;
 using System;
 using System.Configuration;
 using System.IO;
@@ -23,6 +25,17 @@ namespace Jarvis.DocumentStore.LiveBackup
 
         private static void Main(string[] args)
         {
+            //Preload class needed by mongo
+            BsonClassMap.LookupClassMap(typeof(BlobId));
+            BsonClassMap.LookupClassMap(typeof(DocumentHandle));
+
+            BsonClassMap.RegisterClassMap<FileNameWithExtension>(m =>
+            {
+                m.AutoMap();
+                m.MapProperty(x => x.FileName).SetElementName("name");
+                m.MapProperty(x => x.Extension).SetElementName("ext");
+            });
+
             ConfigurationServiceClient.AppDomainInitializer(
                (message, isError, exception) =>
                {
@@ -49,10 +62,10 @@ namespace Jarvis.DocumentStore.LiveBackup
                 }
                 else if (args[0] == "restore")
                 {
-                    Bootstrapper bs = new Bootstrapper();
-                    bs.Start(false);
-                    var restoreJob = bs.GetRestoreJob();
-                    restoreJob.Start();
+                    //Bootstrapper bs = new Bootstrapper();
+                    //bs.Start(false);
+                    //var restoreJob = bs.GetRestoreJob();
+                    //restoreJob.Start();
                 }
             }
             else
@@ -66,7 +79,6 @@ namespace Jarvis.DocumentStore.LiveBackup
                         Console.ReadKey();
                     }
                 }
-
             }
         }
 

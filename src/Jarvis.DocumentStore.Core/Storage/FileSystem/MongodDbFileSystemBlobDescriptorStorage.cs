@@ -44,6 +44,11 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
         {
             _collection.RemoveById(blobId);
         }
+
+        public override string ToString()
+        {
+            return $"MongoDbFileSystemDescriptor, pointing to db {_collection.Database.DatabaseNamespace.DatabaseName} collection {_collection.CollectionNamespace.CollectionName}";
+        }
     }
 }
 

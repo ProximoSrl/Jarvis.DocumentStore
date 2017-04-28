@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
 using Castle.Facilities.Logging;
 using Castle.Services.Logging.Log4netIntegration;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
-using Jarvis.Framework.Kernel.MultitenantSupport;
-using System.Collections;
-using System.Linq;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
-using Newtonsoft.Json;
 using Jarvis.DocumentStore.Core.Model;
+using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Kernel.ProjectionEngine;
+using Newtonsoft.Json;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -26,12 +25,13 @@ namespace Jarvis.DocumentStore.Core.Support
         public bool IsApiServer { get; protected set; }
         public bool IsWorker { get; protected set; }
 
-        public bool HasMetersEnabled {
+        public bool HasMetersEnabled
+        {
             get { return MetersOptions.ContainsKey("enabled") && MetersOptions["enabled"].Equals("true", StringComparison.OrdinalIgnoreCase); }
         }
 
         private readonly IList<String> _addresses = new List<String>();
-        private readonly IDictionary<string,string> MetersOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly IDictionary<string, string> MetersOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public String[] ServerAddresses
         {
@@ -53,7 +53,7 @@ namespace Jarvis.DocumentStore.Core.Support
 
         public String[] AllowedFileTypes { get; protected set; }
 
-         public bool IsFileAllowed(FileNameWithExtension filename)
+        public bool IsFileAllowed(FileNameWithExtension filename)
         {
             if (AllowedFileTypes == null)
                 return true;
@@ -117,6 +117,22 @@ namespace Jarvis.DocumentStore.Core.Support
         public String StorageUserName { get; set; }
 
         public String StoragePassword { get; set; }
+
+        #endregion
+
+        #region Secondary DS
+
+        public String SecondaryDocumentStoreAddress { get; set; }
+
+        public bool SecondaryAddressConfigured => !String.IsNullOrEmpty(SecondaryDocumentStoreAddress);
+
+        #endregion
+
+        #region Web Permission
+
+        public String[] GetOnlyIpArray { get; set; }
+
+        public String[] ExtraAllowedIpArray { get; set; }
 
         #endregion
 

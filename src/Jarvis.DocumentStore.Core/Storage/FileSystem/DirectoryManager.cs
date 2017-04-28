@@ -12,9 +12,12 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
     /// </summary>
     internal class DirectoryManager
     {
-        public DirectoryManager(String baseDirectory)
+        private readonly int _folderPrefixLength;
+
+        public DirectoryManager(String baseDirectory, Int32 folderPrefixLength)
         {
             BaseDirectory = baseDirectory;
+            _folderPrefixLength = folderPrefixLength;
             Directory.EnsureDirectory(baseDirectory);
         }
 
@@ -58,7 +61,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             for (int i = 0; i < Math.Min(stringPadded.Length, 15); i++)
             {
                 directoryName.Append(stringPadded[i]);
-                if (i % 3 == 2) directoryName.Append(System.IO.Path.DirectorySeparatorChar);
+                if (i % _folderPrefixLength == (_folderPrefixLength - 1)) directoryName.Append(System.IO.Path.DirectorySeparatorChar);
             }
             var finalDirectory = Path.Combine(BaseDirectory, blobId.Format, directoryName.ToString());
             Directory.EnsureDirectory(finalDirectory);

@@ -28,10 +28,18 @@ steps:
   inputs:
     BuildNamePrefix: 'DocumentStore - CI'
 
-- task: NuGetInstaller@0
+- task: NuGetToolInstaller@1
+  displayName: 'Use NuGet 5.x'
+  inputs:
+    versionSpec: 5.x
+    checkLatest: true
+
+- task: NuGetCommand@2
   displayName: 'NuGet restore **\*.sln'
   inputs:
-    solution: '**\*.sln'
+    restoreSolution: '**\*.sln'
+    feedsToUse: config
+    nugetConfigPath: src/NuGet.Config
 
 - task: VSBuild@1
   displayName: 'Build solution **\*.sln'
@@ -40,14 +48,16 @@ steps:
     configuration: '$(BuildConfiguration)'
 
 - task: VSTest@1
-  displayName: 'Test Assemblies **\$(BuildConfiguration)\*test*.dll;-:**\obj\**'
+  displayName: 'Test Assemblies **\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
   inputs:
-    testAssembly: '**\$(BuildConfiguration)\*test*.dll;-:**\obj\**'
+    testAssembly: '**\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
     codeCoverageEnabled: true
     vsTestVersion: latest
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
   continueOnError: true
+
+  
 
 
 

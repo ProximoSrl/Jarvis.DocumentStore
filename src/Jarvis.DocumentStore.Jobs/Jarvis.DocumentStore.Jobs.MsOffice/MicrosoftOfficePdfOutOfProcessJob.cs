@@ -120,17 +120,40 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 
         private bool IsExcelFile(string pathToFile)
         {
-            return Path.GetExtension(pathToFile).Trim('.').StartsWith("xls", StringComparison.OrdinalIgnoreCase);
+            string extension = Path.GetExtension(pathToFile).Trim('.');
+            if (String.IsNullOrEmpty(extension))
+                return false;
+
+            return extension.StartsWith("xls", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("xlsx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("xlsm", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("xlsm", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("ods", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsPowerPointFile(string pathToFile)
         {
-            return Path.GetExtension(pathToFile).Trim('.').StartsWith("ppt", StringComparison.OrdinalIgnoreCase);
+            string extension = Path.GetExtension(pathToFile).Trim('.');
+            if (String.IsNullOrEmpty(extension))
+                return false;
+
+            return extension.StartsWith("ppt", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("ppsx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("pps", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("ppsx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("odp", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsWordFile(string pathToFile)
         {
-            return Path.GetExtension(pathToFile).Trim('.').StartsWith("doc", StringComparison.OrdinalIgnoreCase);
+            string extension = Path.GetExtension(pathToFile).Trim('.');
+            if (String.IsNullOrEmpty(extension))
+                return false;
+
+            return extension.StartsWith("doc", StringComparison.OrdinalIgnoreCase)
+                || extension.StartsWith("docx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("rtf", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("odt", StringComparison.OrdinalIgnoreCase);
         }
     }
 #pragma warning restore S2583 // Conditionally executed blocks should be reachable

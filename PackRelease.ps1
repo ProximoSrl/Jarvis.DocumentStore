@@ -13,7 +13,6 @@ $StandardZipFormatBool =  ($StandardZipFormat -eq "$true") -or ($StandardZipForm
 
 $runningDirectory = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
-
 if ($DestinationDir -eq "") 
 {
     $DestinationDir = $runningDirectory + "\release"
@@ -51,7 +50,7 @@ New-Item -ItemType Directory -Path $DestinationDir
 New-Item -ItemType Directory -Path $DestinationDirHost
 New-Item -ItemType Directory -Path $DestinationDirJobs
 
-Copy-Item ".\src\Jarvis.DocumentStore.Host\bin\$configuration\*.*" `
+Copy-Item ".\src\Jarvis.DocumentStore.Host\bin\$configuration\net461\*.*" `
     $DestinationDirHost `
     -Force -Recurse
 

@@ -1,5 +1,12 @@
-﻿using Jarvis.ConfigurationService.Client;
+﻿using Castle.Core.Logging;
+using Castle.Facilities.Logging;
+using Castle.Windsor;
+using Jarvis.ConfigurationService.Client;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Shell.BlobStoreSync;
+using Jarvis.DocumentStore.Tools.Helpers;
 using Jarvis.Framework.Shared.IdentitySupport;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -15,6 +22,17 @@ namespace Jarvis.DocumentStore.Tools
     {
         private static Int32 Main(string[] args)
         {
+            //Premap everything you need to load.
+            BsonClassMap.LookupClassMap(typeof(BlobId));
+            BsonClassMap.LookupClassMap(typeof(DocumentHandle));
+
+            BsonClassMap.RegisterClassMap<FileNameWithExtension>(m =>
+            {
+                m.AutoMap();
+                m.MapProperty(x => x.FileName).SetElementName("name");
+                m.MapProperty(x => x.Extension).SetElementName("ext");
+            });
+
             try
             {
                 RunShell();
@@ -56,14 +74,16 @@ this should be changed to
                     error.AppendLine(ex.ToString());
                     error.AppendLine("\n\n");
                 }
-                ;
+
                 error.AppendLine("UNABLE TO LOAD: ");
                 foreach (var t in rex.Types.Where(t => t != null))
                 {
                     error.AppendLine(t.FullName);
                 }
 
-                error.AppendLine("\n\n" + rex.ToString());
+                error
+                    .Append("\n\n")
+                    .AppendLine(rex.ToString());
                 File.WriteAllText("_lasterror.txt", error.ToString());
             }
             catch (Exception ex)
@@ -77,32 +97,44 @@ this should be changed to
             return 1;
         }
 
+        private static ILoggerFactory _loggerFactory;
+
         private static void RunShell()
         {
             MongoFlatMapper.EnableFlatMapping();
-            ConfigurationServiceClient.AppDomainInitializer(
-                (message, isError, exception) =>
-                {
-                    if (isError)
+
+            if (ConsoleHelper.AskYesNoQuestion("Do you want to use Configuration Service? You should say N if doing tasks like migration that does not require configuration service"))
+            {
+                ConfigurationServiceClient.AppDomainInitializer(
+                    (message, isError, exception) =>
                     {
-                        Console.Error.WriteLine(message + "\n" + exception);
-                    }
-                    else
-                    {
-                        Console.WriteLine(message);
-                    }
-                },
-                "JARVIS_CONFIG_SERVICE",
-                null,
-                new FileInfo("defaultParameters.config"),
-                missingParametersAction: ConfigurationManagerMissingParametersAction.Blank);
+                        if (isError)
+                        {
+                            Console.Error.WriteLine(message + "\n" + exception);
+                        }
+                        else
+                        {
+                            Console.WriteLine(message);
+                        }
+                    },
+                    "JARVIS_CONFIG_SERVICE",
+                    null,
+                    new FileInfo("defaultParameters.config"),
+                    missingParametersAction: ConfigurationManagerMissingParametersAction.Blank);
+            }
+            IWindsorContainer _container = new WindsorContainer();
+            _container.AddFacility<LoggingFacility>(f => f
+                .LogUsing(LoggerImplementation.ExtendedLog4net)
+                .WithConfig("log4net.config"));
+            _loggerFactory = _container.Resolve<ILoggerFactory>();
 
             var commands = new Dictionary<String, Func<Boolean>>();
             commands.Add("Check oprhaned blob", () =>
-            {
-                CheckOrphanedBlobs.PerformCheck(DateTime.UtcNow);
-                return false;
-            });
+                {
+                    CheckOrphanedBlobs.PerformCheck(DateTime.UtcNow);
+                    return false;
+                });
+
             commands.Add("Check tika scheduled job", () =>
             {
                 CheckQueuedTikaScheduledJobs.PerformCheck();
@@ -112,6 +144,22 @@ this should be changed to
             commands.Add("Start sync artifacts job", () =>
             {
                 FullArtifactSyncJob.StartSync();
+                return false;
+            });
+
+            commands.Add("Copy blob from GridFs to FileSystemFs", () =>
+            {
+                var startFromBeginning = ConsoleHelper.AskYesNoQuestion("Do you want to start from the beginning of the stream?");
+                BlobStoreSync command = new BlobStoreSync(_loggerFactory.Create(typeof(BlobStoreSync)));
+                command.SyncAllTenants(BlobStoreType.GridFs, BlobStoreType.FileSystem, startFromBeginning);
+                return false;
+            });
+
+            commands.Add("Copy blob from FileSystemFs to GridFs", () =>
+            {
+                var startFromBeginning = ConsoleHelper.AskYesNoQuestion("Do you want to start from the beginning of the stream?");
+                BlobStoreSync command = new BlobStoreSync(_loggerFactory.Create(typeof(BlobStoreSync)));
+                command.SyncAllTenants(BlobStoreType.FileSystem, BlobStoreType.GridFs, startFromBeginning);
                 return false;
             });
 

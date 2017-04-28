@@ -34,6 +34,7 @@ namespace Jarvis.DocumentStore.Tests
 
                 //<!-- Tenant 1-->
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.originals", "ds-tests-ori-fs");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.descriptors", "ds-tests-descriptors");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.artifacts", "ds-tests-art-fs");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.system", "ds-tests");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tests.events", "ds-tests");
@@ -41,6 +42,7 @@ namespace Jarvis.DocumentStore.Tests
 
                 //<!-- Tenant DOCS -->
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.originals", "ds-docs-ori-fs");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.descriptors", "ds-docs-descriptors");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.artifacts", "ds-docs-art-fs");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.system", "ds-docs");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "docs.events", "ds-docs");
@@ -48,10 +50,19 @@ namespace Jarvis.DocumentStore.Tests
 
                 //<!-- Tenant DEMO -->
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.originals", "ds-demo-ori-fs");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.descriptors", "ds-demo-descriptors");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.artifacts", "ds-demo-art-fs");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.system", "ds-demo");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.events", "ds-demo");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "demo.readmodel", "ds-demo");
+
+                //<!-- Tenant Tickets -->
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tickets.originals", "ds-tickets-ori-fs");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tickets.descriptors", "ds-tickets-descriptors");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tickets.artifacts", "ds-tickets-art-fs");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tickets.system", "ds-tickets");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tickets.events", "ds-tickets");
+                RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "tickets.readmodel", "ds-tickets");
 
                 config.Save();
                 ConfigurationManager.RefreshSection("connectionStrings");

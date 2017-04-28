@@ -1,22 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tools.Helpers
 {
-    static class ConsoleHelper
+    internal static class ConsoleHelper
     {
         public static Char AskQuestionWithChar(Char[] allowedChars, String question, params object[] param)
         {
-            Char answer = '\0';
+            char answer;
             do
             {
                 Console.Write(question, param);
                 Console.Write("[" + String.Join("/", allowedChars) + "]:");
                 answer = Console.ReadKey().KeyChar;
-            } while (allowedChars.Contains(answer) == false);
+            } while (!allowedChars.Contains(answer));
             return answer;
         }
 

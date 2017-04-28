@@ -30,12 +30,16 @@ namespace Jarvis.DocumentStore.Core.Storage
             get { return new FileHash(Md5); }
         }
 
+        public Boolean Exists => File.Exists(_localFileName);
+
         private String _localFileName;
 
         /// <summary>
         /// This class is persisted to MongoDb, but we do not want to hardcode the 
-        /// full path of the file. This data is not persisted to mongo and was set
-        /// by the caller before returning this value to the caller.
+        /// full path of the file. (maybe we will want to move the file).
+        /// This data is not persisted to mongo and was set
+        /// by the storage before returning this value to the caller with the
+        /// real path.
         /// </summary>
         /// <param name="localFileName"></param>
         internal void SetLocalFileName(String localFileName)

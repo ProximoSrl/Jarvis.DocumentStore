@@ -1,37 +1,41 @@
 ﻿
+using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.Storage;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.LiveBackup.Support;
 
 namespace Jarvis.DocumentStore.LiveBackup.BlobBackup
 {
     /// <summary>
     /// Class used to syncronize the artifacts store. It performs a sync 
-    /// from a source artifact store to a destination artifact store.
+    /// from a <see cref="IBlobStore" /> to an <see cref="IBlobArchiveStore"/>
     /// </summary>
     internal class ArtifactSyncronizer
     {
         private readonly ArtifactSyncJobConfig _config;
         private readonly DirectoryBlobArchiveStore _store;
 
+        public ILogger Logger { get; set; }
+
         internal ArtifactSyncronizer(
-            ArtifactSyncJobConfig _config)
+            ArtifactSyncJobConfig _config,
+            ILogger logger)
         {
             this._config = _config;
             _store = new DirectoryBlobArchiveStore(_config.Directory);
+            Logger = logger;
         }
 
-        Info _info;
+        /// <summary>
+        /// This is the information on the last checkpoint backupped 
+        /// </summary>
+        private Info _info;
 
         /// <summary>
         /// Perform a full sync 
@@ -45,18 +49,9 @@ namespace Jarvis.DocumentStore.LiveBackup.BlobBackup
             // start reading the rmStream collection (maybe in chuncks)
             var sourceMongoUrl = new MongoUrl(_config.EvenstoreConnection);
             var sourceDatabase = new MongoClient(sourceMongoUrl).GetDatabase(sourceMongoUrl.DatabaseName);
-            var rmStream = sourceDatabase.GetCollection<BsonDocument>("Commits");
+            var commitsCollection = sourceDatabase.GetCollection<BsonDocument>("Commits");
 
-            var blobsOriginalDatabaseMongoUrl = new MongoUrl(_config.OriginalBlobConnection);
-            IMongoDatabase blobsOriginalDatabase = new MongoClient(blobsOriginalDatabaseMongoUrl).GetDatabase(blobsOriginalDatabaseMongoUrl.DatabaseName);
-
-            var originalBlobBucket = new GridFSBucket<string>(blobsOriginalDatabase, new GridFSBucketOptions
-            {
-                BucketName = "original",
-                ChunkSizeBytes = 1048576, // 1MB
-            });
-
-            SyncFiles(rmStream, originalBlobBucket);
+            SyncFiles(commitsCollection, _config.OriginalBlobConnection);
             PersistInfo();
             Console.WriteLine("No more commit to sync!!");
             Thread.Sleep(2000);
@@ -66,82 +61,105 @@ namespace Jarvis.DocumentStore.LiveBackup.BlobBackup
         /// Given the collection of stream of document store, it starts scanning stream collection 
         /// to undestand new blob that are added to the system and need to be copied.
         /// </summary>
-        /// <param name="rmStream">Collection of the stream.</param>
-        /// <param name="originalBlobBucket">Original bucket to read the blob.</param>
-        private void SyncFiles(IMongoCollection<BsonDocument> rmStream, GridFSBucket<string> originalBlobBucket)
+        /// <param name="commitsCollection">Collection of all the commits of documenstore</param>
+        /// <param name="blobStore">Blob store that points to store for original blob.</param>
+        private void SyncFiles(IMongoCollection<BsonDocument> commitsCollection, IBlobStore blobStore)
         {
-            var files = rmStream
+            var commits = commitsCollection
                 .Find(Builders<BsonDocument>.Filter.Gte("_id", _info.LastCommit))
                 .Sort(Builders<BsonDocument>.Sort.Ascending("_id"))
                 .ToEnumerable();
-            foreach (var file in files)
+            foreach (var commit in commits)
             {
-                BsonArray events = file["Events"].AsBsonArray;
+                BsonArray events = commit["Events"].AsBsonArray;
+                var checkpointToken = commit["_id"].AsInt64;
                 foreach (var evt in events)
                 {
                     var body = evt["Payload"]["Body"].AsBsonDocument;
                     var type = body["_t"].AsString;
                     if (type.StartsWith("DocumentDescriptorInitialized"))
                     {
-                        if (body.Names.Contains("BlobId"))
-                        {
-                            string fileId = body["BlobId"].AsString;
-                            if (fileId.StartsWith("original"))
-                            {
-                                UpdateDumpOfFile(fileId, originalBlobBucket, false);
-                            }
-                        }
+                        ScanCommit(blobStore, checkpointToken, body, false);
                     }
                     else if (type.StartsWith("DocumentDescriptorDeleted"))
                     {
-                        if (body.Names.Contains("BlobId"))
-                        {
-                            string fileId = body["BlobId"].AsString;
-                            if (fileId.StartsWith("original"))
-                            {
-                                UpdateDumpOfFile(fileId, originalBlobBucket, true);
-                            }
-                        }
+                        ScanCommit(blobStore, checkpointToken, body, true);
                     }
                 }
 
-                var checkpointToken = file["_id"].AsInt64;
                 _info.LastCommit = checkpointToken + 1;
+            }
+        }
+
+        /// <summary>
+        /// Scan a BsonDocument looking for the <see cref="BlobId"/> of the blob and if a <see cref="BlobId" />
+        /// is found it update the dump of file to disk.
+        /// </summary>
+        /// <param name="originalBlobStore"></param>
+        /// <param name="body"></param>
+        /// <param name="deleted"></param>
+        private void ScanCommit(IBlobStore originalBlobStore, Int64 commitId, BsonDocument body, Boolean deleted)
+        {
+            if (Logger.IsDebugEnabled)
+                Logger.Debug($"Scanning commit {commitId} for event {body["_t"].AsString}");
+
+            if (body.Names.Contains("BlobId"))
+            {
+                string blobId = body["BlobId"].AsString;
+                if (blobId.StartsWith("original"))
+                {
+                    Logger.Info($"Copy blob {blobId} to fileStore");
+                    UpdateDumpOfFile(blobId, originalBlobStore, deleted);
+                }
             }
         }
 
         /// <summary>
         /// Update dump of the file on disks.
         /// </summary>
-        /// <param name="fileId"></param>
-        /// <param name="originalBlobBucket"></param>
+        /// <param name="blobId"></param>
+        /// <param name="originalBlobStore"></param>
         /// <param name="deleted">If true this is an operation of deletion of the artifact.</param>
         /// <returns></returns>
         private Boolean UpdateDumpOfFile(
-            string fileId,
-            GridFSBucket<String> originalBlobBucket,
+            string blobId,
+            IBlobStore originalBlobStore,
             Boolean deleted)
         {
-            var findIdFilter = Builders<GridFSFileInfo<string>>.Filter.Eq(x => x.Id, fileId);
-
-            var source = originalBlobBucket.Find(findIdFilter).FirstOrDefault();
-            if (source == null)
+            try
             {
-                return false; //source stream does not exists
-            }
-            if (!deleted)
-            {
-                using (var stream = originalBlobBucket.OpenDownloadStream(fileId))
+                //Take descriptor even if the blob is deleted, because deleting a descriptor leav
+                //blob in recycle bin, this imply that the blob should still be there
+                var descriptor = originalBlobStore.GetDescriptor(new BlobId(blobId));
+                if (!deleted)
                 {
-                    _store.Store(stream, source.Filename, fileId);
+                    using (var stream = descriptor.OpenRead())
+                    {
+                        _store.Store(stream, descriptor.FileNameWithExtension, blobId);
+                    }
+                    Logger.Debug($"Blob {blobId} copied to backup store. FileName: {descriptor.FileNameWithExtension}");
                 }
+                else
+                {
+                    _store.Delete(descriptor.FileNameWithExtension, blobId);
+                    Logger.Debug($"Blob {blobId} was deleted, delete from the backup store. FileName: {descriptor.FileNameWithExtension}");
+                }
+                return true;
             }
-            else
+            catch (Exception ex)
             {
-                _store.Delete(source.Filename, fileId);
+                if (deleted == false)
+                {
+                    Logger.Error($"Unable to backup blob {blobId} from original store. {ex.Message}", ex);
+                }
+                else
+                {
+                    //Since the blob is deleted, issue a warning, because it could be that the backup started
+                    //late and the blob was already purged from recycle bin.
+                    Logger.Warn($"Unable to backup blob {blobId} from original store. {ex.Message}. Maybe the blob was already deleted by job.", ex);
+                }
+                return false;
             }
-
-            return true;
         }
 
         private class Info
@@ -149,6 +167,10 @@ namespace Jarvis.DocumentStore.LiveBackup.BlobBackup
             public Int64 LastCommit { get; set; }
         }
 
+        /// <summary>
+        /// Persist sync info to a file. This allow the backup directory to have both 
+        /// backup and the file that stores the last status of the backup.
+        /// </summary>
         private void PersistInfo()
         {
             File.WriteAllText(GetInfoFileName(), _info.ToBsonDocument().ToString());

@@ -1,30 +1,30 @@
 ﻿using Castle.Core;
 using Castle.Core.Logging;
-using Castle.Windsor.Installer;
 using Jarvis.DocumentStore.LiveBackup.BlobBackup;
 using Jarvis.Framework.CommitBackup.Core;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.LiveBackup.Jobs
 {
-    public class BackupJob : IStartable
+    /// <summary>
+    /// Document store has the concept of tenant, so it is really simpler
+    /// to use a job that scan all tenants and create backup for each tenant.
+    /// </summary>
+    public class DocumentStoreBackupJob : IStartable
     {
         private Timer _evenstoreTimer;
 
+#pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables
+#pragma warning disable IDE0052 // Remove unread private members
         private Timer _blobTimer;
+#pragma warning restore IDE0052 // Remove unread private members
+#pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
 
-        private Func<IMongoDatabase, ICommitReader> _readerFactory;
-
-        private Func<String, Int64, ICommitWriter> _fileWriterFactory;
-
-        private Support.Configuration _configuration;
+        private readonly Support.Configuration _configuration;
 
         public ILogger Logger { get; set; }
 
@@ -43,17 +43,14 @@ namespace Jarvis.DocumentStore.LiveBackup.Jobs
             public String DatabaseInfo { get; private set; }
             public String Tenant { get; private set; }
         }
-        private List<BackupData> _backupList;
 
-        private List<ArtifactSyncronizer> _artifactSyncronizerList;
+        private readonly List<BackupData> _backupList;
 
-        public BackupJob(
-            Func<IMongoDatabase, ICommitReader> readerFactory,
-            Func<String, Int64, ICommitWriter> fileWriterFactory,
+        private readonly List<ArtifactSyncronizer> _artifactSyncronizerList;
+
+        public DocumentStoreBackupJob(
             Support.Configuration configuration)
         {
-            _readerFactory = readerFactory;
-            _fileWriterFactory = fileWriterFactory;
             _configuration = configuration;
             _backupList = new List<BackupData>();
             _artifactSyncronizerList = new List<ArtifactSyncronizer>();
@@ -62,6 +59,8 @@ namespace Jarvis.DocumentStore.LiveBackup.Jobs
 
         public void Start()
         {
+            var readerFactory = _configuration.GetReaderFactory();
+            var writerFactory = _configuration.GetWriterFactory();
             foreach (var tenantSetting in _configuration.TenantSettingList)
             {
                 try
@@ -71,14 +70,14 @@ namespace Jarvis.DocumentStore.LiveBackup.Jobs
                     MongoClient client = new MongoClient(url);
                     var db = client.GetDatabase(url.DatabaseName);
 
-                    var reader = _readerFactory(db);
+                    var reader = readerFactory.Create(db);
                     var fileName = tenantSetting.GetEventsDumpFileName(_configuration.EventStoreBackupDirectory, url.DatabaseName);
-                    var writer = _fileWriterFactory(fileName, _configuration.MaxFileSize);
+                    var writer = writerFactory.Create(fileName);
 
                     _backupList.Add(new BackupData(reader, writer, tenantSetting.EventStoreConnectionString, tenantSetting.TenantId));
 
-                    ArtifactSyncJobConfig artifactSyncConfig = new ArtifactSyncJobConfig(_configuration.BlobsBackupDirectory, tenantSetting);
-                    _artifactSyncronizerList.Add(new ArtifactSyncronizer(artifactSyncConfig));
+                    ArtifactSyncJobConfig artifactSyncConfig = new ArtifactSyncJobConfig(_configuration.BlobsBackupDirectory, tenantSetting, Logger);
+                    _artifactSyncronizerList.Add(new ArtifactSyncronizer(artifactSyncConfig, Logger));
                 }
                 catch (Exception ex)
                 {
@@ -103,6 +102,7 @@ namespace Jarvis.DocumentStore.LiveBackup.Jobs
         }
 
         private Int32 _isEventStoreTimerPolling;
+
         private Int32 _isBlobTimerPolling;
 
         private Boolean jobStopping = false;
@@ -117,15 +117,19 @@ namespace Jarvis.DocumentStore.LiveBackup.Jobs
                     Parallel.ForEach(_backupList, b =>
                     {
                         var last = b.Writer.GetLastCommitAppended();
-                        foreach (var commit in b.Reader.GetCommits(last))
+                        foreach (var commitInfo in b.Reader.GetCommits(last))
                         {
                             if (jobStopping) return;
                             if (Logger.IsDebugEnabled)
-                                Logger.DebugFormat("Backup commit id {0} for {1}", commit["_id"], b.DatabaseInfo);
-                            b.Writer.Append(commit["_id"].AsInt64, commit);
+                                Logger.DebugFormat("Backup commit id {0} for {1}", commitInfo.Commit["_id"], b.DatabaseInfo);
+                            b.Writer.Append(commitInfo.Commit["_id"].AsInt64, commitInfo);
                         }
                         b.Writer.Close();
                     });
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error during backup polling: {ex.Message}.", ex);
                 }
                 finally
                 {
@@ -142,10 +146,7 @@ namespace Jarvis.DocumentStore.LiveBackup.Jobs
                 Logger.Debug("Polling!");
                 try
                 {
-                    Parallel.ForEach(_artifactSyncronizerList, b =>
-                    {
-                        b.PerformSync();
-                    });
+                    Parallel.ForEach(_artifactSyncronizerList, b => b.PerformSync());
                 }
                 finally
                 {

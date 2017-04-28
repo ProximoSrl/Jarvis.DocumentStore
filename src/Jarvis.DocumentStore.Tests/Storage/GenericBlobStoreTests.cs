@@ -20,6 +20,8 @@ namespace Jarvis.DocumentStore.Tests.Storage
     public class GenericBlobStoreTests : BlobStoreTestBase
     {
         IBlobStore _sut;
+        IBlobStoreAdvanced _sutAdvanced;
+
         private readonly String _blobStoreToTest;
         private String _tempLocalDirectory;
 
@@ -36,20 +38,24 @@ namespace Jarvis.DocumentStore.Tests.Storage
 
             if (_blobStoreToTest == "filesystem")
             {
-                _sut = new FileSystemBlobStore(
+                var fsStore = new FileSystemBlobStore(
                     MongoDbTestConnectionProvider.OriginalsDb,
-                    "originals",
+                    FileSystemBlobStore.OriginalDescriptorStorageCollectionName,
                     _tempLocalDirectory,
-                    new CounterService(MongoDbTestConnectionProvider.SystemDb))
+                    new CounterService(MongoDbTestConnectionProvider.SystemDb),
+                    "",
+                    "")
                 {
                     Logger = new ConsoleLogger()
                 };
+                _sut = fsStore;
+                _sutAdvanced = fsStore as IBlobStoreAdvanced;
             }
             else if (_blobStoreToTest == "gridfs")
             {
                 MongoDbTestConnectionProvider.DropTestsTenant();
 
-                _sut = new GridFsBlobStore
+                var gridfsStore = new GridFsBlobStore
                 (
                     MongoDbTestConnectionProvider.OriginalsDbLegacy,
                     new CounterService(MongoDbTestConnectionProvider.SystemDb)
@@ -57,6 +63,8 @@ namespace Jarvis.DocumentStore.Tests.Storage
                 {
                     Logger = new ConsoleLogger()
                 };
+                _sut = gridfsStore;
+                _sutAdvanced = gridfsStore as IBlobStoreAdvanced;
             }
         }
 
@@ -260,6 +268,60 @@ namespace Jarvis.DocumentStore.Tests.Storage
             _sut.Delete(id);
 
             Assert.Throws<Exception>(() =>_sut.GetDescriptor(id));
+        }
+
+        /// <summary>
+        /// To migrate from GridFs we need to pass the id from the outside of the 
+        /// blob store
+        /// </summary>
+        [Test]
+        public void Verify_capability_to_store_directly_with_blobId()
+        {
+            String content = "this is the content of the file";
+            String tempFileName = GenerateTempTextFile(content, "thisisatest.txt");
+            BlobId blobId = new BlobId(DocumentFormats.Original, 42);
+
+            var id = _sutAdvanced.Persist(blobId, tempFileName);
+            Assert.That(id.BlobId, Is.EqualTo(blobId));
+
+            var descriptor = _sut.GetDescriptor(blobId);
+            Assert.That(descriptor.BlobId, Is.EqualTo(blobId));
+            Assert.That(descriptor.ContentType, Is.EqualTo("text/plain"));
+            Assert.That(descriptor.FileNameWithExtension.ToString(), Is.EqualTo("thisisatest.txt"));
+            Assert.That(descriptor.Hash.ToString(), Is.EqualTo("c4afda0ebfa886d489fe06a436ca491a"));
+            Assert.That(descriptor.Length, Is.EqualTo(31));
+
+            var download = _sut.Download(blobId, _tempLocalDirectory);
+            Assert.That(Path.GetFileName(download), Is.EqualTo("thisisatest.txt"));
+            Assert.That(File.ReadAllText(download), Is.EqualTo(content));
+        }
+
+        /// <summary>
+        /// To migrate from GridFs we need to pass the id from the outside of the 
+        /// blob store
+        /// </summary>
+        [Test]
+        public void Verify_capability_to_raw_store()
+        {
+            String content = "this is the content of the file";
+            String tempFileName = GenerateTempTextFile(content, "thisisatest.txt");
+            var id = _sut.Upload(DocumentFormats.Original, tempFileName);
+
+            var newBlobId = new BlobId(DocumentFormats.Original, id.Id + 1);
+            var descriptor = _sut.GetDescriptor(id);
+
+            _sutAdvanced.RawStore(newBlobId, descriptor);
+
+            descriptor = _sut.GetDescriptor(newBlobId);
+            Assert.That(descriptor.BlobId, Is.EqualTo(newBlobId));
+            Assert.That(descriptor.ContentType, Is.EqualTo("text/plain"));
+            Assert.That(descriptor.FileNameWithExtension.ToString(), Is.EqualTo("thisisatest.txt"));
+            Assert.That(descriptor.Hash.ToString(), Is.EqualTo("c4afda0ebfa886d489fe06a436ca491a"));
+            Assert.That(descriptor.Length, Is.EqualTo(31));
+
+            var download = _sut.Download(newBlobId, _tempLocalDirectory);
+            Assert.That(Path.GetFileName(download), Is.EqualTo("thisisatest.txt"));
+            Assert.That(File.ReadAllText(download), Is.EqualTo(content));
         }
     }
 }

@@ -14,6 +14,7 @@ using Jarvis.Framework.Kernel.ProjectionEngine;
 using System.IO;
 using Jarvis.ConfigurationService.Client.Support;
 using Castle.Core.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -28,6 +29,8 @@ namespace Jarvis.DocumentStore.Host.Support
         private void Configure()
         {
             GetStorageConfiguration();
+
+            SecondaryDocumentStoreAddress = ConfigurationServiceClient.Instance.GetSetting("secondaryDocumentStoreAddress", "");
 
             var tenants = ConfigurationServiceClient.Instance.GetStructuredSetting("tenants");
             foreach (string tenant in tenants) // conversion from dynamic array
@@ -114,6 +117,20 @@ namespace Jarvis.DocumentStore.Host.Support
             EnableSnapshotCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-snapshot-cache", "true"), StringComparison.OrdinalIgnoreCase);
             EnableSingleAggregateRepositoryCache = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("enable-single-aggregate-repository-cache", "true"), StringComparison.OrdinalIgnoreCase);
             DisableRepositoryLockOnAggregateId = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("disable-lock-on-aggregate-id", "false"), StringComparison.OrdinalIgnoreCase);
+
+            GetOnlyIpArray = GetListOfAllowedIp("security.getOnlyIpArray");
+            ExtraAllowedIpArray = GetListOfAllowedIp("security.getOnlyIpArray");
+        }
+
+        private String[] GetListOfAllowedIp(String settingString)
+        {
+            var list = ConfigurationServiceClient.Instance
+                .GetArraySetting(settingString);
+            return list
+                .OfType<JValue>()
+                .Select(j => j.Value<String>()?.Trim(' ', '\r', '\n', '\t'))
+                .Where(s => !String.IsNullOrEmpty(s))
+                .ToArray();
         }
 
         private void GetStorageConfiguration()

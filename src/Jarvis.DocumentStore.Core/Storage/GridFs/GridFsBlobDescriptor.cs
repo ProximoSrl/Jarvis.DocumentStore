@@ -41,5 +41,11 @@ namespace Jarvis.DocumentStore.Core.Storage.GridFs
         {
             get { return _mongoGridFsFileInfo.Length; }
         }
+
+        /// <summary>
+        /// When we are in Gridfs we assume that the content is there (noone should 
+        /// have be tampered with database content).
+        /// </summary>
+        public bool Exists => true;
     }
 }

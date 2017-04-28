@@ -42,8 +42,8 @@ namespace Jarvis.DocumentStore.Host.Support
                     //we can simply use the connectionstring
                     SetFileSystemBaseDirectory("originals");
                     SetFileSystemBaseDirectory("artifacts");
-                    SetConnectionString("originals", "fsdescriptors");
-                    Set("fsdescriptor.db", GetDatabase("originals.fsdescriptors"));
+                    SetConnectionString("descriptors");
+                    Set("fsdescriptor.db", GetDatabase("descriptors"));
                     break;
             }
         }
@@ -53,22 +53,6 @@ namespace Jarvis.DocumentStore.Host.Support
             Set(
                 "connectionstring." + name,
                 ConfigurationServiceClient.Instance.GetSetting($"connectionStrings.{TenantId}.{name}")
-            );
-        }
-
-        /// <summary>
-        /// This method allows to choose a connection (original, artifacts, etc) but change name of the database putting a suffix.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="newDbName"></param>
-        private void SetConnectionString(string name, string suffix)
-        {
-            var connection = new MongoUrlBuilder(
-                ConfigurationServiceClient.Instance.GetSetting($"connectionStrings.{TenantId}.{name}"));
-            connection.DatabaseName += "-" + suffix;
-            Set(
-                "connectionstring." + name + "." + suffix,
-                connection.ToString()
             );
         }
 

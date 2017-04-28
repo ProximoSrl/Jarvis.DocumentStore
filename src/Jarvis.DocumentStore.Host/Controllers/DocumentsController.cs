@@ -209,7 +209,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpGet]
         public HttpResponseMessage CopyDocument(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId,  //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle originalHandle,
             DocumentHandle copiedHandle)
@@ -346,7 +348,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpDelete]
         public HttpResponseMessage DeleteFormatFromDocument(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle handle,
             DocumentFormat format)
@@ -436,7 +440,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpGet]
         public HttpResponseMessage GetCustomData(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId,  //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle handle)
         {
@@ -453,7 +459,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpGet]
         public HttpResponseMessage GetFileName(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle handle)
         {
@@ -588,9 +596,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 var newRootAttachmentPath = rootAttachmentPath + "/" + document.FileName;
 
                 //we need to further scan attachment.
-                if (actualDeepLevel < maxLevel &&
-                    descriptor.Attachments != null &&
-                    descriptor.Attachments.Count > 0)
+                if (actualDeepLevel < maxLevel
+                    && descriptor.Attachments != null
+                    && descriptor.Attachments.Count > 0)
                 {
                     ScanAttachments(tenantId, descriptor.Attachments, fat, newRootAttachmentPath, actualDeepLevel + 1, maxLevel);
                 }
@@ -602,7 +610,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpHead]
         public HttpResponseMessage GetFormat(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle handle,
             DocumentFormat format,
@@ -618,7 +628,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
                 if (deleted.Count == 0)
                 {
-                    return DocumentNotFound(handle);
+                    return GetFromSecondary(tenantId, handle, format);
                 }
 
                 return DocumentDeleted(handle, deleted);
@@ -628,7 +638,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
             if (document == null)
             {
-                return DocumentNotFound(handle);
+                return GetFromSecondary( tenantId, handle, format);
             }
 
             var fileName = fname != null ? new FileNameWithExtension(fname) : null;
@@ -667,7 +677,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpGet]
         public HttpResponseMessage GetBlobForJob(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             String queueName,
             String jobId
@@ -696,7 +708,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [HttpGet]
         public HttpResponseMessage GetFormatsForJob(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             String queueName,
             String jobId)
@@ -720,6 +734,23 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, readModel.Formats.Keys.ToArray());
+        }
+
+        private HttpResponseMessage GetFromSecondary(String tenantId, DocumentHandle handle, DocumentFormat documentFormat)
+        {
+            if (_configService.SecondaryAddressConfigured)
+            {
+                var secondaryUrl = $"{_configService.SecondaryDocumentStoreAddress}/{tenantId}/documents/{handle}/{documentFormat}";
+
+                var response = Request.CreateResponse(HttpStatusCode.Moved);
+                response.Headers.Location = new Uri(secondaryUrl);
+                return response;
+            }
+
+            return Request.CreateErrorResponse(
+                HttpStatusCode.NotFound,
+                string.Format("Document {0} not found", handle)
+                );
         }
 
         private HttpResponseMessage DocumentNotFound(DocumentHandle handle)
@@ -832,7 +863,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
         [Route("{tenantId}/documents/{handle}")]
         public HttpResponseMessage DeleteFile(
 #pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
             TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle handle)
         {
