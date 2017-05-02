@@ -50,7 +50,7 @@ namespace Jarvis.DocumentStore.Tests.Storage
 
                 _sut = new GridFsBlobStore
                 (
-                    MongoDbTestConnectionProvider.OriginalsDbLegacy,
+                    MongoDbTestConnectionProvider.OriginalsDb,
                     new CounterService(MongoDbTestConnectionProvider.SystemDb)
                 )
                 {

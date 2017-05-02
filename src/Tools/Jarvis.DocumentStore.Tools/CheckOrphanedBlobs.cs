@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Jarvis.Framework.Shared.Helpers;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using System;
@@ -21,17 +22,18 @@ namespace Jarvis.DocumentStore.Tools
         /// this parameter avoid to delete format newer than this value</param>
         internal static void PerformCheck(DateTime dateLimit)
         {
+            throw new Exception("Need to check this job again after all modification to base store, migration to new gridfs.");
             Console.WriteLine("Check all queued tika job that have no original in document descriptor");
 
             _dateLimit = dateLimit;
             var urlReadModel = new MongoUrl(ConfigurationManager.AppSettings["mainDb"]);
             var clientReadModel = new MongoClient(urlReadModel);
 
-            var dbReadModel = clientReadModel.GetServer().GetDatabase(urlReadModel.DatabaseName);
-            MongoCollection<BsonDocument> _descriptorCollection = dbReadModel.GetCollection("rm.DocumentDescriptor");
+            var dbReadModel = clientReadModel.GetDatabase(urlReadModel.DatabaseName);
+            IMongoCollection<BsonDocument> _descriptorCollection = dbReadModel.GetCollection<BsonDocument>("rm.DocumentDescriptor");
 
             var allBlobs = _descriptorCollection.FindAll()
-                .SetFields("Formats.v.BlobId");
+                .ToEnumerable();
 
             HashSet<String> allValidBlobs = new HashSet<string>();
 
@@ -76,15 +78,15 @@ namespace Jarvis.DocumentStore.Tools
                     var uri = new MongoUrl(ConfigurationManager.AppSettings[connectionString]);
                     var client = new MongoClient(uri);
 
-                    var database = client.GetServer().GetDatabase(uri.DatabaseName);
-                    var settings = new MongoGridFSSettings()
+                    var database = client.GetDatabase(uri.DatabaseName);
+                    var settings = new GridFSBucketOptions()
                     {
-                        Root = format
+                        BucketName = format
                     };
-                    var gridfs = database.GetGridFS(settings);
+                    var gridfs = new GridFSBucket<String>(database, settings);
                     foreach (var blobToDelete in blobsToDelete)
                     {
-                        gridfs.DeleteById(blobToDelete);
+                        gridfs.Delete(blobToDelete);
                         Console.WriteLine("Deleted {0} in database {1}", blobToDelete, ConfigurationManager.AppSettings[connectionString]);
                     }
                 }
@@ -107,10 +109,10 @@ namespace Jarvis.DocumentStore.Tools
             var uri = new MongoUrl(ConfigurationManager.AppSettings[connectionString]);
             var client = new MongoClient(uri);
 
-            var database = client.GetServer().GetDatabase(uri.DatabaseName);
-            MongoCollection<BsonDocument> blobStoreCollection = database.GetCollection(type + ".files");
+            var database = client.GetDatabase(uri.DatabaseName);
+            IMongoCollection<BsonDocument> blobStoreCollection = database.GetCollection<BsonDocument>(type + ".files");
 
-            var allOriginals = blobStoreCollection.FindAll();
+            var allOriginals = blobStoreCollection.FindAll().ToEnumerable();
             HashSet<String> blobToDelete = new HashSet<string>();
 
             foreach (var blob in allOriginals)

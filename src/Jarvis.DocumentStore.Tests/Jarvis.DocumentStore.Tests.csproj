@@ -208,9 +208,6 @@
     <Reference Include="MongoDB.Driver.Core, Version=2.4.0.70, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MongoDB.Driver.Core.2.4.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver.Legacy, Version=2.4.0.70, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\mongocsharpdriver.2.4.0\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
-    </Reference>
     <Reference Include="MsgReader, Version=1.9.14.0, Culture=neutral, PublicKeyToken=47f99f3a9a2648df, processorArchitecture=MSIL">
       <HintPath>..\packages\MSGReader.1.9.14\lib\MsgReader.dll</HintPath>
       <Private>True</Private>

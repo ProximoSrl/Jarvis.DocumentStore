@@ -4,9 +4,9 @@
 	"disable-lock-on-aggregate-id" : false,
 	"baseConnectionString" : "mongodb://localhost/ds",
 	"nes-engine-version" : "v3",
-	"tenants": ["docs", "demo"],
+	"tenants": ["docs", "tickes"],
 	"storage" : {
-		"type" : "FileSystem", //"type" : "GridFs"
+		"type" : "GridFs", //"type" : "FileSystem"
 		"fileSystem" : {
 			"username" : "domain\username",
 			"password" : "the password",
@@ -26,7 +26,7 @@
             "events": "%baseConnectionString%-docs",
             "readmodel": "%baseConnectionString%-docs"
         },
-        "demo": {
+        "tickes": {
             "originals": "%baseConnectionString%-demo-ori-fs",
             "artifacts": "%baseConnectionString%-demo-art-fs",
             "system": "%baseConnectionString%-demo",

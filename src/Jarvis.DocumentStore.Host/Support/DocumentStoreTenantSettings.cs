@@ -35,8 +35,8 @@ namespace Jarvis.DocumentStore.Host.Support
             switch (_config.StorageType)
             {
                 case StorageType.GridFs:
-                    Set("originals.db.legacy", GetLegacyDatabase("originals"));
-                    Set("artifacts.db.legacy", GetLegacyDatabase("artifacts"));
+                    Set("originals.db", GetDatabase("originals"));
+                    Set("artifacts.db", GetDatabase("artifacts"));
                     break;
                 case StorageType.FileSystem:
                     //we can simply use the connectionstring
@@ -72,13 +72,6 @@ namespace Jarvis.DocumentStore.Host.Support
                 }
             }
             Set("storage.fs." + name, storageValue);
-        }
-
-        private MongoDatabase GetLegacyDatabase(string connectionStringName)
-        {
-            MongoUrl url = new MongoUrl(this.GetConnectionString(connectionStringName));
-            MongoClient client = new MongoClient(url);
-            return client.GetServer().GetDatabase(url.DatabaseName);
         }
     }
 }

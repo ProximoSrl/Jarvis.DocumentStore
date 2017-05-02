@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Jarvis.DocumentStore.Core.Domain.Document.Events;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
@@ -11,9 +10,7 @@ using Jarvis.Framework.Shared.ReadModel;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
-using Jarvis.DocumentStore.Core.Jobs;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
-using MongoDB.Driver.Builders;
 using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Core.EventHandlers

@@ -11,7 +11,6 @@ namespace Jarvis.DocumentStore.Tests.Support
         static MongoDbTestConnectionProvider()
         {
             OriginalsDb = Connect("tests.originals");
-            OriginalsDbLegacy = ConnectLegacy("tests.originals");
             ArtifactsDb = Connect("tests.artifacts");
             SystemDb = Connect("tests.system");
             EventsDb = Connect("tests.events");
@@ -26,30 +25,14 @@ namespace Jarvis.DocumentStore.Tests.Support
             {
                 throw new Exception(string.Format("Connection string {0} not found", connectionStringName));
             }
-            
+
             var url = new MongoUrl(cstring.ConnectionString);
 
             var client = new MongoClient(url);
             return client.GetDatabase(url.DatabaseName);
         }
 
-        static MongoDatabase ConnectLegacy(string connectionStringName)
-        {
-            var cstring = ConfigurationManager.ConnectionStrings[connectionStringName];
-            if (cstring == null)
-            {
-                throw new Exception(string.Format("Connection string {0} not found", connectionStringName));
-            }
-
-            var url = new MongoUrl(cstring.ConnectionString);
-
-            var client = new MongoClient(url);
-            return client.GetServer().GetDatabase(url.DatabaseName);
-        }
-
         public static IMongoDatabase OriginalsDb { get; private set; }
-
-        public static MongoDatabase OriginalsDbLegacy { get; private set; }
 
         public static IMongoDatabase ArtifactsDb { get; private set; }
         public static IMongoDatabase SystemDb { get; private set; }

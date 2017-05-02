@@ -7,22 +7,24 @@ namespace Jarvis.DocumentStore.Core.Storage.GridFs
 {
     public class GridFsBlobDescriptor : IBlobDescriptor
     {
-        readonly MongoGridFSFileInfo _mongoGridFsFileInfo;
+        private readonly GridFSFileInfo<String> _mongoGridFsFileInfo;
+        private readonly GridFSBucket<String> _bucket;
 
-        public GridFsBlobDescriptor(BlobId blobId, MongoGridFSFileInfo mongoGridFsFileInfo)
+        public GridFsBlobDescriptor(BlobId blobId, GridFSFileInfo<String> mongoGridFsFileInfo, GridFSBucket<String> bucket)
         {
             if (mongoGridFsFileInfo == null) throw new ArgumentNullException("mongoGridFsFileInfo");
             _mongoGridFsFileInfo = mongoGridFsFileInfo;
             BlobId = blobId;
 
-            FileNameWithExtension = new FileNameWithExtension(_mongoGridFsFileInfo.Name);
+            FileNameWithExtension = new FileNameWithExtension(_mongoGridFsFileInfo.Filename);
+            _bucket = bucket;
         }
 
         public BlobId BlobId { get; private set; }
 
         public Stream OpenRead()
         {
-            return _mongoGridFsFileInfo.OpenRead();
+            return _bucket.OpenDownloadStream(BlobId);
         }
 
         public FileNameWithExtension FileNameWithExtension { get; private set; }
