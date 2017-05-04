@@ -811,17 +811,20 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var retValue = new List<DocumentInfo>();
             foreach (var d in descriptors.ToEnumerable())
             {
-                var documentHandle = d.Documents.FirstOrDefault(dd => dd.ToString().Contains(handleString));
-                var di = new DocumentInfo()
+                var documentHandles = d.Documents.Where(dd => dd.ToString().Contains(handleString));
+                foreach (var documentHandle in documentHandles)
                 {
-                    DocumentHandle = documentHandle,
-                    Formats = d.Formats.Select(f => new DocumentFormatInfo()
+                    var di = new DocumentInfo()
                     {
-                        FormatType = f.Key,
-                        FormatUrl = Url.Content("/" + tenantId + "/documents/" + documentHandle + "/" + f.Key)
-                    }).ToList()
-                };
-                retValue.Add(di);
+                        DocumentHandle = documentHandle,
+                        Formats = d.Formats.Select(f => new DocumentFormatInfo()
+                        {
+                            FormatType = f.Key,
+                            FormatUrl = Url.Content("/" + tenantId + "/documents/" + documentHandle + "/" + f.Key)
+                        }).ToList()
+                    };
+                    retValue.Add(di);
+                }
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, retValue);
