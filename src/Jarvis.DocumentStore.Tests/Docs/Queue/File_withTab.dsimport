@@ -1,0 +1,12 @@
+﻿{
+	"TaskId": "c9930688-5dcb-4851-934b-d549eb16fc88",
+	"uri": "file:///%CURRENT_DIR%/A%20Word%20Document.docx",
+	"fileName": "A Word Document\\twith tabs.docx",
+	"handle": "word",
+	"format": "original",
+	"tenant": "tests",
+	"deleteAfterImport" :  false,
+	"customData": { 
+		"expire-on" :  "2050-01-01"
+	}
+}

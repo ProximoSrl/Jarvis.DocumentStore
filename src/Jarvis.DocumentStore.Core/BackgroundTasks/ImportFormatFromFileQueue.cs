@@ -31,17 +31,32 @@ using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
 
 using System.IO;
 using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
     internal class DocumentImportTask
     {
+        private String _fileName;
+
         /* input */
         public Uri Uri { get; private set; }
         public DocumentHandle Handle { get; private set; }
         public DocumentFormat Format { get; private set; }
         public TenantId Tenant { get; private set; }
-        public String FileName { get; private set; }
+
+        public String FileName
+        {
+            get { return _fileName; }
+            private set {
+                _fileName = value;
+                if (!String.IsNullOrEmpty(_fileName))
+                {
+                    _fileName = _fileName.ToSafeFileName('_');
+                }
+            }
+        }
+
         public DocumentCustomData CustomData { get; private set; }
         public bool DeleteAfterImport { get; private set; }
 
