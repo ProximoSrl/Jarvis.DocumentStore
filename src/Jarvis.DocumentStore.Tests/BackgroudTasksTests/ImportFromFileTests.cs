@@ -26,12 +26,12 @@ using Jarvis.Framework.Shared.Helpers;
 
 namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
 {
-    [TestFixture]
+    [TestFixture("Queue\\File_1.dsimport")]
+    [TestFixture("Queue\\File_withTab.dsimport")]
     public class ImportFromFileTests
     {
         private ImportFormatFromFileQueue _queue;
         private string _pathToTask;
-        private string _fileToImport;
         private readonly TenantId _testTenant = new TenantId("tests");
         private IBlobStore _blobstore;
         private readonly DocumentFormat _originalFormat = new DocumentFormat("original");
@@ -39,17 +39,24 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
         private readonly Uri _fileUri = new Uri(Path.Combine(TestConfig.QueueFolder, "A word document.docx"));
         private ICommandBus _commandBus;
         private BlobId _blobId;
+        private readonly String _importFileName;
+
+        public ImportFromFileTests(String importFileName)
+        {
+            _importFileName = importFileName;
+        }
 
         [SetUp]
         public void SetUp()
         {
             _blobId = new BlobId(_originalFormat, 1);
-            _pathToTask = Path.Combine(TestConfig.QueueFolder, "File_1.dsimport");
-            _fileToImport = Path.Combine(TestConfig.QueueFolder, "A Word Document.docx");
+            var fileName = Path.GetFileName(_importFileName);
+            _pathToTask = Path.Combine(TestConfig.QueueFolder, fileName);
+            var fileToImport = Path.Combine(TestConfig.QueueFolder, "A Word Document.docx");
             ClearQueueTempFolder();
             Directory.CreateDirectory(TestConfig.QueueFolder);
-            File.Copy(Path.Combine(TestConfig.DocumentsFolder, "Queue\\File_1.dsimport"), _pathToTask);
-            File.Copy(TestConfig.PathToWordDocument, _fileToImport);
+            File.Copy(Path.Combine(TestConfig.DocumentsFolder, _importFileName), _pathToTask);
+            File.Copy(TestConfig.PathToWordDocument, fileToImport);
             var accessor = Substitute.For<ITenantAccessor>();
             var tenant = Substitute.For<ITenant>();
             tenant.Id.Returns(new TenantId("tests"));
@@ -161,6 +168,7 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
         [Test]
         public void poll()
         {
+            var descriptor = _queue.LoadTask(_pathToTask);
             InitializeDocumentDescriptor command = null;
             _commandBus.When(c => c.Send(Arg.Any<InitializeDocumentDescriptor>(), Arg.Any<string>()))
                .Do(callInfo => command = (InitializeDocumentDescriptor)callInfo.Args()[0]);
@@ -168,8 +176,10 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
             _queue.PollFileSystem();
                
             // asserts
-            _blobstore.Received().Upload(Arg.Is(_originalFormat), Arg.Any<FileNameWithExtension>(), Arg.Any<Stream>());
-            
+            _blobstore.Received().Upload(Arg.Is(_originalFormat), Arg.Is<FileNameWithExtension>(f => f.ToString() == descriptor.FileName), Arg.Any<Stream>());
+
+            var calls = _blobstore.ReceivedCalls();
+
             Assert.NotNull(command);
             Assert.AreEqual(_blobId, command.BlobId);
             Assert.NotNull(command.HandleInfo);

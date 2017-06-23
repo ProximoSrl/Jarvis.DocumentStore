@@ -408,6 +408,7 @@
     </None>
     <None Include="Docs\Powerpoint show.ppsx" />
     <None Include="Docs\Queue\File_1.dsimport" />
+    <None Include="Docs\Queue\File_withTab.dsimport" />
     <None Include="Docs\RTF Document.rtf" />
     <None Include="Docs\file.invalid" />
     <None Include="Docs\A Powerpoint Document.pptx" />
