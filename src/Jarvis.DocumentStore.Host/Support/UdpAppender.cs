@@ -9,7 +9,7 @@ using log4net.Layout;
 using log4net;
 using log4net.Repository.Hierarchy;
 
-namespace Jarvis.DocumentStore.Shared.Helpers
+namespace Jarvis.DocumentStore.Host.Support
 {
     /// <summary>
     /// Sends logging events as connectionless UDP datagrams to a remote host or a 
@@ -547,11 +547,11 @@ namespace Jarvis.DocumentStore.Shared.Helpers
 
         /// <summary>
         /// <param name="RemoteAddress" value="127.0.0.1" />
-		//<param name = "RemotePort" value="8080" />
-		//<layout type = "log4net.Layout.XmlLayout" >
+        //<param name = "RemotePort" value="8080" />
+        //<layout type = "log4net.Layout.XmlLayout" >
 
-  //          < param name="Prefix" value="" />
-		//</layout>
+        //          < param name="Prefix" value="" />
+        //</layout>
         /// </summary>
         public static void AppendToConfiguration()
         {
