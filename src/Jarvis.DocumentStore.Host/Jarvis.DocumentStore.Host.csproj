@@ -229,6 +229,7 @@
     <Compile Include="Support\RemoteDocumentStoreConfiguration.cs" />
     <Compile Include="Support\JsonContentNegotiator.cs" />
     <Compile Include="Support\TenantContextHandler.cs" />
+    <Compile Include="Support\UdpAppender.cs" />
     <Compile Include="Support\WindsorContainerUtils.cs" />
     <Compile Include="Support\WindsorDependencyScope.cs" />
     <Compile Include="Support\WindsorResolver.cs" />
