@@ -260,7 +260,6 @@ namespace Jarvis.DocumentStore.Host.Support
             _container.AddFacility<JarvisTypedFactoryFacility>();
 
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
-
         }
 
         TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)
