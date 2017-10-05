@@ -78,48 +78,52 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             TenantId tenantId,
             Boolean forceReSchedule = false)
         {
-            if (_info.ShouldCreateJob(streamElement))
-            {
-                if (!forceReSchedule)
-                {
-                    //look for already existing job with the same blobid, there is no need to re-queue again
-                    //because if a job with the same blobid was already fired for this queue there is no need
-                    //to re-issue
-                    var existing = _collection.Find(
-                        Builders<QueuedJob>.Filter.And(
-                            Builders<QueuedJob>.Filter.Eq(j => j.BlobId, streamElement.FormatInfo.BlobId),
-                            Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
-                        )
-                    ).Count() > 0;
-                    if (existing) return;
-                }
-                if (Logger.IsDebugEnabled) Logger.DebugFormat("Create queue for readmodel stream id {0} and queue {1}", streamElement.Id, _info.Name);
-                QueuedJob job = new QueuedJob();
-                var id = new QueuedJobId(Guid.NewGuid().ToString());
-                job.Id = id;
-                job.SchedulingTimestamp = DateTime.Now;
-                job.StreamId = streamElement.Id;
-                job.TenantId = tenantId;
-                job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
-                job.BlobId = streamElement.FormatInfo.BlobId;
-                job.Handle = new DocumentHandle(streamElement.Handle);
-                job.Parameters = new Dictionary<string, string>();
-                job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
-                job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
-                job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
-                job.Parameters.Add(JobKeys.TenantId, tenantId);
-                job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
-                job.HandleCustomData = streamElement.DocumentCustomData;
-                if (_info.Parameters != null)
-                {
-                    foreach (var parameter in _info.Parameters)
-                    {
-                        job.Parameters.Add(parameter.Key, parameter.Value);
-                    }
-                }
+			if (_info.ShouldCreateJob(streamElement))
+			{
+				if (!forceReSchedule)
+				{
+					//look for already existing job with the same blobid, there is no need to re-queue again
+					//because if a job with the same blobid was already fired for this queue there is no need
+					//to re-issue
+					var existing = _collection.Find(
+						Builders<QueuedJob>.Filter.And(
+							Builders<QueuedJob>.Filter.Eq(j => j.BlobId, streamElement.FormatInfo.BlobId),
+							Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
+						)
+					).Count() > 0;
+					if (existing) return;
+				}
+				if (Logger.IsInfoEnabled) Logger.Info($"Queue {_info.Name} CREATE JOB to process {streamElement.Describe()}");
+				QueuedJob job = new QueuedJob();
+				var id = new QueuedJobId(Guid.NewGuid().ToString());
+				job.Id = id;
+				job.SchedulingTimestamp = DateTime.Now;
+				job.StreamId = streamElement.Id;
+				job.TenantId = tenantId;
+				job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
+				job.BlobId = streamElement.FormatInfo.BlobId;
+				job.Handle = new DocumentHandle(streamElement.Handle);
+				job.Parameters = new Dictionary<string, string>();
+				job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
+				job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
+				job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
+				job.Parameters.Add(JobKeys.TenantId, tenantId);
+				job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
+				job.HandleCustomData = streamElement.DocumentCustomData;
+				if (_info.Parameters != null)
+				{
+					foreach (var parameter in _info.Parameters)
+					{
+						job.Parameters.Add(parameter.Key, parameter.Value);
+					}
+				}
 
-                _collection.InsertOne(job);
-            }
+				_collection.InsertOne(job);
+			}
+			else
+			{
+				if (Logger.IsDebugEnabled) Logger.Debug($"Queue {_info.Name} do not need to process {streamElement.Describe()}");
+			}
         }
 
         /// <summary>

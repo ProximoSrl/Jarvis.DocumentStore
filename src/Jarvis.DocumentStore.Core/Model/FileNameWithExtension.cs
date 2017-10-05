@@ -85,7 +85,5 @@ namespace Jarvis.DocumentStore.Core.Model
         {
             return new FileNameWithExtension(this.FileName, this.Extension);
         }
-
-
     }
 }

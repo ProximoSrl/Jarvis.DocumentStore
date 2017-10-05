@@ -6,38 +6,37 @@ using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.Email
 {
-    public class AnalyzeEmailOutOfProcessJob : AbstractOutOfProcessPollerJob
-    {
-        public AnalyzeEmailOutOfProcessJob()
-        {
-            base.PipelineId = "email";
-            base.QueueName = "email";
-        }
+	public class AnalyzeEmailOutOfProcessJob : AbstractOutOfProcessPollerJob
+	{
+		public AnalyzeEmailOutOfProcessJob()
+		{
+			base.PipelineId = "email";
+			base.QueueName = "email";
+		}
 
+		protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
+		{
+			var task = new MailMessageToHtmlConverterTask()
+			{
+				Logger = Logger
+			};
 
-        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
-        {
-            var task = new MailMessageToHtmlConverterTask()
-            {
-                Logger = Logger
-            };
+			string localFile = await DownloadBlob(
+				parameters.TenantId,
+				parameters.JobId,
+				parameters.FileName,
+				workingFolder).ConfigureAwait(false);
 
-            string localFile = await DownloadBlob(
-                parameters.TenantId, 
-                parameters.JobId, 
-                parameters.FileName,
-                workingFolder);
+			var zipFile = task.Convert(parameters.JobId, localFile, workingFolder);
 
-            var zipFile = task.Convert(parameters.JobId, localFile, workingFolder);
+			await AddFormatToDocumentFromFile(
+			  parameters.TenantId,
+			  parameters.JobId,
+			  new DocumentFormat(DocumentFormats.Email),
+			  zipFile,
+			  new Dictionary<string, object>()).ConfigureAwait(false);
 
-            await AddFormatToDocumentFromFile(
-              parameters.TenantId,
-              parameters.JobId,
-              new DocumentFormat(DocumentFormats.Email),
-              zipFile,
-              new Dictionary<string, object>());
-            
-            return ProcessResult.Ok;
-        }
-    }
+			return ProcessResult.Ok;
+		}
+	}
 }

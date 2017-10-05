@@ -25,13 +25,13 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         }
 
         [Test]
-        public void verify_preview_of_single_html_file()
+        public void Verify_preview_of_single_html_file()
         {
             var tempFile = Path.ChangeExtension(Path.GetTempFileName(), ".html");
             File.Copy(TestConfig.PathToSimpleHtmlFile, tempFile);
             _converter = new HtmlToPdfConverterFromDiskFileOld(tempFile, _config);
             _converter.Logger = NullLogger.Instance;
-            var result = _converter.Run("testTenant", "jobtest");
+            var result = _converter.Run("jobtest");
 
             Assert.That(File.Exists(result), "Output pdf file not created");
             File.Delete(result);

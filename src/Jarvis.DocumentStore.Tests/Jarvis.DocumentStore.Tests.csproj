@@ -344,6 +344,7 @@
     <Compile Include="DomainSpecs\SerializationIdTests.cs" />
     <Compile Include="GlobalSetupFixture.cs" />
     <Compile Include="JobsHostTest\Support\ClientPasswordSetTests.cs" />
+    <Compile Include="JobTests\Email\EmailConverterTests.cs" />
     <Compile Include="JobTests\Queue\QueueHandlerTests.cs" />
     <Compile Include="DomainSpecs\ClassWithBlobId.cs" />
     <Compile Include="DomainSpecs\BlobIdJsonConverterTests.cs" />

@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
     public class QueueInfoTests
     {
         [Test]
-        public void verify_basic_deserialization_of_empty_queue()
+        public void Verify_basic_deserialization_of_empty_queue()
         {
             dynamic test = JsonConvert.DeserializeObject(@"[]");
             List<QueueInfo> listOfQueue = new List<QueueInfo>();
@@ -26,7 +26,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_basic_deserialization_with_only_name()
+        public void Verify_basic_deserialization_with_only_name()
         {
             dynamic test = JsonConvert.DeserializeObject(@"[{'name' : 'tika'}]");
             List<QueueInfo> listOfQueue = new List<QueueInfo>();
@@ -37,7 +37,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 
         [TestCase("html|test|xlsx", "test.html", true)]
         [TestCase("htm|test|xlsx", "test.html", false)]
-        public void verify_should_create_job_extension(String extensions, String fileName, Boolean expected)
+		[TestCase("html|test|xlsx", "test...html", true)]
+		public void Verify_should_create_job_extension(String extensions, String fileName, Boolean expected)
         {
             QueueInfo sut = new QueueInfo("TEST", extensions : extensions);
             StreamReadModel sr = new StreamReadModel();
@@ -47,7 +48,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 
         [TestCase("application/zip|message/rfc822|application/vnd.ms-outlook", "test.zip", true)]
         [TestCase("application/zip", "test.html", false)]
-        public void verify_should_create_job_mimetypes(String mimetypes, String fileName, Boolean expected)
+        public void Verify_should_create_job_mimetypes(String mimetypes, String fileName, Boolean expected)
         {
             QueueInfo sut = new QueueInfo("TEST", mimeTypes : mimetypes);
             StreamReadModel sr = new StreamReadModel();
@@ -58,7 +59,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         [TestCase("application/zip", "xlsx|html", "test.zip", true)]
         [TestCase("application/zip", "xlsx|html", "test.xlsx", true)]
         [TestCase("application/zip", "xlsx|html", "test.doc", false)]
-        public void verify_should_create_job_mime_extension(String mimetypes, String extensions, String fileName, Boolean expected)
+        public void Verify_should_create_job_mime_extension(String mimetypes, String extensions, String fileName, Boolean expected)
         {
             QueueInfo sut = new QueueInfo("TEST", extensions : extensions, mimeTypes: mimetypes);
             StreamReadModel sr = new StreamReadModel();
@@ -67,7 +68,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [TestCase("", "", "", "test.txt")]
-        public void queue_with_only_manual_execution(
+        public void Queue_with_only_manual_execution(
             String mimetypes, 
             String extensions,
             String pipeline, 
@@ -83,7 +84,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_basic_deserialization_with_all_properties()
+        public void Verify_basic_deserialization_with_all_properties()
         {
             dynamic test = JsonConvert.DeserializeObject(@"[{
 			    //resize image pipeline accepts every format of extension pdf
@@ -112,7 +113,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_job_pollers_deserialization()
+        public void Verify_job_pollers_deserialization()
         {
             dynamic test = JsonConvert.DeserializeObject(@"[{
 			    //resize image pipeline accepts every format of extension pdf
@@ -139,7 +140,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_job_pollers_deserialization_parameters()
+        public void Verify_job_pollers_deserialization_parameters()
         {
             dynamic test = JsonConvert.DeserializeObject(@"[{
 			    //resize image pipeline accepts every format of extension pdf

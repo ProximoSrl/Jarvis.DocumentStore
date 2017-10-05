@@ -41,7 +41,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                 Logger = Logger
             };
 
-            var pdfConvertedFileName = converter.Run(parameters.TenantId, parameters.JobId);
+            var pdfConvertedFileName = converter.Run(parameters.JobId);
             await AddFormatToDocumentFromFile(
                 parameters.TenantId,
                 parameters.JobId,
