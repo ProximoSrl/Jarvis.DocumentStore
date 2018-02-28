@@ -15,13 +15,7 @@ namespace Jarvis.DocumentStore.Jobs.Email
 	/// </summary>
 	public class MailMessageToHtmlConverterTask
 	{
-		ILogger _logger = NullLogger.Instance;
-
-		public ILogger Logger
-		{
-			get { return _logger; }
-			set { _logger = value; }
-		}
+		public ILogger Logger { get; set; }
 
 		public string Convert(String jobId, string pathToEml, string workingFolder)
 		{
@@ -47,16 +41,16 @@ namespace Jarvis.DocumentStore.Jobs.Email
 				}
 				Logger.DebugFormat("Total files {0}", files.Length);
 			}
-			var htmlFileName = files.FirstOrDefault(x => x.ToLowerInvariant().EndsWith(".htm")) ??
-				files.FirstOrDefault(x => x.ToLowerInvariant().EndsWith(".html"));
+			var htmlFileName = files.FirstOrDefault(x => x.EndsWith(".htm", StringComparison.OrdinalIgnoreCase)) ??
+				files.FirstOrDefault(x => x.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
 			if (htmlFileName == null)
 			{
-				var textFile = files.FirstOrDefault(x => x.ToLowerInvariant().EndsWith(".txt"));
+				var textFile = files.FirstOrDefault(x => x.EndsWith(".txt", StringComparison.OrdinalIgnoreCase));
 				if (textFile != null)
 				{
 					htmlFileName = textFile + ".html";
 					var textcontent = File.ReadAllText(textFile);
-					File.WriteAllText(htmlFileName, String.Format("<html><body><pre>{0}</html></body></pre>", textcontent));
+					File.WriteAllText(htmlFileName, String.Format("<html><body><pre>{0}</pre></body></html>", textcontent));
 				}
 				else
 				{

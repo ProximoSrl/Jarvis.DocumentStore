@@ -12,6 +12,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.Framework.Shared.Helpers;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using MongoDB.Bson.Serialization;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -157,9 +158,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 foreach (var filter in customData)
                 {
-                    query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq("HandleCustomData." + filter.Key, BsonValue.Create(filter.Value)));
+                    query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq("HandleCustomData." + filter.Key, filter.Value));
                 }
             }
+
+            var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<QueuedJob>();
+            var renderedFilter = query.Render(documentSerializer, BsonSerializer.SerializerRegistry);
+            var json = renderedFilter.ToJson();
+
             var result = _collection.FindOneAndUpdate(
                 query,
                  //SortBy = SortBy<QueuedJob>.Ascending(j => j.SchedulingTimestamp),
@@ -185,7 +191,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 Logger.Error($"Request SetJobExecuted for unexisting job id {jobId} for queue {_info.Name}");
                 return false;
             }
-            SetErrorInfoToJob(job, errorMessage);
+            SetJobExecutionStatus(job, errorMessage);
             if (parametersToModify != null)
             {
                 foreach (var parameter in parametersToModify)
@@ -211,7 +217,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 Logger.Error($"Request ReQueueJob for unexisting job id {jobId} for queue {_info.Name}");
                 return false;
             }
-            SetErrorInfoToJob(job, errorMessage);
+            SetJobExecutionStatus(job, errorMessage);
             job.Status = QueuedJobExecutionStatus.ReQueued;
             job.SchedulingTimestamp = DateTime.Now.Add(timeSpan);
             if (parametersToModify != null)
@@ -295,7 +301,13 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 .Any();
         }
 
-        private void SetErrorInfoToJob(QueuedJob job, String errorMessage)
+        /// <summary>
+        /// Set job execution status.
+        /// </summary>
+        /// <param name="job"></param>
+        /// <param name="errorMessage">if this parameter is not empty or null the job result 
+        /// will be set to failed.</param>
+        private void SetJobExecutionStatus(QueuedJob job, String errorMessage)
         {
             if (!String.IsNullOrEmpty(errorMessage))
             {

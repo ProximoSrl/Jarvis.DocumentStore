@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Core", "Jarvis.DocumentStore.Core\Jarvis.DocumentStore.Core.csproj", "{A03810AE-2905-4CEE-A5D9-5E25C9A6309A}"
 EndProject
@@ -64,6 +64,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.PdfComposer", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.PdfComposer\Jarvis.DocumentStore.Jobs.PdfComposer.csproj", "{3E3BEC2F-F45E-4286-B780-3490EE4BE091}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.LiveBackup", "Tools\Jarvis.DocumentStore.LiveBackup\Jarvis.DocumentStore.LiveBackup.csproj", "{7F6BD4A4-FD02-425E-96D1-6D91729293AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.DocumentStore.Jobs.MsOffice", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.MsOffice\Jarvis.DocumentStore.Jobs.MsOffice.csproj", "{D646774E-3A15-42BB-B9CB-18B80D04B874}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -151,6 +153,10 @@ Global
 		{7F6BD4A4-FD02-425E-96D1-6D91729293AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F6BD4A4-FD02-425E-96D1-6D91729293AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F6BD4A4-FD02-425E-96D1-6D91729293AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D646774E-3A15-42BB-B9CB-18B80D04B874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D646774E-3A15-42BB-B9CB-18B80D04B874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D646774E-3A15-42BB-B9CB-18B80D04B874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D646774E-3A15-42BB-B9CB-18B80D04B874}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -171,5 +177,9 @@ Global
 		{7318FF00-B255-40A0-B80A-3FECD379D4D0} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{3E3BEC2F-F45E-4286-B780-3490EE4BE091} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{7F6BD4A4-FD02-425E-96D1-6D91729293AA} = {A00F4E0A-4A37-45E1-8927-191DF081135E}
+		{D646774E-3A15-42BB-B9CB-18B80D04B874} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {480CA723-51F6-4BCA-8AA1-0826CF75CF97}
 	EndGlobalSection
 EndGlobal

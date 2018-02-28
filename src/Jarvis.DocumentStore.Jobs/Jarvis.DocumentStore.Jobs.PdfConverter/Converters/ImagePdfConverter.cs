@@ -15,7 +15,6 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter.Converters
         private String[] supportedImageExtensions =
             new string[] { "bmp", "jpeg", "jpg", "gif", "png", "tiff", "tif" };
 
-
         public bool CanConvert(string fileName)
         {
             var extension = Path.GetExtension(fileName);

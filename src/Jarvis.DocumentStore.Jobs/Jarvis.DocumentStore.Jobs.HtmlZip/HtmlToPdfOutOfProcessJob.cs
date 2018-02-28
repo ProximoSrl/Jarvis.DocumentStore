@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
 
         protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder).ConfigureAwait(false);
             String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
             Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
             if (File.Exists(fileName)) File.Delete(fileName);
@@ -34,9 +34,9 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
             await AddFormatToDocumentFromFile(
                 parameters.TenantId,
                 parameters.JobId,
-                new  DocumentFormat(DocumentFormats.Pdf), 
-                pdfConvertedFileName, 
-                new Dictionary<string, object>());
+                new DocumentFormat(DocumentFormats.Pdf),
+                pdfConvertedFileName,
+                new Dictionary<string, object>()).ConfigureAwait(false);
             return ProcessResult.Ok;
         }
     }

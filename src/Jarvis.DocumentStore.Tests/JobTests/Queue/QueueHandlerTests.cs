@@ -115,7 +115,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var job = collection.AsQueryable().Single();
             Assert.That(job.BlobId, Is.EqualTo(new BlobId("blob.1")));
             Assert.That(job.Parameters[JobKeys.MimeType], Is.EqualTo(MimeTypes.GetMimeTypeByExtension("docx")));
-        }   
+        }
 
         [Test]
         public void verify_filtering_on_blob_format()
@@ -125,7 +125,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             StreamReadModel rm = new StreamReadModel()
             {
                 Filename = new FileNameWithExtension("test.docx"),
-                FormatInfo = new FormatInfo() 
+                FormatInfo = new FormatInfo()
                 {
                     DocumentFormat = new DocumentFormat("thumb.small"),
                     BlobId = new BlobId("blob.1"),
@@ -263,7 +263,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         {
             var info = new QueueInfo("test", "", "pdf|docx");
             QueueHandler sut = new QueueHandler(info, _db);
-            var customData = new DocumentCustomData() 
+            var customData = new DocumentCustomData()
                 {
                     {"test" , "value"},
                     {"complex" , 42},
@@ -369,7 +369,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             var bar = new TenantId("tenant_bar");
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""), tenant: foo);
             HandleStreamToCreateJob(sut, bar);
-            var nextJob = sut.GetNextJob("identity", "handle",none , null);
+            var nextJob = sut.GetNextJob("identity", "handle", none, null);
             Assert.That(nextJob, Is.Null);
             nextJob = sut.GetNextJob("identity", "handle", bar, null);
             Assert.That(nextJob.TenantId, Is.EqualTo(bar));
@@ -380,14 +380,14 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         [Test]
         public void verify_job_filter_by_custom_properties()
         {
-            QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""), 
-                customData : new Dictionary<String, Object>() 
+            QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""),
+                customData: new Dictionary<String, Object>()
                 {
                     {"foo" , 6},
                     {"bar" , "test"},
                 });
-            HandleStreamToCreateJob(sut,  
-                customData : new Dictionary<String, Object>() 
+            HandleStreamToCreateJob(sut,
+                customData: new Dictionary<String, Object>()
                 {
                     {"foo" , 42},
                     {"bar" , "the ultimate answer"},
@@ -413,8 +413,8 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
         private static Int32 lastBlobId = 1;
         private static void HandleStreamToCreateJob(
-            QueueHandler sut, 
-            String tenant = "test", 
+            QueueHandler sut,
+            String tenant = "test",
             Dictionary<String, Object> customData = null)
         {
             StreamReadModel rm = new StreamReadModel()
@@ -427,7 +427,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                     DocumentFormat = new DocumentFormat("tika"),
                     BlobId = new BlobId("tika." + lastBlobId++)
                 },
-                DocumentCustomData = new DocumentCustomData(customData ?? new Dictionary<String,Object>()),
+                DocumentCustomData = new DocumentCustomData(customData ?? new Dictionary<String, Object>()),
             };
             sut.Handle(rm, new TenantId(tenant));
         }

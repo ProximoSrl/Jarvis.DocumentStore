@@ -349,8 +349,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 var jobs = ExecuteWithQueueHandler("get job for handle", queueName, h => h.GetJobsForHandle(tenantId, handle));
                 retValue.AddRange(jobs.Select(j => new QueuedJobInfo(
-                    j.Id, 
-                    queueName, 
+                    j.Id,
+                    queueName,
                     j.Status == QueuedJobExecutionStatus.Succeeded || j.Status == QueuedJobExecutionStatus.Failed,
                     j.Status == QueuedJobExecutionStatus.Succeeded)));
             }

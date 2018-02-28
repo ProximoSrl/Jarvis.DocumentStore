@@ -37,7 +37,6 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter.Converters
                 paragraph.Format.Font.Size = 12;
                 paragraph.AddFormattedText(text);
 
-
                 PdfDocumentRenderer pdfRenderer = new PdfDocumentRenderer(unicode, embedding);
                 pdfRenderer.Document = document;
                 pdfRenderer.RenderDocument();
