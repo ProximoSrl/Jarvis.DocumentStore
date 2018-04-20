@@ -96,9 +96,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 				}
 				if (Logger.IsInfoEnabled) Logger.Info($"Queue {_info.Name} CREATE JOB to process {streamElement.Describe()}");
 				QueuedJob job = new QueuedJob();
-				var id = new QueuedJobId(Guid.NewGuid().ToString());
-				job.Id = id;
-				job.SchedulingTimestamp = DateTime.Now;
+				job.Id = new QueuedJobId(Guid.NewGuid().ToString());
+                job.SchedulingTimestamp = DateTime.Now;
 				job.StreamId = streamElement.Id;
 				job.TenantId = tenantId;
 				job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
@@ -110,7 +109,12 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 				job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
 				job.Parameters.Add(JobKeys.TenantId, tenantId);
 				job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
-				job.HandleCustomData = streamElement.DocumentCustomData;
+                job.Parameters.Add(JobKeys.PipelineId, streamElement.FormatInfo?.PipelineId);
+                if (forceReSchedule)
+                {
+                    job.Parameters.Add(JobKeys.Force, "true");
+                }
+                job.HandleCustomData = streamElement.DocumentCustomData;
 				if (_info.Parameters != null)
 				{
 					foreach (var parameter in _info.Parameters)

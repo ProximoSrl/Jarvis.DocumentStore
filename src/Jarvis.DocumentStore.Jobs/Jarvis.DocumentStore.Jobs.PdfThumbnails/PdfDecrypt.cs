@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Castle.Core.Logging;
 using iTextSharp.text.pdf;
 using Fasterflect;
-using System.IO;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class PdfDecrypt
@@ -45,9 +43,6 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
                 }
             }
             return false;
-
         }
-
     }
-
 }

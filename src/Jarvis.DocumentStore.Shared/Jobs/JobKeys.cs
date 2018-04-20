@@ -18,5 +18,7 @@ namespace Jarvis.DocumentStore.Shared.Jobs
         public const string PipelineId = "pipeline_id";
         public const string Command = "cmd";
         public const string Format = "format";
+
+        public const string Force = "force";
     }
 }

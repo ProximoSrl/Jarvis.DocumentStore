@@ -509,13 +509,13 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             return fileName;
         }
 
-        protected async Task<Stream> GetBlobFormatReader(
+        protected Task<Stream> GetBlobFormatReader(
             String tenantId,
             String jobId)
         {
             DocumentStoreServiceClient client = GetDocumentStoreClient(tenantId);
-            var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
-            return await reader.OpenStream();
+            var reader = client.OpenBlobIdForRead(QueueName, jobId);
+            return reader.OpenStream();
         }
 
         protected String[] GetFormats(String tenantId, String jobId)
@@ -525,8 +525,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 //TODO: use round robin if a document store is down.
                 var url = GetBlobUriForJobFormats(tenantId, jobId);
                 var result = client.DownloadString(url);
-                var formats = JsonConvert.DeserializeObject<String[]>(result);
-                return formats;
+                return JsonConvert.DeserializeObject<String[]>(result);
             }
         }
 
@@ -572,5 +571,25 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         protected abstract Task<ProcessResult> OnPolling(
             PollerJobParameters parameters,
             String workingFolder);
+
+        protected Boolean IsForced(PollerJobParameters parameters)
+        {
+            String forceValue = null;
+            if (parameters.All.TryGetValue(JobKeys.Force, out forceValue))
+            {
+                return "true".Equals(forceValue, StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+
+        protected Boolean FromPipelineId(PollerJobParameters parameters, String pipeline)
+        {
+            String pipelineId = null;
+            if (parameters.All.TryGetValue(JobKeys.PipelineId, out pipelineId))
+            {
+                return pipeline.Equals(pipelineId, StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
     }
 }

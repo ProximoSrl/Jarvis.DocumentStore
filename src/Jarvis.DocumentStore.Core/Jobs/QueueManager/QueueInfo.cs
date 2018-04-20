@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -29,6 +27,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public String Pipeline { get; private set; }
 
         private String _extension;
+
         /// <summary>
         /// It is a pipe separated list of desired extension.
         /// </summary>
@@ -46,6 +45,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         }
 
         private String _formats;
+
         /// <summary>
         /// It is a pipe separated list of all the formats the pipeline is interested to
         /// </summary>
@@ -64,6 +64,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         }
 
         private String _mimeTypes;
+
         /// <summary>
         /// It is a pipe separated list of all the formats the pipeline is interested to
         /// </summary>
@@ -127,18 +128,21 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 }
             }
             if (_splittedFormats.Length > 0 && !_splittedFormats.Contains(streamElement.FormatInfo.DocumentFormat.ToString()))
+            {
                 return false;
-
-            if (!String.IsNullOrEmpty(Pipeline) &&
-                streamElement.FormatInfo.PipelineId != null &&
-                !Regex.IsMatch(streamElement.FormatInfo.PipelineId, Pipeline))
+            }
+            if (!String.IsNullOrEmpty(Pipeline)
+                && streamElement.FormatInfo.PipelineId != null
+                && !Regex.IsMatch(streamElement.FormatInfo.PipelineId, Pipeline))
+            {
                 return false;
+            }
 
             //Return only if at least one condition is met.
-            return _splittedExtensions.Length > 0 ||
-                _splittedFormats.Length > 0 ||
-                _splittedMimeTypes.Length > 0 ||
-                !String.IsNullOrEmpty(Pipeline);
+            return _splittedExtensions.Length > 0
+                || _splittedFormats.Length > 0
+                || _splittedMimeTypes.Length > 0
+                || !String.IsNullOrEmpty(Pipeline);
         }
 
         /// <summary>

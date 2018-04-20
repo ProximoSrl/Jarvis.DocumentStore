@@ -1,26 +1,20 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-
 using ImageMagick;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+
 namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 {
     public class CreateImageFromPdfTask
     {
         private static readonly object LockForInitializationIssue = new object();
-        private static bool _firstDone = false;
+        private static bool _firstDone;
 
-        ILogger _logger = NullLogger.Instance;
-        public ILogger Logger
-        {
-            get { return _logger; }
-            set { _logger = value; }
-        }
+        public ILogger Logger { get; set; } = NullLogger.Instance;
 
         public PdfDecrypt Decryptor { get; set; }
 
@@ -38,14 +32,14 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
         public IList<String> Passwords { get; private set; }
 
         public async Task<Boolean> Run(
-            String pathToFile, 
-            CreatePdfImageTaskParams createPdfImageTaskParams, 
+            String pathToFile,
+            CreatePdfImageTaskParams createPdfImageTaskParams,
             Func<int, Stream, Task<Boolean>> pageWriter)
         {
             String tempFileName = null;
             if (Passwords.Count > 0)
             {
-                tempFileName = 
+                tempFileName =
                     Path.Combine(Path.GetDirectoryName(pathToFile),
                     Path.GetFileNameWithoutExtension(pathToFile) + "_decrypted.pdf");
                 if (Decryptor.DecryptFile(pathToFile, tempFileName, Passwords))
@@ -67,15 +61,14 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
                 using (var images = new MagickImageCollection())
                 {
                     bool done = false;
-                    if (_firstDone == false)
+                    if (!_firstDone)
                     {
                         lock (LockForInitializationIssue)
                         {
-                            if (_firstDone == false)
+                            if (!_firstDone)
                             {
                                 images.Read(sourceStream, settings);
                                 done = true;
-//                            _firstDone = true;
                             }
                         }
                     }
@@ -95,7 +88,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
                         {
                             image.Write(ms);
                             ms.Seek(0L, SeekOrigin.Begin);
-                            await pageWriter(page + 1, ms);
+                            await pageWriter(page + 1, ms).ConfigureAwait(false);
                         }
                     }
                 }
@@ -107,7 +100,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
             return true;
         }
 
-        MagickFormat TranslateFormat(CreatePdfImageTaskParams.ImageFormat format)
+        private MagickFormat TranslateFormat(CreatePdfImageTaskParams.ImageFormat format)
         {
             switch (format)
             {
@@ -116,9 +109,9 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
 
                 case CreatePdfImageTaskParams.ImageFormat.Jpg:
                     return MagickFormat.Jpg;
-                
+
                 default:
-                    throw new ArgumentOutOfRangeException("format");
+                    throw new ArgumentOutOfRangeException(nameof(format));
             }
         }
     }
