@@ -15,7 +15,7 @@ namespace Jarvis.DocumentStore.Jobs.Email
 	/// </summary>
 	public class MailMessageToHtmlConverterTask
 	{
-		public ILogger Logger { get; set; }
+        public ILogger Logger { get; set; } = NullLogger.Instance;
 
 		public string Convert(String jobId, string pathToEml, string workingFolder)
 		{
