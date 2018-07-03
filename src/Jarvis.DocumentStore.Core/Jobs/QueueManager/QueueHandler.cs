@@ -109,7 +109,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 				job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
 				job.Parameters.Add(JobKeys.TenantId, tenantId);
 				job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
-                job.Parameters.Add(JobKeys.PipelineId, streamElement.FormatInfo?.PipelineId);
+                job.Parameters.Add(JobKeys.PipelineId, streamElement.FormatInfo?.PipelineId?.ToString());
                 if (forceReSchedule)
                 {
                     job.Parameters.Add(JobKeys.Force, "true");
