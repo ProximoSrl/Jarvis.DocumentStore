@@ -286,15 +286,15 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                     foreach (var ex in aex.InnerExceptions)
                     {
                         var errorMessage = String.Format("Inner error queued job {0} queue {1}: {2}", nextJob.Id, this.QueueName, ex.Message);
-                        Logger.Error(errorMessage, ex);
+                        LogExceptionAndAllInnerExceptions(ex, errorMessage);
                         aggregateMessage.Append(errorMessage);
                     }
                     DsSetJobExecuted(QueueName, nextJob.Id, aggregateMessage.ToString(), null);
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
-                        nextJob.Parameters[JobKeys.TenantId]);
+                    var errorMessage = String.Format("Error executing queued job {0} on tenant {1}", nextJob.Id, nextJob.Parameters[JobKeys.TenantId]);
+                    LogExceptionAndAllInnerExceptions(ex, errorMessage);
                     DsSetJobExecuted(QueueName, nextJob.Id, ex.Message, null);
                 }
                 finally
@@ -303,6 +303,15 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                     Logger.ThreadProperties["job-id"] = null;
                 }
             } while (true); //Exit is in the internal loop
+        }
+
+        private void LogExceptionAndAllInnerExceptions(Exception ex, string errorMessage)
+        {
+            Logger.Error(errorMessage, ex);
+            if (ex.InnerException != null)
+            {
+                LogExceptionAndAllInnerExceptions(ex.InnerException, errorMessage);
+            }
         }
 
         private void DsSetJobExecuted(string queueName, string jobId, string errorMessage, Dictionary<String, String> parametersToModify)

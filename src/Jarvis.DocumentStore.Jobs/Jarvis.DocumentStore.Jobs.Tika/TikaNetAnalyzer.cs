@@ -89,7 +89,11 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             }
             catch (System.Exception ex)
             {
-                Logger.ErrorFormat(ex,"Extract {0}",ex.Message);
+                Logger.ErrorFormat(ex,"Extract error: {0}", ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Logger.ErrorFormat(ex.InnerException, "Extract inner error: {0}", ex.InnerException.Message);
+                }
 
                 throw new TextExtractionException("Extraction failed.", ex);
             }

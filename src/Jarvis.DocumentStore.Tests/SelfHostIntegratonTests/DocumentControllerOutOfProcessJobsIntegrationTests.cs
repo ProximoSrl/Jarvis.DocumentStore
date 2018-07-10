@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Castle.Core.Logging;
-using com.sun.tools.javah;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
@@ -37,7 +35,6 @@ using Jarvis.DocumentStore.Core;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using MongoDB.Bson;
 using Jarvis.DocumentStore.Jobs.LibreOffice;
-using Jarvis.DocumentStore.Jobs.Tika.Filters;
 
 using NSubstitute;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
@@ -45,7 +42,10 @@ using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 using Jarvis.Framework.Shared.Helpers;
 using Jarvis.DocumentStore.Jobs.PdfComposer;
-using Jarvis.DocumentStore.Shared.Helpers;
+using System.Reflection;
+
+#pragma warning disable RCS1090 // Call 'ConfigureAwait(false)'.
+#pragma warning disable S101 // Types should be named in camel case
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -58,7 +58,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     /// </summary>
     //[TestFixture("v1")] //Uncomment this if you want to test with old projection engine
     [TestFixture("v3")]
-    [Category("integration_full")]
+    [Category("Integration_full")]
     //[Explicit("This integration test is slow because it wait for polling")]
     public abstract class DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -80,7 +80,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected string _engineVersion;
 
-        public DocumentControllerOutOfProcessJobsIntegrationTestsBase(String engineVersion)
+        protected DocumentControllerOutOfProcessJobsIntegrationTestsBase(String engineVersion)
         {
             _engineVersion = engineVersion;
         }
@@ -123,7 +123,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 Console.WriteLine(ex.ToString());
                 throw;
             }
-            
         }
 
         protected abstract QueueInfo[] OnGetQueueInfo();
@@ -152,31 +151,31 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected virtual void OnStop()
         {
-            if (_sutBase != null) _sutBase.Stop();
+            _sutBase?.Stop();
         }
     }
 
     [TestFixture()]
-    [Category("integration_full")]
-    public class integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        OutOfProcessTikaNetJob sut;
+        private OutOfProcessTikaNetJob sut;
 
-        public integration_out_of_process_tika(String engineVersion) : base (engineVersion)
+        public Integration_out_of_process_tika(String engineVersion) : base(engineVersion)
         {
-                
+
         }
 
         [Test]
-        public async void verify_tika_job()
+        public async Task Verify_tika_job()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
-            var handleClient = new DocumentHandle("verify_tika_job");
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("Verify_tika_job");
+            var handleClient = new DocumentHandle("Verify_tika_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
                handleClient,
@@ -193,8 +192,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(format))
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(format))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[format];
@@ -212,16 +211,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_tika_job_on_htmlzip()
+        public async Task Verify_tika_job_on_htmlzip()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job_with_htmlzip");
-            var handleClient = new DocumentHandle("verify_tika_job_with_htmlzip");
-            var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("Verify_tika_job_with_htmlzip");
+            var handleClient = new DocumentHandle("Verify_tika_job_with_htmlzip");
             var zipped = _documentStoreClient.ZipHtmlPage(TestConfig.PathToHtml);
 
             await _documentStoreClient.UploadAsync(
@@ -231,7 +229,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     { "callback", "http://localhost/demo"}
                 }
             );
-
 
             DateTime startWait = DateTime.Now;
             DocumentDescriptorReadModel documentDescriptor;
@@ -269,24 +266,24 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             return new QueueInfo[]
             {
-                new QueueInfo("tika", "original", ""), 
+                new QueueInfo("tika", "original", ""),
             };
         }
     }
-     
-    [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_tika_long_name : DocumentControllerOutOfProcessJobsIntegrationTestsBase
-    {
-        OutOfProcessTikaNetJob sut;
 
-        public integration_out_of_process_tika_long_name(String engineVersion) : base (engineVersion)
+    [TestFixture]
+    [Category("Integration_full")]
+    public class Integration_out_of_process_tika_long_name : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    {
+        private OutOfProcessTikaNetJob sut;
+
+        public Integration_out_of_process_tika_long_name(String engineVersion) : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_tika_job_with_long_name()
+        public async Task Verify_tika_job_with_long_name()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
@@ -301,8 +298,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 File.Copy(TestConfig.PathToWordDocument, longFileName);
             }
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
-            var handleClient = new DocumentHandle("verify_tika_job");
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("Verify_tika_job");
+            var handleClient = new DocumentHandle("Verify_tika_job");
             await _documentStoreClient.UploadAsync(
                longFileName,
                handleClient,
@@ -341,12 +338,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_tika_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class A_Integration_out_of_process_tika_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        OutOfProcessTikaNetJob sut;
+        private OutOfProcessTikaNetJob sut;
 
-        public integration_out_of_process_tika_password(String engineVersion)
+        public A_Integration_out_of_process_tika_password(String engineVersion)
             : base(engineVersion)
         {
 
@@ -360,15 +357,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_tika_job_with_password()
+        public async Task A_Verify_tika_job_with_password()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job");
-            var handleClient = new DocumentHandle("verify_tika_job");
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("Verify_tika_job");
+            var handleClient = new DocumentHandle("Verify_tika_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToPasswordProtectedPdf,
                handleClient,
@@ -423,17 +420,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_tika_multiple_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class A_Integration_out_of_process_tika_multiple_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        OutOfProcessTikaNetJob sut;
+        private OutOfProcessTikaNetJob sut;
 
-        public integration_out_of_process_tika_multiple_password(String engineVersion)
+        public A_Integration_out_of_process_tika_multiple_password(String engineVersion)
             : base(engineVersion)
         {
 
         }
-       
+
         protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
         {
             var subPassword = NSubstitute.Substitute.For<IClientPasswordSet>();
@@ -442,15 +439,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async void verify_tika_job_with_multiple_password()
+        public async Task A_Verify_tika_job_with_multiple_password()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_tika_job_multiple");
-            var handleClient = new DocumentHandle("verify_tika_job_multiple");
+            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("Verify_tika_job_multiple");
+            var handleClient = new DocumentHandle("Verify_tika_job_multiple");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToPasswordProtectedPdf,
                handleClient,
@@ -468,9 +465,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(tikaFormat) &&
-                    documentDescriptor.Formats.ContainsKey(contentFormat))
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(tikaFormat)
+                    && documentDescriptor.Formats.ContainsKey(contentFormat))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[tikaFormat];
@@ -506,29 +503,30 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_no_multiple_schedule : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_no_multiple_schedule : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        OutOfProcessTikaNetJob sut;
+        private OutOfProcessTikaNetJob sut;
 
-        public integration_out_of_process_no_multiple_schedule(String engineVersion)
+        public Integration_out_of_process_no_multiple_schedule(String engineVersion)
             : base(engineVersion)
         {
 
         }
+
         /// <summary>
         /// When duplicate document is added to DS it generates two record in the StreamReadModel
         /// but <see cref="QueueManager" /> needs to generate only one job. 
         /// </summary>
         [Test]
-        public async void verify_no_multiple_schedule_for_de_duplicated_document()
+        public async Task Verify_no_multiple_schedule_for_de_duplicated_document()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleClient1 = new DocumentHandle("verify_tika_job1");
+            var handleClient1 = new DocumentHandle("Verify_tika_job1");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
                handleClient1,
@@ -537,7 +535,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 }
             );
 
-            var handleClient2 = new DocumentHandle("verify_tika_job2");
+            var handleClient2 = new DocumentHandle("Verify_tika_job2");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
                handleClient2,
@@ -567,36 +565,36 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.That(_tikaQueue.AsQueryable().Count(), Is.EqualTo(1), "Job generated for duplicate document, error");
         }
 
-
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
             {
-                new QueueInfo("tika", "original", ""), 
+                new QueueInfo("tika", "original", ""),
             };
         }
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        OutOfProcessTikaNetJob sut;
-        public integration_out_of_process_tika_content(String engineVersion)
+        private OutOfProcessTikaNetJob sut;
+
+        public Integration_out_of_process_tika_content(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_tika_set_content()
+        public async Task Verify_tika_set_content()
         {
             _sutBase = sut = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handle = DocumentHandle.FromString("verify_tika_job");
+            var handle = DocumentHandle.FromString("Verify_tika_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToWordDocument,
                handle,
@@ -612,9 +610,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_tika_job")));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(format))
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("Verify_tika_job")));
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(format))
                 {
                     //now we want to verify if content is set correctly
                     var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
@@ -641,29 +639,29 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             return new QueueInfo[]
             {
-                new QueueInfo("tika", "original", ""), 
+                new QueueInfo("tika", "original", ""),
             };
         }
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_image : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_image : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_out_of_process_image(String engineVersion)
+        public Integration_out_of_process_image(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_image_resizer_job()
+        public async Task Verify_image_resizer_job()
         {
             ImageResizePollerOutOfProcessJob sut = new ImageResizePollerOutOfProcessJob();
             sut.JobsHostConfiguration = _jobsHostConfiguration;
             sut.Logger = new TestLogger(LoggerLevel.Error);
             sut.Start(new List<string>() { TestConfig.ServerAddress.AbsoluteUri }, "TESTHANDLE");
-            DocumentHandle handle = DocumentHandle.FromString("verify_img_resize_job");
+            DocumentHandle handle = DocumentHandle.FromString("Verify_img_resize_job");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToDocumentPng,
                handle,
@@ -680,10 +678,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_img_resize_job")));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(thumbSmallFormat) &&
-                    documentDescriptor.Formats.ContainsKey(thumbLargeFormat))
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("Verify_img_resize_job")));
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(thumbSmallFormat)
+                    && documentDescriptor.Formats.ContainsKey(thumbLargeFormat))
                 {
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(TestConfig.PathToDocumentPng);
                     var blobId = documentDescriptor.Formats[thumbSmallFormat].BlobId;
@@ -725,24 +723,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_eml : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_eml : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        AnalyzeEmailOutOfProcessJob sut;
-
-        public integration_out_of_process_eml(String engineVersion)
+        public Integration_out_of_process_eml(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_chain_for_email()
+        public async Task Verify_chain_for_email()
         {
-            _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
+            _sutBase = new AnalyzeEmailOutOfProcessJob();
             PrepareJob();
 
-            DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_email");
+            DocumentHandle handle = DocumentHandle.FromString("Verify_chain_for_email");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToEml,
                handle,
@@ -758,11 +754,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(emailFormat))
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("Verify_chain_for_email")));
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(emailFormat))
                 {
-
                     return; //test is good
                 }
 
@@ -771,13 +766,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("expected formats not found");
         }
 
-        HtmlToPdfOutOfProcessJobOld _htmlSut;
-
-        protected override void OnStop()
-        {
-            base.OnStop();
-            if (_htmlSut != null) _htmlSut.Stop();
-        }
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -787,32 +775,30 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
- 
-
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        AnalyzeEmailOutOfProcessJob sut;
+        private AnalyzeEmailOutOfProcessJob sut;
 
-        HtmlToPdfOutOfProcessJobOld _htmlSut;
+        private HtmlToPdfOutOfProcessJobOld _htmlSut;
 
-        public integration_out_of_process_eml_chain(String engineVersion)
+        public Integration_out_of_process_eml_chain(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_full_chain_for_email_and_html_zipOld()
+        public async Task Verify_full_chain_for_email_and_html_zipOld()
         {
             _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
             PrepareJob();
 
-            HtmlToPdfOutOfProcessJobOld htmlSut = new HtmlToPdfOutOfProcessJobOld();
-            PrepareJob(testJob: htmlSut);
+            _htmlSut = new HtmlToPdfOutOfProcessJobOld();
+            PrepareJob(testJob: _htmlSut);
 
-            DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_email");
+            DocumentHandle handle = DocumentHandle.FromString("Verify_chain_for_email");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToEml,
                handle,
@@ -829,12 +815,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_email")));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(emailFormat) &&
-                    documentDescriptor.Formats.ContainsKey(pdfFormat))
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("Verify_chain_for_email")));
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(emailFormat)
+                    && documentDescriptor.Formats.ContainsKey(pdfFormat))
                 {
-
                     return; //test is good
                 }
 
@@ -855,8 +840,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected override void OnStop()
         {
             base.OnStop();
-            if (_htmlSut != null) _htmlSut.Stop();
+            _htmlSut?.Stop();
         }
+
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -868,21 +854,21 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_html_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_html_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_out_of_process_html_to_pdf(String engineVersion)
+        public Integration_out_of_process_html_to_pdf(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
-        public async Task<Boolean> verify_htmlToPdf_base<T>(String testFile) where T : AbstractOutOfProcessPollerJob, new()
+        public async Task<Boolean> Verify_htmlToPdf_base<T>(String testFile) where T : AbstractOutOfProcessPollerJob, new()
         {
             _sutBase = new T();
             PrepareJob();
 
-            DocumentHandle handle = DocumentHandle.FromString("verify_chain_for_htmlzip");
+            DocumentHandle handle = DocumentHandle.FromString("Verify_chain_for_htmlzip");
             await _documentStoreClient.UploadAsync(
                testFile,
                handle,
@@ -898,11 +884,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
-                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("verify_chain_for_htmlzip")));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(pdfFormat))
+                    .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("Verify_chain_for_htmlzip")));
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(pdfFormat))
                 {
-
                     return true; //test is good
                 }
 
@@ -911,25 +896,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             return false;
         }
 
-        //[Test]
-        //[Explicit("new version of TuesPechkin seems to hang the tests")]
-        //public async void verify_htmlToPdf()
-        //{
-        //    Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJob>(), "Format Pdf not found");
-        //}
-
         [Test]
-        public async void verify_html_zipped_ToPdf_old()
+        public async Task Verify_html_zipped_ToPdf_old()
         {
             var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
             var zipped = client.ZipHtmlPage(TestConfig.PathToHtml);
-            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(zipped), "Format Pdf not found");
+            Assert.That(await Verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(zipped), "Format Pdf not found");
         }
 
         [Test]
-        public async void verify_html_plain_ToPdf_old()
+        public async Task Verify_html_plain_ToPdf_old()
         {
-            Assert.That(await verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(TestConfig.PathToSimpleHtmlFile), "Format Pdf not found");
+            Assert.That(await Verify_htmlToPdf_base<HtmlToPdfOutOfProcessJobOld>(TestConfig.PathToSimpleHtmlFile), "Format Pdf not found");
         }
 
         protected override QueueInfo[] OnGetQueueInfo()
@@ -942,18 +920,21 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_out_of_process_office_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_out_of_process_office_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_out_of_process_office_to_pdf(String engineVersion)
+        public Integration_out_of_process_office_to_pdf(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_office_job()
+        public async Task Verify_office_job()
         {
+            Environment.CurrentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            Console.WriteLine("Current Directory Is: " + Environment.CurrentDirectory);
+
             JobsHostConfiguration config = new JobsHostConfiguration();
             var conversion = new LibreOfficeUnoConversion(config);
             _sutBase = new LibreOfficeToPdfOutOfProcessJob(conversion);
@@ -977,8 +958,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleServer));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(format))
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(format))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[format];
@@ -995,7 +976,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("Pdf format not found");
         }
 
-
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -1006,24 +986,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_attachments_queue_multiple_zip(String engineVersion)
+        public Integration_attachments_queue_multiple_zip(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_nested_zip_count_file_verification()
+        public async Task Verify_nested_zip_count_file_verification()
         {
-
             _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
-            var handleClient = DocumentHandle.FromString("verify_nested_zip");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
+            var handleClient = DocumentHandle.FromString("Verify_nested_zip");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFileThatContainsOtherZip,
                handleClient,
@@ -1033,8 +1011,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentDescriptorReadModel documentDescriptor;
-            var format = new DocumentFormat("Pdf");
             var docCount = 0;
             do
             {
@@ -1052,7 +1028,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("documents not unzipped correctly I'm expecting more than 7 documetns but we find " + docCount);
         }
 
-
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -1063,24 +1038,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_attachments_queue_singleZip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_attachments_queue_singleZip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_attachments_queue_singleZip(String engineVersion)
+        public Integration_attachments_queue_singleZip(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_single_zip_count_file_verification()
+        public async Task Verify_single_zip_count_file_verification()
         {
-
             _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
-            var handleClient = DocumentHandle.FromString("verify_zip");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("verify_zip");
+            var handleClient = DocumentHandle.FromString("Verify_zip");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFile,
                handleClient,
@@ -1090,8 +1063,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            DocumentDescriptorReadModel documentDescriptor;
-            var format = new DocumentFormat("Pdf");
             Int32 docCount;
             do
             {
@@ -1115,8 +1086,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("documents not unzipped correctly, I'm expecting 4 documetns but projection contains " + docCount + " documents");
         }
 
-
-
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -1126,25 +1095,24 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_attachment_then_same_attach_inside_externa_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_attachment_then_same_attach_inside_externa_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_attachment_then_same_attach_inside_externa_attach(String engineVersion)
+        public Integration_attachment_then_same_attach_inside_externa_attach(String engineVersion)
             : base(engineVersion)
         {
 
         }
-        [Test]
-        public async void verify_attachment_chains()
-        {
 
+        [Test]
+        public async Task Verify_attachment_chains()
+        {
             _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("child_zip");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("child_zip");
+
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFile,
                handleClient,
@@ -1167,7 +1135,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             //now all attachment are unzipped.
             handleClient = DocumentHandle.FromString("containing_zip");
-            handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("containing_zip");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFileThatContainsOtherZip,
                handleClient,
@@ -1183,7 +1150,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 docCount = _documentCollection.AsQueryable().Count();
                 if (docCount == 8)
                 {
-                    var doc = _documentCollection.FindAll();
                     //now I want to be sure that the whole set of attachments is correct
                     var fat = await _documentStoreClient.GetAttachmentsFatAsync(handleClient);
                     Assert.That(fat.Attachments, Has.Count.EqualTo(6));
@@ -1193,8 +1159,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             Assert.Fail("documents not unzipped correctly, I'm expecting correct chain of doucments");
         }
-
-
 
         protected override QueueInfo[] OnGetQueueInfo()
         {
@@ -1206,24 +1170,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_handle_with_attachment_duplicated_then_first_deleted : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_handle_with_attachment_duplicated_then_first_deleted : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_handle_with_attachment_duplicated_then_first_deleted(String engineVersion)
+        public Integration_handle_with_attachment_duplicated_then_first_deleted(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_deletion_original_handle()
+        public async Task Verify_deletion_original_handle()
         {
-
             _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("main");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("main");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFile,
                handleClient,
@@ -1246,7 +1208,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             //now all attachment are unzipped.
             var secondaryHandleClient = DocumentHandle.FromString("secondary");
-            var secondaryHandleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("secondary");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFile, //Same file it will be de-duplicated
                secondaryHandleClient,
@@ -1258,23 +1219,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //now delete primary handle
             await _documentStoreClient.DeleteAsync(handleClient);
 
-            startWait = DateTime.Now;
-            do
-            {
-                await UpdateAndWait();
+            await UpdateAndWait();
 
-                //now I want to be sure that secondary handle still has attachments
-                var fat = await _documentStoreClient.GetAttachmentsFatAsync(secondaryHandleClient);
-                Assert.That(fat.Attachments, Has.Count.EqualTo(3));
-                var allHandle = _documentCollection.FindAll().Count();
-                Assert.That(allHandle, Is.EqualTo(4)); //second handle with all attachments
-                return; //everythins is ok.
-
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
-
-            Assert.Fail("de-duplicated document handle does not maintain attachments after deletion");
+            //now I want to be sure that secondary handle still has attachments
+            var fat = await _documentStoreClient.GetAttachmentsFatAsync(secondaryHandleClient);
+            Assert.That(fat.Attachments, Has.Count.EqualTo(3));
+            var allHandle = _documentCollection.CountDocuments(Builders<DocumentReadModel>.Filter.Empty);
+            Assert.That(allHandle, Is.EqualTo(4)); //second handle with all attachments
         }
-        
+
         protected override QueueInfo[] OnGetQueueInfo()
         {
             return new QueueInfo[]
@@ -1285,23 +1238,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_attachments_mail_with_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_attachments_mail_with_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_attachments_mail_with_attach(String engineVersion)
+        public Integration_attachments_mail_with_attach(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_email_count_file_verification()
+        public async Task Verify_email_count_file_verification()
         {
-
             _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
-            var handleClient = DocumentHandle.FromString("verify_eml");
+            var handleClient = DocumentHandle.FromString("Verify_eml");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToMsgWithAttachment,
                handleClient,
@@ -1319,9 +1271,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 2)
                 {
                     //all attachment are unzipped correctly
-                        var doc = _documentDescriptorCollection.Find(
-                        Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", handleClient.ToString()))
-                        .Single();
+                    var doc = _documentDescriptorCollection.Find(
+                    Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", handleClient.ToString()))
+                    .Single();
                     Assert.That(doc.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                         new Core.Model.DocumentHandle("attachment_email_1") }));
                     return;
@@ -1332,14 +1284,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("file from email not extracted correctly, I'm expecting 2 documetns but projection contains " + docCount + " documents");
         }
 
-
-
         protected override QueueInfo[] OnGetQueueInfo()
         {
-
             return new QueueInfo[]
             {
-                new QueueInfo("attachments", mimeTypes : 
+                new QueueInfo("attachments", mimeTypes :
                     MimeTypes.GetMimeTypeByExtension("zip") + "|" +
                     MimeTypes.GetMimeTypeByExtension("msg") + "|" +
                     MimeTypes.GetMimeTypeByExtension("eml")),
@@ -1348,23 +1297,22 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class integration_attachments_mail_with_zip_and_other_mail : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Integration_attachments_mail_with_zip_and_other_mail : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        public integration_attachments_mail_with_zip_and_other_mail(String engineVersion)
+        public Integration_attachments_mail_with_zip_and_other_mail(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_email_count_file_verification()
+        public async Task Verify_email_count_file_verification()
         {
-
             _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
-            var handleClient = DocumentHandle.FromString("verify_eml");
+            var handleClient = DocumentHandle.FromString("Verify_eml");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToMsgWithComplexAttachment,
                handleClient,
@@ -1394,14 +1342,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.Fail("file from email not extracted correctly, I'm expecting 10 documetns but projection contains " + docCount + " documents");
         }
 
-
-
         protected override QueueInfo[] OnGetQueueInfo()
         {
-
             return new QueueInfo[]
             {
-                new QueueInfo("attachments", mimeTypes : 
+                new QueueInfo("attachments", mimeTypes :
                     MimeTypes.GetMimeTypeByExtension("zip") + "|" +
                     MimeTypes.GetMimeTypeByExtension("msg") + "|" +
                     MimeTypes.GetMimeTypeByExtension("eml")),
@@ -1409,27 +1354,23 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-
     [TestFixture]
-    [Category("integration_full")]
+    [Category("Integration_full")]
     public class Deletion_of_attachments_advanced : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-
-        public Deletion_of_attachments_advanced(String engineVersion) 
-            : base (engineVersion)
+        public Deletion_of_attachments_advanced(String engineVersion)
+            : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void verify_deletion_original_handle_delete_attachments()
+        public async Task Verify_deletion_original_handle_delete_attachments()
         {
-
             _sutBase = new AttachmentOutOfProcessJob(new SevenZipExtractorFunctions());
             PrepareJob();
 
             var handleClient = DocumentHandle.FromString("main");
-            var handleServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("main");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToZipFile,
                handleClient,
@@ -1452,21 +1393,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //now delete primary handle
             await _documentStoreClient.DeleteAsync(handleClient);
 
-            startWait = DateTime.Now;
-            do
-            {
-                await UpdateAndWait();
+            await UpdateAndWait();
 
-                //all attachment should be deleted
-                docDescriptorCount = _documentDescriptorCollection.AsQueryable().Count();
-                Assert.That(docDescriptorCount, Is.EqualTo(0));
+            //all attachment should be deleted
+            docDescriptorCount = _documentDescriptorCollection.AsQueryable().Count();
+            Assert.That(docDescriptorCount, Is.EqualTo(0));
 
-                var docCount = _documentCollection.AsQueryable().Count();
-                Assert.That(docCount, Is.EqualTo(0));
-                return;
-            } while (DateTime.Now.Subtract(startWait).TotalMilliseconds < MaxTimeout);
-
-            Assert.Fail("de-duplicated document handle does not maintain attachments after deletion");
+            var docCount = _documentCollection.AsQueryable().Count();
+            Assert.That(docCount, Is.EqualTo(0));
         }
 
         protected override QueueInfo[] OnGetQueueInfo()
@@ -1479,30 +1413,25 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     }
 
     [TestFixture]
-    [Category("integration_full")]
-    public class verify_composition_of_pdf_file : DocumentControllerOutOfProcessJobsIntegrationTestsBase
+    [Category("Integration_full")]
+    public class Verify_composition_of_pdf_file : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-
-        public verify_composition_of_pdf_file(String engineVersion)
+        public Verify_composition_of_pdf_file(String engineVersion)
             : base(engineVersion)
         {
 
         }
 
         [Test]
-        public async void basic_composition()
+        public async Task Basic_composition()
         {
-
             _sutBase = new PdfComposerOutOfProcessJob();
             PrepareJob();
 
             var handle1 = DocumentHandle.FromString("h1");
-            var handle1Server = new Jarvis.DocumentStore.Core.Model.DocumentHandle("h1");
             var handle2 = DocumentHandle.FromString("h2");
-            var handle2Server = new Jarvis.DocumentStore.Core.Model.DocumentHandle("h2");
 
             var handleResult = DocumentHandle.FromString("result");
-            var handleResultServer = new Jarvis.DocumentStore.Core.Model.DocumentHandle("result");
 
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToDocumentPdf,
@@ -1511,6 +1440,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     { "callback", "http://localhost/demo"}
                 }
             );
+
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToDocumentCopyPdf,
                handle2,
@@ -1530,10 +1460,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 if (docCount == 3)
                 {
                     //all attachment are unzipped correctly
-                    var doc = _documentCollection.Find(
+                    _documentCollection.Find(
                         Builders<DocumentReadModel>.Filter.Eq("_id", handleResult.ToString())
-                    ) .Single();
-                           
+                    ).Single();
+
                     return;
                 }
 
@@ -1550,5 +1480,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             };
         }
     }
-
+#pragma warning restore S101 // Types should be named in camel case
+#pragma warning restore RCS1090 // Call 'ConfigureAwait(false)'.
 }

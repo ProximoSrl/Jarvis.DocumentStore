@@ -10,6 +10,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         public static readonly string DocumentsFolder;
         public static readonly String QueueFolder;
         public static readonly string TempFolder;
+
         static TestConfig()
         {
             DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Docs")).FullName;

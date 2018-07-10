@@ -76,7 +76,7 @@ namespace Jarvis.DocumentStore.Host.Support
             application.UseFileServer(options);
         }
 
-        static string FindAppRoot()
+        private static string FindAppRoot()
         {
             var root = AppDomain.CurrentDomain.BaseDirectory
                 .ToLowerInvariant()

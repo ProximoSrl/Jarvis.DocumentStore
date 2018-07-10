@@ -248,7 +248,7 @@ namespace Jarvis.DocumentStore.Host.Support
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
         }
 
-        TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)
+        private TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)
         {
             _logger.Debug("Configuring tenants");
             var manager = new TenantManager(container.Kernel);

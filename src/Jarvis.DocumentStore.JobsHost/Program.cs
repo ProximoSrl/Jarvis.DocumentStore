@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading;
 using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Helpers;
-using Jarvis.Framework.MongoAppender;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Jarvis.Framework.MongoAppender;
 
 namespace Jarvis.DocumentStore.JobsHost
 {
