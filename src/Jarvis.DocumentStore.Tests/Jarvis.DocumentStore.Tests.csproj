@@ -368,6 +368,7 @@
     <Compile Include="SelfHostIntegratonTests\DocumentControllerOutOfProcessJobsIntegrationTests.cs" />
     <Compile Include="SelfHostIntegratonTests\DocumentControllerIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelfHostIntegratonTests\Load_test.cs" />
     <Compile Include="Storage\BlobStoreTestBase.cs" />
     <Compile Include="Storage\EnhancedFileStoreTests.cs" />
     <Compile Include="Storage\FileSystemBlobStoreTest.cs" />
