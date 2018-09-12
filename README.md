@@ -15,8 +15,9 @@ Jarvis.DocumentStore
 - [Manual database Upgrades](/wiki/BreakingChangesDb.md)
 - [Backup Restore](/wiki/BackupRestore.md)
 - [Troubleshoot](/wiki/Troubleshoot.md)
+- [Libreoffice](/wiki/LibreOffice.md)
 
-###Standard handler to grab document
+### Standard handler to grab document
 
 http://localhost_5123/docs/documents/{handle} (gets list of formats)
 http://localhost_5123/docs/documents/attachments_fat/{handle} (get list of all attachment for this handle)
