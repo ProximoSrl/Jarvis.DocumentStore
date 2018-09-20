@@ -212,7 +212,8 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
 				case ".xls":
 				case ".xlsb":
 				case ".xlsx":
-				case ".ods":
+                case ".xlsm":
+                case ".ods":
 					return "calc_pdf_Export";
 				case ".ppt":
 				case ".ppsx":
