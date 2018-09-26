@@ -1,14 +1,8 @@
 ﻿using Castle.Core.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 {
     public class VlcCommandLineThumbnailCreator
@@ -24,8 +18,8 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
         /// <param name="format"></param>
         /// <param name="logger"></param>
         public VlcCommandLineThumbnailCreator(
-            string vlcExecutable, 
-            string format, 
+            string vlcExecutable,
+            string format,
             IExtendedLogger logger)
         {
             this.vlcExecutable = vlcExecutable;
@@ -49,7 +43,7 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
                    format,
                    secondsOffset,
                    secondsOffset + 10);
-            
+
             logger.DebugFormat("Executing {0} {1}", vlcExecutable, arguments);
 
             var psi = new ProcessStartInfo(vlcExecutable, arguments)
@@ -70,7 +64,7 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
             //Need to find thumbnails, VLC creates multiple files, but the one with the highest number
             //is the correct one.
             var file = Directory.GetFiles(tempDir, "snap*.*")
-                .Select(f => new FileInfo(f))                
+                .Select(f => new FileInfo(f))
                 .OrderByDescending(fg => fg.Length)
                 .FirstOrDefault();
 
