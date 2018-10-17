@@ -523,5 +523,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 DocumentHandle.FromString("pdfD2"),
                 DocumentHandle.FromString("pdfD3")).Wait();
         }
+
+        [Test]
+        public void Upload_temp_zipFile()
+        {
+            _docs.UploadAsync("C:\\temp\\temp.zip", DocumentHandle.FromString("TempZip")).Wait();
+        }
     }
 }

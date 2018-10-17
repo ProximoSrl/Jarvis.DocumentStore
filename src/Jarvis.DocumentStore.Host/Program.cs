@@ -20,9 +20,11 @@ using Jarvis.Framework.Kernel.Support;
 
 namespace Jarvis.DocumentStore.Host
 {
-    class Program
+    public static class Program
     {
-        static DocumentStoreConfiguration _documentStoreConfiguration;
+        private static DocumentStoreConfiguration _documentStoreConfiguration;
+
+        private static ILogger _logger;
 
         static int Main(string[] args)
         {
@@ -55,7 +57,6 @@ namespace Jarvis.DocumentStore.Host
                 File.WriteAllText(lastErrorFileName, ex.ToString());
                 throw;
             }
-
         }
 
         private static TopshelfExitCode StartForInstallOrUninstall()
