@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 #if DisablePriLongPath
 using MyDirectory = System.IO.Directory;
 #else
@@ -48,7 +44,9 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static void EnsureDirectory(String path)
         {
             if (MyDirectory.Exists(path))
+            {
                 return;
+            }
 
             Int32 retryCount = 0;
             Exception lastException;

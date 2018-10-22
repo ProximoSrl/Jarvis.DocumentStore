@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.JobsHost.Support
 {
@@ -28,18 +26,18 @@ namespace Jarvis.DocumentStore.JobsHost.Support
         IEnumerable<String> GetPasswords();
     }
 
-    public class NullClientPasswordSet : IClientPasswordSet
+    public sealed class NullClientPasswordSet : IClientPasswordSet
     {
         public static IClientPasswordSet Instance { get; private set; }
 
-        static NullClientPasswordSet ()
+        static NullClientPasswordSet()
         {
             Instance = new NullClientPasswordSet();
         }
 
         private NullClientPasswordSet()
         {
-            
+
         }
 
         public IEnumerable<string> GetPasswordFor(string fileName)
@@ -51,14 +49,12 @@ namespace Jarvis.DocumentStore.JobsHost.Support
         {
             return new String[] { };
         }
-
-
     }
 
     public class ClientPasswordSetBase : IClientPasswordSet
     {
-         private Dictionary<String, String> _passwords;
- 
+        private readonly Dictionary<String, String> _passwords;
+
         public ClientPasswordSetBase(String passwordList)
         {
             if (String.IsNullOrEmpty(passwordList))
@@ -94,7 +90,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
 
     public class EnvironmentVariableClientPasswordSet : ClientPasswordSetBase
     {
-        public EnvironmentVariableClientPasswordSet() : 
+        public EnvironmentVariableClientPasswordSet() :
             base(Environment.GetEnvironmentVariable("DS_DOCPWDS"))
         {
         }

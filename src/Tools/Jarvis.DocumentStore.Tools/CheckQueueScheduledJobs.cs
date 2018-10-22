@@ -4,14 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tools
 {
-    class CheckQueuedTikaScheduledJobs
+    public class CheckQueuedTikaScheduledJobs
     {
-
         internal static void PerformCheck()
         {
             Console.WriteLine("Check all queued tika job that have no original in document descriptor");

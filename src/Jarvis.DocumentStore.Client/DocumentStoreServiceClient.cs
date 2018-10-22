@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
-using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
-using Jarvis.DocumentStore.Shared;
 using Jarvis.DocumentStore.Shared.Jobs;
-using System.Linq;
 using Newtonsoft.Json.Linq;
 
 #if DisablePriLongPath
@@ -26,7 +22,7 @@ using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 #endif
 
-
+#pragma warning disable S1075 // URIs should not be hardcoded
 namespace Jarvis.DocumentStore.Client
 {
     public class OpenOptions
@@ -43,7 +39,8 @@ namespace Jarvis.DocumentStore.Client
     public class DocumentStoreServiceClient
     {
         public string Tenant { get; private set; }
-        readonly Uri _documentStoreUri;
+
+        private readonly Uri _documentStoreUri;
         public static readonly DocumentFormat OriginalFormat = new DocumentFormat("original");
         public string TempFolder { get; set; }
 
@@ -67,14 +64,19 @@ namespace Jarvis.DocumentStore.Client
         public string ZipHtmlPage(string pathToFile)
         {
             if (!Directory.Exists(TempFolder))
+            {
                 Directory.CreateDirectory(TempFolder);
+            }
 
             string pathToZip = Path.ChangeExtension(Path.Combine(
                 TempFolder,
                 Path.GetFileName(pathToFile)
             ), ".htmlzip");
 
-            if (File.Exists(pathToZip)) File.Delete(pathToZip);
+            if (File.Exists(pathToZip))
+            {
+                File.Delete(pathToZip);
+            }
 
             using (ZipArchive zip = ZipFile.Open(pathToZip, ZipArchiveMode.Create))
             {
@@ -102,7 +104,7 @@ namespace Jarvis.DocumentStore.Client
         /// </summary>
         /// <param name="pathToFile">path to html file</param>
         /// <returns>path to html attachments</returns>
-        static string FindAttachmentFolder(string pathToFile)
+        private static string FindAttachmentFolder(string pathToFile)
         {
             var attachmentFolder = Path.Combine(
                 Path.GetDirectoryName(pathToFile),
@@ -132,7 +134,7 @@ namespace Jarvis.DocumentStore.Client
             IDictionary<string, object> customData = null)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
-            return await DoUpload(endPoint, fileNameWithExtension, inputStream, customData);
+            return await DoUpload(endPoint, fileNameWithExtension, inputStream, customData).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -152,11 +154,15 @@ namespace Jarvis.DocumentStore.Client
             String relativePath,
             IDictionary<string, object> customData = null)
         {
-            if (customData == null) customData = new Dictionary<String, Object>();
+            if (customData == null)
+            {
+                customData = new Dictionary<String, Object>();
+            }
+
             customData[AddAttachmentToHandleParameters.Source] = attachSource;
             customData[JobsConstants.AttachmentRelativePath] = relativePath;
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachSource);
-            return await DoUpload(endPoint, fileNameWithExtension, inputStream, customData);
+            return await DoUpload(endPoint, fileNameWithExtension, inputStream, customData).ConfigureAwait(false);
         }
 
         public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
@@ -166,11 +172,15 @@ namespace Jarvis.DocumentStore.Client
            String relativePath,
            IDictionary<string, object> customData = null)
         {
-            if (customData == null) customData = new Dictionary<String, Object>();
+            if (customData == null)
+            {
+                customData = new Dictionary<String, Object>();
+            }
+
             customData[AddAttachmentToHandleParameters.Source] = attachSource;
             customData[JobsConstants.AttachmentRelativePath] = relativePath;
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + fatherDocumentHandle + "/attach/" + attachSource);
-            return await UploadFromFile(endPoint, pathToFile, customData);
+            return await UploadFromFile(endPoint, pathToFile, customData).ConfigureAwait(false);
         }
 
         public async Task<UploadedDocumentResponse> UploadAttachmentAsync(
@@ -181,11 +191,15 @@ namespace Jarvis.DocumentStore.Client
            String relativePath,
            IDictionary<string, object> customData = null)
         {
-            if (customData == null) customData = new Dictionary<String, Object>();
+            if (customData == null)
+            {
+                customData = new Dictionary<String, Object>();
+            }
+
             customData[AddAttachmentToHandleParameters.Source] = attachSource;
             customData[JobsConstants.AttachmentRelativePath] = relativePath;
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/attach/" + queueName + "/" + jobId + "/" + attachSource);
-            return await UploadFromFile(endPoint, pathToFile, customData);
+            return await UploadFromFile(endPoint, pathToFile, customData).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -201,7 +215,7 @@ namespace Jarvis.DocumentStore.Client
             IDictionary<string, object> customData = null)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle);
-            return await UploadFromFile(endPoint, pathToFile, customData);
+            return await UploadFromFile(endPoint, pathToFile, customData).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -219,8 +233,8 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new HttpClient())
             {
                 var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
-                return await client.GetStringAsync(resourceUri);
-            }            
+                return await client.GetStringAsync(resourceUri).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -250,8 +264,7 @@ namespace Jarvis.DocumentStore.Client
                 var zippedFile = ZipHtmlPage(pathToFile);
                 try
                 {
-                    return await InnerUploadAsync(endPoint, zippedFile, customData);
-
+                    return await InnerUploadAsync(endPoint, zippedFile, customData).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -259,7 +272,7 @@ namespace Jarvis.DocumentStore.Client
                 }
             }
 
-            return await InnerUploadAsync(endPoint, pathToFile, customData);
+            return await InnerUploadAsync(endPoint, pathToFile, customData).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -277,11 +290,11 @@ namespace Jarvis.DocumentStore.Client
             string fileNameWithExtension = Path.GetFileName(pathToFile);
             using (var sourceStream = File.OpenRead(pathToFile))
             {
-                return await DoUpload(endPoint, fileNameWithExtension, sourceStream, customData);
+                return await DoUpload(endPoint, fileNameWithExtension, sourceStream, customData).ConfigureAwait(false);
             }
         }
 
-        async Task<UploadedDocumentResponse> DoUpload(
+        private async Task<UploadedDocumentResponse> DoUpload(
             Uri endPoint,
             string fileNameWithExtension,
             Stream inputStream,
@@ -302,13 +315,14 @@ namespace Jarvis.DocumentStore.Client
 
                     if (customData != null)
                     {
-                        var stringContent = new StringContent(await ToJsonAsync(customData));
+                        string jsonContent = await ToJsonAsync(customData).ConfigureAwait(false);
+                        var stringContent = new StringContent(jsonContent);
                         content.Add(stringContent, "custom-data");
                     }
 
-                    using (var message = await client.PostAsync(endPoint, content))
+                    using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
                     {
-                        var json = await message.Content.ReadAsStringAsync();
+                        var json = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
                         message.EnsureSuccessStatusCode();
                         return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
                     }
@@ -328,7 +342,6 @@ namespace Jarvis.DocumentStore.Client
                         var content =
                             new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
                     {
-
                         var fileInfo = new FileInfo(model.PathToFile);
                         content.Add(
                             new StreamContent(sourceStream),
@@ -349,9 +362,9 @@ namespace Jarvis.DocumentStore.Client
                         var modelFormat = model.Format == null ? "null" : model.Format.ToString();
                         var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + modelFormat);
 
-                        using (var message = await client.PostAsync(endPoint, content))
+                        using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
                         {
-                            var json = await message.Content.ReadAsStringAsync();
+                            var json = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
                             message.EnsureSuccessStatusCode();
                             return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
                         }
@@ -364,9 +377,8 @@ namespace Jarvis.DocumentStore.Client
             AddFormatFromObjectToDocumentModel model,
             IDictionary<string, object> customData = null)
         {
-            using (var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes((model.StringContent))))
+            using (var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes(model.StringContent)))
             {
-
                 using (var client = new HttpClient())
                 {
                     using (
@@ -392,9 +404,9 @@ namespace Jarvis.DocumentStore.Client
 
                         var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + model.Format);
 
-                        using (var message = await client.PostAsync(endPoint, content))
+                        using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
                         {
-                            var json = await message.Content.ReadAsStringAsync();
+                            var json = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
                             message.EnsureSuccessStatusCode();
                             return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
                         }
@@ -409,10 +421,9 @@ namespace Jarvis.DocumentStore.Client
             {
                 var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/" + documentFormat);
 
-                await client.DeleteAsync(resourceUri);
+                await client.DeleteAsync(resourceUri).ConfigureAwait(false);
             }
         }
-
 
         /// <summary>
         /// Serialize custom data to json string
@@ -457,8 +468,8 @@ namespace Jarvis.DocumentStore.Client
             {
                 var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@customdata");
 
-                var json = await client.GetStringAsync(endPoint);
-                return await FromJsonAsync<IDictionary<string, object>>(json);
+                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
+                return await FromJsonAsync<IDictionary<string, object>>(json).ConfigureAwait(false);
             }
         }
 
@@ -468,7 +479,7 @@ namespace Jarvis.DocumentStore.Client
             {
                 var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@filename");
 
-                var json = await client.GetStringAsync(endPoint);
+                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
                 var response = FromJson<JObject>(json);
                 return response["fileName"].Value<String>();
             }
@@ -486,7 +497,9 @@ namespace Jarvis.DocumentStore.Client
             format = format ?? OriginalFormat;
             var relativeUri = Tenant + "/documents/" + documentHandle + "/" + format;
             if (options != null && !string.IsNullOrWhiteSpace(options.FileName))
+            {
                 relativeUri = relativeUri + "/" + options.FileName;
+            }
 
             var endPoint = new Uri(_documentStoreUri, relativeUri);
             return new DocumentFormatReader(endPoint, options);
@@ -515,7 +528,7 @@ namespace Jarvis.DocumentStore.Client
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle);
             using (var client = new HttpClient())
             {
-                await client.DeleteAsync(resourceUri);
+                await client.DeleteAsync(resourceUri).ConfigureAwait(false);
             }
         }
 
@@ -530,7 +543,7 @@ namespace Jarvis.DocumentStore.Client
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments/" + handle + "/" + source);
             using (var client = new HttpClient())
             {
-                await client.DeleteAsync(resourceUri);
+                await client.DeleteAsync(resourceUri).ConfigureAwait(false);
             }
         }
 
@@ -544,8 +557,8 @@ namespace Jarvis.DocumentStore.Client
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle);
             using (var client = new HttpClient())
             {
-                var json = await client.GetStringAsync(resourceUri);
-                var d = await FromJsonAsync<IDictionary<DocumentFormat, Uri>>(json);
+                var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
+                var d = await FromJsonAsync<IDictionary<DocumentFormat, Uri>>(json).ConfigureAwait(false);
                 return new DocumentFormats(d);
             }
         }
@@ -555,8 +568,8 @@ namespace Jarvis.DocumentStore.Client
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments/" + handle);
             using (var client = new HttpClient())
             {
-                var json = await client.GetStringAsync(resourceUri);
-                var d = await FromJsonAsync<ClientAttachmentInfo[]>(json);
+                var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
+                var d = await FromJsonAsync<ClientAttachmentInfo[]>(json).ConfigureAwait(false);
                 return new DocumentAttachments(d);
             }
         }
@@ -566,8 +579,8 @@ namespace Jarvis.DocumentStore.Client
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments_fat/" + handle);
             using (var client = new HttpClient())
             {
-                var json = await client.GetStringAsync(resourceUri);
-                var d = await FromJsonAsync<List<DocumentAttachmentsFat.AttachmentInfo>>(json);
+                var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
+                var d = await FromJsonAsync<List<DocumentAttachmentsFat.AttachmentInfo>>(json).ConfigureAwait(false);
                 return new DocumentAttachmentsFat(d);
             }
         }
@@ -582,8 +595,8 @@ namespace Jarvis.DocumentStore.Client
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/content");
             using (var client = new HttpClient())
             {
-                var json = await client.GetStringAsync(endPoint);
-                return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default);
+                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
+                return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default).ConfigureAwait(false);
             }
         }
 
@@ -604,7 +617,9 @@ namespace Jarvis.DocumentStore.Client
             string folder = Path.GetDirectoryName(fileName);
 
             if (folder == null)
+            {
                 throw new Exception("Invalid folder");
+            }
 
             string json = JsonConvert.SerializeObject(did, Formatting.Indented);
             if (!Directory.Exists(folder))
@@ -613,7 +628,6 @@ namespace Jarvis.DocumentStore.Client
             }
             File.WriteAllText(fileName, json);
         }
-
 
         /// <summary>
         /// Retrieve custom data from DocumentStore
@@ -625,8 +639,8 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new HttpClient())
             {
                 Uri endPoint = GenerateUriForFeed(startFeed, numOfFeeds, types);
-                var json = await client.GetStringAsync(endPoint);
-                return await FromJsonAsync<IEnumerable<ClientFeed>>(json);
+                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
+                return await FromJsonAsync<IEnumerable<ClientFeed>>(json).ConfigureAwait(false);
             }
         }
 
@@ -650,7 +664,7 @@ namespace Jarvis.DocumentStore.Client
             var getJobsUri = GenerateUriForGetJobs(handle);
             using (var client = new WebClient())
             {
-                var result = await client.DownloadStringTaskAsync(getJobsUri);
+                var result = await client.DownloadStringTaskAsync(getJobsUri).ConfigureAwait(false);
                 return GenerateArrayOfJobs(result);
             }
         }
@@ -665,10 +679,9 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-
         public async Task<Boolean> ComposeDocumentsAsync(
             DocumentHandle resultingDocumentHandle,
-            String resultingDocumentFileName, 
+            String resultingDocumentFileName,
             params DocumentHandle[] documentList)
         {
             Uri composePdfUri = GenerateUriForComposePdf();
@@ -676,13 +689,13 @@ namespace Jarvis.DocumentStore.Client
             {
                 ComposeDocumentsModel parameter = CreateParameterForComposeDocuments(resultingDocumentHandle, resultingDocumentFileName, documentList);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                var result = await client.UploadStringTaskAsync(composePdfUri, JsonConvert.SerializeObject(parameter));
+                var result = await client.UploadStringTaskAsync(composePdfUri, JsonConvert.SerializeObject(parameter)).ConfigureAwait(false);
                 return CreateReturnObjectForComposeDocuments(result);
             }
         }
 
         public Boolean ComposeDocuments(
-                DocumentHandle resultingDocumentHandle, 
+                DocumentHandle resultingDocumentHandle,
                 String resultingDocumentFileName,
                 params DocumentHandle[] documentList)
         {
@@ -712,9 +725,9 @@ namespace Jarvis.DocumentStore.Client
                 uriString = uriString + "?" + sb.ToString();
             }
 
-            var endPoint = new Uri(_documentStoreUri, uriString);
-            return endPoint;
+            return new Uri(_documentStoreUri, uriString);
         }
+
         private Uri GenerateUriForGetJobs(DocumentHandle handle)
         {
             return new Uri(_documentStoreUri, "queue/getJobs/" + Tenant + "/" + handle.ToString());
@@ -731,7 +744,7 @@ namespace Jarvis.DocumentStore.Client
         }
 
         private static ComposeDocumentsModel CreateParameterForComposeDocuments(
-            DocumentHandle resultingDocumentHandle, 
+            DocumentHandle resultingDocumentHandle,
             String resultingDocumentFileName,
             DocumentHandle[] documentList)
         {
@@ -749,8 +762,7 @@ namespace Jarvis.DocumentStore.Client
             return resultJson["result"].Value<String>() == "ok";
         }
 
-
         #endregion
-
     }
+#pragma warning restore S1075 // URIs should not be hardcoded
 }

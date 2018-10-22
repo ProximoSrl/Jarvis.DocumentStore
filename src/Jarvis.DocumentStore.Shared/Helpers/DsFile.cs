@@ -127,7 +127,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         {
             if (!DsFile.Exists(path))
             {
-                using (DsFile.Create(path)) ;
+                using (DsFile.Create(path));
             }
             if (path != null && path.Length < 240)
                 return System.IO.File.OpenWrite(path);
