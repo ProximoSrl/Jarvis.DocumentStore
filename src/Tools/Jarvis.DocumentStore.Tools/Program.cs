@@ -1,22 +1,19 @@
 ﻿using Jarvis.ConfigurationService.Client;
 using Jarvis.Framework.Shared.IdentitySupport;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tools
 {
-    class Program
+    internal static class Program
     {
-        static Int32 Main(string[] args)
+        private static Int32 Main(string[] args)
         {
             try
             {
@@ -78,7 +75,6 @@ this should be changed to
             Console.ReadKey();
             Process.Start("_lasterror.txt");
             return 1;
-
         }
 
         private static void RunShell()
@@ -87,16 +83,19 @@ this should be changed to
             ConfigurationServiceClient.AppDomainInitializer(
                 (message, isError, exception) =>
                 {
-                    if (isError) Console.Error.WriteLine(message + "\n" + exception);
-                    else Console.WriteLine(message);
+                    if (isError)
+                    {
+                        Console.Error.WriteLine(message + "\n" + exception);
+                    }
+                    else
+                    {
+                        Console.WriteLine(message);
+                    }
                 },
                 "JARVIS_CONFIG_SERVICE",
                 null,
                 new FileInfo("defaultParameters.config"),
                 missingParametersAction: ConfigurationManagerMissingParametersAction.Blank);
-
-            //LoadBretonProject test = new LoadBretonProject();
-            //test.Import(@"Z:\Secure\breton\940304_Smartflex\940304_Smartflex.xlsx", "jarvis");
 
             var commands = new Dictionary<String, Func<Boolean>>();
             commands.Add("Check oprhaned blob", () =>
@@ -116,12 +115,6 @@ this should be changed to
                 return false;
             });
 
-            //commands.Add("Start sync artifacts using rmStream", () =>
-            //{
-            //    RmStreamArtifactSyncJob.StartSync();
-            //    return false;
-            //});
-
             Menu(commands.Keys.ToList());
             CommandLoop(c =>
             {
@@ -135,7 +128,10 @@ this should be changed to
                 else
                 {
                     if (String.Equals(c, "q", StringComparison.InvariantCultureIgnoreCase))
+                    {
                         return true;
+                    }
+
                     Console.WriteLine("Comando non valido! Premere un tasto per continuare");
                     Console.ReadKey();
                 }
@@ -144,39 +140,34 @@ this should be changed to
             });
         }
 
-        static void CommandLoop(Func<string, bool> action, String prompt = ">")
+        private static void CommandLoop(Func<string, bool> action, String prompt = ">")
         {
             while (true)
             {
                 Console.Write(prompt);
                 var command = Console.ReadLine();
                 if (command == null)
+                {
                     continue;
+                }
 
                 command = command.ToLowerInvariant().Trim();
 
                 if (action(command))
+                {
                     return;
+                }
             }
         }
 
-     
-        static void Message(string msg)
-        {
-            Console.WriteLine("");
-            Console.WriteLine(msg);
-            Console.WriteLine("(invio per continuare)");
-            Console.ReadLine();
-        }
-
-        static void Banner(string title)
+        private static void Banner(string title)
         {
             Console.WriteLine("-----------------------------");
             Console.WriteLine(title);
             Console.WriteLine("-----------------------------");
         }
 
-        static void Menu(List<string> headers)
+        private static void Menu(List<string> headers)
         {
             Console.Clear();
             Banner("Menu");

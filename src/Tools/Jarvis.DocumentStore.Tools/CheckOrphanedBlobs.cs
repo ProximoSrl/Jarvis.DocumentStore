@@ -4,9 +4,6 @@ using MongoDB.Driver.GridFS;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tools
 {
@@ -15,7 +12,7 @@ namespace Jarvis.DocumentStore.Tools
         private static DateTime _dateLimit;
 
         /// <summary>
-        /// 
+        /// Execute the check.
         /// </summary>
         /// <param name="dateLimit">To avoid deleting formats orphaned caused by slow projection
         /// this parameter avoid to delete format newer than this value</param>
@@ -44,7 +41,10 @@ namespace Jarvis.DocumentStore.Tools
                     allValidBlobs.Add(format["v"]["BlobId"].AsString);
                 }
                 count++;
-                if (count % 100 == 0) Console.WriteLine("Scanned {0} descriptors." + count);
+                if (count % 100 == 0)
+                {
+                    Console.WriteLine("Scanned {0} descriptors." + count);
+                }
             }
 
             Console.WriteLine("Found {0} valid formats in rm.DocumentDescriptor readmodel", allValidBlobs.Count);
@@ -96,7 +96,6 @@ namespace Jarvis.DocumentStore.Tools
                     }
                 }
             }
-
         }
 
         private static HashSet<String> CheckBlobStore(

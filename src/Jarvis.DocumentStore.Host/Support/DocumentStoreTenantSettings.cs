@@ -64,11 +64,11 @@ namespace Jarvis.DocumentStore.Host.Support
                 {
                     var shareRoot = match.Groups["root"].Value.TrimEnd('/', '\\');
                     var errors = PinvokeWindowsNetworking.ConnectToRemote(shareRoot, _config.StorageUserName, _config.StoragePassword);
-                    //TODO: Logging errors.
-                    //if (!String.IsNullOrEmpty(errors))
-                    //{
-                    //    _logger.Error($"Unable to map network share {storageValue} with username {_config.StorageUserName}. Error: {errors}");
-                    //}
+                    if (!String.IsNullOrEmpty(errors))
+                    {
+                        //We cannot go on, we have no ability to save into file system.
+                        throw new ApplicationException($"Unable to map network share {storageValue} with username {_config.StorageUserName}. Error: {errors}");
+                    }
                 }
             }
             Set("storage.fs." + name, storageValue);

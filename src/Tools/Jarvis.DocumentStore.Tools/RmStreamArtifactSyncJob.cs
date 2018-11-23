@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Tools
         public string DestinationOriginalConnectionString { get; private set; }
         public string DestinationArtifactsConnectionString { get; private set; }
 
-        CheckpointSaveDataManager _checkpointSavedDataManager;
+        private CheckpointSaveDataManager _checkpointSavedDataManager;
 
         public Int64 GetLastSyncedCheckpoint()
         {
@@ -45,8 +45,6 @@ namespace Jarvis.DocumentStore.Tools
         {
             _checkpointSavedDataManager.SaveCheckpoint(Tenant, checkpoint);
         }
-
-
 
         internal void SetDestination(string destinationConnectionOriginal, string destinationConnectionArtifacts)
         {
@@ -74,13 +72,8 @@ namespace Jarvis.DocumentStore.Tools
         }
     }
 
-
-
-    static class FullArtifactSyncJob
+    internal static class FullArtifactSyncJob
     {
-
-
-
         internal static void StartSync()
         {
             //grab all tenants from configuration manager.
@@ -135,7 +128,6 @@ namespace Jarvis.DocumentStore.Tools
                 tasks.Add(task);
             }
             Task.WaitAll(tasks.ToArray());
-
         }
 
         private static void StartSyncingConfig(ArtifactSyncJobConfig config)
@@ -197,14 +189,13 @@ namespace Jarvis.DocumentStore.Tools
                 public string ext { get; set; }
             }
         }
-
     }
-    class CheckpointSaveDataManager
+
+    internal class CheckpointSaveDataManager
     {
         private string FilePath =
             Path.Combine(
             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RmStreamArtifactSyncJob.rm-checkpoint.txt");
-
 
         public long LoadTenantCheckpoint(String tenantId)
         {
@@ -233,7 +224,6 @@ namespace Jarvis.DocumentStore.Tools
             return FilePath + "." + tenantId;
         }
     }
-
 
     internal class SyncUnitConfiguration
     {
@@ -273,7 +263,7 @@ namespace Jarvis.DocumentStore.Tools
     /// </summary>
     internal class SyncUnit
     {
-        private SyncUnitConfigurator _configurator;
+        private readonly SyncUnitConfigurator _configurator;
 
         public SyncUnit(SyncUnitConfigurator configurator)
         {
@@ -330,7 +320,9 @@ namespace Jarvis.DocumentStore.Tools
             {
                 var exists = cursor.FirstOrDefault();
                 if (exists != null)
+                {
                     return true; //Already synced, true 
+                }
             }
 
             var source = sourceBucket.Find(findIdFilter).FirstOrDefault();
@@ -340,7 +332,9 @@ namespace Jarvis.DocumentStore.Tools
             }
 
             if (dateTimeUploadFilter.HasValue && source.UploadDateTime > dateTimeUploadFilter)
+            {
                 return false; //Consider this as not existing.
+            }
 
             var sw = Stopwatch.StartNew();
             Console.WriteLine("Sync needed Tenant {0}/{1}: ", config.Tenant, fileId);
@@ -360,61 +354,5 @@ namespace Jarvis.DocumentStore.Tools
             sw.Stop();
             return true;
         }
-
     }
-
-    ///// <summary>
-    ///// This job keeps everything syncronyzed using the rm.stream as
-    ///// source, this will prevent syncing duplicated artifacts.
-    ///// </summary>
-    //static class RmStreamArtifactSyncJob
-    //{
-
-    //    internal static void StartSync()
-    //    {
-    //        var checkPointManager = new Checkpoint();
-    //        var checkpoint = checkPointManager.LoadRmCheckpoint();
-
-    //        // start reading the rmStream collection (maybe in chuncks)
-    //        var sourceMongoUrl = new MongoUrl(ArtifactSyncJobConfig.dsDocs_ConnectionString);
-    //        var sourceDatabase = new MongoClient(sourceMongoUrl).GetDatabase(sourceMongoUrl.DatabaseName);
-    //        var rmStream = sourceDatabase.GetCollection<StreamReadModelDto>("rm.Stream");
-    //        var files = rmStream.AsQueryable()
-    //            .Where(f => f.Id > checkpoint &&
-    //                f.EventType == HandleStreamEventTypes.DocumentHasNewFormat)
-    //            .OrderBy(f => f.Id);
-
-    //        var syncUnit = new SyncUnit(new SyncUnitConfigurator());
-
-    //        foreach (var file in files)
-    //        {
-    //            syncUnit.Sync(file.FormatInfo.BlobId);
-    //            // very bad design, should work on a separate thread and persist this only if we stop
-    //            // the job
-    //            checkPointManager.SaveRmCheckpoint(file.Id);
-    //        }
-    //    }
-
-    //    /// <summary>
-    //    /// utility classes to read the rmStream collection with configuring the whole world
-    //    /// </summary>
-    //    [MongoDB.Bson.Serialization.Attributes.BsonIgnoreExtraElements]
-    //    internal class StreamReadModelDto
-    //    {
-    //        public long Id { get; internal set; }
-
-    //        public HandleStreamEventTypes EventType { get; internal set; }
-
-    //        public FormatInfo FormatInfo { get; internal set; }
-
-    //        public FileNameWithExtension Filename { get; set; }
-
-    //        internal class FileNameWithExtension
-    //        {
-    //            public string name { get; set; }
-
-    //            public string ext { get; set; }
-    //        }
-    //    }
-    //}
 }

@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace Jarvis.DocumentStore.Client
 {
@@ -38,7 +35,7 @@ namespace Jarvis.DocumentStore.Client
 
         public async Task<Stream> OpenStream()
         {
-            var response = await _request.GetResponseAsync();
+            var response = await _request.GetResponseAsync().ConfigureAwait(false);
             this.ContentLength = response.ContentLength;
             this.ReponseHeaders = response.Headers;
             return response.GetResponseStream();

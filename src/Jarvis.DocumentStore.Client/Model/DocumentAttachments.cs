@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Jarvis.DocumentStore.Client.Model
+﻿namespace Jarvis.DocumentStore.Client.Model
 {
     public class DocumentAttachments
     {
-        readonly ClientAttachmentInfo[] _attachments;
+        private readonly ClientAttachmentInfo[] _attachments;
+
         public ClientAttachmentInfo[] Attachments
         {
             get { return _attachments; }
@@ -18,8 +13,5 @@ namespace Jarvis.DocumentStore.Client.Model
         {
             _attachments = attachments;
         }
-
-
-
     }
 }

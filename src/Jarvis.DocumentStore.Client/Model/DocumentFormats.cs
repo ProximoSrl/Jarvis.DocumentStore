@@ -56,5 +56,4 @@ namespace Jarvis.DocumentStore.Client.Model
             get { return _formats.Count; }
         }
     }
-
 }

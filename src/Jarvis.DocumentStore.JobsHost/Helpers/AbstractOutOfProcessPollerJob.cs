@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.Serialization.Formatters;
-using System.Threading.Tasks;
-using System.Timers;
-using Castle.Core.Logging;
+﻿using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Runtime.Serialization.Formatters;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using System.Text;
 
 namespace Jarvis.DocumentStore.JobsHost.Helpers
 {
@@ -42,13 +41,13 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private String _handle;
 
-        readonly JsonSerializerSettings _settings;
+        private readonly JsonSerializerSettings _settings;
 
         public const Int32 MaxFileNameLength = 220;
 
         public IClientPasswordSet ClientPasswordSet { get; set; }
 
-        public AbstractOutOfProcessPollerJob()
+        protected AbstractOutOfProcessPollerJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
             ClientPasswordSet = NullClientPasswordSet.Instance;
@@ -70,7 +69,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private class DsEndpoint
         {
-            public DsEndpoint(string getNextJobUrl, string setJobCompleted, String reQueueJob, Uri baseUrl)
+            public DsEndpoint(
+                string getNextJobUrl,
+                string setJobCompleted,
+                String reQueueJob,
+                Uri baseUrl)
             {
                 GetNextJobUrl = getNextJobUrl;
                 SetJobCompleted = setJobCompleted;
@@ -147,9 +150,17 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         public void Start(List<String> documentStoreAddressUrls, String handle)
         {
-            if (Started) return;
+            if (Started)
+            {
+                return;
+            }
+
             _handle = handle;
-            if (documentStoreAddressUrls.Count == 0) throw new ArgumentException("Component needs at least a document store url", "documentStoreAddressUrls");
+            if (documentStoreAddressUrls.Count == 0)
+            {
+                throw new ArgumentException("Component needs at least a document store url", "documentStoreAddressUrls");
+            }
+
             _dsEndpoints = documentStoreAddressUrls
                 .Select(addr => new DsEndpoint(
                         addr.TrimEnd('/') + "/queue/getnextjob",
@@ -163,7 +174,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         public void Stop()
         {
-            if (!Started) return;
+            if (!Started)
+            {
+                return;
+            }
+
             Started = false;
             _pollingTimer.Stop();
             _pollingTimer.Dispose();
@@ -181,7 +196,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private Int32 _numOfPollerTaskActive = 0;
 
-        void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _pollingTimer.Stop();
 
@@ -218,7 +233,10 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             }
             finally
             {
-                if (Started && _pollingTimer != null) _pollingTimer.Start();
+                if (Started && _pollingTimer != null)
+                {
+                    _pollingTimer.Start();
+                }
             }
         }
 
@@ -249,7 +267,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                         JobsHostConfiguration.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
                         baseParameters.JobId
                     );
-                if (Directory.Exists(workingFolder)) Directory.Delete(workingFolder, true);
+                if (Directory.Exists(workingFolder))
+                {
+                    Directory.Delete(workingFolder, true);
+                }
+
                 Directory.CreateDirectory(workingFolder);
                 try
                 {
@@ -373,7 +395,10 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         private static string SafeGetParameter(QueuedJobDto nextJob, String parameter)
         {
             if (nextJob.Parameters.ContainsKey(parameter))
+            {
                 return nextJob.Parameters[parameter];
+            }
+
             return String.Empty;
         }
 
@@ -442,7 +467,10 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             };
 
             var response = await client.AddFormatToDocument(model, customData).ConfigureAwait(false);
-            if (Logger.IsInfoEnabled) Logger.Info($"Job {this.GetType()} Added format {format} to handle with job id {jobId}");
+            if (Logger.IsInfoEnabled)
+            {
+                Logger.Info($"Job {this.GetType()} Added format {format} to handle with job id {jobId}");
+            }
 
             return response != null;
         }
@@ -568,7 +596,9 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 try
                 {
                     if (Directory.Exists(workingFolder))
+                    {
                         Directory.Delete(workingFolder, true);
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 {
@@ -76,7 +72,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
                 this.message = message;
             }
         }
-        
+
         // Created with excel formula:
         // ="new ErrorClass("&A1&", """&PROPER(SUBSTITUTE(MID(A1,7,LEN(A1)-6), "_", " "))&"""), "
         private static ErrorClass[] ERROR_LIST = new ErrorClass[] {
@@ -106,7 +102,10 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
         {
             foreach (ErrorClass er in ERROR_LIST)
             {
-                if (er.num == errNum) return er.message;
+                if (er.num == errNum)
+                {
+                    return er.message;
+                }
             }
             return "Error: Unknown, " + errNum;
         }
@@ -159,18 +158,29 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 
             int ret;
             if (promptUser)
+            {
                 ret = WNetUseConnection(IntPtr.Zero, nr, "", "", CONNECT_INTERACTIVE | CONNECT_PROMPT, null, null, null);
+            }
             else
+            {
                 ret = WNetUseConnection(IntPtr.Zero, nr, password, username, 0, null, null, null);
+            }
+            if (ret == NO_ERROR)
+            {
+                return null;
+            }
 
-            if (ret == NO_ERROR) return null;
             return GetErrorForNumber(ret);
         }
 
         public static string DisconnectRemote(string remoteUNC)
         {
             int ret = WNetCancelConnection2(remoteUNC, CONNECT_UPDATE_PROFILE, false);
-            if (ret == NO_ERROR) return null;
+            if (ret == NO_ERROR)
+            {
+                return null;
+            }
+
             return GetErrorForNumber(ret);
         }
     }
