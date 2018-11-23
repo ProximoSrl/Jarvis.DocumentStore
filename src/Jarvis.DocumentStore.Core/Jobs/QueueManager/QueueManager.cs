@@ -243,6 +243,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             var info = _queueTenantInfos.SingleOrDefault(i => i.TenantId == tenantId);
             if (info == null)
                 throw new ArgumentException("Invalid tenant " + tenantId, "tenant");
+
             var originalFormat = new DocumentFormat("original");
             var lastStream = info.StreamReader.AllUnsorted
                 .Where(s => s.FormatInfo.DocumentFormat == originalFormat &&
@@ -270,7 +271,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         public bool QueueJob(String queueName, QueuedJob job)
         {
             return (Boolean)ExecuteWithQueueHandler("set job executed", queueName, qh => qh.QueueJob(job));
-
         }
 
         private void Poll()
@@ -349,8 +349,8 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             {
                 var jobs = ExecuteWithQueueHandler("get job for handle", queueName, h => h.GetJobsForHandle(tenantId, handle));
                 retValue.AddRange(jobs.Select(j => new QueuedJobInfo(
-                    j.Id, 
-                    queueName, 
+                    j.Id,
+                    queueName,
                     j.Status == QueuedJobExecutionStatus.Succeeded || j.Status == QueuedJobExecutionStatus.Failed,
                     j.Status == QueuedJobExecutionStatus.Succeeded)));
             }

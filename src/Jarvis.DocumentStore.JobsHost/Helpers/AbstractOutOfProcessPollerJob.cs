@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.Serialization.Formatters;
-using System.Threading.Tasks;
-using System.Timers;
-using Castle.Core.Logging;
+﻿using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Runtime.Serialization.Formatters;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
 using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using System.Text;
 
 namespace Jarvis.DocumentStore.JobsHost.Helpers
 {
@@ -42,13 +41,13 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private String _handle;
 
-        readonly JsonSerializerSettings _settings;
+        private readonly JsonSerializerSettings _settings;
 
         public const Int32 MaxFileNameLength = 220;
 
         public IClientPasswordSet ClientPasswordSet { get; set; }
 
-        public AbstractOutOfProcessPollerJob()
+        protected AbstractOutOfProcessPollerJob()
         {
             _identity = Environment.MachineName + "_" + System.Diagnostics.Process.GetCurrentProcess().Id;
             ClientPasswordSet = NullClientPasswordSet.Instance;
@@ -61,7 +60,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private List<DsEndpoint> _dsEndpoints;
 
-        protected virtual Int32 ThreadNumber 
+        protected virtual Int32 ThreadNumber
         {
             get { return 1; }
         }
@@ -70,7 +69,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private class DsEndpoint
         {
-            public DsEndpoint(string getNextJobUrl, string setJobCompleted, String reQueueJob, Uri baseUrl)
+            public DsEndpoint(
+                string getNextJobUrl,
+                string setJobCompleted,
+                String reQueueJob,
+                Uri baseUrl)
             {
                 GetNextJobUrl = getNextJobUrl;
                 SetJobCompleted = setJobCompleted;
@@ -90,12 +93,18 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         protected class ProcessResult
         {
             public static readonly ProcessResult Ok;
-            public static readonly ProcessResult Fail;
 
             static ProcessResult()
             {
                 Ok = new ProcessResult(true);
-                Fail = new ProcessResult(false);
+            }
+
+            public static ProcessResult Fail(String errorMessage)
+            {
+                return new ProcessResult(false)
+                {
+                    ErrorMessage = errorMessage
+                };
             }
 
             public ProcessResult(Boolean result)
@@ -111,7 +120,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             }
 
             public ProcessResult(TimeSpan posticipationTimestamp, Dictionary<String, String> parametersToModify)
-                : this (posticipationTimestamp)
+                : this(posticipationTimestamp)
             {
                 ParametersToModify = parametersToModify;
             }
@@ -132,18 +141,31 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             /// The job can ask for modification of parameters upon execution.
             /// </summary>
             public Dictionary<String, String> ParametersToModify { get; set; }
+
+            /// <summary>
+            /// This property contains the error message if the result is false.
+            /// </summary>
+            public String ErrorMessage { get; internal set; }
         }
 
         public void Start(List<String> documentStoreAddressUrls, String handle)
         {
-            if (Started) return;
+            if (Started)
+            {
+                return;
+            }
+
             _handle = handle;
-            if (documentStoreAddressUrls.Count == 0) throw new ArgumentException("Component needs at least a document store url", "documentStoreAddressUrls");
+            if (documentStoreAddressUrls.Count == 0)
+            {
+                throw new ArgumentException("Component needs at least a document store url", "documentStoreAddressUrls");
+            }
+
             _dsEndpoints = documentStoreAddressUrls
                 .Select(addr => new DsEndpoint(
                         addr.TrimEnd('/') + "/queue/getnextjob",
                         addr.TrimEnd('/') + "/queue/setjobcomplete",
-                        addr.TrimEnd('/') + "/queue/reQueue", 
+                        addr.TrimEnd('/') + "/queue/reQueue",
                         new Uri(addr)))
                 .ToList();
             Start(JobsHostConfiguration.QueueJobsPollInterval);
@@ -152,7 +174,11 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         public void Stop()
         {
-            if (!Started) return;
+            if (!Started)
+            {
+                return;
+            }
+
             Started = false;
             _pollingTimer.Stop();
             _pollingTimer.Dispose();
@@ -170,7 +196,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
 
         private Int32 _numOfPollerTaskActive = 0;
 
-        void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _pollingTimer.Stop();
 
@@ -207,7 +233,10 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             }
             finally
             {
-                if (Started && _pollingTimer != null) _pollingTimer.Start();
+                if (Started && _pollingTimer != null)
+                {
+                    _pollingTimer.Start();
+                }
             }
         }
 
@@ -226,7 +255,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 }
                 String workingFolder = null;
                 QueuedJobDto nextJob = DsGetNextJob();
-                if (nextJob == null) 
+                if (nextJob == null)
                 {
                     System.Threading.Interlocked.Decrement(ref _numOfPollerTaskActive);
                     return;
@@ -238,40 +267,56 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                         JobsHostConfiguration.GetWorkingFolder(baseParameters.TenantId, GetType().Name),
                         baseParameters.JobId
                     );
-                if (Directory.Exists(workingFolder)) Directory.Delete(workingFolder, true);
+                if (Directory.Exists(workingFolder))
+                {
+                    Directory.Delete(workingFolder, true);
+                }
+
                 Directory.CreateDirectory(workingFolder);
                 try
                 {
                     var task = OnPolling(baseParameters, workingFolder);
                     var result = task.Result;
-                    Logger.DebugFormat("Finished Job: {0} with result;", nextJob.Id, result);
-                    if (result.Posticipate == false)
+                    if (result.Result)
                     {
-                        DsSetJobExecuted(QueueName, nextJob.Id, "", result.ParametersToModify);
+                        Logger.DebugFormat("Successfully executed Job: {0}", nextJob.Id);
                     }
                     else
                     {
-                        DsReQueueJob(QueueName, nextJob.Id, "", result.PosticipateExecutionTimestamp, result.ParametersToModify);
+                        Logger.ErrorFormat("Job {0} completed with errors: {1} with result", nextJob.Id, result.ErrorMessage);
+                    }
+
+                    //The execution if failed can be posticipated to future time, probably because the job can retry after a certain
+                    //period of time.
+                    if (!result.Posticipate)
+                    {
+                        DsSetJobExecuted(QueueName, nextJob.Id, result.ErrorMessage, result.ParametersToModify);
+                    }
+                    else
+                    {
+                        DsReQueueJob(QueueName, nextJob.Id, result.ErrorMessage, result.PosticipateExecutionTimestamp, result.ParametersToModify);
                     }
                 }
                 catch (AggregateException aex)
                 {
-                    Logger.ErrorFormat(aex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
-                        nextJob.Parameters[JobKeys.TenantId]);
+                    Logger.ErrorFormat(aex, "Error executing queued job {0} on tenant {1} - {2}",
+                        nextJob.Id,
+                        nextJob.Parameters[JobKeys.TenantId],
+                        aex?.InnerExceptions?[0]?.Message);
                     StringBuilder aggregateMessage = new StringBuilder();
                     aggregateMessage.Append(aex.Message);
                     foreach (var ex in aex.InnerExceptions)
                     {
                         var errorMessage = String.Format("Inner error queued job {0} queue {1}: {2}", nextJob.Id, this.QueueName, ex.Message);
-                        Logger.Error( errorMessage, ex);
+                        LogExceptionAndAllInnerExceptions(ex, errorMessage);
                         aggregateMessage.Append(errorMessage);
                     }
                     DsSetJobExecuted(QueueName, nextJob.Id, aggregateMessage.ToString(), null);
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorFormat(ex, "Error executing queued job {0} on tenant {1}", nextJob.Id,
-                        nextJob.Parameters[JobKeys.TenantId]);
+                    var errorMessage = String.Format("Error executing queued job {0} on tenant {1}", nextJob.Id, nextJob.Parameters[JobKeys.TenantId]);
+                    LogExceptionAndAllInnerExceptions(ex, errorMessage);
                     DsSetJobExecuted(QueueName, nextJob.Id, ex.Message, null);
                 }
                 finally
@@ -282,7 +327,16 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             } while (true); //Exit is in the internal loop
         }
 
-        private void DsSetJobExecuted(string queueName, string jobId, string message, Dictionary<String, String> parametersToModify)
+        private void LogExceptionAndAllInnerExceptions(Exception ex, string errorMessage)
+        {
+            Logger.Error(errorMessage, ex);
+            if (ex.InnerException != null)
+            {
+                LogExceptionAndAllInnerExceptions(ex.InnerException, errorMessage);
+            }
+        }
+
+        private void DsSetJobExecuted(string queueName, string jobId, string errorMessage, Dictionary<String, String> parametersToModify)
         {
             string pollerResult;
             using (WebClientEx client = new WebClientEx())
@@ -293,7 +347,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 {
                     QueueName = queueName,
                     JobId = jobId,
-                    ErrorMessage = message,
+                    ErrorMessage = errorMessage,
                     ParametersToModify = parametersToModify,
                 });
                 Logger.DebugFormat("SetJobExecuted url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
@@ -303,7 +357,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             }
         }
 
-        private void DsReQueueJob(string queueName, string jobId, string message, TimeSpan timeSpan, Dictionary<String, String> parametersToModify)
+        private void DsReQueueJob(string queueName, string jobId, string errorMessage, TimeSpan timeSpan, Dictionary<String, String> parametersToModify)
         {
             string pollerResult;
             using (WebClientEx client = new WebClientEx())
@@ -314,9 +368,9 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 {
                     QueueName = queueName,
                     JobId = jobId,
-                    ErrorMessage = message,
+                    ErrorMessage = errorMessage,
                     ReQueue = true,
-                    ReScheduleTimespanInSeconds = (Int32) timeSpan.TotalSeconds,
+                    ReScheduleTimespanInSeconds = (Int32)timeSpan.TotalSeconds,
                     ParametersToModify = parametersToModify
                 });
                 Logger.DebugFormat("ReQueuedJob url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
@@ -341,7 +395,10 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
         private static string SafeGetParameter(QueuedJobDto nextJob, String parameter)
         {
             if (nextJob.Parameters.ContainsKey(parameter))
+            {
                 return nextJob.Parameters[parameter];
+            }
+
             return String.Empty;
         }
 
@@ -390,7 +447,6 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 }
                 return null;
             }
-           
         }
 
         protected async Task<Boolean> AddFormatToDocumentFromFile(
@@ -410,7 +466,12 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 PathToFile = pathToFile
             };
 
-            var response = await client.AddFormatToDocument(model, customData);
+            var response = await client.AddFormatToDocument(model, customData).ConfigureAwait(false);
+            if (Logger.IsInfoEnabled)
+            {
+                Logger.Info($"Job {this.GetType()} Added format {format} to handle with job id {jobId}");
+            }
+
             return response != null;
         }
 
@@ -432,7 +493,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 FileName = originalFileName,
                 StringContent = JsonConvert.SerializeObject(obj),
             };
-            var response = await client.AddFormatToDocument(model, customData);
+            var response = await client.AddFormatToDocument(model, customData).ConfigureAwait(false);
             return response != null;
         }
 
@@ -444,9 +505,9 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             String relativePath,
             IDictionary<string, object> customData)
         {
-            DocumentStoreServiceClient client = GetDocumentStoreClient( tenantId);
+            DocumentStoreServiceClient client = GetDocumentStoreClient(tenantId);
 
-            var response = await client.UploadAttachmentAsync(pathToFile, this.QueueName, jobId, source, relativePath,  customData);
+            var response = await client.UploadAttachmentAsync(pathToFile, this.QueueName, jobId, source, relativePath, customData).ConfigureAwait(false);
             return response != null;
         }
 
@@ -478,20 +539,20 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
             using (var downloaded = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write))
             {
-                var stream = await reader.OpenStream();
+                var stream = await reader.OpenStream().ConfigureAwait(false);
                 stream.CopyTo(downloaded);
             }
             Logger.DebugFormat("Downloaded blob for job {0} for tenant {1} in local file {2}", jobId, tenantId, fileName);
             return fileName;
         }
 
-        protected async Task<Stream> GetBlobFormatReader(
+        protected Task<Stream> GetBlobFormatReader(
             String tenantId,
             String jobId)
         {
             DocumentStoreServiceClient client = GetDocumentStoreClient(tenantId);
-            var reader = client.OpenBlobIdForRead(this.QueueName, jobId);
-            return await reader.OpenStream();
+            var reader = client.OpenBlobIdForRead(QueueName, jobId);
+            return reader.OpenStream();
         }
 
         protected String[] GetFormats(String tenantId, String jobId)
@@ -501,8 +562,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 //TODO: use round robin if a document store is down.
                 var url = GetBlobUriForJobFormats(tenantId, jobId);
                 var result = client.DownloadString(url);
-                var formats = JsonConvert.DeserializeObject<String[]>(result);
-                return formats;
+                return JsonConvert.DeserializeObject<String[]>(result);
             }
         }
 
@@ -511,7 +571,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             return new DocumentStoreServiceClient(_dsEndpoints.First().BaseUrl, tenantId);
         }
 
-        protected String GetBlobUriForJobBlob(String tenantId, String jobId) 
+        protected String GetBlobUriForJobBlob(String tenantId, String jobId)
         {
             return String.Format("{0}/{1}/documents/jobs/blob/{2}/{3}",
                 _dsEndpoints.First().BaseUrl,
@@ -536,7 +596,9 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 try
                 {
                     if (Directory.Exists(workingFolder))
+                    {
                         Directory.Delete(workingFolder, true);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -545,10 +607,28 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             }
         }
 
-
         protected abstract Task<ProcessResult> OnPolling(
             PollerJobParameters parameters,
             String workingFolder);
-    }
 
+        protected Boolean IsForced(PollerJobParameters parameters)
+        {
+            String forceValue = null;
+            if (parameters.All.TryGetValue(JobKeys.Force, out forceValue))
+            {
+                return "true".Equals(forceValue, StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+
+        protected Boolean FromPipelineId(PollerJobParameters parameters, String pipeline)
+        {
+            String pipelineId = null;
+            if (parameters.All.TryGetValue(JobKeys.PipelineId, out pipelineId))
+            {
+                return pipeline.Equals(pipelineId, StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+    }
 }

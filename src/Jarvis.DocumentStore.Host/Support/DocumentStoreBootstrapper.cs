@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 using MongoDB.Driver.Core.Clusters;
 using Jarvis.DocumentStore.Shared.Helpers;
 using Jarvis.Framework.Shared.Helpers;
+using Owin.Metrics;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -42,12 +43,11 @@ namespace Jarvis.DocumentStore.Host.Support
         IWindsorContainer _container;
         ILogger _logger;
         DocumentStoreConfiguration _config;
-        private Boolean _initialized = false;
 
         private Boolean isStopped = false;
         public TenantManager Manager { get; private set; }
 
-        private String[] _databaseNames = new[] { "events", "originals", "artifacts", "system", "readmodel" };
+        private readonly String[] _databaseNames = new[] { "events", "originals", "artifacts", "system", "readmodel" };
 
         public void Start(DocumentStoreConfiguration config)
         {
@@ -81,13 +81,15 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 foreach (var connection in _databaseNames)
                 {
-                    DatabaseHealthCheck check = new DatabaseHealthCheck(
+#pragma warning disable S1848 // Objects should not be created to be dropped immediately without being used
+                    new DatabaseHealthCheck(
                           String.Format("Tenant: {0} [Db:{1}]", tenant.TenantId, connection),
                           tenant.GetConnectionString(connection));
+#pragma warning restore S1848 // Objects should not be created to be dropped immediately without being used
                 }
             }
 
-            while (StartupCheck() == false)
+            while (!StartupCheck())
             {
                 _logger.InfoFormat("Some precondition to start the service are not met. Will retry in 3 seconds!");
                 Thread.Sleep(3000);
@@ -113,7 +115,7 @@ namespace Jarvis.DocumentStore.Host.Support
             InitializeEverything(config);
 
             //Check if container misconfigured
-            _container.CheckConfiguration();          
+            _container.CheckConfiguration();
         }
 
         private bool StartupCheck()
@@ -148,15 +150,13 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             var url = new MongoUrl(connection);
             var client = new MongoClient(url);
-            Task.Factory.StartNew(() =>
-            {
-                var allDb = client.ListDatabases();
-            }); //forces a database connection
+            Task.Factory.StartNew(() => client.ListDatabases()); //forces a database connection
+
             Int32 spinCount = 0;
             ClusterState clusterState;
 
-            while ((clusterState = client.Cluster.Description.State) != ClusterState.Connected &&
-                spinCount++ < 100)
+            while ((clusterState = client.Cluster.Description.State) != ClusterState.Connected
+                && spinCount++ < 100)
             {
                 Thread.Sleep(20);
             }
@@ -176,18 +176,6 @@ namespace Jarvis.DocumentStore.Host.Support
 
             _logger.Debug("Configured Scheduler");
 
-            if (config.HasMetersEnabled)
-            {
-                //@@TODO: https://github.com/etishor/Metrics.NET/wiki/ElasticSearch
-                var binding = config.MetersOptions["http-endpoint"];
-                _logger.DebugFormat("Meters available on {0}", binding);
-
-                Metric
-                    .Config
-                    .WithHttpEndpoint(binding)
-                    .WithAllCounters();
-            }
-
             DocumentStoreApplication.SetConfig(config);
             if (config.IsApiServer)
             {
@@ -206,7 +194,7 @@ namespace Jarvis.DocumentStore.Host.Support
             {
                 var tenantInstallers = new List<IWindsorInstaller>
                 {
-                    new TenantCoreInstaller(tenant),
+                    new TenantCoreInstaller(tenant, config),
                     new TenantHandlersInstaller(tenant),
                     new TenantJobsInstaller(tenant)
                 };
@@ -221,7 +209,6 @@ namespace Jarvis.DocumentStore.Host.Support
 
                 tenant.Container.Install(tenantInstallers.ToArray());
                 tenant.Container.CheckConfiguration();
-
             }
 
             _webApplication = WebApp.Start<DocumentStoreApplication>(options);
@@ -239,10 +226,9 @@ namespace Jarvis.DocumentStore.Host.Support
                     _logger.ErrorFormat(ex, "Shutting down {0}", act.GetType().FullName);
                 }
             }
-            _initialized = true;
         }
 
-        void BuildContainer(DocumentStoreConfiguration config)
+        private void BuildContainer(DocumentStoreConfiguration config)
         {
             _container = new WindsorContainer();
             ContainerAccessor.Instance = _container;
@@ -262,7 +248,7 @@ namespace Jarvis.DocumentStore.Host.Support
             _logger = _container.Resolve<ILoggerFactory>().Create(GetType());
         }
 
-        TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)
+        private TenantManager BuildTenants(IWindsorContainer container, DocumentStoreConfiguration config)
         {
             _logger.Debug("Configuring tenants");
             var manager = new TenantManager(container.Kernel);
@@ -357,6 +343,7 @@ namespace Jarvis.DocumentStore.Host.Support
 
         public void Send(object msg)
         {
+            // Method intentionally left empty.
         }
     }
 }

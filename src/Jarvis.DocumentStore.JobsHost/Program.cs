@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Helpers;
-using Jarvis.Framework.MongoAppender;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Jarvis.Framework.MongoAppender;
+
 namespace Jarvis.DocumentStore.JobsHost
 {
-    public class Program
+    public static class Program
     {
-        static JobsHostConfiguration _jobsHostConfiguration;
+        private static JobsHostConfiguration _jobsHostConfiguration;
+        private static Boolean _autoRestart;
 
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
             try
             {
@@ -22,7 +23,12 @@ namespace Jarvis.DocumentStore.JobsHost
                 Int32 exitCode;
                 if (args.Length > 0)
                 {
-                    //TEMP: Single process executor run
+                    var autoExecution = FindArgument(args, "/autoRestart:");
+                    if ("true".Equals(autoExecution, StringComparison.OrdinalIgnoreCase))
+                    {
+                        SetupAutoRestart();
+                    }
+
                     String dsBaseAddress = FindArgument(args, "/dsuris:");
                     String queueName = FindArgument(args, "/queue:");
                     String handle = FindArgument(args, "/handle:", "Default");
@@ -34,6 +40,10 @@ namespace Jarvis.DocumentStore.JobsHost
                     }
 
                     exitCode = SingleJobStart(dsBaseAddress, queueName, handle);
+                    if (exitCode > 0)
+                    {
+                        ReStart();
+                    }
                     return exitCode;
                 }
 
@@ -51,7 +61,27 @@ namespace Jarvis.DocumentStore.JobsHost
                 File.WriteAllText(fileName, ex.ToString());
                 throw;
             }
-           
+        }
+
+        private static void SetupAutoRestart()
+        {
+            _autoRestart = true;
+        }
+
+        private static void ReStart()
+        {
+            if (!_autoRestart)
+                return;
+
+            var monitoredProcess = Process.GetCurrentProcess();
+            var startInfo = monitoredProcess.StartInfo;
+
+            var process = new System.Diagnostics.Process();
+            process.StartInfo.FileName = startInfo.FileName;
+            process.StartInfo.Arguments = startInfo.Arguments;
+            process.StartInfo.WorkingDirectory = startInfo.WorkingDirectory;
+            process.StartInfo.UseShellExecute = startInfo.UseShellExecute;
+            process.Start();
         }
 
         private static Int32 SingleJobStart(String dsBaseAddress, String queueName, String handle)
@@ -68,7 +98,7 @@ namespace Jarvis.DocumentStore.JobsHost
             {
                 Console.Title = String.Format("Pid {0} - Queue {1} Job Poller Started",
                     Process.GetCurrentProcess().Id, queueName);
-                
+
                 MongoLog.SetProgramName(String.Format("ds-job[Queue:{0}]", queueName));
                 Console.WriteLine("JOB STARTED: Press any key to stop the client");
                 Console.ReadKey();
@@ -82,7 +112,7 @@ namespace Jarvis.DocumentStore.JobsHost
             return 0;
         }
 
-        static void SetupColors()
+        private static void SetupColors()
         {
             if (!Environment.UserInteractive)
                 return;
@@ -91,9 +121,8 @@ namespace Jarvis.DocumentStore.JobsHost
             Console.Clear();
         }
 
-        static void LoadConfiguration()
+        private static void LoadConfiguration()
         {
-
             _jobsHostConfiguration = new JobsHostConfiguration();
         }
 
@@ -103,6 +132,5 @@ namespace Jarvis.DocumentStore.JobsHost
             if (String.IsNullOrEmpty(arg)) return defaultValue;
             return arg.Substring(prefix.Length);
         }
-
     }
 }

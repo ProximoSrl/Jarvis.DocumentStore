@@ -12,8 +12,9 @@ namespace Jarvis.DocumentStore.Core.Storage
 {
     public class BlobStoreByFormat : IBlobStore
     {
-        readonly IBlobStore _originals;
-        readonly IBlobStore _artifacts;
+        private readonly IBlobStore _originals;
+        private readonly IBlobStore _artifacts;
+
         public BlobStoreByFormat(IBlobStore originals, IBlobStore artifacts)
         {
             _originals = originals;
@@ -60,9 +61,9 @@ namespace Jarvis.DocumentStore.Core.Storage
             return ForFormat(format).Upload(format, pathToFile);
         }
 
-        public BlobId Upload(DocumentFormat format, FileNameWithExtension fileName, Stream sourceStrem)
+        public BlobId Upload(DocumentFormat format, FileNameWithExtension fileName, Stream sourceStream)
         {
-            return ForFormat(format).Upload(format, fileName, sourceStrem);
+            return ForFormat(format).Upload(format, fileName, sourceStream);
         }
 
         public BlobStoreInfo GetInfo()

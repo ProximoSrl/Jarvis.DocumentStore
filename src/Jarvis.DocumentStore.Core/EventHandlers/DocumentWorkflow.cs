@@ -57,7 +57,7 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         public void On(DocumentDescriptorCreated e)
         {
             if (IsReplay) return;
-  
+
             //This projection depends on the projection of document descriptor
             //to execute the workflow.
             _commandBus.Send(new LinkDocumentToDocumentDescriptor(

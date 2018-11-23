@@ -33,11 +33,10 @@ namespace Jarvis.DocumentStore.Core.CommandHandlers.DocumentDescriptorHandlers
                 cmd.AggregateId,
                 doc => {
                     if (!doc.HasBeenCreated)
-                        doc.InitializeAsAttach(cmd.BlobId, cmd.HandleInfo, cmd.Hash, cmd.FileName, cmd.FatherHandle, cmd.FatherDocumentDescriptorId);
+                        doc.InitializeAsAttach(cmd.BlobId, cmd.HandleInfo, cmd.Hash, cmd.FileName, cmd.FatherDocumentDescriptorId);
                 },
                 true
             );
         }
-
     }
 }

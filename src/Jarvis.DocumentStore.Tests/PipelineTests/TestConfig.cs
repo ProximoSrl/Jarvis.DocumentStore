@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
     public static class TestConfig
@@ -10,6 +9,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         public static readonly string DocumentsFolder;
         public static readonly String QueueFolder;
         public static readonly string TempFolder;
+
         static TestConfig()
         {
             DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Docs")).FullName;
@@ -91,7 +91,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             get { return Path.Combine(DocumentsFolder, "MailWithMultipleAttach.eml"); }
         }
-        
+
         public static string PathToMsg
         {
             get { return Path.Combine(DocumentsFolder, "outlook message.msg"); }
@@ -192,7 +192,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             get { return Path.Combine(DocumentsFolder, "ZipWithFolders.zip"); }
         }
-        
+
         public static string PathToZipFileThatContainsOtherZip
         {
             get { return Path.Combine(DocumentsFolder, "ZipWithNestedZip.zip"); }
@@ -225,9 +225,9 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
 
         public static string DocsTenant { get; private set; }
         public static string DemoTenant { get; private set; }
-        private  static string GenerateQueueFolder()
+        private static string GenerateQueueFolder()
         {
-            return Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Queue"); 
+            return Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Queue");
         }
 
 

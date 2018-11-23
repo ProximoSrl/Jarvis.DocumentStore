@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using Castle.Core.Logging;
+﻿using Castle.Core.Logging;
 using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.Facilities.TypedFactory;
@@ -11,21 +6,22 @@ using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
-using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.JobsHost.Support
 {
     public class DocumentStoreSingleQueueClientBootstrapper
     {
-        IDisposable _webApplication;
-        readonly Uri _serverAddress;
-        readonly String _handle;
-        readonly String _queueName;
-        IWindsorContainer _container;
-        ILogger _logger;
-        JobsHostConfiguration _config;
+        private readonly Uri _serverAddress;
+        private readonly String _handle;
+        private readonly String _queueName;
+        private IWindsorContainer _container;
+        private ILogger _logger;
+        private JobsHostConfiguration _config;
 
         public DocumentStoreSingleQueueClientBootstrapper(Uri serverAddress, String queueName, String handle)
         {
@@ -51,13 +47,17 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             }
 
             var testResult = ExecuteTests();
-            if (!testResult) return false;
+            if (!testResult)
+            {
+                _logger.Error("Execution of Initial test failed, cannot start");
+                return false;
+            }
 
             var queuePoller = allPollers.SingleOrDefault(p =>
-                p.IsOutOfProcess && 
-                p.QueueName.Equals(_queueName, StringComparison.OrdinalIgnoreCase) &&
-                p.IsActive);
-          
+                p.IsOutOfProcess
+                && p.QueueName.Equals(_queueName, StringComparison.OrdinalIgnoreCase)
+                && p.IsActive);
+
             if (queuePoller == null)
             {
                 _logger.ErrorFormat("No configured poller for queue {0}", _queueName);
@@ -66,7 +66,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             else
             {
                 _logger.InfoFormat("Start poller for queue {0} implemented by {1}", _queueName, queuePoller.GetType().Name);
-                queuePoller.Start(new List<String>() { _serverAddress.AbsoluteUri}, _handle);
+                queuePoller.Start(new List<String>() { _serverAddress.AbsoluteUri }, _handle);
             }
             return true;
         }
@@ -102,7 +102,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             return !testFailed;
         }
 
-        void BuildContainer(JobsHostConfiguration config)
+        private void BuildContainer(JobsHostConfiguration config)
         {
             _container = new WindsorContainer();
             ContainerAccessor.Instance = _container;
@@ -121,13 +121,13 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                 //Register from this application
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerJob>()
-                    .WithServiceFirstInterface() ,
+                    .WithServiceFirstInterface(),
                 Classes.FromAssemblyInThisApplication()
                     .BasedOn<IPollerTest>()
-                    .WithServiceFirstInterface() ,
+                    .WithServiceFirstInterface(),
 
                 //Rgister from dll that contains Jobs in name.
-                Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*")) 
+                Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*"))
                     .BasedOn<IPollerJob>()
                     .WithServiceFirstInterface(),
                   Classes.FromAssemblyInDirectory(new AssemblyFilter(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.Jobs.*.*"))
@@ -142,7 +142,4 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             _logger = _container.Resolve<ILogger>();
         }
     }
-
-   
-
 }

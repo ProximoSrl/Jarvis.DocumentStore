@@ -7,61 +7,59 @@ using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 namespace Jarvis.DocumentStore.Jobs.LibreOffice
 {
-    /// <summary>
-    /// Office / OpenOffice => pdf with Headless Libreoffice
-    /// TODO: switch to https://wiki.openoffice.org/wiki/AODL when complete pdf support is available
-    /// </summary>
-    public class LibreOfficeConversion : ILibreOfficeConversion
-    {
-        public ILogger Logger { get; set; }
-        
-        readonly JobsHostConfiguration _config;
+	/// <summary>
+	/// Office / OpenOffice => pdf with Headless Libreoffice
+	/// TODO: switch to https://wiki.openoffice.org/wiki/AODL when complete pdf support is available
+	/// </summary>
+	public class LibreOfficeConversion : ILibreOfficeConversion
+	{
+		public ILogger Logger { get; set; }
 
-        public LibreOfficeConversion(JobsHostConfiguration config)
-        {
-            _config = config;
-        }
+		readonly JobsHostConfiguration _config;
 
-        public string Run(string sourceFile, string outType)
-        {
-            Logger.DebugFormat("DIRECT SOFFICE.EXE CONVERSION: Starting conversion of blobId {0} to {1}", sourceFile, outType);
-            string pathToLibreOffice = _config.GetPathToLibreOffice();
-            var outputFile = Path.ChangeExtension(sourceFile, outType);
+		public LibreOfficeConversion(JobsHostConfiguration config)
+		{
+			_config = config;
+		}
 
-            string arguments = string.Format("--headless -convert-to {2} -outdir \"{0}\"  \"{1}\" ",
-                Path.GetDirectoryName(sourceFile),
-                sourceFile,
-                outType
-            );
+		public string Run(string sourceFile, string outType)
+		{
+			Logger.DebugFormat("DIRECT SOFFICE.EXE CONVERSION: Starting conversion of blobId {0} to {1}", sourceFile, outType);
+			string pathToLibreOffice = _config.GetPathToLibreOffice();
+			var outputFile = Path.ChangeExtension(sourceFile, outType);
 
-            var psi = new ProcessStartInfo(pathToLibreOffice, arguments)
-            {
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Minimized
-            };
+			string arguments = string.Format("--headless -convert-to {2} -outdir \"{0}\"  \"{1}\" ",
+				Path.GetDirectoryName(sourceFile),
+				sourceFile,
+				outType
+			);
 
-            Logger.DebugFormat("Command: {0} {1}", pathToLibreOffice, arguments);
+			var psi = new ProcessStartInfo(pathToLibreOffice, arguments)
+			{
+				UseShellExecute = false,
+				RedirectStandardError = true,
+				RedirectStandardOutput = true,
+				CreateNoWindow = true,
+				WindowStyle = ProcessWindowStyle.Minimized
+			};
 
-            using (var p = Process.Start(psi))
-            {
-                Logger.Debug("Process started");
-                p.WaitForExit();
-                Logger.Debug("Process ended");
-            }
+			Logger.DebugFormat("Command: {0} {1}", pathToLibreOffice, arguments);
 
-            if(!File.Exists(outputFile))
-                throw new Exception("Conversion failed");
+			using (var p = Process.Start(psi))
+			{
+				Logger.Debug("Process started");
+				p.WaitForExit();
+				Logger.Debug("Process ended");
+			}
 
-            return outputFile;
-        }
+			if (!File.Exists(outputFile))
+				throw new Exception("Conversion failed");
 
+			return outputFile;
+		}
 
-        public void Initialize()
-        {
-            
-        }
-    }
+		public void Initialize()
+		{
+		}
+	}
 }

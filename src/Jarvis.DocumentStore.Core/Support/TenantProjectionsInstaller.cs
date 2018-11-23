@@ -18,6 +18,8 @@ using Jarvis.DocumentStore.Core.Jobs;
 using System;
 using NEventStore.Persistence;
 using Jarvis.DocumentStore.Core.EvenstoreHooks;
+using Castle.Facilities.TypedFactory;
+using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
@@ -176,7 +178,16 @@ namespace Jarvis.DocumentStore.Core.Support
                        .ImplementedBy<CommitPollingClient2>()
                        .DependsOn(Dependency.OnValue("id", "Main-Poller"))
                        .LifeStyle.Transient,
-                  Component
+                    Component
+                        .For<ICommitPollingClientFactory>()
+                        .AsFactory(),
+                    Component
+                        .For<IRepositoryExFactory>()
+                        .AsFactory(),
+                    Component
+                        .For<Func<IPersistStreams, ICommitPollingClient>>()
+                        .Instance(ps => container.Resolve<ICommitPollingClient>(new { persistStreams = ps })),
+                    Component
                         .For<ProjectionEngine, ITriggerProjectionsUpdate>()
                         .ImplementedBy<ProjectionEngine>()
                         .LifestyleSingleton()

@@ -13,6 +13,7 @@ using System.Threading;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using System.IO;
 using Jarvis.ConfigurationService.Client.Support;
+using Castle.Core.Logging;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -24,12 +25,14 @@ namespace Jarvis.DocumentStore.Host.Support
             Configure();
         }
 
-        void Configure()
+        private void Configure()
         {
+            GetStorageConfiguration();
+
             var tenants = ConfigurationServiceClient.Instance.GetStructuredSetting("tenants");
             foreach (string tenant in tenants) // conversion from dynamic array
             {
-                TenantSettings.Add(new DocumentStoreTenantSettings(tenant));
+                TenantSettings.Add(new DocumentStoreTenantSettings(tenant, this));
             }
 
             IsDeduplicationActive = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("deduplication-active", "true"), StringComparison.OrdinalIgnoreCase);
@@ -113,6 +116,29 @@ namespace Jarvis.DocumentStore.Host.Support
             DisableRepositoryLockOnAggregateId = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("disable-lock-on-aggregate-id", "false"), StringComparison.OrdinalIgnoreCase);
         }
 
+        private void GetStorageConfiguration()
+        {
+            var storageTypeString = ConfigurationServiceClient.Instance.GetSetting("storageType", "GridFs");
+            storageTypeString = String.IsNullOrEmpty(storageTypeString) ? "GridFs" : storageTypeString;
+            StorageType storageType;
+            if (!Enum.TryParse<StorageType>(storageTypeString, true, out storageType))
+            {
+                throw new ConfigurationErrorsException($"Mandatory settings Storage.Type not found.");
+            }
+            this.StorageType = storageType;
+
+            if (this.StorageType == StorageType.FileSystem)
+            {
+                //try to grab configuration for username and password
+                var fileSystemConfiguration = ConfigurationServiceClient.Instance.GetStructuredSetting("storage.fileSystem");
+                if (!String.IsNullOrEmpty((String) fileSystemConfiguration.username))
+                {
+                    StorageUserName = (String) fileSystemConfiguration.username;
+                    StoragePassword = (String) fileSystemConfiguration.password;
+                }
+            }
+        }
+
         private static void FillQueueList(List<QueueInfo> queueInfoList)
         {
             dynamic queueList = ConfigurationServiceClient.Instance.GetStructuredSetting("queues.list");
@@ -120,13 +146,13 @@ namespace Jarvis.DocumentStore.Host.Support
             ParseQueueList(queueInfoList, queueList);
         }
 
-        Int32 GetInt32(string name, Int32 defaultValue)
+        private Int32 GetInt32(string name, Int32 defaultValue)
         {
             var setting = ConfigurationServiceClient.Instance.GetSetting(name, defaultValue.ToString());
             return Int32.Parse(setting);
         }
 
-        bool GetBool(string name)
+        private bool GetBool(string name)
         {
             var setting = ConfigurationServiceClient.Instance.GetSetting("roles." + name, "false");
             return "true".Equals(setting, StringComparison.OrdinalIgnoreCase);
@@ -173,7 +199,5 @@ namespace Jarvis.DocumentStore.Host.Support
                 }
             }
         }
-
-
     }
 }

@@ -24,7 +24,6 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
                     .ImplementedBy<LibreOfficeUnoConversion>()
                     .LifeStyle.Transient);
             }
-            
         }
     }
 }

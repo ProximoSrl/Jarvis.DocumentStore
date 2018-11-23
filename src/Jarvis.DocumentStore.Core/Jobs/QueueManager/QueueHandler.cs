@@ -12,6 +12,7 @@ using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.Framework.Shared.Helpers;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using MongoDB.Bson.Serialization;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -78,48 +79,56 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             TenantId tenantId,
             Boolean forceReSchedule = false)
         {
-            if (_info.ShouldCreateJob(streamElement))
-            {
-                if (!forceReSchedule)
-                {
-                    //look for already existing job with the same blobid, there is no need to re-queue again
-                    //because if a job with the same blobid was already fired for this queue there is no need
-                    //to re-issue
-                    var existing = _collection.Find(
-                        Builders<QueuedJob>.Filter.And(
-                            Builders<QueuedJob>.Filter.Eq(j => j.BlobId, streamElement.FormatInfo.BlobId),
-                            Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
-                        )
-                    ).Count() > 0;
-                    if (existing) return;
-                }
-                if (Logger.IsDebugEnabled) Logger.DebugFormat("Create queue for readmodel stream id {0} and queue {1}", streamElement.Id, _info.Name);
-                QueuedJob job = new QueuedJob();
-                var id = new QueuedJobId(Guid.NewGuid().ToString());
-                job.Id = id;
+			if (_info.ShouldCreateJob(streamElement))
+			{
+				if (!forceReSchedule)
+				{
+					//look for already existing job with the same blobid, there is no need to re-queue again
+					//because if a job with the same blobid was already fired for this queue there is no need
+					//to re-issue
+					var existing = _collection.Find(
+						Builders<QueuedJob>.Filter.And(
+							Builders<QueuedJob>.Filter.Eq(j => j.BlobId, streamElement.FormatInfo.BlobId),
+							Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
+						)
+					).Count() > 0;
+					if (existing) return;
+				}
+				if (Logger.IsInfoEnabled) Logger.Info($"Queue {_info.Name} CREATE JOB to process {streamElement.Describe()}");
+				QueuedJob job = new QueuedJob();
+				job.Id = new QueuedJobId(Guid.NewGuid().ToString());
                 job.SchedulingTimestamp = DateTime.Now;
-                job.StreamId = streamElement.Id;
-                job.TenantId = tenantId;
-                job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
-                job.BlobId = streamElement.FormatInfo.BlobId;
-                job.Handle = new DocumentHandle(streamElement.Handle);
-                job.Parameters = new Dictionary<string, string>();
-                job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
-                job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
-                job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
-                job.Parameters.Add(JobKeys.TenantId, tenantId);
-                job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
-                job.HandleCustomData = streamElement.DocumentCustomData;
-                if (_info.Parameters != null)
+				job.StreamId = streamElement.Id;
+				job.TenantId = tenantId;
+				job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
+				job.BlobId = streamElement.FormatInfo.BlobId;
+				job.Handle = new DocumentHandle(streamElement.Handle);
+				job.Parameters = new Dictionary<string, string>();
+				job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
+				job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
+				job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
+				job.Parameters.Add(JobKeys.TenantId, tenantId);
+				job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
+                job.Parameters.Add(JobKeys.PipelineId, streamElement.FormatInfo?.PipelineId?.ToString());
+                if (forceReSchedule)
                 {
-                    foreach (var parameter in _info.Parameters)
-                    {
-                        job.Parameters.Add(parameter.Key, parameter.Value);
-                    }
+                    job.Parameters.Add(JobKeys.Force, "true");
                 }
+                job.HandleCustomData = streamElement.DocumentCustomData;
+				if (_info.Parameters != null)
+				{
+					foreach (var parameter in _info.Parameters)
+					{
+						job.Parameters.Add(parameter.Key, parameter.Value);
+					}
+				}
 
-                _collection.InsertOne(job);
-            }
+				_collection.InsertOne(job);
+			}
+			else
+			{
+				if (Logger.IsDebugEnabled) Logger.Debug($"Queue {_info.Name} do not need to process {streamElement.Describe()}");
+			}
         }
 
         /// <summary>
@@ -145,17 +154,22 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                         ),
                         Builders<QueuedJob>.Filter.Lte(j => j.SchedulingTimestamp, DateTime.Now)
                 );
-            if (tenantId != null && tenantId.IsValid())
+            if (tenantId?.IsValid() == true)
             {
                 query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId));
             }
-            if (customData != null && customData.Count > 0)
+            if (customData?.Count > 0)
             {
                 foreach (var filter in customData)
                 {
-                    query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq("HandleCustomData." + filter.Key, BsonValue.Create(filter.Value)));
+                    query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq("HandleCustomData." + filter.Key, filter.Value));
                 }
             }
+
+            var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<QueuedJob>();
+            var renderedFilter = query.Render(documentSerializer, BsonSerializer.SerializerRegistry);
+            var json = renderedFilter.ToJson();
+
             var result = _collection.FindOneAndUpdate(
                 query,
                  //SortBy = SortBy<QueuedJob>.Ascending(j => j.SchedulingTimestamp),
@@ -170,24 +184,18 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                      Sort = Builders<QueuedJob>.Sort.Ascending(j => j.SchedulingTimestamp),
                      ReturnDocument = ReturnDocument.After
                  });
-            if (result != null)
-            {
-                return result;
-            }
-            return null;
-            throw new ApplicationException("Error in Finding next job.");
+            return result;
         }
-
 
         public Boolean SetJobExecuted(String jobId, String errorMessage, Dictionary<String, String> parametersToModify)
         {
             var job = _collection.FindOneById(BsonValue.Create(jobId));
             if (job == null)
             {
-                Logger.ErrorFormat("Request SetJobExecuted for unexisting job id {0}", jobId);
+                Logger.Error($"Request SetJobExecuted for unexisting job id {jobId} for queue {_info.Name}");
                 return false;
             }
-            SetErrorInfoToJob(job, errorMessage);
+            SetJobExecutionStatus(job, errorMessage);
             if (parametersToModify != null)
             {
                 foreach (var parameter in parametersToModify)
@@ -210,10 +218,10 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             var job = _collection.FindOneById(BsonValue.Create(jobId));
             if (job == null)
             {
-                Logger.ErrorFormat("Request ReQueueJob for unexisting job id {0}", jobId);
+                Logger.Error($"Request ReQueueJob for unexisting job id {jobId} for queue {_info.Name}");
                 return false;
             }
-            SetErrorInfoToJob(job, errorMessage);
+            SetJobExecutionStatus(job, errorMessage);
             job.Status = QueuedJobExecutionStatus.ReQueued;
             job.SchedulingTimestamp = DateTime.Now.Add(timeSpan);
             if (parametersToModify != null)
@@ -229,7 +237,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                  job);
             return true;
         }
-
 
         /// <summary>
         /// Return the list of all jobs that are blocked, a job is blocked if it is in
@@ -298,11 +305,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 .Any();
         }
 
-        private void SetErrorInfoToJob(QueuedJob job, String errorMessage)
+        /// <summary>
+        /// Set job execution status.
+        /// </summary>
+        /// <param name="job"></param>
+        /// <param name="errorMessage">if this parameter is not empty or null the job result 
+        /// will be set to failed.</param>
+        private void SetJobExecutionStatus(QueuedJob job, String errorMessage)
         {
             if (!String.IsNullOrEmpty(errorMessage))
             {
-                job.ErrorCount += 1;
+                job.ErrorCount++;
                 job.ExecutionError = errorMessage;
                 if (job.ErrorCount >= _info.MaxNumberOfFailure)
                 {

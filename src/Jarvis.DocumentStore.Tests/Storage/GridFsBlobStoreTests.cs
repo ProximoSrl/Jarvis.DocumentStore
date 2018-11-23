@@ -17,6 +17,7 @@ using Jarvis.Framework.Shared.IdentitySupport;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
+using Jarvis.DocumentStore.Core.Storage.GridFs;
 
 namespace Jarvis.DocumentStore.Tests.ServicesTests
 {

@@ -26,7 +26,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter
             Shared.Jobs.PollerJobParameters parameters,
             string workingFolder)
         {
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder);
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder).ConfigureAwait(false);
 
             Logger.DebugFormat("Downloaded file {0} to be converted to pdf", pathToFile);
             var converter = Converters.FirstOrDefault(c => c.CanConvert(pathToFile));
@@ -40,7 +40,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter
             if (!converter.Convert(pathToFile, outFile))
             {
                 Logger.ErrorFormat("Error converting file {0} to pdf", pathToFile);
-                return ProcessResult.Fail;
+                return ProcessResult.Fail($"Error converting file {pathToFile} to pdf");
             }
 
             await AddFormatToDocumentFromFile(
@@ -48,7 +48,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter
                parameters.JobId,
                new DocumentFormat(DocumentFormats.Pdf),
                outFile,
-               new Dictionary<string, object>());
+               new Dictionary<string, object>()).ConfigureAwait(false);
 
             return ProcessResult.Ok;
         }

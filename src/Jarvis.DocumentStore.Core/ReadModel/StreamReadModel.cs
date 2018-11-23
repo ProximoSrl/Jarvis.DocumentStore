@@ -34,7 +34,12 @@ namespace Jarvis.DocumentStore.Core.ReadModel
             if (EventData == null) EventData = new Dictionary<string, object>();
             EventData.Add(key, value);
         }
-    }
+
+		public object Describe()
+		{
+			return $"[Id] - Handle {Handle} [{Filename?.FileName}] Blob {FormatInfo?.BlobId} PipelineId {FormatInfo?.PipelineId} DocumentFormat {FormatInfo?.DocumentFormat}";
+		}
+	}
 
     public class FormatInfo
     {

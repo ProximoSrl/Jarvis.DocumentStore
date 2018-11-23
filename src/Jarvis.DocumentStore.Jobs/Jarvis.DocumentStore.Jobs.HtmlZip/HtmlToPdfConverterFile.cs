@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing.Printing;
-using System.IO;
 using System.IO.Compression;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.JobsHost.Support;
@@ -17,11 +16,11 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
     public class HtmlToPdfConverterFromDiskFile
     {
         const bool ProduceOutline = false;
-        private String _inputFileName;
+        private readonly String _inputFileName;
         public ILogger Logger { get; set; }
         readonly JobsHostConfiguration _config;
 
-        private String[] unzippedHtmlExtension = new[] { ".html", ".htm" };
+        private readonly String[] unzippedHtmlExtension = new[] { ".html", ".htm" };
 
         public HtmlToPdfConverterFromDiskFile(String inputFileName, JobsHostConfiguration config)
         {
@@ -29,7 +28,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
             _config = config;
         }
 
-        private Boolean IsUnzippedHtmlFile(String fileName)
+        private Boolean IsUnzippedHtmlFile()
         {
             var fileExtension = Path.GetExtension(_inputFileName);
             return unzippedHtmlExtension.Any(s => s.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
@@ -47,7 +46,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
             var localFileName = DownloadLocalCopy(tenantId, jobId);
             var outputFileName = localFileName + ".pdf";
             var uri = new Uri(localFileName);
-            
+
             var document = new HtmlToPdfDocument
             {
                 GlobalSettings =
@@ -73,49 +72,38 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
                     },
                 }
             };
-            try
-            {
-                //This is the thread safe converter
-                //it seems sometimes to hang forever during tests.
-                //https://github.com/tuespetre/TuesPechkin
-                //IConverter converter =
-                //     new ThreadSafeConverter(
-                //         new PdfToolset(
-                //             new Win32EmbeddedDeployment(
-                //                 new TempFolderDeployment())));
+            //This is the thread safe converter
+            //it seems sometimes to hang forever during tests.
+            //https://github.com/tuespetre/TuesPechkin
+            //IConverter converter =
+            //     new ThreadSafeConverter(
+            //         new PdfToolset(
+            //             new Win32EmbeddedDeployment(
+            //                 new TempFolderDeployment())));
 
-                //Standard, non thread safe converter.
-                IConverter converter =
-                    new StandardConverter(
-                        new PdfToolset(
-                            new Win32EmbeddedDeployment(
-                                new TempFolderDeployment())));
+            //Standard, non thread safe converter.
+            IConverter converter =
+                new StandardConverter(
+                    new PdfToolset(
+                        new Win32EmbeddedDeployment(
+                            new TempFolderDeployment())));
 
-                var pdf = converter.Convert(document);
+            var pdf = converter.Convert(document);
 
-                File.WriteAllBytes(outputFileName, pdf);
+            File.WriteAllBytes(outputFileName, pdf);
 
-                Logger.DebugFormat("Deleting {0}", localFileName);
-                File.Delete(localFileName);
-                Logger.DebugFormat("Conversion of {0} to pdf done!", jobId);
+            Logger.DebugFormat("Deleting {0}", localFileName);
+            File.Delete(localFileName);
+            Logger.DebugFormat("Conversion of {0} to pdf done!", jobId);
 
-                return outputFileName;
-            }
-            catch (Exception ex)
-            {
-                
-                throw;
-            }
-          
+            return outputFileName;
         }
 
         string DownloadLocalCopy(String tenantId, String jobId)
         {
-            var folder = _config.GetWorkingFolder(tenantId, jobId);
-
             Logger.DebugFormat("Downloaded {0}", _inputFileName);
 
-            if (IsUnzippedHtmlFile(_inputFileName)) return _inputFileName;
+            if (IsUnzippedHtmlFile()) return _inputFileName;
 
             var workingFolder = Path.GetDirectoryName(_inputFileName);
             ZipFile.ExtractToDirectory(_inputFileName, workingFolder);
