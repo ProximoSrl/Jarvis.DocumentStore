@@ -23,7 +23,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
 			   "true"
 		   ).ToLowerInvariant() == "true";
 
-			QueueJobsPollInterval = Int32.Parse(GetConfigValue("queues.jobs-poll-interval-ms", "1000"));
+			QueueJobsPollInterval = Int32.Parse(GetConfigValue("queues.jobs-poll-interval-ms", "2000"));
 		}
 
 		public string GetPathToLibreOffice()
