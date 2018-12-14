@@ -43,15 +43,21 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void Upload_pdf_copyHandle()
         {
-            _docs.CopyHandleAsync(DocumentHandle.FromString("Rev_1"), DocumentHandle.FromString("Rev_1_copied")).Wait();
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("docs_to_copy")).Wait();
+            Thread.Sleep(2000);
+            _docs.CopyHandleAsync(DocumentHandle.FromString("docs_to_copy"), DocumentHandle.FromString("docs_to_copy_copied")).Wait();
+
+            _demo.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("demo_to_copy")).Wait();
+            Thread.Sleep(2000);
+            _demo.CopyHandleAsync(DocumentHandle.FromString("demo_to_copy"), DocumentHandle.FromString("demo_to_copy_copied")).Wait();
         }
 
         [Test]
         public void Upload_pdf_copyHandle_then_delete()
         {
-            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Rev_1")).Wait();
-            _docs.CopyHandleAsync(DocumentHandle.FromString("Rev_1"), DocumentHandle.FromString("Rev_1_copied")).Wait();
-            _docs.DeleteAsync(DocumentHandle.FromString("Rev_1")).Wait();
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("docs_to_copy")).Wait();
+            _docs.CopyHandleAsync(DocumentHandle.FromString("docs_to_copy"), DocumentHandle.FromString("docs_to_copy_copied")).Wait();
+            _docs.DeleteAsync(DocumentHandle.FromString("docs_to_copy")).Wait();
         }
 
         [Test]
@@ -227,8 +233,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void Upload_pdf_to_demo_and_docs_tenants()
         {
             Task.WaitAll(
-                _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Rev_1")),
-                _demo.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Rev_1"))
+                _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("docsRev_1")),
+                _demo.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("demoRev_1"))
             );
         }
 

@@ -1,4 +1,25 @@
-﻿using System;
+﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.Document.Commands;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
+using Jarvis.DocumentStore.Core.Jobs.QueueManager;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Host.Model;
+using Jarvis.DocumentStore.Host.Providers;
+using Jarvis.DocumentStore.Shared.Model;
+using Jarvis.Framework.Kernel.Commands;
+using Jarvis.Framework.Shared.Commands;
+using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
+using Jarvis.Framework.Shared.ReadModel;
+using MongoDB.Driver;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,31 +28,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Castle.Core.Logging;
-using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using Jarvis.DocumentStore.Core.Domain.Document.Commands;
-using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.ReadModel;
-using Jarvis.DocumentStore.Core.Storage;
-using Jarvis.DocumentStore.Host.Model;
-using Jarvis.DocumentStore.Host.Providers;
-using Jarvis.Framework.Kernel.Commands;
-using Jarvis.Framework.Shared.IdentitySupport;
-using Jarvis.Framework.Shared.MultitenantSupport;
-using Jarvis.Framework.Shared.ReadModel;
-using Newtonsoft.Json;
-using Jarvis.DocumentStore.Shared.Model;
-using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 using DocumentHandle = Jarvis.DocumentStore.Core.Model.DocumentHandle;
-using Jarvis.Framework.Shared.Commands;
-using Jarvis.DocumentStore.Core.Support;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using MongoDB.Driver;
 
 namespace Jarvis.DocumentStore.Host.Controllers
 {
@@ -39,23 +37,23 @@ namespace Jarvis.DocumentStore.Host.Controllers
     {
         public const int ReadStreamBufferSize = 65 * 1024;
 
-        readonly IBlobStore _blobStore;
-        readonly DocumentStoreConfiguration _configService;
-        readonly IIdentityGenerator _identityGenerator;
+        private readonly IBlobStore _blobStore;
+        private readonly DocumentStoreConfiguration _configService;
+        private readonly IIdentityGenerator _identityGenerator;
         private readonly ICounterService _counterService;
         private readonly IDocumentFormatTranslator _documentFormatTranslator;
 
-        readonly IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
-        readonly IMongoDbReader<DocumentDeletedReadModel, String> _documentDeletedReader;
-        readonly IQueueManager _queueDispatcher;
+        private readonly IMongoDbReader<DocumentDescriptorReadModel, DocumentDescriptorId> _documentDescriptorReader;
+        private readonly IMongoDbReader<DocumentDeletedReadModel, String> _documentDeletedReader;
+        private readonly IQueueManager _queueDispatcher;
 
         public ILogger Logger { get; set; }
         public IInProcessCommandBus CommandBus { get; private set; }
-        readonly IDocumentWriter _handleWriter;
+        private readonly IDocumentWriter _handleWriter;
 
-        DocumentCustomData _customData;
-        FileNameWithExtension _fileName;
-        BlobId _blobId;
+        private DocumentCustomData _customData;
+        private FileNameWithExtension _fileName;
+        private BlobId _blobId;
 
         public DocumentsController(
             IBlobStore blobStore,
@@ -83,11 +81,10 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/{handle}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Upload(TenantId tenantId, DocumentHandle handle)
+        public Task<HttpResponseMessage> Upload(TenantId tenantId, DocumentHandle handle)
         {
-            return await InnerUploadDocument(tenantId, handle, null, null);
+            return InnerUploadDocument(tenantId, handle, null, null);
         }
-
 
         /// <summary>
         /// Upload a new document but it will be considered an attached of an existing
@@ -112,13 +109,12 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     string.Format("Handle {0} not found", fatherHandle)
                 );
             }
-            return await InnerUploadDocument(tenantId, realAttacHandle, fatherHandle, fatherDescriptor.Id);
+            return await InnerUploadDocument(tenantId, realAttacHandle, fatherHandle, fatherDescriptor.Id).ConfigureAwait(false);
         }
 
         private DocumentHandle GetAttachHandleFromAttachSource(String attachSource)
         {
-            var realAttacHandle = new DocumentHandle(attachSource + "_" + _counterService.GetNext(attachSource));
-            return realAttacHandle;
+            return new DocumentHandle(attachSource + "_" + _counterService.GetNext(attachSource));
         }
 
         /// <summary>
@@ -158,11 +154,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
                     string.Format("Handle {0} referenced from job {1} has no descriptor", job.Handle, job.Id)
                 );
             }
-            return await InnerUploadDocument(tenantId, realAttacHandle, job.Handle, fatherDescriptor.Id);
+            return await InnerUploadDocument(tenantId, realAttacHandle, job.Handle, fatherDescriptor.Id).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// 
+        /// Handle upload of documents.
         /// </summary>
         /// <param name="tenantId"></param>
         /// <param name="handle"></param>
@@ -180,7 +176,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var documentId = _identityGenerator.New<DocumentDescriptorId>();
 
             Logger.DebugFormat("Incoming file {0}, assigned {1}", handle, documentId);
-            var errorMessage = await UploadFromHttpContent(Request.Content);
+            var errorMessage = await UploadFromHttpContent(Request.Content).ConfigureAwait(false);
             Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage ?? "OK");
 
             if (errorMessage != null)
@@ -211,19 +207,27 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/{originalHandle}/copy/{copiedHandle}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> CopyDocument(
-            TenantId tenantId, DocumentHandle originalHandle, DocumentHandle copiedHandle)
+        public HttpResponseMessage CopyDocument(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId,  //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
+            DocumentHandle originalHandle,
+            DocumentHandle copiedHandle)
         {
             var documentDescriptor = GetDocumentDescriptorByHandle(originalHandle);
             if (documentDescriptor == null)
+            {
                 return DocumentNotFound(originalHandle);
+            }
 
             documentDescriptor = GetDocumentDescriptorByHandle(copiedHandle);
             if (documentDescriptor != null)
+            {
                 return Request.CreateErrorResponse(
                    HttpStatusCode.InternalServerError,
                    string.Format("Handle {0} already existing", copiedHandle)
                );
+            }
 
             CommandBus.Send(new CopyDocument(originalHandle, copiedHandle), "api");
 
@@ -235,9 +239,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/addformat/{format}")]
         [HttpPost]
-        public async Task<HttpResponseMessage> AddFormatToDocument(TenantId tenantId, DocumentFormat format)
+        public async Task<HttpResponseMessage> AddFormatToDocument(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId,  //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
+            DocumentFormat format)
         {
-            var errorMessage = await AddFormatFromHttpContent(Request.Content, format);
+            var errorMessage = await AddFormatFromHttpContent(Request.Content, format).ConfigureAwait(false);
             Logger.DebugFormat("File {0} processed with message {1}", _blobId, errorMessage);
 
             if (errorMessage != null)
@@ -336,20 +344,24 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/{handle}/{format}")]
         [HttpDelete]
-        public async Task<HttpResponseMessage> DeleteFormatFromDocument(
-            TenantId tenantId,
+        public HttpResponseMessage DeleteFormatFromDocument(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle handle,
             DocumentFormat format)
         {
             var documentDescriptor = GetDocumentDescriptorByHandle(handle);
             if (documentDescriptor == null)
+            {
                 return DocumentNotFound(handle);
+            }
 
             CommandBus.Send(new DeleteFormatFromDocumentDescriptor(documentDescriptor.Id, format), "api");
 
             return Request.CreateResponse(
                 HttpStatusCode.Accepted,
-                string.Format("Format {0} marked for deletion for handle {0}", format, handle)
+                String.Format("Format {0} marked for deletion for handle {1}", format, handle)
             );
         }
 
@@ -361,17 +373,23 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private async Task<String> UploadFromHttpContent(HttpContent httpContent)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
+            {
                 return "Attachment not found!";
+            }
 
             var provider = await httpContent.ReadAsMultipartAsync(
                 new FileStoreMultipartStreamProvider(_blobStore, _configService)
-            );
+            ).ConfigureAwait(false);
 
             if (provider.Filename == null)
+            {
                 return "Attachment not found!";
+            }
 
             if (provider.IsInvalidFile)
+            {
                 return string.Format("Unsupported file {0}", provider.Filename);
+            }
 
             if (provider.FormData["custom-data"] != null)
             {
@@ -391,14 +409,18 @@ namespace Jarvis.DocumentStore.Host.Controllers
         private async Task<String> AddFormatFromHttpContent(HttpContent httpContent, DocumentFormat format)
         {
             if (httpContent == null || !httpContent.IsMimeMultipartContent())
+            {
                 return "Attachment not found!";
+            }
 
             var provider = await httpContent.ReadAsMultipartAsync(
                 new FormatStoreMultipartStreamProvider(_blobStore, format)
-            );
+            ).ConfigureAwait(false);
 
             if (provider.Filename == null)
+            {
                 return "Attachment not found!";
+            }
 
             if (provider.FormData["custom-data"] != null)
             {
@@ -410,32 +432,44 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return null;
         }
 
-
         [Route("{tenantId}/documents/{handle}/@customdata")]
         [HttpGet]
-        public HttpResponseMessage GetCustomData(TenantId tenantId, DocumentHandle handle)
+        public HttpResponseMessage GetCustomData(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId,  //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
+            DocumentHandle handle)
         {
             var data = _handleWriter.FindOneById(handle);
             if (data == null)
+            {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Document not found");
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, data.CustomData);
         }
 
         [Route("{tenantId}/documents/{handle}/@filename")]
         [HttpGet]
-        public HttpResponseMessage GetFileName(TenantId tenantId, DocumentHandle handle)
+        public HttpResponseMessage GetFileName(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
+            DocumentHandle handle)
         {
             var data = _handleWriter.FindOneById(handle);
             if (data == null)
+            {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Document not found");
+            }
+
             var name = data.FileName != null ? data.FileName.ToString() : "";
             return Request.CreateResponse(HttpStatusCode.OK, new { FileName = name });
         }
 
         [Route("{tenantId}/documents/{handle}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetFormatList(
+        public HttpResponseMessage GetFormatList(
             TenantId tenantId,
             DocumentHandle handle
         )
@@ -456,7 +490,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/attachments/{handle}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetAttachmentList(
+        public HttpResponseMessage GetAttachmentList(
             TenantId tenantId,
             DocumentHandle handle
         )
@@ -470,7 +504,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
 
             if (documentDescriptor.Attachments == null || documentDescriptor.Attachments.Count == 0)
+            {
                 return Request.CreateResponse(HttpStatusCode.OK, new List<ClientAttachmentInfo>());
+            }
 
             var attachments = documentDescriptor.Attachments
                 .Select(a =>
@@ -499,7 +535,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// <returns></returns>
         [Route("{tenantId}/documents/attachments_fat/{handle}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetAttachmentFat(
+        public HttpResponseMessage GetAttachmentFat(
             TenantId tenantId,
             DocumentHandle handle
         )
@@ -561,13 +597,13 @@ namespace Jarvis.DocumentStore.Host.Controllers
             }
         }
 
-
-
         [Route("{tenantId}/documents/{handle}/{format}/{fname?}")]
         [HttpGet]
         [HttpHead]
-        public async Task<HttpResponseMessage> GetFormat(
-            TenantId tenantId,
+        public HttpResponseMessage GetFormat(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
             DocumentHandle handle,
             DocumentFormat format,
             string fname = null
@@ -581,11 +617,12 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 var deleted = _documentDeletedReader.AllUnsorted.Where(d => d.Handle == handle).ToList();
 
                 if (deleted.Count == 0)
+                {
                     return DocumentNotFound(handle);
+                }
 
                 return DocumentDeleted(handle, deleted);
             }
-               
 
             var document = _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
 
@@ -628,18 +665,22 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// <returns></returns>
         [Route("{tenantId}/documents/jobs/blob/{queueName}/{jobId}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetBlobForJob(
-            TenantId tenantId,
+        public HttpResponseMessage GetBlobForJob(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
             String queueName,
             String jobId
         )
         {
             var job = _queueDispatcher.GetJob(queueName, jobId);
             if (job == null)
+            {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
                     string.Format("Job {0} not found", jobId)
-                    ); ;
+                    );
+            }
 
             return StreamFile(job.BlobId);
         }
@@ -653,29 +694,35 @@ namespace Jarvis.DocumentStore.Host.Controllers
         /// <returns></returns>
         [Route("{tenantId}/documents/jobs/formats/{queueName}/{jobId}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetFormatsForJob(
-            TenantId tenantId,
+        public HttpResponseMessage GetFormatsForJob(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
             String queueName,
             String jobId)
         {
             var job = _queueDispatcher.GetJob(queueName, jobId);
             if (job == null)
+            {
                 return Request.CreateErrorResponse(
                     HttpStatusCode.NotFound,
                     string.Format("Job {0} not found", jobId)
-                    ); 
+                    );
+            }
 
             var readModel = _documentDescriptorReader.FindOneById(job.DocumentDescriptorId);
             if (readModel == null)
+            {
                 return Request.CreateErrorResponse(
                         HttpStatusCode.NotFound,
                         string.Format("Job {0} have invalid document descriptor", jobId)
                         );
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, readModel.Formats.Keys.ToArray());
         }
 
-        HttpResponseMessage DocumentNotFound(DocumentHandle handle)
+        private HttpResponseMessage DocumentNotFound(DocumentHandle handle)
         {
             return Request.CreateErrorResponse(
                 HttpStatusCode.NotFound,
@@ -683,7 +730,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
         }
 
-        HttpResponseMessage DocumentDeleted(DocumentHandle handle, IEnumerable<DocumentDeletedReadModel> deletions)
+        private HttpResponseMessage DocumentDeleted(DocumentHandle handle, IEnumerable<DocumentDeletedReadModel> deletions)
         {
             return Request.CreateErrorResponse(
                 HttpStatusCode.NotFound,
@@ -691,7 +738,7 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 );
         }
 
-        HttpResponseMessage StreamFile(BlobId formatBlobId, FileNameWithExtension fileName = null)
+        private HttpResponseMessage StreamFile(BlobId formatBlobId, FileNameWithExtension fileName = null)
         {
             var descriptor = _blobStore.GetDescriptor(formatBlobId);
 
@@ -769,8 +816,9 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 using (outputStream) // Copy the file to output stream in indicated range.
                 using (Stream inputStream = descriptor.OpenRead())
+                {
                     CreatePartialContent(inputStream, outputStream, start, end);
-
+                }
             }, descriptor.ContentType);
 
             response.Content.Headers.ContentType = new MediaTypeHeaderValue(descriptor.ContentType);
@@ -782,11 +830,17 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [HttpDelete]
         [Route("{tenantId}/documents/{handle}")]
-        public HttpResponseMessage DeleteFile(TenantId tenantId, DocumentHandle handle)
+        public HttpResponseMessage DeleteFile(
+#pragma warning disable RCS1163 // Unused parameter.
+            TenantId tenantId, //do not remove, even if not used in the method, actually it is used from the infrastructure to determine tenant
+#pragma warning restore RCS1163 // Unused parameter.
+            DocumentHandle handle)
         {
             var documentDescritptor = GetDocumentDescriptorByHandle(handle);
             if (documentDescritptor == null)
+            {
                 return DocumentNotFound(handle);
+            }
 
             CommandBus.Send(new DeleteDocument(handle), "api");
 
@@ -798,8 +852,8 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         [Route("{tenantId}/documents/info/{handle}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetHandleInfo(
-            TenantId tenantId, 
+        public HttpResponseMessage GetHandleInfo(
+            TenantId tenantId,
             DocumentHandle handle)
         {
             var handleString = handle.ToString();
@@ -830,7 +884,6 @@ namespace Jarvis.DocumentStore.Host.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, retValue);
         }
 
-
         private void CreateDocument(
             DocumentDescriptorId documentDescriptorId,
             BlobId blobId,
@@ -846,12 +899,20 @@ namespace Jarvis.DocumentStore.Host.Controllers
             var handleInfo = new DocumentHandleInfo(handle, fileName, customData);
             if (fatherHandle == null)
             {
-                if (Logger.IsDebugEnabled) Logger.DebugFormat("Initialize DocumentDescriptor {0} ", documentDescriptorId);
+                if (Logger.IsDebugEnabled)
+                {
+                    Logger.DebugFormat("Initialize DocumentDescriptor {0} ", documentDescriptorId);
+                }
+
                 createDocument = new InitializeDocumentDescriptor(documentDescriptorId, blobId, handleInfo, descriptor.Hash, fileName);
             }
             else
             {
-                if (Logger.IsDebugEnabled) Logger.DebugFormat("Initialize DocumentDescriptor as attach {0} ", documentDescriptorId);
+                if (Logger.IsDebugEnabled)
+                {
+                    Logger.DebugFormat("Initialize DocumentDescriptor as attach {0} ", documentDescriptorId);
+                }
+
                 createDocument = new InitializeDocumentDescriptorAsAttach(
                     documentDescriptorId,
                     blobId,
@@ -863,12 +924,14 @@ namespace Jarvis.DocumentStore.Host.Controllers
             CommandBus.Send(createDocument, "api");
         }
 
-        DocumentDescriptorReadModel GetDocumentDescriptorByHandle(DocumentHandle handle)
+        private DocumentDescriptorReadModel GetDocumentDescriptorByHandle(DocumentHandle handle)
         {
             var mapping = _handleWriter.FindOneById(handle);
             //check if handle is not present, or if the handle still missing descriptor (still not deduplicated)
             if (mapping == null || mapping.DocumentDescriptorId == null)
+            {
                 return null;
+            }
 
             return _documentDescriptorReader.FindOneById(mapping.DocumentDescriptorId);
         }
@@ -879,19 +942,27 @@ namespace Jarvis.DocumentStore.Host.Controllers
             {
                 start = range.From.Value;
                 if (range.To != null)
+                {
                     end = range.To.Value;
+                }
                 else
+                {
                     end = contentLength - 1;
+                }
             }
             else
             {
                 end = contentLength - 1;
                 if (range.To != null)
+                {
                     start = contentLength - range.To.Value;
+                }
                 else
+                {
                     start = 0;
+                }
             }
-            return (start < contentLength && end < contentLength);
+            return start < contentLength && end < contentLength;
         }
 
         private void CreatePartialContent(Stream inputStream, Stream outputStream, long start, long end)
@@ -907,16 +978,20 @@ namespace Jarvis.DocumentStore.Host.Controllers
                 {
                     var count = 0;
                     if (remainingBytes > ReadStreamBufferSize)
+                    {
                         count = inputStream.Read(buffer, 0, ReadStreamBufferSize);
+                    }
                     else
+                    {
                         count = inputStream.Read(buffer, 0, (int)remainingBytes);
+                    }
 
                     outputStream.Write(buffer, 0, count);
                 }
-                catch (Exception error)
+                catch (Exception)
                 {
-                    // stream closed for skip
-//                    Logger.ErrorFormat(error, "CreatePartialContent failed");
+                    //stream closed for skip it is not important to log 
+                    //TODO: Do not ignore any exception, ignore only the stream closed for skip.
                     break;
                 }
                 position = inputStream.Position;
