@@ -1,7 +1,9 @@
 ﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.PowerPoint;
 using System;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
@@ -10,10 +12,17 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
     public class PowerPointConverter
     {
         private readonly ILogger _logger;
+        private readonly IClientPasswordSet _clientPasswordSet;
 
-        public PowerPointConverter(ILogger logger)
+        public PowerPointConverter(ILogger logger, IClientPasswordSet clientPasswordSet)
         {
             _logger = logger;
+            _clientPasswordSet = clientPasswordSet;
+        }
+
+        public string GetPassword(String fileName)
+        {
+            return _clientPasswordSet.GetPasswordFor(fileName).FirstOrDefault() ?? "fake password, to avoid being stuck with ask password dialog";
         }
 
         /// <summary>
@@ -32,7 +41,11 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 app = new Application();
                 //app.Visible = MsoTriState.msoFalse;
                 //app.WindowState = PpWindowState.ppWindowMinimized;
-                presentation = app.Presentations.Open(sourcePath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
+                presentation = app.Presentations.Open(
+                    sourcePath,
+                    MsoTriState.msoFalse,
+                    MsoTriState.msoFalse,
+                    MsoTriState.msoFalse);
 
                 presentation.ExportAsFixedFormat(
                     targetPath,

@@ -37,11 +37,11 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             Logger.InfoFormat(
-                "Delegating conversion of file {0} to Office automation",
-                parameters.JobId
+                "Delegating conversion of file {0} to Office automation for job {1} in working folder {2}",
+                parameters.FileName,
+                parameters.JobId,
+                workingFolder
             );
-
-            //libreofficeconversion is registered per tenant.
 
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder).ConfigureAwait(false);
 

@@ -1,6 +1,9 @@
 ﻿using Castle.Core.Logging;
 using System;
 using Microsoft.Office.Interop.Excel;
+using Jarvis.DocumentStore.JobsHost.Support;
+using System.IO;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
@@ -9,10 +12,17 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
     public class ExcelConverter
     {
         private readonly ILogger _logger;
+        private readonly IClientPasswordSet _clientPasswordSet;
 
-        public ExcelConverter(ILogger logger)
+        public ExcelConverter(ILogger logger, IClientPasswordSet clientPasswordSet)
         {
             _logger = logger;
+            _clientPasswordSet = clientPasswordSet;
+        }
+
+        public string GetPassword(String fileName)
+        {
+            return _clientPasswordSet.GetPasswordFor(fileName).FirstOrDefault() ?? "fake password, to avoid being stuck with ask password dialog";
         }
 
         /// <summary>
@@ -29,10 +39,14 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             try
             {
                 app = new Application();
-                wkb = app.Workbooks.Open(sourcePath);
+                _logger.DebugFormat("Opening {0} in office", sourcePath);
+                wkb = app.Workbooks.Open(sourcePath, Password: GetPassword(Path.GetFileName(sourcePath)));
+                _logger.DebugFormat("Exporting {0} in pdf", sourcePath);
                 wkb.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, targetPath);
+                _logger.DebugFormat("closing excel", sourcePath);
                 wkb.Close(false);
                 wkb = null;
+                _logger.DebugFormat("Quitting excel", sourcePath);
                 app.Quit();
                 app = null;
                 return String.Empty;

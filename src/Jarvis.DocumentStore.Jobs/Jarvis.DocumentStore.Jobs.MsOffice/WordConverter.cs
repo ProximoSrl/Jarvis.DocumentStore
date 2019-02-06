@@ -1,6 +1,9 @@
 ﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Microsoft.Office.Interop.Word;
 using System;
+using System.IO;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
@@ -9,12 +12,19 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
     public class WordConverter
     {
         private readonly ILogger _logger;
+        private readonly IClientPasswordSet _clientPasswordSet;
 
-        public WordConverter(ILogger logger)
+        public WordConverter(ILogger logger, IClientPasswordSet clientPasswordSet)
         {
             _logger = logger;
+            _clientPasswordSet = clientPasswordSet;
         }
 
+        public string GetPassword(String fileName)
+        {
+            return _clientPasswordSet.GetPasswordFor(fileName).FirstOrDefault() ?? "fake password, to avoid being stuck with ask password dialog";
+        }
+    
         /// <summary>
         /// Convert word file to pdf
         /// </summary>
@@ -29,11 +39,15 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             try
             {
                 app = new Application();
-                doc = app.Documents.Open(sourcePath);
+                _logger.DebugFormat("Opening {0} in office", sourcePath);
+                //it is importantì
+                doc = app.Documents.Open(sourcePath, PasswordDocument: GetPassword(Path.GetFileName(sourcePath)));
+                _logger.InfoFormat("About to converting file {0} to pfd", sourcePath);
                 doc.SaveAs2(targetPath, WdSaveFormat.wdFormatPDF);
-                _logger.InfoFormat("File {0} converted to pdf.", sourcePath);
+                _logger.DebugFormat("File {0} converted to pdf. Closing word", sourcePath);
                 doc.Close();
                 doc = null;
+                _logger.DebugFormat("Application quite", sourcePath);
                 app.Quit();
                 app = null;
                 return String.Empty;
