@@ -35,7 +35,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
         }
 
         private static void TestFile(
-            List<PollerTestResult> retValue, 
+            List<PollerTestResult> retValue,
             ITikaAnalyzer analyzer,
             String fileName,
             String type,
@@ -77,8 +77,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
         }
 
         protected override string GetName()
-        {  
-                return "In Process Tests";
+        {
+            return "In Process Tests";
         }
     }
 

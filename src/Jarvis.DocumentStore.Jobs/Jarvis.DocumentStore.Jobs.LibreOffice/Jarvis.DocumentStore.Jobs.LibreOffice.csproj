@@ -120,6 +120,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="readme.md" />
     <None Include="Resources\doc.docx" />
     <None Include="Resources\ppt.pptx" />
   </ItemGroup>

@@ -19,37 +19,37 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         public ILogger Logger = NullLogger.Instance;
 
         /// <summary>
-        /// 
+        /// Analyze the file and extract content.
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="pathToInputFile"></param>
         /// <param name="password">Optional password to open the file.</param>
         /// <returns></returns>
-        public string GetHtmlContent(string filePath, String password)
+        public string GetHtmlContent(string pathToInputFile, String password)
         {
             try
             {
-                Logger.DebugFormat("GetHtmlContent for filePath: {0}", filePath);
-                var file = new File(filePath);
+                Logger.DebugFormat("GetHtmlContent for filePath: {0}", pathToInputFile);
+                var file = new File(pathToInputFile);
                 return this.Extract((Func<Metadata, InputStream>)(metadata =>
                 {
-                    Logger.DebugFormat("Extract metadata for {0}", filePath);
+                    Logger.DebugFormat("Extract metadata for {0}", pathToInputFile);
                     if (!String.IsNullOrEmpty(password))
                     {
                         metadata.add("org.apache.tika.parser.pdf.password", password);
                     }
 
                     var tikaInputStream = TikaInputStream.get(file, metadata);
-                    Logger.DebugFormat("Return tikaInputStream for {0}", filePath);
+                    Logger.DebugFormat("Return tikaInputStream for {0}", pathToInputFile);
                     return (InputStream)tikaInputStream;
                 }));
             }
             catch (System.Exception ex)
             {
-                Logger.ErrorFormat(ex, "Error on GetHtmlContent for {0}", filePath);
+                Logger.ErrorFormat(ex, "Error on GetHtmlContent for {0}", pathToInputFile);
                 throw new TextExtractionException(
                     StringExtrensions.ToFormat(
                         "Extraction of text from the file '{0}' failed.",
-                        new object[] { (object)filePath }
+                        new object[] { (object)pathToInputFile }
                         ), ex
                     );
             }

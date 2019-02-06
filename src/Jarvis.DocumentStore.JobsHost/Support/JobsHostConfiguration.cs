@@ -53,15 +53,15 @@ namespace Jarvis.DocumentStore.JobsHost.Support
 
 		public string GetWorkingFolder(string tenantId, string blobId)
 		{
-			if (tenantId == null) throw new ArgumentNullException("tenantId");
-			if (blobId == null) throw new ArgumentNullException("blobId");
+			if (tenantId == null) throw new ArgumentNullException(nameof(tenantId));
+			if (blobId == null) throw new ArgumentNullException(nameof(blobId));
 			return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), tenantId, blobId));
 		}
 
 		public string GetWorkingFolderForQueue(string tenantId, string queueName)
 		{
-			if (tenantId == null) throw new ArgumentNullException("tenantId");
-			if (queueName == null) throw new ArgumentNullException("queueName");
+			if (tenantId == null) throw new ArgumentNullException(nameof(tenantId));
+			if (queueName == null) throw new ArgumentNullException(nameof(queueName));
 			return EnsureFolder(Path.Combine(GetConfigValue("TEMP"), tenantId, queueName));
 		}
 

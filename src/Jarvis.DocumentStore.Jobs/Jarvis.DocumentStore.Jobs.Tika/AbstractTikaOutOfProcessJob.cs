@@ -17,11 +17,11 @@ namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
-        readonly string[] _formats;
+        private readonly string[] _formats;
 
-        private ContentFormatBuilder _builder;
+        private readonly ContentFormatBuilder _builder;
 
-        private ContentFilterManager _filterManager;
+        private readonly ContentFilterManager _filterManager;
 
         public AbstractTikaOutOfProcessJob(
             ContentFormatBuilder builder,
@@ -213,75 +213,6 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 DocumentContent.NullContent,
                 contentFileName,
                 new Dictionary<string, object>());
-        }
-    }
-
-    public class OutOfProcessTikaJob : AbstractTikaOutOfProcessJob
-    {
-
-        public OutOfProcessTikaJob(
-            ContentFormatBuilder builder,
-            ContentFilterManager filterManager)
-            : base(builder, filterManager)
-        {
-        }
-
-        protected override ITikaAnalyzer BuildAnalyzer(Int32 analyzerOrdinal)
-        {
-            switch (analyzerOrdinal)
-            {
-                case 0:
-                    return new TikaAnalyzer(JobsHostConfiguration)
-                    {
-                        Logger = this.Logger
-                    };
-                case 1:
-                    return new TikaNetAnalyzer()
-                    {
-                        Logger = this.Logger
-                    };
-            }
-
-            return null;
-        }
-
-        public override bool IsActive
-        {
-            get { return !base.JobsHostConfiguration.UseEmbeddedTika; }
-        }
-    }
-
-    public class OutOfProcessTikaNetJob : AbstractTikaOutOfProcessJob
-    {
-        public OutOfProcessTikaNetJob(
-            ContentFormatBuilder builder,
-            ContentFilterManager filterManager)
-            : base(builder, filterManager)
-        {
-        }
-
-        protected override ITikaAnalyzer BuildAnalyzer(Int32 analyzerOrdinal)
-        {
-            switch (analyzerOrdinal)
-            {
-                case 0:
-                    return new TikaNetAnalyzer()
-                    {
-                        Logger = this.Logger
-                    };
-                case 1:
-                    return new TikaAnalyzer(JobsHostConfiguration)
-                    {
-                        Logger = this.Logger
-                    };
-            }
-
-            return null;
-        }
-
-        public override bool IsActive
-        {
-            get { return base.JobsHostConfiguration.UseEmbeddedTika; }
         }
     }
 }

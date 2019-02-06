@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using AngleSharp;
 using Jarvis.DocumentStore.Shared.Model;
-using Jarvis.DocumentStore.Jobs.Tika.Filters;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public class ContentFormatBuilder
     {
-
         private ContentFilterManager _filterManager;
 
         public ContentFormatBuilder(ContentFilterManager filterManager)
