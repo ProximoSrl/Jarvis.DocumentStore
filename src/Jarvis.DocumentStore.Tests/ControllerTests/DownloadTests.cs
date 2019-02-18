@@ -20,7 +20,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             var documentHandle = new DocumentHandle("not_in_store");
             var format = new DocumentFormat("any_format");
             DocumentDeletedReader.AllUnsorted.Returns(new List<DocumentDeletedReadModel>().AsQueryable());
-            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, documentHandle, format);
 
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
             Assert.AreEqual("Document not_in_store not found", response.GetError().Message);
@@ -39,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentHandle(info, new DocumentDescriptorId(1));
 
             // act
-            var response = Controller.GetFormat(_tenantId, documentHandle, format).Result;
+            var response = Controller.GetFormat(_tenantId, documentHandle, format);
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -67,7 +67,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             SetupDocumentModel(doc);
 
             // act
-            var response = Controller.GetFormat(_tenantId, info.Handle, format).Result;
+            var response = Controller.GetFormat(_tenantId, info.Handle, format);
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -96,7 +96,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             BlobStore.GetDescriptor(blobId).Returns(i => null);
 
             // act
-            var response = Controller.GetFormat(_tenantId, info.Handle, format).Result;
+            var response = Controller.GetFormat(_tenantId, info.Handle, format);
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
@@ -128,7 +128,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
                 .Returns(i => new FsBlobDescriptor(blobId, TestConfig.PathToWordDocument));
 
             // act
-            using (var response = Controller.GetFormat(_tenantId, info.Handle, format).Result)
+            using (var response = Controller.GetFormat(_tenantId, info.Handle, format))
             {
                 // assert
                 response.EnsureSuccessStatusCode();
@@ -160,7 +160,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
             BlobStore.GetDescriptor(pdfBlobId).Returns(i => new FsBlobDescriptor(pdfBlobId, TestConfig.PathToDocumentPdf));
 
             // act
-            using (var response = Controller.GetFormat(_tenantId, info.Handle, format).Result)
+            using (var response = Controller.GetFormat(_tenantId, info.Handle, format))
             {
                 // assert
                 response.EnsureSuccessStatusCode();
