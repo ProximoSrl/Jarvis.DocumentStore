@@ -497,6 +497,7 @@
     <ProjectReference Include="..\Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Tika\Jarvis.DocumentStore.Jobs.Tika.csproj">
       <Project>{99cc9ca1-9a95-4ecb-a7f4-3a46892bf2c8}</Project>
       <Name>Jarvis.DocumentStore.Jobs.Tika</Name>
+      <Aliases>tika</Aliases>
     </ProjectReference>
     <ProjectReference Include="..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj">
       <Project>{377E1786-2C26-4C3B-ACBA-A9CD73FB53E6}</Project>

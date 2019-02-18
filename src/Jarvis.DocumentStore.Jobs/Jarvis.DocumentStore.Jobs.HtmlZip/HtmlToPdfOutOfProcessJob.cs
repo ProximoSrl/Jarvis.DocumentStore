@@ -7,6 +7,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using System.Threading.Tasks;
+using Jarvis.DocumentStore.Jobs.HtmlZipOld;
 
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
 {
@@ -21,11 +22,35 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZip
         protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder).ConfigureAwait(false);
-            String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
-            Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
-            if (File.Exists(fileName)) File.Delete(fileName);
-            File.Copy(pathToFile, fileName);
-            var converter = new HtmlToPdfConverterFromDiskFile(fileName, base.JobsHostConfiguration)
+            //String fileName = Path.Combine(Path.GetDirectoryName(pathToFile), parameters.All[JobKeys.FileName]);
+            //Logger.DebugFormat("Move blob id {0} to real filename {1}", pathToFile, fileName);
+            //if (File.Exists(fileName)) File.Delete(fileName);
+            //File.Copy(pathToFile, fileName);
+            if (Logger.IsDebugEnabled)
+                Logger.DebugFormat("Conversion of HtmlZip to PDF: file {0}", pathToFile);
+
+            var file = pathToFile;
+            if (pathToFile.EndsWith(".mht", StringComparison.OrdinalIgnoreCase) || pathToFile.EndsWith(".mhtml", StringComparison.OrdinalIgnoreCase))
+            {
+                string mhtml = File.ReadAllText(pathToFile);
+                MHTMLParser parser = new MHTMLParser(mhtml)
+                {
+                    OutputDirectory = workingFolder,
+                    DecodeImageData = true
+                };
+                var outFile = Path.ChangeExtension(pathToFile, ".html");
+                File.WriteAllText(outFile, parser.getHTMLText());
+                file = outFile;
+            }
+
+            var sanitizer = new SafeHtmlConverter(file)
+            {
+                Logger = Logger
+            };
+            file = sanitizer.Run(parameters.JobId);
+
+
+            var converter = new HtmlToPdfConverterFromDiskFile(file, base.JobsHostConfiguration)
             {
                 Logger = Logger
             };

@@ -1,12 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using Castle.Core.Logging;
+﻿using Castle.Core.Logging;
 using Jarvis.DocumentStore.JobsHost.Support;
-using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
-using Jarvis.DocumentStore.Jobs.LibreOffice;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Jarvis.DocumentStore.Jobs.HtmlZipOld;
@@ -17,6 +11,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     public class TuesPeckinConversionTest
     {
         HtmlToPdfConverterFromDiskFileOld _converter;
+        SafeHtmlConverter _sanitizer;
         JobsHostConfiguration _config;
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
@@ -32,6 +27,47 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             _converter = new HtmlToPdfConverterFromDiskFileOld(tempFile, _config);
             _converter.Logger = NullLogger.Instance;
             var result = _converter.Run("jobtest");
+
+            Assert.That(File.Exists(result), "Output pdf file not created");
+            File.Delete(result);
+        }
+
+
+        [Test]
+        public void Verify_sanitize_of_single_html_file()
+        {
+            var tempFile = Path.ChangeExtension(Path.GetTempFileName(), ".html");
+            File.Copy(TestConfig.PathToSimpleHtmlFile, tempFile);
+            _sanitizer = new SafeHtmlConverter(tempFile)
+            {
+                Logger = NullLogger.Instance
+            };
+            var result = _sanitizer.Run("jobtest");
+
+            Assert.That(File.Exists(result), "HTML file sanitized");
+            File.Delete(result);
+        }
+
+        [Test]
+        public void Verify_sanitize_of_single_mhtml_file()
+        {
+            var tempFile = Path.ChangeExtension(Path.GetTempFileName(), ".mht");
+            File.Copy(TestConfig.PathToMht, tempFile);
+
+            string mhtml = File.ReadAllText(tempFile);
+            MHTMLParser parser = new MHTMLParser(mhtml)
+            {
+                OutputDirectory = Path.GetDirectoryName(tempFile),
+                DecodeImageData = true
+            };
+            var outFile = Path.ChangeExtension(tempFile, ".html");
+            File.WriteAllText(outFile, parser.getHTMLText());
+
+            _sanitizer = new SafeHtmlConverter(outFile)
+            {
+                Logger = NullLogger.Instance
+            };
+            var result = _sanitizer.Run("jobtest");
 
             Assert.That(File.Exists(result), "Output pdf file not created");
             File.Delete(result);
