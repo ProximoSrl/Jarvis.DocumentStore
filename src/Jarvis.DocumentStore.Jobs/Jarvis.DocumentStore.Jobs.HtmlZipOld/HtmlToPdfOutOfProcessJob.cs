@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                 Logger.DebugFormat("Conversion of HtmlZip to PDF: file {0}", pathToFile);
 
             var file = pathToFile;
-            if (pathToFile.ToLower().EndsWith(".mht") || pathToFile.ToLower().EndsWith(".mhtml"))
+            if (pathToFile.EndsWith(".mht", StringComparison.OrdinalIgnoreCase) || pathToFile.EndsWith(".mhtml", StringComparison.OrdinalIgnoreCase))
             {
                 string mhtml = File.ReadAllText(pathToFile);
                 MHTMLParser parser = new MHTMLParser(mhtml);
@@ -35,6 +35,12 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                 File.WriteAllText(outFile, parser.getHTMLText());
                 file = outFile;
             }
+
+            var sanitizer = new SafeHtmlConverter(file)
+            {
+                Logger = Logger
+            };
+            file = sanitizer.Run(parameters.JobId);
 
             var converter = new HtmlToPdfConverterFromDiskFileOld(file, base.JobsHostConfiguration)
             {

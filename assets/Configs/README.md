@@ -1,12 +1,12 @@
-##Configuration of Document Store
+## Configuration of Document Store
 
-###Parameters
+### Parameters
 
 This folder contains a file called parameters.documentstore.config.sample that contains parameters sample file. You should  place this file inside your configuration manager configuration folder, at the same level of the DocumentStore.redirect file.
 
 This permits to change specific parameters to your dev machine or production environment and using the standard default configuration that you download with source control.
 
-###Permissions
+### Permissions
 
 DocumentStore needs to open two HTTP port, the first one is used by the main service, the other one is used by metrics.net.
 
@@ -68,7 +68,7 @@ With this configuration you will need to setup acl (netsh http add urlacl url=ht
 - queueManager: new job management with custom queue enabled.
 - jobMode: queue or quartz to choose witch job engine to use.
 
-###Another section is dedicated to queue configuration
+### Another section is dedicated to queue configuration
 
 ```javascript
 "queues" : {

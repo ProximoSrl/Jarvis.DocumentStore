@@ -1,4 +1,5 @@
-﻿using System;
+﻿extern alias tika;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +12,7 @@ using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Jobs.Email;
 using Jarvis.DocumentStore.Jobs.HtmlZipOld;
 using Jarvis.DocumentStore.Jobs.ImageResizer;
-using Jarvis.DocumentStore.Jobs.Tika;
+using tika::Jarvis.DocumentStore.Jobs.Tika;
 using Jarvis.DocumentStore.JobsHost.Helpers;
 using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Tests.PipelineTests;
