@@ -62,7 +62,8 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 
                 presentation.Close();
                 presentation = null;
-                app.Quit();
+
+                Close(app);
                 app = null;
 
                 return String.Empty;
@@ -73,11 +74,11 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 
                 if (presentation != null)
                 {
-                    this.Close(presentation);
+                    Close(presentation);
                 }
                 if (app != null)
                 {
-                    this.Close(app);
+                    Close(app);
                 }
                 return $"Error converting {sourcePath} - {ex.Message}";
             }
@@ -87,12 +88,12 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         {
             try
             {
-                app.Quit();
+                app.SafeClose();
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close Powerpoint application {0}", ex.Message);
-                //TODO: Try to kill the process.
+                _logger.ErrorFormat(ex, "Unable to kill Powerpoint application {0}", ex.Message);
+                //I do not care if the application generate exception during kill.  
             }
         }
 

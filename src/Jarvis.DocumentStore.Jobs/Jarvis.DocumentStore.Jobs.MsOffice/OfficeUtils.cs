@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
@@ -16,14 +17,18 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         [DllImport("user32.dll")]
         static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
-        public static void Kill(this Microsoft.Office.Interop.Excel.Application app)
+        public static void SafeClose(this Microsoft.Office.Interop.Excel.Application app)
         {
-            KillOfficeProcess(new IntPtr(app.Hwnd));
+            GetWindowThreadProcessId(new IntPtr(app.Hwnd), out var processId);
+            app.Quit();
+            KillProcess(processId);
         }
 
-        public static void Kill(this Microsoft.Office.Interop.PowerPoint.Application app)
+        public static void SafeClose(this Microsoft.Office.Interop.PowerPoint.Application app)
         {
-            KillOfficeProcess(new IntPtr(app.HWND));
+            GetWindowThreadProcessId(new IntPtr(app.HWND), out var processId);
+            app.Quit();
+            KillProcess(processId);
         }
 
         public static void KillOfficeProcess(IntPtr processPointer)
@@ -32,16 +37,21 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             {
                 Int32 processId;
                 GetWindowThreadProcessId(processPointer, out processId);
-                var process = Process.GetProcessById(processId);
-                try
-                {
-                    Logger.InfoFormat("Killing Office process {0}", process.ProcessName);
-                    process.Kill();
-                }
-                catch (Exception)
-                {
-                    //Intentionally left empty
-                }
+                KillProcess(processId);
+            }
+            catch (Exception)
+            {
+                //Intentionally left empty
+            }
+        }
+
+        private static void KillProcess(int processId)
+        {
+            var process = Process.GetProcessById(processId);
+            try
+            {
+                Logger.InfoFormat("Killing Office process {0}", process.ProcessName);
+                process.Kill();
             }
             catch (Exception)
             {
@@ -74,6 +84,51 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             catch (Exception)
             {
                 //Intentionally left empty
+            }
+        }
+
+        /// <summary>
+        /// Kills all office process started by automation more than one hour ago, they are 
+        /// surely stale.
+        /// </summary>
+        public static void KillStaleOfficeProgram()
+        {
+            HashSet<String> processNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "EXCEL",
+                "WINWORD",
+                "POWERPNT"
+            };
+            var now = DateTime.Now;
+            foreach (var processName in processNames)
+            {
+                try
+                {
+                    var processes = Process.GetProcessesByName(processName);
+                    foreach (var process in processes)
+                    {
+                        var cmdLine = process.GetCommandLine();
+                        if (cmdLine.IndexOf("automation", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            if (now.Subtract(process.StartTime).TotalMinutes > 60)
+                            {
+                                try
+                                {
+                                    Logger.InfoFormat("Killing Office process {0} because it is stale", process.ProcessName);
+                                    process.Kill();
+                                }
+                                catch (Exception)
+                                {
+                                    //Intentionally left empty
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    //Intentionally left empty
+                }
             }
         }
 

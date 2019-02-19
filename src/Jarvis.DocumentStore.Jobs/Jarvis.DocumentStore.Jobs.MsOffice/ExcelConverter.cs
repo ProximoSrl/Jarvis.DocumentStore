@@ -140,12 +140,11 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                    );
                 }
 
-                _logger.DebugFormat("closing excel", sourcePath);
-                wkb.Close(false);
+                _logger.DebugFormat("Closing excel", sourcePath);
+                Close(wkb);
                 wkb = null;
                 _logger.DebugFormat("Quitting excel", sourcePath);
-                app.Quit();
-                app.Kill();
+                Close(app);
                 app = null;
                 return String.Empty;
             }
@@ -155,7 +154,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 
                 if (wkb != null)
                 {
-                    this.Close(wkb);
+                    Close(wkb);
                 }
                 if (app != null)
                 {
@@ -169,7 +168,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         {
             try
             {
-                app.Quit();
+                app.SafeClose();
             }
             catch (Exception ex)
             {

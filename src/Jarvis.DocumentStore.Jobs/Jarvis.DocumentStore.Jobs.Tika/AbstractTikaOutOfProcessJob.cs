@@ -50,13 +50,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         /// <returns></returns>
         protected abstract ITikaAnalyzer BuildAnalyzer(Int32 analyzerProgressive);
 
-        protected override int ThreadNumber
-        {
-            get
-            {
-                return 6;
-            }
-        }
+        protected override int ThreadNumber => _threadNumber;
 
         protected async override Task<ProcessResult> OnPolling(
             PollerJobParameters parameters,

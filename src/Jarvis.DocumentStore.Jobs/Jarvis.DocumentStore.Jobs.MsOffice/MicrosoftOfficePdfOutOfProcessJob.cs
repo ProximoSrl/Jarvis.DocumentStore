@@ -7,6 +7,7 @@ using System.IO;
 using Castle.Core.Logging;
 using System;
 using System.Configuration;
+using System.Timers;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
@@ -20,6 +21,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         private readonly ExcelConverter _excelConverter;
         private readonly ILogger _logger;
         private readonly Int32 _threadNumber;
+        private readonly Timer _cleanupTimer;
 
         public MicrosoftOfficePdfOutOfProcessJob(
             WordConverter wordConverter,
@@ -37,10 +39,17 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 
             var config = ConfigurationManager.AppSettings["threadNumber"];
             _logger.InfoFormat("Configuration ThreadNumber is {0}", config);
-            if (!String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
+            if (String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
             {
+                _logger.Info("Configuration ThreadNumber wrong the job will default to a single thread");
                 _threadNumber = 1;
             }
+
+            OfficeUtils.KillStaleOfficeProgram();
+            _cleanupTimer = new Timer();
+            _cleanupTimer.Elapsed += (s, e) => OfficeUtils.KillStaleOfficeProgram();
+            _cleanupTimer.Interval = 1000 * 60 * 10;
+            _cleanupTimer.Start();
         }
 
         protected override int ThreadNumber => _threadNumber;
