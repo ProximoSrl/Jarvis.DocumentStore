@@ -31,14 +31,20 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         /// <param name="sourcePath"></param>
         /// <param name="targetPath"></param>
         /// <returns>Error message.</returns>
-        internal String ConvertToPdf(string sourcePath, string targetPath)
+        internal String ConvertToPdf(string sourcePath, string targetPath, Boolean killEveryOtherWordProcess)
         {
             Application app = null;
+
             Document doc = null;
-            OfficeUtils.KillOfficeProcess("WINWORD");
+            if (killEveryOtherWordProcess)
+            {
+                OfficeUtils.KillOfficeProcess("WINWORD");
+            }
             try
             {
                 app = new Application();
+                app.DisplayAlerts = WdAlertLevel.wdAlertsNone;
+
                 _logger.DebugFormat("Opening {0} in office", sourcePath);
                 //it is importantì
                 doc = app.Documents.Open(sourcePath, PasswordDocument: GetPassword(Path.GetFileName(sourcePath)));
@@ -47,7 +53,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 _logger.DebugFormat("File {0} converted to pdf. Closing word", sourcePath);
                 doc.Close();
                 doc = null;
-                _logger.DebugFormat("Application quite", sourcePath);
+                _logger.DebugFormat("Application quit.", sourcePath);
                 app.Quit();
                 app = null;
                 return String.Empty;

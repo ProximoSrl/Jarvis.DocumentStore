@@ -31,14 +31,21 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         /// <param name="sourcePath"></param>
         /// <param name="targetPath"></param>
         /// <returns>Error message, string empty if succeeded</returns>
-        internal String ConvertToPdf(string sourcePath, string targetPath)
+        internal String ConvertToPdf(string sourcePath, string targetPath, Boolean killEveryOtherPpProcess)
         {
             Application app = null;
+            
             Presentation presentation = null;
-            OfficeUtils.KillOfficeProcess("POWERPNT");
+            if (killEveryOtherPpProcess)
+            {
+                OfficeUtils.KillOfficeProcess("POWERPNT");
+            }
+
             try
             {
                 app = new Application();
+                app.DisplayAlerts = PpAlertLevel.ppAlertsNone;
+
                 //app.Visible = MsoTriState.msoFalse;
                 //app.WindowState = PpWindowState.ppWindowMinimized;
                 presentation = app.Presentations.Open(

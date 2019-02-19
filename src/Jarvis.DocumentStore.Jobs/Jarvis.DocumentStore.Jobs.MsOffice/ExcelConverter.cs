@@ -32,17 +32,23 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         /// <param name="sourcePath"></param>
         /// <param name="targetPath"></param>
         /// <returns>Error message.</returns>
-        internal String ConvertToPdf(string sourcePath, string targetPath)
+        internal String ConvertToPdf(string sourcePath, string targetPath, Boolean killEveryOtherExcelProcess)
         {
             Application app = null;
             Workbook wkb = null;
-            OfficeUtils.KillOfficeProcess("EXCEL");
+            if (killEveryOtherExcelProcess)
+            {
+                OfficeUtils.KillOfficeProcess("EXCEL");
+            }
+
             try
             {
                 app = new Application();
                 app.ScreenUpdating = false;
                 app.DisplayStatusBar = false;
                 app.EnableEvents = false;
+                app.DisplayAlerts = false;
+                app.DisplayClipboardWindow = false;
 
                 //app.Visible = true;
                 _logger.DebugFormat("Opening {0} in office", sourcePath);

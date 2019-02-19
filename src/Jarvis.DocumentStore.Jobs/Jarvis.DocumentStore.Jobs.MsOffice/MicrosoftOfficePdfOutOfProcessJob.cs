@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Castle.Core.Logging;
 using System;
+using System.Configuration;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
@@ -18,6 +19,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         private readonly PowerPointConverter _powerPointConverter;
         private readonly ExcelConverter _excelConverter;
         private readonly ILogger _logger;
+        private readonly Int32 _threadNumber;
 
         public MicrosoftOfficePdfOutOfProcessJob(
             WordConverter wordConverter,
@@ -32,7 +34,15 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             _excelConverter = excelConverter;
             _logger = logger;
             OfficeUtils.Logger = logger;
+
+            var config = ConfigurationManager.AppSettings["threadNumber"];
+            if (!String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
+            {
+                _threadNumber = 1;
+            }
         }
+
+        protected override int ThreadNumber => _threadNumber;
 
         protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
@@ -71,15 +81,15 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             String conversionError = String.Empty;
             if (IsWordFile(pathToFile))
             {
-                conversionError = _wordConverter.ConvertToPdf(pathToFile, convertedFile);
+                conversionError = _wordConverter.ConvertToPdf(pathToFile, convertedFile, false);
             }
             else if (IsPowerPointFile(pathToFile))
             {
-                conversionError = _powerPointConverter.ConvertToPdf(pathToFile, convertedFile);
+                conversionError = _powerPointConverter.ConvertToPdf(pathToFile, convertedFile, false);
             }
             else if (IsExcelFile(pathToFile))
             {
-                conversionError = _excelConverter.ConvertToPdf(pathToFile, convertedFile);
+                conversionError = _excelConverter.ConvertToPdf(pathToFile, convertedFile, false);
             }
             else
             {

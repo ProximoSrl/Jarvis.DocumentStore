@@ -12,6 +12,7 @@ using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using System.IO.Compression;
 using Jarvis.DocumentStore.Jobs.HtmlZipOld;
+using System.Configuration;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
@@ -22,6 +23,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         private readonly ContentFormatBuilder _builder;
 
         private readonly ContentFilterManager _filterManager;
+        private readonly Int32 _threadNumber;
 
         public AbstractTikaOutOfProcessJob(
             ContentFormatBuilder builder,
@@ -32,6 +34,12 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt|tmp|htmlzip|htmzip|mht|mhtml|eml".Split('|');
             base.PipelineId = "tika";
             base.QueueName = "tika";
+
+            var config = ConfigurationManager.AppSettings["threadNumber"];
+            if (!String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
+            {
+                _threadNumber = 6;
+            }
         }
 
         /// <summary>
