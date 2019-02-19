@@ -36,6 +36,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             OfficeUtils.Logger = logger;
 
             var config = ConfigurationManager.AppSettings["threadNumber"];
+            _logger.InfoFormat("Configuration ThreadNumber is {0}", config);
             if (!String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
             {
                 _threadNumber = 1;

@@ -103,6 +103,11 @@ namespace Jarvis.DocumentStore.Host.Controllers
 
         public String TenantId { get; set; }
 
+        /// <summary>
+        /// This is passed to parameterOrCustomDataFilter is a filter
+        /// that can filter or in custom data (handle) or into parameter
+        /// jobs (file extension etc)
+        /// </summary>
         public Dictionary<String, Object> CustomData { get; set; }
     }
 

@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             {
                 app = new Application();
                 app.DisplayAlerts = PpAlertLevel.ppAlertsNone;
-
+                _logger.InfoFormat("Opening {0} in Powerpoint", sourcePath);
                 //app.Visible = MsoTriState.msoFalse;
                 //app.WindowState = PpWindowState.ppWindowMinimized;
                 presentation = app.Presentations.Open(
@@ -54,6 +54,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                     MsoTriState.msoFalse,
                     MsoTriState.msoFalse);
 
+                _logger.DebugFormat("Delegate conversion {0} in PowerPoint", sourcePath);
                 presentation.ExportAsFixedFormat(
                     targetPath,
                     PpFixedFormatType.ppFixedFormatTypePDF,

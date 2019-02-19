@@ -1,18 +1,18 @@
-﻿using Jarvis.DocumentStore.Core.ReadModel;
+﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+using Jarvis.DocumentStore.Core.Model;
+using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.Framework.Shared.Helpers;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MongoDB.Driver.Linq;
-using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Support;
-using Jarvis.Framework.Shared.Helpers;
-using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using MongoDB.Bson.Serialization;
 
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
@@ -24,9 +24,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// </summary>
     public class QueueHandler
     {
-        readonly IMongoCollection<QueuedJob> _collection;
-        readonly QueueInfo _info;
-        readonly BsonDocument _statsAggregationQuery;
+        private readonly IMongoCollection<QueuedJob> _collection;
+        private readonly QueueInfo _info;
+        private readonly BsonDocument _statsAggregationQuery;
 
         private readonly MetricHeartBeatHealthCheck _healthCheck;
 
@@ -74,61 +74,74 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// <param name="streamElement"></param>
         /// <param name="tenantId"></param>
         /// <param name="forceReSchedule"></param>
-        public void Handle(
+        public QueuedJobId Handle(
             StreamReadModel streamElement,
             TenantId tenantId,
             Boolean forceReSchedule = false)
         {
-			if (_info.ShouldCreateJob(streamElement))
-			{
-				if (!forceReSchedule)
-				{
-					//look for already existing job with the same blobid, there is no need to re-queue again
-					//because if a job with the same blobid was already fired for this queue there is no need
-					//to re-issue
-					var existing = _collection.Find(
-						Builders<QueuedJob>.Filter.And(
-							Builders<QueuedJob>.Filter.Eq(j => j.BlobId, streamElement.FormatInfo.BlobId),
-							Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
-						)
-					).Count() > 0;
-					if (existing) return;
-				}
-				if (Logger.IsInfoEnabled) Logger.Info($"Queue {_info.Name} CREATE JOB to process {streamElement.Describe()}");
-				QueuedJob job = new QueuedJob();
-				job.Id = new QueuedJobId(Guid.NewGuid().ToString());
+            if (_info.ShouldCreateJob(streamElement))
+            {
+                if (!forceReSchedule)
+                {
+                    //look for already existing job with the same blobid, there is no need to re-queue again
+                    //because if a job with the same blobid was already fired for this queue there is no need
+                    //to re-issue
+                    var existing = _collection.Find(
+                        Builders<QueuedJob>.Filter.And(
+                            Builders<QueuedJob>.Filter.Eq(j => j.BlobId, streamElement.FormatInfo.BlobId),
+                            Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId)
+                        )
+                    ).Count() > 0;
+                    if (existing)
+                    {
+                        return null;
+                    }
+                }
+                if (Logger.IsInfoEnabled)
+                {
+                    Logger.Info($"Queue {_info.Name} CREATE JOB to process {streamElement.Describe()}");
+                }
+
+                QueuedJob job = new QueuedJob();
+                job.Id = new QueuedJobId(Guid.NewGuid().ToString());
                 job.SchedulingTimestamp = DateTime.Now;
-				job.StreamId = streamElement.Id;
-				job.TenantId = tenantId;
-				job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
-				job.BlobId = streamElement.FormatInfo.BlobId;
-				job.Handle = new DocumentHandle(streamElement.Handle);
-				job.Parameters = new Dictionary<string, string>();
-				job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
-				job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
-				job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
-				job.Parameters.Add(JobKeys.TenantId, tenantId);
-				job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
+                job.StreamId = streamElement.Id;
+                job.TenantId = tenantId;
+                job.DocumentDescriptorId = streamElement.DocumentDescriptorId;
+                job.BlobId = streamElement.FormatInfo.BlobId;
+                job.Handle = new DocumentHandle(streamElement.Handle);
+                job.Parameters = new Dictionary<string, string>();
+                job.Parameters.Add(JobKeys.FileExtension, streamElement.Filename.Extension);
+                job.Parameters.Add(JobKeys.Format, streamElement.FormatInfo.DocumentFormat);
+                job.Parameters.Add(JobKeys.FileName, streamElement.Filename);
+                job.Parameters.Add(JobKeys.TenantId, tenantId);
+                job.Parameters.Add(JobKeys.MimeType, MimeTypes.GetMimeType(streamElement.Filename));
                 job.Parameters.Add(JobKeys.PipelineId, streamElement.FormatInfo?.PipelineId?.ToString());
                 if (forceReSchedule)
                 {
                     job.Parameters.Add(JobKeys.Force, "true");
                 }
                 job.HandleCustomData = streamElement.DocumentCustomData;
-				if (_info.Parameters != null)
-				{
-					foreach (var parameter in _info.Parameters)
-					{
-						job.Parameters.Add(parameter.Key, parameter.Value);
-					}
-				}
+                if (_info.Parameters != null)
+                {
+                    foreach (var parameter in _info.Parameters)
+                    {
+                        job.Parameters.Add(parameter.Key, parameter.Value);
+                    }
+                }
 
-				_collection.InsertOne(job);
-			}
-			else
-			{
-				if (Logger.IsDebugEnabled) Logger.Debug($"Queue {_info.Name} do not need to process {streamElement.Describe()}");
-			}
+                _collection.InsertOne(job);
+
+                return job.Id;
+            }
+            else
+            {
+                if (Logger.IsDebugEnabled)
+                {
+                    Logger.Debug($"Queue {_info.Name} do not need to process {streamElement.Describe()}");
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -144,25 +157,36 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return true;
         }
 
-        public QueuedJob GetNextJob(String identity, String handle, TenantId tenantId, Dictionary<String, Object> customData)
+        public QueuedJob GetNextJob(
+            String identity,
+            String handle,
+            TenantId tenantId,
+            Dictionary<String, Object> parameterOrCustomDataFilter)
         {
-            if (_healthCheck != null) _healthCheck.Pulse();
+            if (_healthCheck != null)
+            {
+                _healthCheck.Pulse();
+            }
+
             var query = Builders<QueuedJob>.Filter.And(
-                        Builders<QueuedJob>.Filter.Or(
-                            Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.Idle),
-                            Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.ReQueued)
-                        ),
-                        Builders<QueuedJob>.Filter.Lte(j => j.SchedulingTimestamp, DateTime.Now)
-                );
+                Builders<QueuedJob>.Filter.Or(
+                    Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.Idle),
+                    Builders<QueuedJob>.Filter.Eq(j => j.Status, QueuedJobExecutionStatus.ReQueued)
+                ),
+                Builders<QueuedJob>.Filter.Lte(j => j.SchedulingTimestamp, DateTime.Now)
+            );
             if (tenantId?.IsValid() == true)
             {
                 query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq(j => j.TenantId, tenantId));
             }
-            if (customData?.Count > 0)
+            if (parameterOrCustomDataFilter?.Count > 0)
             {
-                foreach (var filter in customData)
+                foreach (var filter in parameterOrCustomDataFilter)
                 {
-                    query = Builders<QueuedJob>.Filter.And(query, Builders<QueuedJob>.Filter.Eq("HandleCustomData." + filter.Key, filter.Value));
+                    query = Builders<QueuedJob>.Filter.And(query,
+                        Builders<QueuedJob>.Filter.Or(
+                            Builders<QueuedJob>.Filter.Eq("HandleCustomData." + filter.Key, filter.Value),
+                            Builders<QueuedJob>.Filter.Eq("Parameters." + filter.Key, filter.Value)));
                 }
             }
 
@@ -181,13 +205,18 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                     .Set(j => j.ExecutionError, null),
                  new FindOneAndUpdateOptions<QueuedJob, QueuedJob>()
                  {
-                     Sort = Builders<QueuedJob>.Sort.Ascending(j => j.SchedulingTimestamp),
+                     Sort = Builders<QueuedJob>.Sort
+                        .Ascending(j => j.Status) //idle is 0, they will get executed with priority.
+                        .Ascending(j => j.SchedulingTimestamp),
                      ReturnDocument = ReturnDocument.After
                  });
             return result;
         }
 
-        public Boolean SetJobExecuted(String jobId, String errorMessage, Dictionary<String, String> parametersToModify)
+        public Boolean SetJobExecuted(
+            String jobId,
+            String errorMessage,
+            Dictionary<String, String> parametersToModify)
         {
             var job = _collection.FindOneById(BsonValue.Create(jobId));
             if (job == null)

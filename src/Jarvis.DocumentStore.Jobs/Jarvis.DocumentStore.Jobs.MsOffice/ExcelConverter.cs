@@ -145,6 +145,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 wkb = null;
                 _logger.DebugFormat("Quitting excel", sourcePath);
                 app.Quit();
+                app.Kill();
                 app = null;
                 return String.Empty;
             }

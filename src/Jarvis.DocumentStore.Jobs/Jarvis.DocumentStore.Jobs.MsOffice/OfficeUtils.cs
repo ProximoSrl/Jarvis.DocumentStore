@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Text;
 using Castle.Core.Logging;
 
@@ -11,6 +12,42 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
     public static class OfficeUtils
     {
         public static ILogger Logger { get; internal set; }
+
+        [DllImport("user32.dll")]
+        static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+        public static void Kill(this Microsoft.Office.Interop.Excel.Application app)
+        {
+            KillOfficeProcess(new IntPtr(app.Hwnd));
+        }
+
+        public static void Kill(this Microsoft.Office.Interop.PowerPoint.Application app)
+        {
+            KillOfficeProcess(new IntPtr(app.HWND));
+        }
+
+        public static void KillOfficeProcess(IntPtr processPointer)
+        {
+            try
+            {
+                Int32 processId;
+                GetWindowThreadProcessId(processPointer, out processId);
+                var process = Process.GetProcessById(processId);
+                try
+                {
+                    Logger.InfoFormat("Killing Office process {0}", process.ProcessName);
+                    process.Kill();
+                }
+                catch (Exception)
+                {
+                    //Intentionally left empty
+                }
+            }
+            catch (Exception)
+            {
+                //Intentionally left empty
+            }
+        }
 
         public static void KillOfficeProcess(String processName)
         {

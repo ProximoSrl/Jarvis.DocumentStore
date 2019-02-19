@@ -1,36 +1,29 @@
-﻿using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
+﻿using Jarvis.DocumentStore.Core;
+using Jarvis.DocumentStore.Core.Domain.Document;
+using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Jobs.QueueManager;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Shared.Jobs;
+using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Tests.Support;
+using Jarvis.Framework.Shared.Helpers;
+using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using MongoDB.Driver;
-using NSubstitute;
+using MongoDB.Driver.Linq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MongoDB.Driver.Linq;
-using Jarvis.DocumentStore.Shared.Jobs;
-using Jarvis.DocumentStore.Core.Domain.Document;
-using MongoDB.Bson;
-using Jarvis.DocumentStore.Core.Jobs;
-using MongoDB.Bson.Serialization;
-using Jarvis.DocumentStore.Core;
-using Jarvis.DocumentStore.Shared.Model;
-using Jarvis.Framework.Shared.Helpers;
-using Jarvis.Framework.Shared.IdentitySupport;
-using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 
 namespace Jarvis.DocumentStore.Tests.JobTests.Queue
 {
     [TestFixture]
     public class QueueHandlerTests
     {
-        IMongoDatabase _db = MongoDbTestConnectionProvider.QueueDb;
-
+        private IMongoDatabase _db = MongoDbTestConnectionProvider.QueueDb;
 
         [SetUp]
         public void SetUp()
@@ -43,7 +36,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_file_extension_on_handler_filter_exact_extension()
+        public void Verify_file_extension_on_handler_filter_exact_extension()
         {
             var info = new QueueInfo("test", "", "pdf|doc");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -61,7 +54,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         /// this is not permitted because the id should be completely opaque.
         /// </summary>
         [Test]
-        public void verify_id_is_opaque_and_not_contains_blob_id()
+        public void Verify_id_is_opaque_and_not_contains_blob_id()
         {
             var info = new QueueInfo("test", "", "docx");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -94,7 +87,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         /// <summary>
         /// </summary>
         [Test]
-        public void verify_job_parameters_contains_mime_type()
+        public void Verify_job_parameters_contains_mime_type()
         {
             var info = new QueueInfo("test", "", "docx");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -118,7 +111,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_filtering_on_blob_format()
+        public void Verify_filtering_on_blob_format()
         {
             var info = new QueueInfo("test", "", "", "rasterimage");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -138,7 +131,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_filtering_on_mime_types()
+        public void Verify_filtering_on_mime_types()
         {
             var mimeTypeDocx = MimeTypes.GetMimeTypeByExtension("docx");
             var info = new QueueInfo("test", mimeTypes: mimeTypeDocx);
@@ -173,7 +166,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_file_extension_permitted()
+        public void Verify_file_extension_permitted()
         {
             var info = new QueueInfo("test", "", "pdf|docx");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -194,7 +187,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_pipeline_id_filter()
+        public void Verify_pipeline_id_filter()
         {
             var info = new QueueInfo("test", "tika", "");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -224,11 +217,10 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             sut.Handle(rm, new TenantId("test"));
 
             Assert.That(collection.AsQueryable().Count(), Is.EqualTo(1), "pipeline filter is not filtering in admitted pipeline");
-
         }
 
         [Test]
-        public void verify_get_next_job_set_identity()
+        public void Verify_get_next_job_set_identity()
         {
             var info = new QueueInfo("test", "", "pdf|docx");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -259,7 +251,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_job_created_with_handle_metadata()
+        public void Verify_job_created_with_handle_metadata()
         {
             var info = new QueueInfo("test", "", "pdf|docx");
             QueueHandler sut = new QueueHandler(info, _db);
@@ -291,7 +283,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_not_duplicate_jobs_on_same_blob_id()
+        public void Verify_not_duplicate_jobs_on_same_blob_id()
         {
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
             var nextJob = sut.GetNextJob("identity", "handle", null, null);
@@ -301,7 +293,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_get_next_job_not_give_executing_job()
+        public void Verify_get_next_job_not_give_executing_job()
         {
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""));
             var nextJob = sut.GetNextJob("", "handle", null, null);
@@ -311,7 +303,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_max_number_of_falure()
+        public void Verify_max_number_of_falure()
         {
             var info = new QueueInfo("test", "tika", "");
             info.MaxNumberOfFailure = 2;
@@ -336,7 +328,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_job_is_generated_with_custom_parameters()
+        public void Verify_job_is_generated_with_custom_parameters()
         {
             var info = new QueueInfo("test", "tika", "");
             info.Parameters = new Dictionary<string, string>() { { "Custom", "CustomValue" } };
@@ -347,7 +339,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_set_error_status()
+        public void Verify_set_error_status()
         {
             var info = new QueueInfo("test", "tika", "");
             info.MaxNumberOfFailure = 2;
@@ -362,7 +354,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_job_filter_by_tenant_id()
+        public void Verify_job_filter_by_tenant_id()
         {
             var none = new TenantId("tenant_none");
             var foo = new TenantId("tenant_foo");
@@ -378,7 +370,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
         }
 
         [Test]
-        public void verify_job_filter_by_custom_properties()
+        public void Verify_job_filter_by_custom_properties()
         {
             QueueHandler sut = CreateAGenericJob(new QueueInfo("test", "tika", ""),
                 customData: new Dictionary<String, Object>()
@@ -400,6 +392,36 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             Assert.That(nextJob.HandleCustomData["bar"], Is.EqualTo("test"));
         }
 
+        [Test]
+        public void Verify_job_filter_by_job_properties()
+        {
+            var info = new QueueInfo("test", "tika", "");
+            QueueHandler sut = GetSut(info);
+
+            var job1= HandleStreamToCreateJob(sut, fileName: "pippo.xlsx");
+            var job2 = HandleStreamToCreateJob(sut, fileName: "pippo.docx");
+
+            var nextJob = sut.GetNextJob(
+                "identity", 
+                "handle", 
+                null, 
+                new Dictionary<string, object>() {
+                    ["file_ext"] = "pptx"
+                });
+            Assert.That(nextJob, Is.Null);
+
+            nextJob = sut.GetNextJob(
+                "identity",
+                "handle",
+                null,
+                new Dictionary<string, object>()
+                {
+                    ["file_ext"] = "docx"
+                });
+            Assert.That(nextJob, Is.Not.Null);
+            Assert.That(nextJob.Id, Is.EqualTo(job2));
+        }
+
         private QueueHandler GetSut(QueueInfo info)
         {
             return new QueueHandler(info, _db);
@@ -411,15 +433,18 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
             HandleStreamToCreateJob(sut, tenant, customData);
             return sut;
         }
+
         private static Int32 lastBlobId = 1;
-        private static void HandleStreamToCreateJob(
+
+        private static QueuedJobId HandleStreamToCreateJob(
             QueueHandler sut,
             String tenant = "test",
-            Dictionary<String, Object> customData = null)
+            Dictionary<String, Object> customData = null,
+            String fileName = "test.docx")
         {
             StreamReadModel rm = new StreamReadModel()
             {
-                Filename = new FileNameWithExtension("test.docx"),
+                Filename = new FileNameWithExtension(fileName),
                 EventType = HandleStreamEventTypes.DocumentHasNewFormat,
                 FormatInfo = new FormatInfo()
                 {
@@ -429,7 +454,7 @@ namespace Jarvis.DocumentStore.Tests.JobTests.Queue
                 },
                 DocumentCustomData = new DocumentCustomData(customData ?? new Dictionary<String, Object>()),
             };
-            sut.Handle(rm, new TenantId(tenant));
+            return sut.Handle(rm, new TenantId(tenant));
         }
     }
 }

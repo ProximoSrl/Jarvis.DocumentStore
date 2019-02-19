@@ -9,7 +9,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
     public enum QueuedJobExecutionStatus
     {
-        Idle = 0,
+        Idle = 0, //it is important that idle is less than ReQueued because it is used as priority.
         Executing = 1,
         Failed = 2,
         Succeeded = 3,
