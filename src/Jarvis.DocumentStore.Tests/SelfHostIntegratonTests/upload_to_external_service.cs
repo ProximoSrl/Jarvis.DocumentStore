@@ -127,6 +127,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void Upload__temp_excel_xlsm()
+        {
+            _docs.UploadAsync(@"c:\temp\excel.xlsm", DocumentHandle.FromString("temp_excel_xlsm")).Wait();
+        }
+
+        [Test]
         public void Upload__temp_text()
         {
             _docs.UploadAsync(@"c:\temp\temp.txt", DocumentHandle.FromString("temp_txt")).Wait();

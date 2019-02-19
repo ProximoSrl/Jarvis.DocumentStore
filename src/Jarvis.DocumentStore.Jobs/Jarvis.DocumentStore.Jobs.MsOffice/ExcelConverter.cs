@@ -4,6 +4,7 @@ using Microsoft.Office.Interop.Excel;
 using Jarvis.DocumentStore.JobsHost.Support;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
@@ -39,10 +40,100 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             try
             {
                 app = new Application();
+                app.ScreenUpdating = false;
+                app.DisplayStatusBar = false;
+                app.EnableEvents = false;
+
+                //app.Visible = true;
                 _logger.DebugFormat("Opening {0} in office", sourcePath);
                 wkb = app.Workbooks.Open(sourcePath, Password: GetPassword(Path.GetFileName(sourcePath)));
+                
                 _logger.DebugFormat("Exporting {0} in pdf", sourcePath);
-                wkb.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, targetPath);
+                HashSet<String> workbookWithPrintableAreaSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (Name name in wkb.Names)
+                {
+                    if (name.Name.IndexOf("print_area", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        var splitted = name.Name.Split('!');
+                        var workbookName = splitted[0].Trim('\"', '\'', ' ');
+                        workbookWithPrintableAreaSet.Add(workbookName);
+                    }
+                }
+
+                Boolean printAreaIsValid = false;
+                Worksheet worksheetToPrint = (wkb.ActiveSheet as Worksheet);
+                var activeSheetName = worksheetToPrint?.Name as String;
+                if (!String.IsNullOrEmpty(activeSheetName) && workbookWithPrintableAreaSet.Contains(activeSheetName))
+                {
+                    printAreaIsValid = true; //current selected worksheet has a print area set
+                }
+                else
+                {
+                    //ok we need to find if any of the worksheet has a valid print area
+                    foreach (var workbookName in workbookWithPrintableAreaSet)
+                    {
+                        var worksheet = wkb.Sheets
+                            .OfType<Worksheet>()
+                            .FirstOrDefault(s => s.Name?.Equals(workbookName, StringComparison.OrdinalIgnoreCase) == true);
+                        if (worksheet != null)
+                        {
+                            worksheetToPrint = worksheet;
+                            printAreaIsValid = true; //current selected worksheet has a print area set
+                            break;
+                        }
+                    }
+                }
+
+                //ok check if the current workbook has a print area defined
+
+                if (printAreaIsValid)
+                {
+                    //we have a printable area, we already selected the active sheet, we 
+                    //can now print everything.
+
+                    //ActiveSheet.ExportAsFixedFormat Type:= xlTypePDF, Filename:= _
+                    //    "C:\temp\jarvis\docs\MicrosoftOfficePdfOutOfProcessJob\2e99ddb9-20eb-4566-87d8-245462dc442f\excel.pdf" _
+                    //    , Quality:= xlQualityStandard, IncludeDocProperties:= True, IgnorePrintAreas _
+                    //    := False, OpenAfterPublish:= False
+
+                    //(wkb.ActiveSheet as Worksheet).PageSetup.PrintArea = "Print_Area";
+
+                    //wkb.ExportAsFixedFormat(
+                    //    Type: XlFixedFormatType.xlTypePDF,
+                    //    Filename: targetPath,
+                    //    Quality: XlFixedFormatQuality.xlQualityStandard,
+                    //    IgnorePrintAreas: false,
+                    //    OpenAfterPublish: false);
+
+                    worksheetToPrint.ExportAsFixedFormat(
+                        XlFixedFormatType.xlTypePDF,
+                        targetPath,
+                        XlFixedFormatQuality.xlQualityStandard, //object quality
+                        true, //include doc property
+                        false, //ignore print areas
+                        Type.Missing, //from
+                        Type.Missing, //to
+                        false,//false //open after publish
+                        Type.Missing //null // fixedFormatExternalClass ....
+                    );
+                }
+                else
+                {
+                    //There is no printable area, to avoid chaos we will print
+                    //only the first page of the active sheet.
+                    worksheetToPrint.ExportAsFixedFormat(
+                        XlFixedFormatType.xlTypePDF, 
+                        targetPath,
+                        XlFixedFormatQuality.xlQualityStandard, //object quality
+                        true, //include doc property
+                        false, //ignore print areas
+                        1, //from
+                        1, //to
+                        false //open after publish
+                        //null // fixedFormatExternalClass ....
+                   );
+                }
+
                 _logger.DebugFormat("closing excel", sourcePath);
                 wkb.Close(false);
                 wkb = null;
