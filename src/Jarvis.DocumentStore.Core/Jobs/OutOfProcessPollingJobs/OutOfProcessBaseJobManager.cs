@@ -17,8 +17,6 @@ using System.Collections.Concurrent;
 
 namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 {
-
-
     /// <summary>
     /// Suppose that the process is an external executable with some parameters.
     /// </summary>
@@ -34,7 +32,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             public String QueueId { get; set; }
 
-            public Dictionary<String,String> CustomParameters { get; set; }
+            public Dictionary<String, String> CustomParameters { get; set; }
 
             public List<String> DocStoreAddresses { get; set; }
 
@@ -66,8 +64,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             _monitorTimer = new Timer(CheckProcesses, null, 10 * 1000, 10 * 60 * 1000);
         }
 
-
-
         public string Start(String queueName, Dictionary<String, String> customParameters, List<string> docStoreAddresses)
         {
             String processHandle = Guid.NewGuid().ToString() + "-" + Environment.MachineName;
@@ -83,7 +79,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             var info = _startedProcesses[jobHandle];
             var process = info.Process;
 
-            process.Exited -= process_Exited; //remove handler 
+            process.Exited -= Process_Exited; //remove handler 
             if (!process.HasExited)
             {
                 process.Kill();
@@ -96,14 +92,14 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             return true;
         }
 
-        public bool SuspendWorker(string jobHandle)
+        public bool SuspendWorker(string handle)
         {
-            if (!_startedProcesses.ContainsKey(jobHandle)) return false;
+            if (!_startedProcesses.ContainsKey(handle)) return false;
 
-            var info = _startedProcesses[jobHandle];
+            var info = _startedProcesses[handle];
             var process = info.Process;
 
-            process.Exited -= process_Exited; //remove handler 
+            process.Exited -= Process_Exited; //remove handler 
             if (!process.HasExited)
             {
                 process.Kill();
@@ -114,15 +110,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
         }
 
         private void InnerStart(
-            string queueId, 
-            Dictionary<String, String> customParameters, 
-            List<string> docStoreAddresses, 
+            string queueId,
+            Dictionary<String, String> customParameters,
+            List<string> docStoreAddresses,
             String processHandle)
         {
             var jobsLauncherFileExe = @"JobsRunner\Jarvis.DocumentStore.Jobs.exe";
             if (customParameters.ContainsKey("location")) jobsLauncherFileExe = customParameters["location"];
             FileInfo fi = new FileInfo(jobsLauncherFileExe);
-            Logger.InfoFormat("Launching external job process {0} for queue {1}", fi.FullName,  queueId);
+            Logger.InfoFormat("Launching external job process {0} for queue {1}", fi.FullName, queueId);
             if (!fi.Exists)
                 throw new ApplicationException("Unable to find executable for " + queueId + " queue in location " + fi.FullName);
             Process process = GetLocalProcessForQueue(queueId, jobsLauncherFileExe);
@@ -154,15 +150,15 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                 Logger.DebugFormat("Reattached process for queue {0} with ProcessId {1}.", queueId, process.Id);
             }
             process.EnableRaisingEvents = true;
-            process.Exited += process_Exited;
+            process.Exited += Process_Exited;
 
             var info = new ProcessInfo()
             {
                 Process = process,
                 QueueId = queueId,
-                CustomParameters = customParameters,               
+                CustomParameters = customParameters,
                 DocStoreAddresses = docStoreAddresses,
-             };
+            };
             _startedProcesses[processHandle] = info;
 
             if (!_jobInfoList.ContainsKey(queueId))
@@ -198,7 +194,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
 
             foreach (Process process in processes)
             {
-
                 var cmdLine = GetCommandLine(process);
                 if (cmdLine.Contains("/queue:" + queueId)) return process;
             }
@@ -228,11 +223,11 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
             }
         }
 
-        void process_Exited(object sender, EventArgs e)
+        void Process_Exited(object sender, EventArgs e)
         {
             if (!_started) return;
             //locking prevent that restarting a dead service is executed concurrently to periodic check.
-            lock(this)
+            lock (this)
             {
                 //process is exited, it should be restarted if it is a crash.
                 Process process = (Process)sender;
@@ -319,7 +314,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.OutOfProcessPollingJobs
                     {
                         Logger.ErrorFormat(ex, "Error checking process key {0} queue {1}", activeProcess.Key, activeProcess.Value.QueueId);
                     }
-
                 }
             }
         }

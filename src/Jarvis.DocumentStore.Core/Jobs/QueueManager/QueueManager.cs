@@ -33,6 +33,16 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// </summary>
     public interface IQueueManager
     {
+        /// <summary>
+        /// This is the core function called by various queue job executor to get the logical next
+        /// job.
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="queueName"></param>
+        /// <param name="identity"></param>
+        /// <param name="callerHandle"></param>
+        /// <param name="customData"></param>
+        /// <returns></returns>
         QueuedJob GetNextJob(TenantId tenantId, String queueName, String identity, String callerHandle, Dictionary<String, Object> customData);
 
         /// <summary>
@@ -389,7 +399,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return executor(qh);
         }
 
-
         private Boolean _isRebuilding = false;
 
         public void RebuildStarted()
@@ -401,7 +410,5 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _isRebuilding = false;
         }
-
     }
-
 }

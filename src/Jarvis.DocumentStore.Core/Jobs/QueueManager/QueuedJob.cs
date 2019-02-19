@@ -16,6 +16,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         ReQueued = 4, //failed but it can be retried
     }
 
+    /// <summary>
+    /// This is the class that implement queued job for a single queue.
+    /// </summary>
     public class QueuedJob
     {
         public QueuedJobId Id { get; set; }
@@ -53,7 +56,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 
         public Dictionary<String, Object> HandleCustomData { get; set; }
 
-        public static implicit operator QueuedJobDto(QueuedJob original) 
+        public static implicit operator QueuedJobDto(QueuedJob original)
         {
             if (original == null) return null;
             return new QueuedJobDto()
@@ -63,8 +66,5 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                 HandleCustomData = original.HandleCustomData,
             };
         }
-
-
-
     }
 }

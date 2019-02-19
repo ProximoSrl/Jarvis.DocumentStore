@@ -194,6 +194,7 @@
     <Compile Include="Domain\Document\Events\DocumentInitialized.cs" />
     <Compile Include="Domain\Document\Events\DocumentLinked.cs" />
     <Compile Include="Domain\Document\DocumentState.cs" />
+    <Compile Include="Jobs\NullJobManager.cs" />
     <Compile Include="ReadModel\DocumentDeletedReadModel.cs" />
     <Compile Include="Storage\FileSystem\PinvokeWindowsNetworking.cs" />
     <Compile Include="Storage\FileSystem\DirectoryManager.cs" />
