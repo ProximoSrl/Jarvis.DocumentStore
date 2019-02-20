@@ -109,6 +109,7 @@ namespace Jarvis.DocumentStore.JobsHost
                 Thread.Sleep(3000);
                 Environment.Exit(-1); //code to signal that queue is not supported.
             }
+            bootstrapper.Stop();
             return 0;
         }
 

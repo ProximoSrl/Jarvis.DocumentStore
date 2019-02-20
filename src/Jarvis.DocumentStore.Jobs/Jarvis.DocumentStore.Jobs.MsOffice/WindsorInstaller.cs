@@ -11,15 +11,15 @@ namespace Jarvis.DocumentStore.Jobs.LibreOffice
                 Component
                     .For<WordConverter>()
                     .ImplementedBy<WordConverter>()
-                    .LifeStyle.Transient,
+                    .LifeStyle.Singleton,
                 Component
                     .For<PowerPointConverter>()
                     .ImplementedBy<PowerPointConverter>()
-                    .LifeStyle.Transient,
+                    .LifeStyle.Singleton,
                 Component
                     .For<ExcelConverter>()
                     .ImplementedBy<ExcelConverter>()
-                    .LifeStyle.Transient
+                    .LifeStyle.Singleton
            );
         }
     }

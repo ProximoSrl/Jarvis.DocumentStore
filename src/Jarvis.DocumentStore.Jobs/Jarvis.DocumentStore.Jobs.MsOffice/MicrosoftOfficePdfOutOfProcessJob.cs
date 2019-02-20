@@ -37,13 +37,16 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             _logger = logger;
             OfficeUtils.Logger = logger;
 
-            var config = ConfigurationManager.AppSettings["threadNumber"];
-            _logger.InfoFormat("Configuration ThreadNumber is {0}", config);
-            if (String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
-            {
-                _logger.Info("Configuration ThreadNumber wrong the job will default to a single thread");
-                _threadNumber = 1;
-            }
+            //var config = ConfigurationManager.AppSettings["threadNumber"];
+            //_logger.InfoFormat("Configuration ThreadNumber is {0}", config);
+            //if (String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
+            //{
+            //    _logger.Info("Configuration ThreadNumber wrong the job will default to a single thread");
+            //    _threadNumber = 1;
+            //}
+
+            //It is not safe to have more than one thread running office automation.
+            _threadNumber = 1; 
 
             OfficeUtils.KillStaleOfficeProgram();
             _cleanupTimer = new Timer();
@@ -91,15 +94,15 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             String conversionError = String.Empty;
             if (IsWordFile(pathToFile))
             {
-                conversionError = _wordConverter.ConvertToPdf(pathToFile, convertedFile, false);
+                conversionError = _wordConverter.ConvertToPdf(pathToFile, convertedFile);
             }
             else if (IsPowerPointFile(pathToFile))
             {
-                conversionError = _powerPointConverter.ConvertToPdf(pathToFile, convertedFile, false);
+                conversionError = _powerPointConverter.ConvertToPdf(pathToFile, convertedFile);
             }
             else if (IsExcelFile(pathToFile))
             {
-                conversionError = _excelConverter.ConvertToPdf(pathToFile, convertedFile, false);
+                conversionError = _excelConverter.ConvertToPdf(pathToFile, convertedFile);
             }
             else
             {

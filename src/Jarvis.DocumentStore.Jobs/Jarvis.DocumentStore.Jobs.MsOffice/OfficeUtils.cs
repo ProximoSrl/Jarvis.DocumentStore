@@ -15,48 +15,41 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         public static ILogger Logger { get; internal set; }
 
         [DllImport("user32.dll")]
-        static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+        private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
         public static void SafeClose(this Microsoft.Office.Interop.Excel.Application app)
         {
-            GetWindowThreadProcessId(new IntPtr(app.Hwnd), out var processId);
-            app.Quit();
-            KillProcess(processId);
+            try
+            {
+                GetWindowThreadProcessId(new IntPtr(app.Hwnd), out var processId);
+                app.Quit(); //try safe quit, then kill.
+                KillProcess(processId);
+            }
+            catch (Exception ex)
+            {
+                Logger.WarnFormat(ex, "Unable to Safe close Excel - {0}", ex.Message);
+            }
         }
 
         public static void SafeClose(this Microsoft.Office.Interop.PowerPoint.Application app)
         {
-            GetWindowThreadProcessId(new IntPtr(app.HWND), out var processId);
-            app.Quit();
-            KillProcess(processId);
-        }
-
-        public static void KillOfficeProcess(IntPtr processPointer)
-        {
             try
             {
-                Int32 processId;
-                GetWindowThreadProcessId(processPointer, out processId);
+                GetWindowThreadProcessId(new IntPtr(app.HWND), out var processId);
+                app.Quit();//try safe quit, then kill.
                 KillProcess(processId);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //Intentionally left empty
+                Logger.WarnFormat(ex, "Unable to Safe close PowerPoint - {0}", ex.Message);
             }
         }
 
         private static void KillProcess(int processId)
         {
             var process = Process.GetProcessById(processId);
-            try
-            {
-                Logger.InfoFormat("Killing Office process {0}", process.ProcessName);
-                process.Kill();
-            }
-            catch (Exception)
-            {
-                //Intentionally left empty
-            }
+            Logger.InfoFormat("Killing Office process {0}", process.ProcessName);
+            process.Kill();
         }
 
         public static void KillOfficeProcess(String processName)
@@ -74,16 +67,16 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                             Logger.InfoFormat("Killing Office process {0}", process.ProcessName);
                             process.Kill();
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
-                            //Intentionally left empty
+                            Logger.WarnFormat(ex, "Unable to kill office process {0} - {1}", process.ProcessName, ex.Message);
                         }
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //Intentionally left empty
+                Logger.WarnFormat(ex, "Error enumerating processes trying to close {0} - {1}", processName, ex.Message);
             }
         }
 
@@ -110,24 +103,25 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                         var cmdLine = process.GetCommandLine();
                         if (cmdLine.IndexOf("automation", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            if (now.Subtract(process.StartTime).TotalMinutes > 60)
+                            var minutesFromStart = now.Subtract(process.StartTime).TotalMinutes;
+                            if (minutesFromStart > 60)
                             {
                                 try
                                 {
-                                    Logger.InfoFormat("Killing Office process {0} because it is stale", process.ProcessName);
+                                    Logger.InfoFormat("Killing Office process {0} because it is stale, it was started {1} minutes ago.", process.ProcessName, minutesFromStart);
                                     process.Kill();
                                 }
-                                catch (Exception)
+                                catch (Exception ex)
                                 {
-                                    //Intentionally left empty
+                                    Logger.WarnFormat(ex, "Error Killing Office process {0} because it is stale, it was started {1} minutes ago. - {2}", process.ProcessName, minutesFromStart, ex.Message);
                                 }
                             }
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //Intentionally left empty
+                    Logger.WarnFormat(ex, "Error enumerating processes trying to close {0} - {1}", processName, ex.Message);
                 }
             }
         }

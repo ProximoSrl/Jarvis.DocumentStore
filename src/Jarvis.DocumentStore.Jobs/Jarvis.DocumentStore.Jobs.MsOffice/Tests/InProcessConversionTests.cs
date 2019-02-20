@@ -45,7 +45,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice.Tests
                 if (File.Exists(tempFile)) File.Delete(tempFile);
                 File.WriteAllBytes(tempFile, fileContent);
 
-                var conversionError = WordConverter.ConvertToPdf(tempFile, tempFile+ ".pdf", false);
+                var conversionError = WordConverter.ConvertToPdf(tempFile, tempFile+ ".pdf");
                 if (!String.IsNullOrEmpty(conversionError))
                 {
                     retValue.Add(new PollerTestResult(false, type + "Conversion with word converter failed: " + conversionError));
@@ -73,7 +73,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice.Tests
                 if (File.Exists(tempFile)) File.Delete(tempFile);
                 File.WriteAllBytes(tempFile, fileContent);
 
-                var conversionError = PowerPointConverter.ConvertToPdf(tempFile, tempFile + ".pdf", false);
+                var conversionError = PowerPointConverter.ConvertToPdf(tempFile, tempFile + ".pdf");
                 if (!String.IsNullOrEmpty( conversionError))
                 {
                     retValue.Add(new PollerTestResult(false, type + "Conversion with powerpoint converter failed:" + conversionError));
@@ -101,7 +101,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice.Tests
                 if (File.Exists(tempFile)) File.Delete(tempFile);
                 File.WriteAllBytes(tempFile, fileContent);
 
-                var conversionError = ExcelConverter.ConvertToPdf(tempFile, tempFile + ".pdf", false);
+                var conversionError = ExcelConverter.ConvertToPdf(tempFile, tempFile + ".pdf");
                 if (!String.IsNullOrEmpty(conversionError))
                 {
                     retValue.Add(new PollerTestResult(false, type + "Conversion with excel converter failed:" + conversionError));

@@ -10,14 +10,12 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
 #pragma warning disable S2583 // Conditionally executed blocks should be reachable
 #pragma warning disable S1854 // Dead stores should be removed
-    public class ExcelConverter
+    public class ExcelConverter : BaseConverter
     {
-        private readonly ILogger _logger;
         private readonly IClientPasswordSet _clientPasswordSet;
 
-        public ExcelConverter(ILogger logger, IClientPasswordSet clientPasswordSet)
+        public ExcelConverter(IClientPasswordSet clientPasswordSet)
         {
-            _logger = logger;
             _clientPasswordSet = clientPasswordSet;
         }
 
@@ -26,20 +24,12 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             return _clientPasswordSet.GetPasswordFor(fileName).FirstOrDefault() ?? "fake password, to avoid being stuck with ask password dialog";
         }
 
-        /// <summary>
-        /// Convert word file to pdf
-        /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="targetPath"></param>
-        /// <returns>Error message.</returns>
-        internal String ConvertToPdf(string sourcePath, string targetPath, Boolean killEveryOtherExcelProcess)
+        protected override String OnRunJob(JobData job)
         {
             Application app = null;
             Workbook wkb = null;
-            if (killEveryOtherExcelProcess)
-            {
-                OfficeUtils.KillOfficeProcess("EXCEL");
-            }
+            var sourceFile = job.SourceFile;
+            var destinationFile = job.DestinationFile;
 
             try
             {
@@ -51,10 +41,10 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 app.DisplayClipboardWindow = false;
 
                 //app.Visible = true;
-                _logger.DebugFormat("Opening {0} in office", sourcePath);
-                wkb = app.Workbooks.Open(sourcePath, Password: GetPassword(Path.GetFileName(sourcePath)));
-                
-                _logger.DebugFormat("Exporting {0} in pdf", sourcePath);
+                Logger.DebugFormat("Opening {0} in office", sourceFile);
+                wkb = app.Workbooks.Open(sourceFile, Password: GetPassword(Path.GetFileName(sourceFile)));
+
+                Logger.DebugFormat("Exporting {0} in pdf", sourceFile);
                 HashSet<String> workbookWithPrintableAreaSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (Name name in wkb.Names)
                 {
@@ -95,25 +85,11 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 if (printAreaIsValid)
                 {
                     //we have a printable area, we already selected the active sheet, we 
-                    //can now print everything.
-
-                    //ActiveSheet.ExportAsFixedFormat Type:= xlTypePDF, Filename:= _
-                    //    "C:\temp\jarvis\docs\MicrosoftOfficePdfOutOfProcessJob\2e99ddb9-20eb-4566-87d8-245462dc442f\excel.pdf" _
-                    //    , Quality:= xlQualityStandard, IncludeDocProperties:= True, IgnorePrintAreas _
-                    //    := False, OpenAfterPublish:= False
-
-                    //(wkb.ActiveSheet as Worksheet).PageSetup.PrintArea = "Print_Area";
-
-                    //wkb.ExportAsFixedFormat(
-                    //    Type: XlFixedFormatType.xlTypePDF,
-                    //    Filename: targetPath,
-                    //    Quality: XlFixedFormatQuality.xlQualityStandard,
-                    //    IgnorePrintAreas: false,
-                    //    OpenAfterPublish: false);
-
+                    //can now print everything, but pay attention, we want to print only 
+                    //one worksheet, not all of them.
                     worksheetToPrint.ExportAsFixedFormat(
                         XlFixedFormatType.xlTypePDF,
-                        targetPath,
+                        destinationFile,
                         XlFixedFormatQuality.xlQualityStandard, //object quality
                         true, //include doc property
                         false, //ignore print areas
@@ -128,29 +104,29 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                     //There is no printable area, to avoid chaos we will print
                     //only the first page of the active sheet.
                     worksheetToPrint.ExportAsFixedFormat(
-                        XlFixedFormatType.xlTypePDF, 
-                        targetPath,
+                        XlFixedFormatType.xlTypePDF,
+                        destinationFile,
                         XlFixedFormatQuality.xlQualityStandard, //object quality
                         true, //include doc property
                         false, //ignore print areas
                         1, //from
                         1, //to
                         false //open after publish
-                        //null // fixedFormatExternalClass ....
+                              //null // fixedFormatExternalClass ....
                    );
                 }
 
-                _logger.DebugFormat("Closing excel", sourcePath);
+                Logger.DebugFormat("Closing excel", sourceFile);
                 Close(wkb);
                 wkb = null;
-                _logger.DebugFormat("Quitting excel", sourcePath);
+                Logger.DebugFormat("Quitting excel", sourceFile);
                 Close(app);
                 app = null;
                 return String.Empty;
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Error converting {0} - {1}", sourcePath, ex.Message);
+                Logger.ErrorFormat(ex, "Error converting {0} - {1}", sourceFile, ex.Message);
 
                 if (wkb != null)
                 {
@@ -160,8 +136,21 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 {
                     this.Close(app);
                 }
-                return $"Error converting {sourcePath} - {ex.Message}";
+                return $"Error converting {sourceFile} - {ex.Message}";
             }
+        }
+
+        /// <summary>
+        /// Convert word file to pdf
+        /// </summary>
+        /// <param name="sourcePath"></param>
+        /// <param name="targetPath"></param>
+        /// <returns>Error message.</returns>
+        internal String ConvertToPdf(string sourcePath, string targetPath)
+        {
+            var task = base.QueueJob(sourcePath, targetPath);
+            //this will wait the task.
+            return task.Result;
         }
 
         private void Close(Application app)
@@ -172,7 +161,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close excel application {0}", ex.Message);
+                Logger.ErrorFormat(ex, "Unable to close excel application {0}", ex.Message);
                 //TODO: Try to kill the process.
             }
         }
@@ -185,7 +174,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close Excel document {0}", ex.Message);
+                Logger.ErrorFormat(ex, "Unable to close Excel document {0}", ex.Message);
             }
         }
     }

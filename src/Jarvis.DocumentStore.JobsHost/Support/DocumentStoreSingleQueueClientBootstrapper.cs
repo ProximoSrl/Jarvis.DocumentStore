@@ -71,6 +71,12 @@ namespace Jarvis.DocumentStore.JobsHost.Support
             return true;
         }
 
+        public Boolean Stop()
+        {
+            _container.Dispose();
+            return true;
+        }
+
         private Boolean ExecuteTests()
         {
             var tests = _container.ResolveAll<IPollerTest>();

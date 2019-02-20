@@ -9,14 +9,12 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
 #pragma warning disable S2583 // Conditionally executed blocks should be reachable
 #pragma warning disable S1854 // Dead stores should be removed
-    public class PowerPointConverter
+    public class PowerPointConverter : BaseConverter
     {
-        private readonly ILogger _logger;
         private readonly IClientPasswordSet _clientPasswordSet;
 
-        public PowerPointConverter(ILogger logger, IClientPasswordSet clientPasswordSet)
+        public PowerPointConverter(IClientPasswordSet clientPasswordSet)
         {
-            _logger = logger;
             _clientPasswordSet = clientPasswordSet;
         }
 
@@ -25,38 +23,29 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             return _clientPasswordSet.GetPasswordFor(fileName).FirstOrDefault() ?? "fake password, to avoid being stuck with ask password dialog";
         }
 
-        /// <summary>
-        /// Convert power point to pdf
-        /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="targetPath"></param>
-        /// <returns>Error message, string empty if succeeded</returns>
-        internal String ConvertToPdf(string sourcePath, string targetPath, Boolean killEveryOtherPpProcess)
+        protected override string OnRunJob(JobData job)
         {
             Application app = null;
-            
-            Presentation presentation = null;
-            if (killEveryOtherPpProcess)
-            {
-                OfficeUtils.KillOfficeProcess("POWERPNT");
-            }
 
+            Presentation presentation = null;
+            var sourceFile = job.SourceFile;
+            var destinationFile = job.DestinationFile;
             try
             {
                 app = new Application();
                 app.DisplayAlerts = PpAlertLevel.ppAlertsNone;
-                _logger.InfoFormat("Opening {0} in Powerpoint", sourcePath);
+                Logger.InfoFormat("Opening {0} in Powerpoint", sourceFile);
                 //app.Visible = MsoTriState.msoFalse;
                 //app.WindowState = PpWindowState.ppWindowMinimized;
                 presentation = app.Presentations.Open(
-                    sourcePath,
+                    sourceFile,
                     MsoTriState.msoFalse,
                     MsoTriState.msoFalse,
                     MsoTriState.msoFalse);
 
-                _logger.DebugFormat("Delegate conversion {0} in PowerPoint", sourcePath);
+                Logger.DebugFormat("Delegate conversion {0} in PowerPoint", sourceFile);
                 presentation.ExportAsFixedFormat(
-                    targetPath,
+                    destinationFile,
                     PpFixedFormatType.ppFixedFormatTypePDF,
                     PpFixedFormatIntent.ppFixedFormatIntentScreen);
 
@@ -70,7 +59,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Error converting {0} - {1}", sourcePath, ex.Message);
+                Logger.ErrorFormat(ex, "Error converting {0} - {1}", sourceFile, ex.Message);
 
                 if (presentation != null)
                 {
@@ -80,8 +69,15 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 {
                     Close(app);
                 }
-                return $"Error converting {sourcePath} - {ex.Message}";
+                return $"Error converting {sourceFile} - {ex.Message}";
             }
+        }
+
+        internal String ConvertToPdf(string sourcePath, string targetPath)
+        {
+            var task = base.QueueJob(sourcePath, targetPath);
+            //this will wait the task.
+            return task.Result;
         }
 
         private void Close(Application app)
@@ -92,7 +88,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to kill Powerpoint application {0}", ex.Message);
+                Logger.ErrorFormat(ex, "Unable to kill Powerpoint application {0}", ex.Message);
                 //I do not care if the application generate exception during kill.  
             }
         }
@@ -105,7 +101,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close presentation {0}", ex.Message);
+                Logger.ErrorFormat(ex, "Unable to close presentation {0}", ex.Message);
             }
         }
     }

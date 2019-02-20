@@ -115,6 +115,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseConverter.cs" />
     <Compile Include="ExcelConverter.cs" />
     <Compile Include="MicrosoftOfficePdfOutOfProcessJob.cs" />
     <Compile Include="OfficeUtils.cs" />
