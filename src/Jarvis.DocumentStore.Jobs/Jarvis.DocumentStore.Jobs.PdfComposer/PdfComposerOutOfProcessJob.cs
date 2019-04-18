@@ -68,7 +68,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                     //need to check if this file has some job pending that can generate pdf.
                     var pendingJobs = await client.GetJobsAsync(documentHandle);
                     var fileName = await GetfileNameFromHandle(client, documentHandle);
-                    Boolean needWaitForJobToRun = CheckIfSomeJobCanStillProducePdfFormat(pendingJobs, fileName);
+                    Boolean needWaitForJobToRun = CheckIfSomeJobCanStillProducePdfFormat(pendingJobs, fileName, requeueCount);
 
                     //need to check if queue that can convert the document are still running. We need to wait for the queue to be stable.
                     if (needWaitForJobToRun)
@@ -111,13 +111,38 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             return ProcessResult.Ok;
         }
 
+        /// <summary>
+        /// GEnerate a result that will re-queue the job using always greater wait time to wait for
+        /// really long time (queue stuck) but avoid saturating job.
+        /// </summary>
+        /// <param name="requeueCount"></param>
+        /// <returns></returns>
         private static ProcessResult GenerateRequeueProcessResult(Int32 requeueCount)
         {
-            //some job is still executing, probably pdf format could be generated in the future
+            //The goal here is to have short wait for the first 10 iteration, then 
+            //start waiting for long time, because if the result is not ready with few
+            //iteration, probably the queue is stuck and we should wait for much longer.
+            TimeSpan waitTime;
+            if (requeueCount > 50)
+            {
+                return ProcessResult.Fail("Reached maximum number of retries");
+            }
+            else if (requeueCount > 20)
+            {
+                waitTime = TimeSpan.FromHours(1);
+            }
+            else if (requeueCount > 10)
+            {
+                waitTime = TimeSpan.FromMinutes(15);
+            }
+            else
+            {
+                waitTime = TimeSpan.FromSeconds(requeueCount * 10);
+            }
 
-            Int32 secondsToWait = Math.Min(requeueCount * 2, 30);
+            //some job is still executing, probably pdf format could be generated in the future
             return new ProcessResult(
-                TimeSpan.FromSeconds(secondsToWait),
+                waitTime,
                 new Dictionary<String, String>()
                 {
                       {ReQueueCountParameterName, (requeueCount + 1).ToString() }
@@ -154,9 +179,11 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             return pdfExists;
         }
 
-        private bool CheckIfSomeJobCanStillProducePdfFormat(Shared.Jobs.QueuedJobInfo[] pendingJobs, String fileName)
+        private bool CheckIfSomeJobCanStillProducePdfFormat(Shared.Jobs.QueuedJobInfo[] pendingJobs, String fileName, Int32 retryCount)
         {
-            if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "pdfConverter"))
+            //We wait for the job to be generated only for the first 10 wait.
+            Boolean waitForNotGeneratedJob = retryCount < 10;
+            if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "pdfConverter", allowNullJob : waitForNotGeneratedJob))
             {
                 //PdfConverter did not run, need to wait
                 return true;
@@ -166,23 +193,45 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             if (!String.IsNullOrEmpty(extension) && officeExtensions.Contains(extension.Trim('.')))
             {
                 //this is a file that can be converted with office.
-                if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "office"))
+                if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "office", allowNullJob: waitForNotGeneratedJob))
                 {
                     //The extension is an extension of office, but office queue still did not run.
                     return true;
                 }
             }
 
-            var jobThatStillWereNotRun = pendingJobs.Count(j => j.Executed == false);
+            var jobThatStillWereNotRun = pendingJobs.Count(j => !j.Executed);
             //we do not know if there are some more jobs that can produce pdf, we assume that no pdf format is present
             //if this handle has no more job to run.
             return jobThatStillWereNotRun == 0;
         }
 
-        private bool CheckIfQueueJobShouldStillBeExecuted(Shared.Jobs.QueuedJobInfo[] pendingJobs, String queueName)
+        /// <summary>
+        /// Check if a job is pending for a specific queue given the list of queue job info for the handle.
+        /// </summary>
+        /// <param name="pendingJobs"></param>
+        /// <param name="queueName"></param>
+        /// <param name="allowNullJob">
+        /// If this parameter is true, a null job for the queue will be considered still a job that needs to be executed because
+        /// job was still not generated by the service.
+        /// 
+        /// We have a situation, when we check
+        /// for a specific job queue, as an example, office queue, the job is not executed if the job is null or is pending
+        /// or re-queued. If we have a bug in the server queues that NEVER generates the job, the job will be null forever, this means
+        /// that we can accept that job is null only for the first X request.</param>
+        /// <returns></returns>
+        private bool CheckIfQueueJobShouldStillBeExecuted(QueuedJobInfo[] pendingJobs, String queueName, Boolean allowNullJob)
         {
             var job = pendingJobs.FirstOrDefault(j => j.QueueName == queueName);
-            if (job == null || job.Executed == false)
+
+            if (!allowNullJob && job == null)
+            {
+                Logger.Warn($"Job for queue {queueName} was not generated");
+                return false;
+            }
+
+            //we simply return true if the job is not executed, it is still pending or re-queued.
+            if (job?.Executed != true)
             {
                 return true;
             }
