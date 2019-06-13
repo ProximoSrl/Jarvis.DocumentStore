@@ -35,10 +35,10 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             base.PipelineId = "tika";
             base.QueueName = "tika";
 
-            var config = ConfigurationManager.AppSettings["threadNumber"];
-            if (!String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
+            var config = ConfigurationManager.AppSettings["threadNumber"] ?? "1";
+            if (!Int32.TryParse(config, out _threadNumber))
             {
-                _threadNumber = 6;
+                _threadNumber = 1;
             }
         }
 
