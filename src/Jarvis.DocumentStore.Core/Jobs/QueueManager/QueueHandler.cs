@@ -199,7 +199,7 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                  //SortBy = SortBy<QueuedJob>.Ascending(j => j.SchedulingTimestamp),
                  Builders<QueuedJob>.Update
                     .Set(j => j.Status, QueuedJobExecutionStatus.Executing)
-                    .Set(j => j.ExecutionStartTime, DateTime.Now)
+                    .Set(j => j.ExecutionStartTime, null)
                     .Set(j => j.ExecutingIdentity, identity)
                     .Set(j => j.ExecutingHandle, handle)
                     .Set(j => j.ExecutionError, null),
