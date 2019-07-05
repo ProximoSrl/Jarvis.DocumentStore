@@ -1,5 +1,6 @@
 ﻿using Castle.Core.Logging;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,12 +8,12 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 {
     public class VlcCommandLineThumbnailCreator
     {
-        private string vlcExecutable;
-        private string format;
-        private IExtendedLogger logger;
+        private readonly string vlcExecutable;
+        private readonly string format;
+        private readonly IExtendedLogger logger;
 
         /// <summary>
-        /// 
+        /// Convert video to thumbnail with vlc player.
         /// </summary>
         /// <param name="vlcExecutable"></param>
         /// <param name="format"></param>
@@ -36,8 +37,14 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
         /// <returns></returns>
         public String CreateThumbnail(String uriOfNetworkStream, String tempDir, Int32 secondsOffset)
         {
+            String commandLineArgument = ConfigurationManager.AppSettings["vlc_commandline"];
+            if (String.IsNullOrEmpty(commandLineArgument))
+            {
+                commandLineArgument = "{0} --rate=1 --video-filter=scene --start-time={3} --stop-time={4} --scene-format={2} --scene-ratio=24 --scene-prefix=snap --scene-path={1} vlc://quit";
+            }
+
             var arguments = String.Format(
-                   "{0} --rate=1 --video-filter=scene --vout=dummy --start-time={3} --stop-time={4} --scene-format={2} --scene-ratio=24 --scene-prefix=snap --scene-path={1} vlc://quit",
+                  commandLineArgument,
                    uriOfNetworkStream,
                    tempDir,
                    format,
@@ -55,10 +62,10 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
                 WindowStyle = ProcessWindowStyle.Minimized
             };
 
-            string content = null;
             using (var p = Process.Start(psi))
             {
-                p.WaitForExit();
+                //wait for 2 minutes.
+                p.WaitForExit(1000 * 60 * 2);
             }
 
             //Need to find thumbnails, VLC creates multiple files, but the one with the highest number

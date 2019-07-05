@@ -4,14 +4,8 @@ using Jarvis.DocumentStore.Jobs.VideoThumbnails.Tests;
 using Jarvis.DocumentStore.Shared.Jobs;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using System.Threading;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Jobs.Tika.Tests
 {
@@ -28,10 +22,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
         public List<PollerTestResult> Execute()
         {
             List<PollerTestResult> retValue = new List<PollerTestResult>();
-            String format ="png";
-            Int32 secondsOffset = 4;
-
-            String vlcExecutable = Helper.GetExecutableLocation();
+            const String format = "png";
+            var vlcExecutable = Helper.GetExecutableLocation();
 
             if (vlcExecutable == null)
             {
@@ -52,8 +44,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
                 File.WriteAllBytes(tempFile, TestFiles.video);
 
                 var thumb = worker.CreateThumbnail(tempFile, Path.GetTempPath(), 4);
-                retValue.Add(new PollerTestResult(
-                    !String.IsNullOrEmpty(tempFile), "video thumb extraction: "));
+                retValue.Add(new PollerTestResult(!String.IsNullOrEmpty(thumb), "video thumb extraction: "));
             }
             catch (Exception ex)
             {
@@ -62,7 +53,5 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
 
             return retValue;
         }
-       
     }
-
 }
