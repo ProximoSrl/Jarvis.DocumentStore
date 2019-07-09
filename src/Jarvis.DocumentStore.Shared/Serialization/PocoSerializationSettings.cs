@@ -1,12 +1,13 @@
-using System.Reflection;
-using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Reflection;
 
 namespace Jarvis.DocumentStore.Shared.Serialization
 {
     public class PocoSerializationSettings : JsonSerializerSettings
     {
+        public static PocoSerializationSettings Default { get; private set; } = new PocoSerializationSettings();
+
         private class PrivatePropertySetterResolver : DefaultContractResolver
         {
             protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
@@ -27,10 +28,9 @@ namespace Jarvis.DocumentStore.Shared.Serialization
             }
         }
 
-        public static PocoSerializationSettings Default = new PocoSerializationSettings();
         public PocoSerializationSettings()
         {
-            TypeNameAssemblyFormat = FormatterAssemblyStyle.Full;
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Full;
             ReferenceLoopHandling = ReferenceLoopHandling.Error;
             ContractResolver = new PrivatePropertySetterResolver();
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor;

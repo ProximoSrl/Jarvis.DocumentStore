@@ -2,17 +2,13 @@
 using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.LiveBackup.Support;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Topshelf;
 
 namespace Jarvis.DocumentStore.LiveBackup
 {
-    class Program
+    internal class Program
     {
         private static ILogger _logger = NullLogger.Instance;
 
@@ -25,8 +21,7 @@ namespace Jarvis.DocumentStore.LiveBackup
             _logger = logger;
         }
 
-
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             ConfigurationServiceClient.AppDomainInitializer(
                (message, isError, exception) =>
@@ -89,8 +84,7 @@ namespace Jarvis.DocumentStore.LiveBackup
 
                 return HostFactory.Run(x =>
                 {
-
-                    x.UseOldLog4Net("log4net.config");
+                    x.UseLog4Net("log4net.config");
                     x.Service<Bootstrapper>(s =>
                     {
                         s.ConstructUsing(name => new Bootstrapper());

@@ -36,12 +36,6 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                 file = outFile;
             }
 
-            var sanitizer = new SafeHtmlConverter(file)
-            {
-                Logger = Logger
-            };
-            file = sanitizer.Run(parameters.JobId);
-
             var converter = new HtmlToPdfConverterFromDiskFileOld(file, base.JobsHostConfiguration)
             {
                 Logger = Logger

@@ -20,8 +20,8 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
         IBlobStore _artifacts;
         BlobStoreByFormat _manager;
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             _originals = NSubstitute.Substitute.For<IBlobStore>();
             _artifacts = NSubstitute.Substitute.For<IBlobStore>();

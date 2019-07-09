@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NETFULL
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -78,3 +80,4 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         }
     }
 }
+#endif

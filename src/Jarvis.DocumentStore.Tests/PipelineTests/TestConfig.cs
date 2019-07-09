@@ -17,7 +17,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             if (!Directory.Exists(DocumentsFolder) || !File.Exists(aDocTestFile))
             {
                 //we do not have Docs folder, use doc folder on source.
-                DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\Docs")).FullName;
+                DocumentsFolder = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Docs")).FullName;
             }
 
             TempFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");

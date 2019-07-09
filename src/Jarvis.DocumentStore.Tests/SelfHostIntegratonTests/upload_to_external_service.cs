@@ -21,8 +21,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private DocumentStoreServiceClient _docs;
         private DocumentStoreServiceClient _demo;
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             _docs = new DocumentStoreServiceClient(
                 TestConfig.ServerAddress,

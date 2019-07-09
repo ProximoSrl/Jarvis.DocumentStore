@@ -21,7 +21,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Jarvis.DocumentStore.Core.Storage;
 using Jarvis.DocumentStore.Shared.Model;
-using Jarvis.Framework.TestHelpers;
+using Jarvis.DocumentStore.Tests.Support;
 using org.objectweb.asm;
 
 namespace Jarvis.DocumentStore.Tests.ProjectionTests

@@ -51,8 +51,9 @@ namespace Jarvis.DocumentStore.Jobs.PdfThumbnails
             {
                 var settings = new MagickReadSettings
                 {
-                    Density = new PointD(createPdfImageTaskParams.Dpi, createPdfImageTaskParams.Dpi)
+                    Density = new Density(createPdfImageTaskParams.Dpi, createPdfImageTaskParams.Dpi)
                 };
+                settings.BackgroundColor = MagickColor.FromRgb(0xFF, 0xFF, 0xFF);
                 settings.FrameIndex = 0; // First page
                 settings.FrameCount = 1; // Number of pages
                 MagickFormat imageFormat = TranslateFormat(createPdfImageTaskParams.Format);

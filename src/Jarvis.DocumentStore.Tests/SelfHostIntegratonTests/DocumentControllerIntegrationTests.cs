@@ -734,9 +734,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             await UpdateAndWaitAsync();
 
-            var ex = Assert.Throws<HttpRequestException>(async () =>
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
             {
-                await _documentStoreClient.GetCustomDataAsync(handle);
+                await _documentStoreClient.GetCustomDataAsync(handle).ConfigureAwait(false);
             });
 
             Assert.IsTrue(ex.Message.Contains("404"));

@@ -20,14 +20,14 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
     public class UploadTests : AbstractFileControllerTests
     {
         [Test]
-        public async void calling_upload_without_file_attachment_should_return_BadRequest()
+        public async Task calling_upload_without_file_attachment_should_return_BadRequest()
         {
             var response = await Controller.Upload(_tenantId, new DocumentHandle("Document_1"));
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Test]
-        public async void calling_upload_with_empty_attachment_should_return_BadRequest()
+        public async Task calling_upload_with_empty_attachment_should_return_BadRequest()
         {
             Controller.Request.Content = new MultipartFormDataContent("test");
             var response = await Controller.Upload(_tenantId, new DocumentHandle("Document_1"));
@@ -36,7 +36,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         }
 
         [Test]
-        public async void calling_upload_with_unsupported_file_type_should_return_BadRequest()
+        public async Task calling_upload_with_unsupported_file_type_should_return_BadRequest()
         {
             var response = await upload_file(TestConfig.PathToInvalidFile, "Document_1");
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Tests.ControllerTests
         }
 
         [Test]
-        public async void calling_upload_with_supported_file_type_should_return_Ok()
+        public async Task calling_upload_with_supported_file_type_should_return_Ok()
         {
             var response = await InnerUploadFile("Document_1");
             Assert.AreEqual(new FileInfo(TestConfig.PathToDocumentPdf).Length, response.StreamLength);       

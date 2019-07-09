@@ -21,9 +21,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     [TestFixture]
     public class SerializationIdTests
     {
-
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             MongoFlatMapper.EnableFlatMapping(true);
         }
@@ -35,10 +34,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
             job.TenantId = new TenantId("TEST_TENANT");
             job.Id = new QueuedJobId("some id");
             var json = job.ToJson();
-            Assert.That(json, Text.Contains("some id"));
-            Assert.That(json, Text.Contains("test_tenant"));
+            Assert.That(json.Contains("some id"));
+            Assert.That(json.Contains("test_tenant"));
         }
-
-
     }
 }

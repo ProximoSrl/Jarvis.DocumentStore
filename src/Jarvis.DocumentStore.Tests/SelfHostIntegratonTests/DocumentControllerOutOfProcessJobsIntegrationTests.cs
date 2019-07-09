@@ -20,7 +20,6 @@ using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.MultitenantSupport;
-using Jarvis.Framework.TestHelpers;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using NUnit.Framework;
@@ -91,8 +90,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _projections.UpdateAndWait();
         }
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             try
             {
@@ -142,8 +141,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         }
 
-        [TestFixtureTearDown]
-        public void TestFixtureTearDown()
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
         {
             _documentStoreService.Stop();
             BsonClassMapHelper.Clear();
@@ -156,7 +155,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture()]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -164,7 +163,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         public Integration_out_of_process_tika(String engineVersion) : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -254,7 +252,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     var contentFile = _blobStore.Download(contentFormatInfo.BlobId, Path.GetTempPath());
                     var content = File.ReadAllText(contentFile);
 
-                    Assert.That(content, Is.StringContaining("previous post we introduced Jarvis"));
+                    Assert.That(content.Contains("previous post we introduced Jarvis"));
                     return;
                 }
 
@@ -272,7 +270,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_tika_long_name : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -338,7 +336,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class A_Integration_out_of_process_tika_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -347,7 +345,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public A_Integration_out_of_process_tika_password(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
@@ -420,7 +417,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class A_Integration_out_of_process_tika_multiple_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -503,7 +500,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_no_multiple_schedule : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -575,7 +572,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -584,7 +581,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_out_of_process_tika_content(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -645,7 +641,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_image : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -723,7 +719,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_eml : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -776,7 +772,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -787,7 +783,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_out_of_process_eml_chain(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -854,13 +849,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_html_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
         public Integration_out_of_process_html_to_pdf(String engineVersion)
             : base(engineVersion)
         {
+            TestLogger.GlobalEnableStartScope();
         }
 
         public async Task<Boolean> Verify_htmlToPdf_base<T>(String testFile) where T : AbstractOutOfProcessPollerJob, new()
@@ -919,7 +915,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_out_of_process_office_to_pdf : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -985,7 +981,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_attachments_queue_multiple_zip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -1037,7 +1033,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_attachments_queue_singleZip : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -1095,7 +1091,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_attachment_then_same_attach_inside_externa_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -1169,7 +1165,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_handle_with_attachment_duplicated_then_first_deleted : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -1237,7 +1233,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_attachments_mail_with_attach : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -1296,7 +1292,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Integration_attachments_mail_with_zip_and_other_mail : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -1354,7 +1350,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Deletion_of_attachments_advanced : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
@@ -1412,7 +1408,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 
-    [TestFixture]
+    [TestFixture("v3")]
     [Category("Integration_full")]
     public class Verify_composition_of_pdf_file : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {

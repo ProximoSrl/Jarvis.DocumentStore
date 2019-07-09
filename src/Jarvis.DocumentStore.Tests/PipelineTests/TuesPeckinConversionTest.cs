@@ -13,8 +13,9 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         HtmlToPdfConverterFromDiskFileOld _converter;
         SafeHtmlConverter _sanitizer;
         JobsHostConfiguration _config;
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             _config = new JobsHostConfiguration();
         }

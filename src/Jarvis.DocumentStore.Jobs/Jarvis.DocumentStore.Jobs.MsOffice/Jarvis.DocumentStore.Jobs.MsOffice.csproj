@@ -1,164 +1,26 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D646774E-3A15-42BB-B9CB-18B80D04B874}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Jarvis.DocumentStore.Jobs.MsOffice</RootNamespace>
-    <AssemblyName>Jarvis.DocumentStore.Jobs.MsOffice</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>net461</TargetFramework>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
+    <AssemblyTitle>Jarvis.DocumentStore.Jobs.MsOffice</AssemblyTitle>
+    <Product>Jarvis.DocumentStore.Jobs.MsOffice</Product>
+    <Copyright>Copyright ©  2018</Copyright>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Castle.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Castle.Windsor">
-      <HintPath>..\..\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
-    </Reference>
-    <Reference Include="DnsClient, Version=1.0.7.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DnsClient.1.0.7\lib\net45\DnsClient.dll</HintPath>
-    </Reference>
-    <Reference Include="DocumentFormat.OpenXml, Version=2.8.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DocumentFormat.OpenXml.2.8.1\lib\net40\DocumentFormat.OpenXml.dll</HintPath>
-    </Reference>
-    <Reference Include="Interop.Microsoft.Office.Interop.Publisher, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Interop.Microsoft.Office.Interop.Publisher.2.2.0.0\lib\net40\Interop.Microsoft.Office.Interop.Publisher.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Jarvis.Framework.UdpAppender, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Jarvis.Framework.UdpAppender.1.0.9\lib\NET45\Jarvis.Framework.UdpAppender.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\log4net.1.2.10\lib\2.0\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Access, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\packages\Microsoft.Office.Interop.Access.15.0.4420.1017\lib\net20\Microsoft.Office.Interop.Access.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Graph, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\packages\Microsoft.Office.Interop.Graph.15.0.4420.1017\lib\net20\Microsoft.Office.Interop.Graph.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Outlook, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\packages\Microsoft.Office.Interop.Outlook.15.0.4797.1003\lib\net20\Microsoft.Office.Interop.Outlook.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.PowerPoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\packages\Microsoft.Office.Interop.PowerPoint.15.0.4420.1017\lib\net20\Microsoft.Office.Interop.PowerPoint.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Word, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\packages\Microsoft.Office.Interop.Word.15.0.4797.1003\lib\net20\Microsoft.Office.Interop.Word.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Bson.2.7.0\lib\net45\MongoDB.Bson.dll</HintPath>
-    </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Driver.2.7.0\lib\net45\MongoDB.Driver.dll</HintPath>
-    </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Driver.Core.2.7.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Buffers.4.3.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BaseConverter.cs" />
-    <Compile Include="ExcelConverter.cs" />
-    <Compile Include="MicrosoftOfficePdfOutOfProcessJob.cs" />
-    <Compile Include="OfficeUtils.cs" />
-    <Compile Include="PowerPointConverter.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tests\InProcessConversionTests.cs" />
-    <Compile Include="Tests\TestFiles.Designer.cs">
-      <DependentUpon>TestFiles.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="WindsorInstaller.cs" />
-    <Compile Include="WordConverter.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj">
-      <Project>{a7b56dee-8009-47b2-89e4-c9f7a5c67236}</Project>
-      <Name>Jarvis.DocumentStore.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj">
-      <Project>{65411e15-6ec3-455f-a5e4-34446a808474}</Project>
-      <Name>Jarvis.DocumentStore.JobsHost</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj">
-      <Project>{377e1786-2c26-4c3b-acba-a9cd73fb53e6}</Project>
-      <Name>Jarvis.DocumentStore.Shared</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-    <None Include="Resources\doc.docx" />
-    <None Include="Resources\Excel.xlsx" />
-    <None Include="Resources\ppt.pptx" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Tests\TestFiles.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>TestFiles.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+ 
+  <!--<PropertyGroup>
+    <PostBuildEvent>
+      xcopy "$(TargetDir)*.*" "$(SolutionDir)..\artifacts\jobs\msoffice\" /Y /E
+      copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\msoffice\Jarvis.DocumentStore.JobsHost.exe.config.original"
+    </PostBuildEvent>
+  </PropertyGroup>-->
+
+  <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;$(TargetDir)*.*&quot; &quot;$(SolutionDir)..\artifacts\jobs\msoffice\&quot; /Y /E" />
+    <Exec Command="copy /Y &quot;$(ProjectDir)\app.config&quot; &quot;$(SolutionDir)..\artifacts\jobs\msoffice\Jarvis.DocumentStore.JobsHost.exe.config.original&quot;" />
+  </Target>
+
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -166,15 +28,63 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
+  <ItemGroup>
+    <PackageReference Include="Castle.Core" Version="4.4.0" />
+    <PackageReference Include="Castle.LoggingFacility" Version="5.0.0" />
+    <PackageReference Include="Castle.Windsor" Version="5.0.0" />
+    <PackageReference Include="DnsClient" Version="1.0.7" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.8.1" />
+    <PackageReference Include="Interop.Microsoft.Office.Interop.Publisher" Version="2.2.0.0" />
+    <PackageReference Include="Jarvis.Framework.UdpAppender" Version="1.0.9" />
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="Microsoft.Office.Interop.Access" Version="15.0.4420.1017" />
+    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1000" />
+    <PackageReference Include="Microsoft.Office.Interop.Graph" Version="15.0.4420.1017" />
+    <PackageReference Include="Microsoft.Office.Interop.Outlook" Version="15.0.4797.1003" />
+    <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1017" />
+    <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1003" />
+    <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
+    <PackageReference Include="System.Buffers" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="office">
+      <HintPath>..\..\..\libs\office\office.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Management" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Tests\TestFiles.Designer.cs">
+      <DependentUpon>TestFiles.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj" />
+    <ProjectReference Include="..\..\Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj" />
+    <ProjectReference Include="..\..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\doc.docx" />
+    <None Include="Resources\Excel.xlsx" />
+    <None Include="Resources\ppt.pptx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Tests\TestFiles.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TestFiles.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- Workaround for https://github.com/dotnet/roslyn-project-system/issues/1739 -->
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)*.*" "$(SolutionDir)..\artifacts\jobs\msoffice\" /Y /E
-copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\msoffice\Jarvis.DocumentStore.JobsHost.exe.config.original"</PostBuildEvent>
+    <AssemblySearchPaths>$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  
 </Project>

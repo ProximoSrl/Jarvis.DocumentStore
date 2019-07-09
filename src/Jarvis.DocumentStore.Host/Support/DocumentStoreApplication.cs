@@ -86,7 +86,7 @@ namespace Jarvis.DocumentStore.Host.Support
             while (true)
             {
                 var last = root.Last();
-                if (last == String.Empty || last == "debug" || last == "release" || last == "bin")
+                if (last == String.Empty || last == "debug" || last == "release" || last == "bin" || last == "net461")
                 {
                     root.RemoveAt(root.Count - 1);
                     continue;

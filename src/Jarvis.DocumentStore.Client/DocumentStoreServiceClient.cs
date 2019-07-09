@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json.Linq;
 
-#if DisablePriLongPath
+#if DisablePriLongPath || NETSTANDARD
 using Path = System.IO.Path;
 using File = System.IO.File;
 #else

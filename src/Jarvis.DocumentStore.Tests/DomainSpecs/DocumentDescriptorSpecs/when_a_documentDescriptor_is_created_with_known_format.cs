@@ -3,9 +3,9 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
-using Jarvis.Framework.TestHelpers;
 using Machine.Specifications;
 using NSubstitute;
+using Jarvis.DocumentStore.Tests.Support;
 
 namespace Jarvis.DocumentStore.Tests.DomainSpecs.DocumentDescriptorSpecs
 {
