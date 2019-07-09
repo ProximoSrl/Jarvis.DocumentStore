@@ -58,39 +58,39 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
             Assert.AreEqual(expected, File.ReadAllText(fname + ".dsimport"));
         }
 
-        [Test, Explicit]
-        public void queue_folder()
-        {
-            var sourceFolder = @"c:\Downloads\video\";
-            var taskFolder = @"c:\temp\dsqueue";
-            var files = Directory.GetFiles(sourceFolder, "*.*", SearchOption.AllDirectories);
-            var docs = new DocumentStoreServiceClient(new Uri("http://ds"), "docs");
-//            var demo = new DocumentStoreServiceClient(new Uri("http://ds"), "demo");
+//        [Test, Explicit]
+//        public void queue_folder()
+//        {
+//            var sourceFolder = @"c:\Downloads\video\";
+//            var taskFolder = @"c:\temp\dsqueue";
+//            var files = Directory.GetFiles(sourceFolder, "*.*", SearchOption.AllDirectories);
+//            var docs = new DocumentStoreServiceClient(new Uri("http://ds"), "docs");
+////            var demo = new DocumentStoreServiceClient(new Uri("http://ds"), "demo");
 
-            var counter = 1;
-            Parallel.ForEach(files, file =>
-            {
-                var handle = "import_" + counter++;
-                var taskDoc = docs.CreateDocumentImportData(
-                    Guid.NewGuid(),
-                    file,
-                    Path.GetFileName(file),
-                    new DocumentHandle(handle)
-                );
-                taskDoc.DeleteAfterImport = false;
+//            var counter = 1;
+//            Parallel.ForEach(files, file =>
+//            {
+//                var handle = "import_" + counter++;
+//                var taskDoc = docs.CreateDocumentImportData(
+//                    Guid.NewGuid(),
+//                    file,
+//                    Path.GetFileName(file),
+//                    new DocumentHandle(handle)
+//                );
+//                taskDoc.DeleteAfterImport = false;
 
-                var docsFile = Path.Combine(taskFolder, "doc_" + handle + "_" + DateTime.Now.Ticks);
-                docs.QueueDocumentImport(taskDoc, docsFile);
+//                var docsFile = Path.Combine(taskFolder, "doc_" + handle + "_" + DateTime.Now.Ticks);
+//                docs.QueueDocumentImport(taskDoc, docsFile);
 
-                //var taskDemo = demo.CreateDocumentImportData(
-                //    Guid.NewGuid(),
-                //    file,
-                //    new DocumentHandle(handle)
-                //);
-                //taskDemo.DeleteAfterImport = false;
-                //var demoFile = Path.Combine(taskFolder, "demo_" + handle + "_" + DateTime.Now.Ticks);
-                //demo.QueueDocumentImport(taskDemo, demoFile);
-            });
-        }
+//                //var taskDemo = demo.CreateDocumentImportData(
+//                //    Guid.NewGuid(),
+//                //    file,
+//                //    new DocumentHandle(handle)
+//                //);
+//                //taskDemo.DeleteAfterImport = false;
+//                //var demoFile = Path.Combine(taskFolder, "demo_" + handle + "_" + DateTime.Now.Ticks);
+//                //demo.QueueDocumentImport(taskDemo, demoFile);
+//            });
+//        }
     }
 }

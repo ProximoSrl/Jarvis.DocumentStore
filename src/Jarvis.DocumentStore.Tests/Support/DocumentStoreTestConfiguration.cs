@@ -45,9 +45,9 @@ namespace Jarvis.DocumentStore.Tests.Support
             f.LogUsing<ExtendedConsoleLoggerFactory>();
         }
 
-        public void SetTestAddress(Uri serverAddress)
+        public void SetTestAddress(String serverAddress)
         {
-            AddServerAddress(serverAddress.AbsoluteUri);
+            AddServerAddress(serverAddress);
         }
 
         public void SetFolderToMonitor(String folder)

@@ -211,7 +211,15 @@ namespace Jarvis.DocumentStore.Host.Support
                 tenant.Container.CheckConfiguration();
             }
 
-            _webApplication = WebApp.Start<DocumentStoreApplication>(options);
+            try
+            {
+                _webApplication = WebApp.Start<DocumentStoreApplication>(options);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Cannot listen on url {options.Urls.Single()} {ex.Message}", ex);
+            }
+
             _logger.InfoFormat("Server started");
 
             foreach (var act in _container.ResolveAll<IStartupActivity>())

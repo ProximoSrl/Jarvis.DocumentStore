@@ -100,7 +100,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 _config = new DocumentStoreTestConfigurationForPollQueue(OnGetQueueInfo(), _engineVersion);
                 _jobsHostConfiguration = new JobsHostConfiguration();
                 MongoDbTestConnectionProvider.DropTenant(TestConfig.Tenant);
-                _config.SetTestAddress(TestConfig.ServerAddress);
+                _config.SetTestAddress(TestConfig.TestHostServiceAddress);
                 _documentStoreService = new DocumentStoreBootstrapper();
                 _documentStoreService.Start(_config);
                 _documentStoreClient = new DocumentStoreServiceClient(
