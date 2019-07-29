@@ -1,0 +1,40 @@
+pool:
+  name: Default
+  demands:
+  - msbuild
+  - visualstudio
+  - vstest
+
+steps:
+
+- task: LibreOfficeKiller@0
+  displayName: 'LibreOfficeKiller '
+
+- task: GitVersion@0
+  displayName: 'GitVersion '
+  inputs:
+    BuildNamePrefix: 'DocumentStore - CI'
+
+- task: NuGetInstaller@0
+  displayName: 'NuGet restore **\*.sln'
+  inputs:
+    solution: '**\*.sln'
+
+- task: VSBuild@1
+  displayName: 'Build solution **\*.sln'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: VSTest@1
+  displayName: 'Test Assemblies **\$(BuildConfiguration)\*test*.dll;-:**\obj\**'
+  inputs:
+    testAssembly: '**\$(BuildConfiguration)\*test*.dll;-:**\obj\**'
+    codeCoverageEnabled: true
+    vsTestVersion: latest
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+  continueOnError: true
+
+
+
