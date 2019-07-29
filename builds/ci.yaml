@@ -1,9 +1,22 @@
+trigger:
+- master
+- develop
+- release/*
+- hotfix/*
+- feature/*
+
 pool:
   name: Default
   demands:
   - msbuild
   - visualstudio
   - vstest
+
+variables:
+  AssemblyVersion: '0.0.1'
+  solution: 'src/LeanCostIntegration.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
 
 steps:
 
