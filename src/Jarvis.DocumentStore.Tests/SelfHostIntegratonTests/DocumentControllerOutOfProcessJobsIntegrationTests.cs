@@ -861,7 +861,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_out_of_process_html_to_pdf(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         public async Task<Boolean> Verify_htmlToPdf_base<T>(String testFile) where T : AbstractOutOfProcessPollerJob, new()

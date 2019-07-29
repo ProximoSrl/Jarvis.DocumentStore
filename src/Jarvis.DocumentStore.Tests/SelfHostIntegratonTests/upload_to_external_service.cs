@@ -15,6 +15,7 @@ using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
+    [Category("Explicit")]
     public class Upload_to_external_service
     {
         private DocumentStoreServiceClient _docs;

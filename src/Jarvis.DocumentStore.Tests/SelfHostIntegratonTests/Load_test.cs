@@ -16,6 +16,7 @@ using Jarvis.DocumentStore.Shared.Model;
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
+    [Category("Explicit")]
     public class Load_test
     {
         private DocumentStoreServiceClient _docs;

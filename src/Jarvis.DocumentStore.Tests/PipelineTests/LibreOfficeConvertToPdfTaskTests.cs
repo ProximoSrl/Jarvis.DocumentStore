@@ -110,6 +110,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         }
 
         [Test, Explicit]
+        [Category("Explicit")]
         public void parallel_conversion_should_not_throw_exceptions()
         {
             Parallel.ForEach(
