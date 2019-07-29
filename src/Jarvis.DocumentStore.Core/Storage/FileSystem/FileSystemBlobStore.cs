@@ -61,7 +61,7 @@ namespace Jarvis.DocumentStore.Core.Storage
         public IBlobWriter CreateNew(DocumentFormat format, FileNameWithExtension fname)
         {
             var blobId = new BlobId(format, _counterService.GetNext(format));
-            return new FileSystemBlobWriter(blobId, fname, GetFileNameFromBlobIdAndRemoveDuplicates(blobId), _blobDescriptorCollection, Logger);
+            return new FileSystemBlobWriter(blobId, fname, GetFileNameFromBlobIdAndRemoveDuplicates(blobId, fname), _blobDescriptorCollection, Logger);
         }
 
         public IBlobDescriptor GetDescriptor(BlobId blobId)
@@ -78,7 +78,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Logger.DebugFormat(message);
                 throw new Exception(message);
             }
-            descriptor.SetLocalFileName(_directoryManager.GetFileNameFromBlobId(blobId));
+            descriptor.SetLocalFileName(_directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension));
             return descriptor;
         }
 
@@ -134,7 +134,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Timestamp = DateTime.Now,
                 ContentType = MimeTypes.GetMimeType(fileName)
             };
-            string destinationFileName = GetFileNameFromBlobIdAndRemoveDuplicates(blobId);
+            string destinationFileName = GetFileNameFromBlobIdAndRemoveDuplicates(blobId, descriptor.FileNameWithExtension);
             Logger.Debug($"File {fileName} was assigned blob {blobId} and will be saved in file {destinationFileName}");
 
             using (var md5 = MD5.Create())
@@ -160,18 +160,18 @@ namespace Jarvis.DocumentStore.Core.Storage
             return descriptor;
         }
 
-        private string GetFileNameFromBlobIdAndRemoveDuplicates(BlobId blobId)
+        private string GetFileNameFromBlobIdAndRemoveDuplicates(BlobId blobId, String fileName)
         {
-            var fileName = _directoryManager.GetFileNameFromBlobId(blobId);
-            if (File.Exists(fileName))
+            var finalFileName = _directoryManager.GetFileNameFromBlobId(blobId, fileName);
+            if (File.Exists(finalFileName))
             {
                 //Anomaly, we are trying to overwrite the blob
                 Logger.Warn($"Destination file {blobId} already exists for id {blobId}");
                 //Todo move in another folder ... maybe a lost and found.
-                File.Move(fileName, fileName + "." + Guid.NewGuid().ToString());
+                File.Move(finalFileName, finalFileName + "." + Guid.NewGuid().ToString());
             }
 
-            return fileName;
+            return finalFileName;
         }
 
         public string Download(BlobId blobId, string folder)
@@ -189,7 +189,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             if (descriptor == null)
                 throw new ArgumentException($"Descriptor for {blobId} not found in {_blobDescriptorCollection.CollectionNamespace.FullName}");
 
-            var localFileName = _directoryManager.GetFileNameFromBlobId(blobId);
+            var localFileName = _directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension);
             if (!File.Exists(localFileName))
             {
                 Logger.Error($"Blob {blobId} has descriptor, but blob file {localFileName} not found in the system.");
@@ -210,7 +210,11 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public void Delete(BlobId blobId)
         {
-            var fileName = _directoryManager.GetFileNameFromBlobId(blobId);
+            var descriptor = _blobDescriptorCollection.FindOneById(blobId);
+            if (descriptor == null)
+                throw new ArgumentException($"Descriptor for {blobId} not found in {_blobDescriptorCollection.CollectionNamespace.FullName}");
+
+            var fileName = _directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension);
             File.Delete(fileName);
 
             _blobDescriptorCollection.RemoveById(blobId);

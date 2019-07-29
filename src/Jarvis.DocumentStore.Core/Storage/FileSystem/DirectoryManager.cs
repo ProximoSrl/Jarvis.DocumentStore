@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
         /// </summary> 
         /// <param name="blobId"></param>
         /// <returns></returns>
-        public String GetFileNameFromBlobId(BlobId blobId)
+        public String GetFileNameFromBlobId(BlobId blobId, String fileName)
         {
             var id = blobId.Id;
             var stringPadded = String.Format("{0:D15}", id / 1000);
@@ -47,7 +47,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             var finalDirectory = Path.Combine(_baseDirectory, blobId.Format, directoryName.ToString());
             Directory.EnsureDirectory(finalDirectory);
 
-            return finalDirectory + id + ".blob";
+            return finalDirectory + id + "." + Path.GetFileName(fileName);
         }
     }
 }

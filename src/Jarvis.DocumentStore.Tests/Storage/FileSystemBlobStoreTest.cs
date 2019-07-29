@@ -49,10 +49,10 @@ namespace Jarvis.DocumentStore.Tests.Storage
             String content = "this is the content of the file";
             String tempFileName = GenerateTempTextFile(content, "test1.txt");
             var id = _sut.Upload(DocumentFormats.Original, tempFileName);
-            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id)));
+            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id, "test1.txt")));
             Assert.That(id, Is.Not.Null);
             _sut.Delete(id);
-            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id)), Is.False);
+            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id, "test1.txt")), Is.False);
         }
     }
 }
