@@ -20,11 +20,9 @@ namespace Jarvis.DocumentStore.Tests
             var overrideTestDb = Environment.GetEnvironmentVariable("TEST_MONGODB");
             if (!String.IsNullOrEmpty(overrideTestDb))
             {
-
                 var overrideTestDbQueryString = Environment.GetEnvironmentVariable("TEST_MONGODB_QUERYSTRING");
                 var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 var connectionStringsSection = (ConnectionStringsSection)config.GetSection("connectionStrings");
-
 
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "log", "ds-tests-logs");
                 RewriteConnection(overrideTestDb, overrideTestDbQueryString, connectionStringsSection, "ds.quartz", "ds-tests-quartz");
