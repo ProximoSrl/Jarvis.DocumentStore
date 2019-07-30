@@ -64,7 +64,7 @@ namespace Jarvis.DocumentStore.Tests.Storage.FileSystem
             BlobId id = new BlobId("original." + Int64.MaxValue);
             Console.WriteLine(Int64.MaxValue);
             var fileName = _sut.GetFileNameFromBlobId(id, "filename.pdf");
-            Assert.That(fileName, Is.StringEnding(Int64.MaxValue + ".filename.pdf"));
+            Assert.That(fileName.EndsWith(Int64.MaxValue + ".filename.pdf"));
             Assert.That(fileName, Is.EqualTo(_tempLocalDirectory + "\\original\\922\\337\\203\\685\\477\\9223372036854775807.filename.pdf"));
         }
     }
