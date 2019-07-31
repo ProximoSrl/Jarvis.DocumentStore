@@ -115,8 +115,6 @@ public class GlobalSetupFixture
             overrideTestDb.TrimEnd('/') +
             "/" +
             databaseName.Trim('/') +
-            overrideTestDbQueryString;
+            overrideTestDbQueryString.Trim();
     }
-
-
 }
