@@ -85,17 +85,18 @@ namespace Jarvis.DocumentStore.Tests
             }
         }
 
-    private static void RewriteConnection(
-        string overrideTestDb,
-        string overrideTestDbQueryString,
-        ConnectionStringsSection connectionStringsSection,
-        string connectionStringName,
-        string databaseName)
-    {
-        connectionStringsSection.ConnectionStrings[connectionStringName].ConnectionString =
-            overrideTestDb.TrimEnd('/') +
-            "/" +
-            databaseName.Trim('/') +
-            overrideTestDbQueryString.Trim();
+        private static void RewriteConnection(
+            string overrideTestDb,
+            string overrideTestDbQueryString,
+            ConnectionStringsSection connectionStringsSection,
+            string connectionStringName,
+            string databaseName)
+        {
+            connectionStringsSection.ConnectionStrings[connectionStringName].ConnectionString =
+                overrideTestDb.TrimEnd('/') +
+                "/" +
+                databaseName.Trim('/') +
+                overrideTestDbQueryString.Trim();
+        }
     }
 }
