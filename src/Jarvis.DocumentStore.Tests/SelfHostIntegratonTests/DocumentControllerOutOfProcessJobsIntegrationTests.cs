@@ -138,7 +138,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
         protected virtual void OnJobPreparing(AbstractOutOfProcessPollerJob job)
         {
-
         }
 
         [OneTimeTearDown]
@@ -159,8 +158,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Integration_full")]
     public class Integration_out_of_process_tika : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        private OutOfProcessTikaNetJob sut;
-
         public Integration_out_of_process_tika(String engineVersion) : base(engineVersion)
         {
         }
@@ -168,7 +165,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async Task Verify_tika_job()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob(
+            _sutBase = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
@@ -212,7 +209,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async Task Verify_tika_job_on_htmlzip()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob(
+            _sutBase = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
@@ -274,17 +271,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Integration_full")]
     public class Integration_out_of_process_tika_long_name : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        private OutOfProcessTikaNetJob sut;
-
         public Integration_out_of_process_tika_long_name(String engineVersion) : base(engineVersion)
         {
-
         }
 
         [Test]
         public async Task Verify_tika_job_with_long_name()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob(
+            _sutBase = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
@@ -340,8 +334,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Integration_full")]
     public class A_Integration_out_of_process_tika_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        private OutOfProcessTikaNetJob sut;
-
         public A_Integration_out_of_process_tika_password(String engineVersion)
             : base(engineVersion)
         {
@@ -357,7 +349,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async Task A_Verify_tika_job_with_password()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob(
+            _sutBase = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
@@ -381,9 +373,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(handleCore));
-                if (documentDescriptor != null &&
-                    documentDescriptor.Formats.ContainsKey(tikaFormat) &&
-                    documentDescriptor.Formats.ContainsKey(contentFormat))
+                if (documentDescriptor != null
+                    && documentDescriptor.Formats.ContainsKey(tikaFormat)
+                    && documentDescriptor.Formats.ContainsKey(contentFormat))
                 {
                     //Document found, but we want to be sure that the fileName of the format is correct.
                     var formatInfo = documentDescriptor.Formats[tikaFormat];
@@ -421,12 +413,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Integration_full")]
     public class A_Integration_out_of_process_tika_multiple_password : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        private OutOfProcessTikaNetJob sut;
-
         public A_Integration_out_of_process_tika_multiple_password(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         protected override void OnJobPreparing(AbstractOutOfProcessPollerJob job)
@@ -439,12 +428,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async Task A_Verify_tika_job_with_multiple_password()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob(
+            _sutBase = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
 
-            var handleCore = new Jarvis.DocumentStore.Core.Model.DocumentHandle("Verify_tika_job_multiple");
+            var handleCore = new Core.Model.DocumentHandle("Verify_tika_job_multiple");
             var handleClient = new DocumentHandle("Verify_tika_job_multiple");
             await _documentStoreClient.UploadAsync(
                TestConfig.PathToPasswordProtectedPdf,
@@ -504,12 +493,9 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Integration_full")]
     public class Integration_out_of_process_no_multiple_schedule : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        private OutOfProcessTikaNetJob sut;
-
         public Integration_out_of_process_no_multiple_schedule(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         /// <summary>
@@ -519,7 +505,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async Task Verify_no_multiple_schedule_for_de_duplicated_document()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob(
+            _sutBase = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
@@ -576,8 +562,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Integration_full")]
     public class Integration_out_of_process_tika_content : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        private OutOfProcessTikaNetJob sut;
-
         public Integration_out_of_process_tika_content(String engineVersion)
             : base(engineVersion)
         {
@@ -586,7 +570,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async Task Verify_tika_set_content()
         {
-            _sutBase = sut = new OutOfProcessTikaNetJob(
+            _sutBase = new OutOfProcessTikaNetJob(
                 new ContentFormatBuilder(new ContentFilterManager(null)),
                 new ContentFilterManager(null));
             PrepareJob();
@@ -608,8 +592,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 await UpdateAndWait();
                 documentDescriptor = _documentDescriptorCollection.AsQueryable()
                     .SingleOrDefault(d => d.Documents.Contains(new Core.Model.DocumentHandle("Verify_tika_job")));
-                if (documentDescriptor != null
-                    && documentDescriptor.Formats.ContainsKey(format))
+                if (documentDescriptor?.Formats.ContainsKey(format) == true)
                 {
                     //now we want to verify if content is set correctly
                     var client = new DocumentStoreServiceClient(TestConfig.ServerAddress, TestConfig.Tenant);
@@ -648,7 +631,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_out_of_process_image(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -726,7 +708,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_out_of_process_eml(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -776,8 +757,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Integration_full")]
     public class Integration_out_of_process_eml_chain : DocumentControllerOutOfProcessJobsIntegrationTestsBase
     {
-        private AnalyzeEmailOutOfProcessJob sut;
-
         private HtmlToPdfOutOfProcessJobOld _htmlSut;
 
         public Integration_out_of_process_eml_chain(String engineVersion)
@@ -788,7 +767,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public async Task Verify_full_chain_for_email_and_html_zipOld()
         {
-            _sutBase = sut = new AnalyzeEmailOutOfProcessJob();
+            _sutBase = new AnalyzeEmailOutOfProcessJob();
             PrepareJob();
 
             _htmlSut = new HtmlToPdfOutOfProcessJobOld();
@@ -922,9 +901,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_out_of_process_office_to_pdf(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
+        /// <summary>
+        /// Pay attention, this test for some unknown problem of library loading from IUNO does
+        /// not execute correctly alone. It runs correctly only if executed after other tests.
+        /// Dunno why, 1 hour spent by alkampfer and guardian without any clue.
+        /// </summary>
+        /// <returns></returns>
         [Test]
         public async Task Verify_office_job()
         {
@@ -988,7 +972,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_attachments_queue_multiple_zip(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -1007,7 +990,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             DateTime startWait = DateTime.Now;
-            var docCount = 0;
+            int docCount;
             do
             {
                 await UpdateAndWait();
@@ -1040,7 +1023,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_attachments_queue_singleZip(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -1098,7 +1080,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_attachment_then_same_attach_inside_externa_attach(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -1172,7 +1153,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_handle_with_attachment_duplicated_then_first_deleted(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -1240,7 +1220,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_attachments_mail_with_attach(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -1299,7 +1278,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Integration_attachments_mail_with_zip_and_other_mail(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -1357,7 +1335,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Deletion_of_attachments_advanced(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]
@@ -1415,7 +1392,6 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public Verify_composition_of_pdf_file(String engineVersion)
             : base(engineVersion)
         {
-
         }
 
         [Test]

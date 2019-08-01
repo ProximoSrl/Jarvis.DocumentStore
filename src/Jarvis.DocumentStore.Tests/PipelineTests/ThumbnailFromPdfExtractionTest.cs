@@ -65,7 +65,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                     {
                         s.CopyTo(fs);
                     }
-                    System.Diagnostics.Process.Start(tempFile);
+                    //System.Diagnostics.Process.Start(tempFile);
                     return Task.FromResult<Boolean>(true);
                 }
             ).ConfigureAwait(false);
