@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
-using Jarvis.DocumentStore.Core.Model;
-using Castle.Core.Logging;
-using System.Security.Cryptography;
-using MongoDB.Driver;
-using Jarvis.Framework.Shared.IdentitySupport;
+﻿using Jarvis.DocumentStore.Core.Model;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.IO;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {

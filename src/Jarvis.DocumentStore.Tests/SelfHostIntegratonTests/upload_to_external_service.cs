@@ -12,11 +12,12 @@ using System.Threading.Tasks;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
+#pragma warning disable S2699 // Tests should include assertions
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 {
     [TestFixture, Explicit]
     [Category("Explicit")]
-    public class Upload_to_external_service
+    public class Upload_To_External_Service
     {
         private DocumentStoreServiceClient _docs;
         private DocumentStoreServiceClient _demo;
@@ -38,7 +39,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void Upload_pdf()
         {
-            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("Rev_1")).Wait();
+            _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("pdf")).Wait();
         }
 
         [Test]
@@ -217,7 +218,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void zipped_file_delete()
+        public void Zipped_file_delete()
         {
             _docs.DeleteAsync(DocumentHandle.FromString("zipsimple")).Wait();
         }
@@ -276,7 +277,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             var uploads = Enumerable
                 .Range(1, 100)
-                .Select(x => _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("this_is_a_pdf")))
+                .Select(_ => _docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("this_is_a_pdf")))
                 .ToArray();
 
             Task.WaitAll(uploads);
@@ -314,11 +315,13 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public void Upload_doc_then_add_format_to_doc()
         {
             _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("doc_2")).Wait();
-            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
-            model.CreatedById = "tika";
-            model.DocumentHandle = DocumentHandle.FromString("doc_2");
-            model.PathToFile = TestConfig.PathToTextDocument;
-            model.Format = new DocumentFormat(DocumentFormats.Tika);
+            AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel
+            {
+                CreatedById = "tika",
+                DocumentHandle = DocumentHandle.FromString("doc_2"),
+                PathToFile = TestConfig.PathToTextDocument,
+                Format = new DocumentFormat(DocumentFormats.Tika)
+            };
             _docs.AddFormatToDocument(model, null).Wait();
         }
 
@@ -338,7 +341,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             var uploads = Enumerable
                 .Range(1, 100)
-                .Select(x => _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("this_is_a_document")))
+                .Select(_ => _docs.UploadAsync(TestConfig.PathToWordDocument, DocumentHandle.FromString("this_is_a_document")))
                 .ToArray();
 
             Task.WaitAll(uploads);
@@ -347,8 +350,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void Upload_pdf_with_handleA_and_handleB()
         {
-            List<Task> tasks = new List<Task>();
-            tasks.Add(_docs.UploadAsync(TestConfig.PathToDocumentCopyPdf, DocumentHandle.FromString("a")));
+            List<Task> tasks = new List<Task>
+            {
+                _docs.UploadAsync(TestConfig.PathToDocumentCopyPdf, DocumentHandle.FromString("a"))
+            };
             Thread.Sleep(500);
             tasks.Add(_docs.UploadAsync(TestConfig.PathToDocumentPdf, DocumentHandle.FromString("b")));
             Task.WaitAll(tasks.ToArray());
@@ -369,7 +374,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void Upload_simple_html()
         {
-            var taskFolder = @"c:\temp\dsqueue";
+            const string taskFolder = @"c:\temp\dsqueue";
 
             DocumentImportData data = _docs.CreateDocumentImportData(
                 Guid.NewGuid(),
@@ -399,7 +404,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         [Test]
         public void Upload_some_test_file()
         {
-            var fileName = @"X:\puthereyourpath.txt";
+            const string fileName = @"X:\puthereyourpath.txt";
             _docs.UploadAsync(fileName, DocumentHandle.FromString("some_test_file")).Wait();
         }
 
@@ -543,3 +548,5 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
     }
 }
+
+#pragma warning restore S2699 // Tests should include assertions

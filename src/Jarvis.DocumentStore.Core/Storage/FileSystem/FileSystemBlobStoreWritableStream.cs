@@ -1,19 +1,15 @@
-﻿using Jarvis.Framework.Shared.Helpers;
-using MongoDB.Driver;
+﻿using Fasterflect;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Runtime.Remoting;
-using Fasterflect;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 {
     /// <summary>
+    /// <para>
     /// We have a small problem, some part of DocumentStore are used to 
     /// directly write to a stream. For Gridfs this is not a problem, because
     /// once the stream is closed, GridFs will consolidate the final record
@@ -24,29 +20,24 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
     /// 1) Calculate the md5 hash<br />
     /// 2) Calculate the length<br />
     /// 3) Write the final record on Mongo (the <see cref="FileSystemBlobDescriptor"/><br />
-    /// 
-    /// This wrapper is used to accomplish this task.
+    /// </para>
+    /// <para>This wrapper is used to accomplish this task.</para>
     /// </summary>
-    public class FileSystemBlobStoreWritableStream : Stream
+    /// <remarks>This class can support storage of the descriptor both on mongodb or 
+    /// directly in files stored with the real content (extension .descriptor)</remarks>
+    internal class FileSystemBlobStoreWritableStream : Stream
     {
         private readonly Stream _wrapped;
-        private readonly FileSystemBlobDescriptor _descriptor;
         private readonly MD5 _md5;
-        private readonly IMongoCollection<FileSystemBlobDescriptor> _blobDescriptorCollection;
         private readonly IBlobWriter _writer;
-        private Int64 _length;
         private Boolean _wrappedClosed;
 
-        public FileSystemBlobStoreWritableStream(
+        internal FileSystemBlobStoreWritableStream(
             Stream wrapped,
-            FileSystemBlobDescriptor descriptor,
-            IMongoCollection<FileSystemBlobDescriptor> blobDescriptorCollection,
             IBlobWriter writer)
         {
             _wrapped = wrapped;
-            _descriptor = descriptor;
             _md5 = MD5.Create();
-            _blobDescriptorCollection = blobDescriptorCollection;
             _writer = writer;
         }
 
@@ -124,14 +115,13 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
         {
             if (!_wrappedClosed && !Disposed)
             {
-                _length = _wrapped.Length;
+                var length = _wrapped.Length;
                 _wrapped.Close();
 
                 Byte[] buffer = new Byte[0];
                 _md5.TransformFinalBlock(buffer, 0, 0);
-                _descriptor.Md5 = BitConverter.ToString(_md5.Hash).Replace("-", "");
-                _descriptor.Length = _length;
-                _blobDescriptorCollection.Save(_descriptor, _descriptor.BlobId);
+                var md5 = BitConverter.ToString(_md5.Hash).Replace("-", "");
+                OnStreamClosed(md5, length);
                 _wrappedClosed = true;
             }
             base.Close();
@@ -177,6 +167,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             return _wrapped.FlushAsync(cancellationToken);
         }
 
+        [Obsolete("Is obsolete in base class")]
         protected override WaitHandle CreateWaitHandle()
         {
             return (WaitHandle)_wrapped.CallMethod("CreateWaitHandle");
@@ -197,6 +188,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             return _wrapped.CallMethod("InitializeLifetimeService");
         }
 
+        [Obsolete("Is obsolete in base class")]
         protected override void ObjectInvariant()
         {
             _wrapped.CallMethod("ObjectInvariant");
@@ -235,7 +227,32 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
         {
             Disposed = true;
             _writer.Dispose();
+            _md5.Dispose();
             base.Dispose(disposing);
         }
+
+        #region Events
+
+        public  class FileSystemBlobStoreWritableStreamClosedEventArgs : EventArgs
+        {
+            public FileSystemBlobStoreWritableStreamClosedEventArgs(string md5, long length)
+            {
+                Md5 = md5;
+                Length = length;
+            }
+
+            public String Md5 { get; private set; }
+
+            public Int64 Length { get; private set; }
+        }
+
+        public event EventHandler<FileSystemBlobStoreWritableStreamClosedEventArgs> StreamClosed;
+
+        protected void OnStreamClosed(String md5, Int64 length)
+        {
+            StreamClosed?.Invoke(this, new FileSystemBlobStoreWritableStreamClosedEventArgs(md5, length));
+        }
+
+        #endregion
     }
 }

@@ -36,7 +36,8 @@ namespace Jarvis.DocumentStore.Tests.Storage
 
             if (_blobStoreToTest == "filesystem")
             {
-                _sut = new FileSystemBlobStore(MongoDbTestConnectionProvider.OriginalsDb,
+                _sut = new FileSystemBlobStore(
+                    MongoDbTestConnectionProvider.OriginalsDb,
                     "originals",
                     _tempLocalDirectory,
                     new CounterService(MongoDbTestConnectionProvider.SystemDb))

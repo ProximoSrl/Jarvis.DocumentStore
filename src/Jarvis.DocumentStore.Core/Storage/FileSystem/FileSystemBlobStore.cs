@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Model;
-using Castle.Core.Logging;
-using System.Security.Cryptography;
-using MongoDB.Driver;
-using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.DocumentStore.Core.Storage.FileSystem;
 using Jarvis.Framework.Shared.Helpers;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using Jarvis.Framework.Shared.IdentitySupport;
 using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
@@ -29,8 +26,6 @@ namespace Jarvis.DocumentStore.Core.Storage
     {
         public ILogger Logger { get; set; }
 
-        private const int FolderPrefixLength = 3;
-        private readonly String _baseDirectory;
         private readonly IMongoCollection<FileSystemBlobDescriptor> _blobDescriptorCollection;
         private readonly ICounterService _counterService;
 
@@ -51,9 +46,8 @@ namespace Jarvis.DocumentStore.Core.Storage
             String baseDirectory,
             ICounterService counterService)
         {
-            _baseDirectory = baseDirectory;
             _blobDescriptorCollection = db.GetCollection<FileSystemBlobDescriptor>(collectionName);
-            _directoryManager = new DirectoryManager(_baseDirectory);
+            _directoryManager = new DirectoryManager(baseDirectory);
 
             _counterService = counterService;
         }
@@ -71,7 +65,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
             Logger.DebugFormat($"GetDescriptor for blobid {blobId} on {_blobDescriptorCollection.CollectionNamespace.FullName}");
 
-            var descriptor =_blobDescriptorCollection.FindOneById(blobId);
+            var descriptor = _blobDescriptorCollection.FindOneById(blobId);
             if (descriptor == null)
             {
                 var message = $"Descriptor for blobid {blobId} not found!";
