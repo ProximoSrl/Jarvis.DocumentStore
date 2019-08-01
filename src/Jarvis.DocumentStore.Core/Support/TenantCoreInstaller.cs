@@ -73,45 +73,41 @@ namespace Jarvis.DocumentStore.Core.Support
                 Component
                     .For<IMongoDatabase>()
                     .Named("originals.db")
-                    .UsingFactoryMethod(k => _tenant.Get<IMongoDatabase>("originals.db")),
+                    .UsingFactoryMethod(_ => _tenant.Get<IMongoDatabase>("originals.db")),
                 Component
                     .For<IMongoDatabase>()
                     .Named("artifacts.db")
-                    .UsingFactoryMethod(k => _tenant.Get<IMongoDatabase>("artifacts.db")),
+                    .UsingFactoryMethod(_ => _tenant.Get<IMongoDatabase>("artifacts.db")),
                  Component
                     .For<MongoDatabase>()
                     .Named("originals.db.legacy")
-                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("originals.db.legacy")),
+                    .UsingFactoryMethod(_ => _tenant.Get<MongoDatabase>("originals.db.legacy")),
                 Component
                     .For<MongoDatabase>()
                     .Named("artifacts.db.legacy")
-                    .UsingFactoryMethod(k => _tenant.Get<MongoDatabase>("artifacts.db.legacy"))
+                    .UsingFactoryMethod(_ => _tenant.Get<MongoDatabase>("artifacts.db.legacy"))
              );
         }
 
         private void RegisterFileSystemFsFs(IWindsorContainer container)
         {
             container.Register(
-                Component
+                 Component
                     .For<IMongoDatabase>()
-                    .Named("originals.db")
-                    .UsingFactoryMethod(k => _tenant.Get<IMongoDatabase>("originals.db")),
-                Component
-                    .For<IMongoDatabase>()
-                    .Named("artifacts.db")
-                    .UsingFactoryMethod(k => _tenant.Get<IMongoDatabase>("artifacts.db")),
+                    .Named("fsdescriptor.db")
+                    .UsingFactoryMethod(_ => _tenant.Get<IMongoDatabase>("fsdescriptor.db")),
                   Component
                     .For<IBlobStore>()
                     .ImplementedBy<FileSystemBlobStore>()
                     .Named("originals.filestore")
-                    .DependsOn(Dependency.OnComponent(typeof(IMongoDatabase), "originals.db"))
+                    .DependsOn(Dependency.OnComponent(typeof(IMongoDatabase), "fsdescriptor.db"))
                     .DependsOn(Dependency.OnConfigValue("collectionName", "originals.descriptor"))
                     .DependsOn(Dependency.OnValue("baseDirectory", _tenantSettings.Get<String>("storage.fs.originals"))),
                 Component
                     .For<IBlobStore>()
                     .ImplementedBy<FileSystemBlobStore>()
                     .Named("artifacts.filestore")
-                    .DependsOn(Dependency.OnComponent(typeof(IMongoDatabase), "artifacts.db"))
+                    .DependsOn(Dependency.OnComponent(typeof(IMongoDatabase), "fsdescriptor.db"))
                     .DependsOn(Dependency.OnConfigValue("collectionName", "artifacts.descriptor"))
                     .DependsOn(Dependency.OnValue("baseDirectory", _tenantSettings.Get<String>("storage.fs.artifacts")))
              );

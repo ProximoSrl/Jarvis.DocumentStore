@@ -32,7 +32,8 @@ namespace Jarvis.DocumentStore.Core.Storage
         /// <summary>
         /// Standard Constructor
         /// </summary>
-        /// <param name="db">The database where I want to store information</param>
+        /// <param name="db">The database where this component will save information
+        /// for file descriptor. It is needed to perform queries.</param>
         /// <param name="collectionName">The name of the collection that will be used
         /// to store information of the file</param>
         /// <param name="baseDirectory">Base directory on filesystem where binary blob

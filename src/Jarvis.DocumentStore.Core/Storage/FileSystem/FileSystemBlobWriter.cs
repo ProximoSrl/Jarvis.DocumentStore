@@ -68,9 +68,10 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
         {
             if (disposing && !_writableStream.Disposed)
             {
-                _writableStream.StreamClosed -= WritableStreamClosed;
+                //It is important to dispose the underling stream, so it will flush all content, will calculate MD5 and raise StreamClosedEvent.
                 _writableStream.Dispose();
                 _logger.DebugFormat("Persisting descriptor for blob {0}", _descriptor.BlobId);
+                _writableStream.StreamClosed -= WritableStreamClosed;
             }
             Disposed = true;
         }
