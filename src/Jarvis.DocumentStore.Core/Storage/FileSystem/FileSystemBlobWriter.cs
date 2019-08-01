@@ -1,7 +1,5 @@
 ﻿using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.Framework.Shared.Helpers;
-using MongoDB.Driver;
 using System;
 using System.IO;
 
@@ -17,21 +15,20 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
     internal class FileSystemBlobWriter : IBlobWriter
 #pragma warning restore S3881 // "IDisposable" should be implemented correctly
     {
-        private readonly IMongoCollection<FileSystemBlobDescriptor> _blobDescriptorCollection;
         private readonly ILogger _logger;
         private readonly FileSystemBlobDescriptor _descriptor;
         private readonly FileSystemBlobStoreWritableStream _writableStream;
+        private readonly IFileSystemBlobDescriptorStorage _fileSystemBlobDescriptorStorage;
 
         public FileSystemBlobWriter(
             BlobId blobId,
             FileNameWithExtension fileName,
             String destinationFileName,
-            IMongoCollection<FileSystemBlobDescriptor> blobDescriptorCollection,
+            IFileSystemBlobDescriptorStorage fileSystemBlobDescriptorStorage,
             ILogger logger)
         {
             BlobId = blobId;
             FileName = fileName;
-            _blobDescriptorCollection = blobDescriptorCollection;
             _logger = logger;
 
             _descriptor = new FileSystemBlobDescriptor()
@@ -47,6 +44,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             originalStream.SetLength(0);
             _writableStream = new FileSystemBlobStoreWritableStream(originalStream, this);
             _writableStream.StreamClosed += WritableStreamClosed;
+            _fileSystemBlobDescriptorStorage = fileSystemBlobDescriptorStorage;
         }
 
         public BlobId BlobId { get; }
@@ -84,7 +82,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             _descriptor.Md5 = e.Md5;
             _descriptor.Length = e.Length;
 
-            _blobDescriptorCollection.Save(_descriptor, _descriptor.BlobId);
+            _fileSystemBlobDescriptorStorage.SaveDescriptor(_descriptor);
         }
     }
 }

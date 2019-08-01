@@ -5,18 +5,29 @@ using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 {
-    internal class FileSystemBlobDescriptorStore
+    internal class FileSystemBlobDescriptorStore : IFileSystemBlobDescriptorStorage
     {
         private readonly DirectoryManager _directoryManager;
-        private readonly FileSystemBlobDescriptorStore _fileSystemBlobDescriptorStore;
 
         internal FileSystemBlobDescriptorStore(DirectoryManager directoryManager)
         {
             _directoryManager = directoryManager ?? throw new ArgumentNullException(nameof(directoryManager));
-            _fileSystemBlobDescriptorStore = new FileSystemBlobDescriptorStore(_directoryManager);
         }
 
-        public FileSystemBlobDescriptor Load(BlobId blobId)
+        public BlobStoreInfo GetStoreInfo()
+        {
+            //we have no way to calculate this with simple routine.
+            return new BlobStoreInfo(0, 0);
+        }
+
+        public void Delete(BlobId blobId)
+        {
+            var descriptorLocalFileName = _directoryManager.GetDescriptorFileNameFromBlobId(blobId);
+            if (File.Exists(descriptorLocalFileName))
+                File.Delete(descriptorLocalFileName);
+        }
+
+        public FileSystemBlobDescriptor FindOneById(BlobId blobId)
         {
             if (blobId == null)
                 throw new ArgumentNullException(nameof(blobId));
@@ -30,13 +41,13 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             return descriptor;
         }
 
-        public void Save(FileSystemBlobDescriptor descriptor)
+        public void SaveDescriptor(FileSystemBlobDescriptor fileSystemBlobDescriptor)
         {
-            if (descriptor == null)
-                throw new ArgumentNullException(nameof(descriptor));
+            if (fileSystemBlobDescriptor == null)
+                throw new ArgumentNullException(nameof(fileSystemBlobDescriptor));
 
-            var fileName = _directoryManager.GetDescriptorFileNameFromBlobId(descriptor.BlobId);
-            File.WriteAllText(fileName, JsonConvert.SerializeObject(descriptor));
+            var fileName = _directoryManager.GetDescriptorFileNameFromBlobId(fileSystemBlobDescriptor.BlobId);
+            File.WriteAllText(fileName, JsonConvert.SerializeObject(fileSystemBlobDescriptor));
         }
     }
 }
