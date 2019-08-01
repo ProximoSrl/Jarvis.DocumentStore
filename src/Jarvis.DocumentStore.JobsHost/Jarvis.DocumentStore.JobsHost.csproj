@@ -6,9 +6,13 @@
     <AssemblyTitle>Jarvis.DocumentStore.Jobs</AssemblyTitle>
     <Product>Jarvis.DocumentStore.Jobs</Product>
     <Copyright>Copyright ©  2015</Copyright>
-<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PostBuildEvent>xcopy /Y "$(SolutionDir)Jarvis.DocumentStore.JobsHost\log4net.config" "$(SolutionDir)..\artifacts\jobs\"</PostBuildEvent>
+    
+    <!--Prefer 32 bit because some of the jobs, like libreoffice needs to run in 64 bit, also, using 64 bits can cause explosion of memory--> 
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
 
   <PropertyGroup>
