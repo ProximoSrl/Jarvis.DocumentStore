@@ -1,1 +1,1 @@
-.\.nuget\nuget restore -NonInteractive
+.\.nuget\nuget restore -NonInteractive -config nuget.config jarvis.documentstore.sln
