@@ -120,14 +120,20 @@ namespace Jarvis.DocumentStore.Host.Support
             //verify all connection to MongoDB. Lots of object initialize everything in constructor and initialization
             //fails if mongo database is not operational.
             if (!CheckConnection(_config.QueueConnectionString))
+            {
+                _logger.ErrorFormat("Database {0} is not operational", _config.QueueConnectionString);
                 return false;
-
+            }
             foreach (var tenant in _config.TenantSettings)
             {
                 foreach (var connection in _databaseNames)
                 {
-                    if (!CheckConnection(tenant.GetConnectionString(connection)))
+                    string tenantConnection = tenant.GetConnectionString(connection);
+                    if (!CheckConnection(tenantConnection))
+                    {
+                        _logger.ErrorFormat("Tenant Database {0} is not operational", tenantConnection);
                         return false;
+                    }
                 }
             }
             return true;
