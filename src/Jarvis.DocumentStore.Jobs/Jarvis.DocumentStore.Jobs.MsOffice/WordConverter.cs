@@ -1,46 +1,55 @@
 ﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Microsoft.Office.Interop.Word;
 using System;
+using System.IO;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
 #pragma warning disable S2583 // Conditionally executed blocks should be reachable
 #pragma warning disable S1854 // Dead stores should be removed
-    public class WordConverter
+    public class WordConverter : BaseConverter
     {
-        private readonly ILogger _logger;
+        private readonly IClientPasswordSet _clientPasswordSet;
 
-        public WordConverter(ILogger logger)
+        public WordConverter(IClientPasswordSet clientPasswordSet)
         {
-            _logger = logger;
+            _clientPasswordSet = clientPasswordSet;
         }
 
-        /// <summary>
-        /// Convert word file to pdf
-        /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="targetPath"></param>
-        /// <returns>Error message.</returns>
-        internal String ConvertToPdf(string sourcePath, string targetPath)
+        public string GetPassword(String fileName)
+        {
+            return _clientPasswordSet.GetPasswordFor(fileName).FirstOrDefault() ?? "fake password, to avoid being stuck with ask password dialog";
+        }
+
+        protected override String OnRunJob(JobData job)
         {
             Application app = null;
+            var sourceFile = job.SourceFile;
+            var destinationFile = job.DestinationFile;
             Document doc = null;
-            OfficeUtils.KillOfficeProcess("WINWORD");
             try
             {
                 app = new Application();
-                doc = app.Documents.Open(sourcePath);
-                doc.SaveAs2(targetPath, WdSaveFormat.wdFormatPDF);
-                _logger.InfoFormat("File {0} converted to pdf.", sourcePath);
+                app.DisplayAlerts = WdAlertLevel.wdAlertsNone;
+
+                Logger.DebugFormat("Opening {0} in office", sourceFile);
+                //it is importantì
+                doc = app.Documents.Open(sourceFile, PasswordDocument: GetPassword(Path.GetFileName(sourceFile)));
+                Logger.InfoFormat("About to converting file {0} to pfd", sourceFile);
+                doc.SaveAs2(destinationFile, WdSaveFormat.wdFormatPDF);
+                Logger.DebugFormat("File {0} converted to pdf. Closing word", sourceFile);
                 doc.Close();
                 doc = null;
+                Logger.DebugFormat("Application quit.", sourceFile);
                 app.Quit();
                 app = null;
                 return String.Empty;
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Error converting {0} - {1}", sourcePath, ex.Message);
+                Logger.ErrorFormat(ex, "Error converting {0} - {1}", sourceFile, ex.Message);
 
                 if (doc != null)
                 {
@@ -50,7 +59,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                 {
                     this.Close(app);
                 }
-                return $"Error converting {sourcePath} - {ex.Message}";
+                return $"Error converting {sourceFile} - {ex.Message}";
             }
         }
 
@@ -62,7 +71,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close word application {0}", ex.Message);
+                Logger.ErrorFormat(ex, "Unable to close word application {0}", ex.Message);
                 //TODO: Try to kill the process.
             }
         }
@@ -75,8 +84,15 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close document {0}", ex.Message);
+                Logger.ErrorFormat(ex, "Unable to close document {0}", ex.Message);
             }
+        }
+
+        internal String ConvertToPdf(string sourcePath, string targetPath)
+        {
+            var task = base.QueueJob(sourcePath, targetPath);
+            //this will wait the task.
+            return task.Result;
         }
     }
 #pragma warning restore S2583 // Conditionally executed blocks should be reachable

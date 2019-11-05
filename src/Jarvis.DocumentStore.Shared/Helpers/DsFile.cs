@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NETFULL
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -107,8 +108,6 @@ namespace Jarvis.DocumentStore.Shared.Helpers
                 return System.IO.File.Open(path, fileMode);
             return MyFile.Open(path, fileMode);
         }
-
-
         public static void WriteAllBytes(string path, byte[] data)
         {
             //https://github.com/peteraritchie/LongPath/issues/48
@@ -121,13 +120,11 @@ namespace Jarvis.DocumentStore.Shared.Helpers
                 MyFile.WriteAllBytes(path, data);
             }
         }
-
-
         public static FileStream OpenWrite(string path)
         {
             if (!DsFile.Exists(path))
             {
-                using (DsFile.Create(path));
+                using (DsFile.Create(path)) ;
             }
             if (path != null && path.Length < 240)
                 return System.IO.File.OpenWrite(path);
@@ -171,6 +168,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
                 MyFile.SetLastWriteTime(path, utcNow);
             }
         }
-
     }
 }
+
+#endif

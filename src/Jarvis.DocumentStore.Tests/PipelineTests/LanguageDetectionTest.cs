@@ -1,9 +1,10 @@
-﻿using System;
+﻿extern alias tika;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Jobs.Tika;
+using tika::Jarvis.DocumentStore.Jobs.Tika;
 using NUnit.Framework;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.IO;
 using Castle.Core.Logging;
 using System;
+using System.Configuration;
+using System.Timers;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
@@ -18,6 +20,8 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
         private readonly PowerPointConverter _powerPointConverter;
         private readonly ExcelConverter _excelConverter;
         private readonly ILogger _logger;
+        private readonly Int32 _threadNumber;
+        private readonly Timer _cleanupTimer;
 
         public MicrosoftOfficePdfOutOfProcessJob(
             WordConverter wordConverter,
@@ -32,16 +36,35 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             _excelConverter = excelConverter;
             _logger = logger;
             OfficeUtils.Logger = logger;
+
+            //var config = ConfigurationManager.AppSettings["threadNumber"];
+            //_logger.InfoFormat("Configuration ThreadNumber is {0}", config);
+            //if (String.IsNullOrEmpty(config) || !Int32.TryParse(config, out _threadNumber))
+            //{
+            //    _logger.Info("Configuration ThreadNumber wrong the job will default to a single thread");
+            //    _threadNumber = 1;
+            //}
+
+            //It is not safe to have more than one thread running office automation.
+            _threadNumber = 1; 
+
+            OfficeUtils.KillStaleOfficeProgram();
+            _cleanupTimer = new Timer();
+            _cleanupTimer.Elapsed += (s, e) => OfficeUtils.KillStaleOfficeProgram();
+            _cleanupTimer.Interval = 1000 * 60 * 10;
+            _cleanupTimer.Start();
         }
+
+        protected override int ThreadNumber => _threadNumber;
 
         protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             Logger.InfoFormat(
-                "Delegating conversion of file {0} to Office automation",
-                parameters.JobId
+                "Delegating conversion of file {0} to Office automation for job {1} in working folder {2}",
+                parameters.FileName,
+                parameters.JobId,
+                workingFolder
             );
-
-            //libreofficeconversion is registered per tenant.
 
             string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder).ConfigureAwait(false);
 
@@ -97,17 +120,40 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
 
         private bool IsExcelFile(string pathToFile)
         {
-            return Path.GetExtension(pathToFile).Trim('.').StartsWith("xls", StringComparison.OrdinalIgnoreCase);
+            string extension = Path.GetExtension(pathToFile).Trim('.');
+            if (String.IsNullOrEmpty(extension))
+                return false;
+
+            return extension.StartsWith("xls", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("xlsx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("xlsm", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("xlsm", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("ods", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsPowerPointFile(string pathToFile)
         {
-            return Path.GetExtension(pathToFile).Trim('.').StartsWith("ppt", StringComparison.OrdinalIgnoreCase);
+            string extension = Path.GetExtension(pathToFile).Trim('.');
+            if (String.IsNullOrEmpty(extension))
+                return false;
+
+            return extension.StartsWith("ppt", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("ppsx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("pps", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("ppsx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("odp", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsWordFile(string pathToFile)
         {
-            return Path.GetExtension(pathToFile).Trim('.').StartsWith("doc", StringComparison.OrdinalIgnoreCase);
+            string extension = Path.GetExtension(pathToFile).Trim('.');
+            if (String.IsNullOrEmpty(extension))
+                return false;
+
+            return extension.StartsWith("doc", StringComparison.OrdinalIgnoreCase)
+                || extension.StartsWith("docx", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("rtf", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals("odt", StringComparison.OrdinalIgnoreCase);
         }
     }
 #pragma warning restore S2583 // Conditionally executed blocks should be reachable

@@ -1,22 +1,17 @@
-﻿using System;
-using System.Configuration;
-using System.IO;
-using System.Linq;
+﻿using Jarvis.ConfigurationService.Client;
 using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
 using Jarvis.DocumentStore.Shared.Helpers;
 using Jarvis.Framework.Kernel.ProjectionEngine.Client;
-using Jarvis.Framework.UdpAppender;
-using log4net.Core;
-using Topshelf;
-using Jarvis.ConfigurationService.Client;
-using System.Threading;
-using System.Diagnostics;
-using Jarvis.Framework.Shared.Commands;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Kernel.Support;
+using Jarvis.Framework.Shared.Commands;
+using Jarvis.Framework.Shared.IdentitySupport;
+using log4net.Core;
+using System;
+using System.Linq;
+using Topshelf;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Host
 {
@@ -26,7 +21,7 @@ namespace Jarvis.DocumentStore.Host
 
         private static ILogger _logger;
 
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             var lastErrorFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_lastError.txt");
             if (File.Exists(lastErrorFileName)) File.Delete(lastErrorFileName);
@@ -44,11 +39,11 @@ namespace Jarvis.DocumentStore.Host
                 Int32 executionExitCode;
                 if (args.Length == 1 && (args[0] == "install" || args[0] == "uninstall"))
                 {
-                    executionExitCode = (Int32) StartForInstallOrUninstall();
+                    executionExitCode = (Int32)StartForInstallOrUninstall();
                 }
                 else
                 {
-                    executionExitCode = (Int32) StandardDocumentStoreStart();
+                    executionExitCode = (Int32)StandardDocumentStoreStart();
                 }
                 return executionExitCode;
             }
@@ -95,7 +90,7 @@ namespace Jarvis.DocumentStore.Host
                     Console.Error.WriteLine("Unable to download log4net.config from configuration store");
                 }
 
-                host.UseOldLog4Net("log4net.config");
+                host.UseLog4Net("log4net.config");
 
                 host.Service<DocumentStoreBootstrapper>(service =>
                 {
@@ -119,7 +114,7 @@ namespace Jarvis.DocumentStore.Host
             return exitCode;
         }
 
-        static void SetupColors()
+        private static void SetupColors()
         {
             if (!Environment.UserInteractive)
                 return;
@@ -128,12 +123,12 @@ namespace Jarvis.DocumentStore.Host
             Console.Clear();
         }
 
-        static void LoadConfiguration()
+        private static void LoadConfiguration()
         {
             _documentStoreConfiguration = new RemoteDocumentStoreConfiguration();
         }
 
-        static void ConfigureRebuild(DocumentStoreConfiguration config)
+        private static void ConfigureRebuild(DocumentStoreConfiguration config)
         {
             if (!Environment.UserInteractive)
                 return;
@@ -181,7 +176,5 @@ namespace Jarvis.DocumentStore.Host
             Console.WriteLine();
             Console.WriteLine();
         }
-
-        
     }
 }

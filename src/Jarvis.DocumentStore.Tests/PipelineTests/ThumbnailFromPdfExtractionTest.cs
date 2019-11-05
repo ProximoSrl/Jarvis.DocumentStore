@@ -1,19 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Jobs.PdfThumbnails;
-using Jarvis.DocumentStore.Jobs.Tika;
-using Jarvis.Framework.TestHelpers;
-using java.io;
-using java.net;
+﻿using Jarvis.DocumentStore.Jobs.PdfThumbnails;
+using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
-using org.apache.tika;
-using org.apache.tika.metadata;
-using org.apache.tika.parser;
-using org.apache.tika.sax;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
@@ -21,11 +11,11 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
     public class ThumbnailFromPdfExtractionTest
     {
         [Test]
-        public async void Generate_with_password_removal()
+        public async Task Generate_with_password_removal()
         {
             var file = TestConfig.PathToPasswordProtectedPdf;
             CreateImageFromPdfTask sut = new CreateImageFromPdfTask();
-            sut.Decryptor = new PdfDecrypt() {Logger = new TestLogger()};
+            sut.Decryptor = new PdfDecrypt() { Logger = new TestLogger() };
             sut.Passwords.Add("jarvistest");
 
             var convertParams = new CreatePdfImageTaskParams()
@@ -36,7 +26,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                 Format = CreatePdfImageTaskParams.ImageFormat.Jpg,
             };
             Boolean wasCalled = false;
-            var result = await sut.Run(
+            await sut.Run(
                 file,
                 convertParams,
                 (i, s) =>
@@ -44,38 +34,43 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                     wasCalled = true;
                     return Task.FromResult<Boolean>(true);
                 }
-            );
+            ).ConfigureAwait(false);
 
             Assert.IsTrue(wasCalled, "conversion failed.");
-
         }
 
         [Test]
-        public async void Generate_smoke()
+        public async Task Generate_smoke()
         {
             var file = TestConfig.PathToDocumentPdf;
             CreateImageFromPdfTask sut = new CreateImageFromPdfTask();
 
             var convertParams = new CreatePdfImageTaskParams()
             {
-                Dpi = 150,
+                Dpi = 600,
                 FromPage = 1,
                 Pages = 1,
-                Format = CreatePdfImageTaskParams.ImageFormat.Jpg,
+                Format = CreatePdfImageTaskParams.ImageFormat.Png,
             };
             Boolean wasCalled = false;
-            var result = await sut.Run(
+            await sut.Run(
                 file,
                 convertParams,
                 (i, s) =>
                 {
                     wasCalled = true;
+
+                    var tempFile = Path.GetTempFileName() + ".jpg";
+                    using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write))
+                    {
+                        s.CopyTo(fs);
+                    }
+                    //System.Diagnostics.Process.Start(tempFile);
                     return Task.FromResult<Boolean>(true);
                 }
-            );
+            ).ConfigureAwait(false);
 
             Assert.IsTrue(wasCalled, "conversion failed.");
-
         }
     }
 }

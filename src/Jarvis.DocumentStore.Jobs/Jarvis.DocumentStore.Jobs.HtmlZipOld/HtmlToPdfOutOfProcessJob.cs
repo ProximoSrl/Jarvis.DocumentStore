@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                 Logger.DebugFormat("Conversion of HtmlZip to PDF: file {0}", pathToFile);
 
             var file = pathToFile;
-            if (pathToFile.ToLower().EndsWith(".mht") || pathToFile.ToLower().EndsWith(".mhtml"))
+            if (pathToFile.EndsWith(".mht", StringComparison.OrdinalIgnoreCase) || pathToFile.EndsWith(".mhtml", StringComparison.OrdinalIgnoreCase))
             {
                 string mhtml = File.ReadAllText(pathToFile);
                 MHTMLParser parser = new MHTMLParser(mhtml);

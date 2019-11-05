@@ -12,16 +12,18 @@ using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using System.IO.Compression;
 using Jarvis.DocumentStore.Jobs.HtmlZipOld;
+using System.Configuration;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public abstract class AbstractTikaOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
-        readonly string[] _formats;
+        private readonly string[] _formats;
 
-        private ContentFormatBuilder _builder;
+        private readonly ContentFormatBuilder _builder;
 
-        private ContentFilterManager _filterManager;
+        private readonly ContentFilterManager _filterManager;
+        private readonly Int32 _threadNumber;
 
         public AbstractTikaOutOfProcessJob(
             ContentFormatBuilder builder,
@@ -32,6 +34,12 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             _formats = "pdf|xls|xlsx|docx|doc|ppt|pptx|pps|ppsx|rtf|odt|ods|odp|txt|tmp|htmlzip|htmzip|mht|mhtml|eml".Split('|');
             base.PipelineId = "tika";
             base.QueueName = "tika";
+
+            var config = ConfigurationManager.AppSettings["threadNumber"] ?? "1";
+            if (!Int32.TryParse(config, out _threadNumber))
+            {
+                _threadNumber = 1;
+            }
         }
 
         /// <summary>
@@ -42,13 +50,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika
         /// <returns></returns>
         protected abstract ITikaAnalyzer BuildAnalyzer(Int32 analyzerProgressive);
 
-        protected override int ThreadNumber
-        {
-            get
-            {
-                return 6;
-            }
-        }
+        protected override int ThreadNumber => _threadNumber;
 
         protected async override Task<ProcessResult> OnPolling(
             PollerJobParameters parameters,
@@ -213,75 +215,6 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 DocumentContent.NullContent,
                 contentFileName,
                 new Dictionary<string, object>());
-        }
-    }
-
-    public class OutOfProcessTikaJob : AbstractTikaOutOfProcessJob
-    {
-
-        public OutOfProcessTikaJob(
-            ContentFormatBuilder builder,
-            ContentFilterManager filterManager)
-            : base(builder, filterManager)
-        {
-        }
-
-        protected override ITikaAnalyzer BuildAnalyzer(Int32 analyzerOrdinal)
-        {
-            switch (analyzerOrdinal)
-            {
-                case 0:
-                    return new TikaAnalyzer(JobsHostConfiguration)
-                    {
-                        Logger = this.Logger
-                    };
-                case 1:
-                    return new TikaNetAnalyzer()
-                    {
-                        Logger = this.Logger
-                    };
-            }
-
-            return null;
-        }
-
-        public override bool IsActive
-        {
-            get { return !base.JobsHostConfiguration.UseEmbeddedTika; }
-        }
-    }
-
-    public class OutOfProcessTikaNetJob : AbstractTikaOutOfProcessJob
-    {
-        public OutOfProcessTikaNetJob(
-            ContentFormatBuilder builder,
-            ContentFilterManager filterManager)
-            : base(builder, filterManager)
-        {
-        }
-
-        protected override ITikaAnalyzer BuildAnalyzer(Int32 analyzerOrdinal)
-        {
-            switch (analyzerOrdinal)
-            {
-                case 0:
-                    return new TikaNetAnalyzer()
-                    {
-                        Logger = this.Logger
-                    };
-                case 1:
-                    return new TikaAnalyzer(JobsHostConfiguration)
-                    {
-                        Logger = this.Logger
-                    };
-            }
-
-            return null;
-        }
-
-        public override bool IsActive
-        {
-            get { return base.JobsHostConfiguration.UseEmbeddedTika; }
         }
     }
 }

@@ -1,0 +1,63 @@
+trigger:
+- master
+- develop
+- release/*
+- hotfix/*
+- feature/*
+
+pool:
+  name: Default
+  demands:
+  - msbuild
+  - visualstudio
+  - vstest
+
+variables:
+  AssemblyVersion: '0.0.1'
+  solution: 'src/LeanCostIntegration.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+
+- task: LibreOfficeKiller@0
+  displayName: 'LibreOfficeKiller '
+
+- task: GitVersion@0
+  displayName: 'GitVersion '
+  inputs:
+    BuildNamePrefix: 'DocumentStore - CI'
+
+- task: NuGetToolInstaller@1
+  displayName: 'Use NuGet 5.x'
+  inputs:
+    versionSpec: 5.x
+    checkLatest: true
+
+- task: NuGetCommand@2
+  displayName: 'NuGet restore **\*.sln'
+  inputs:
+    restoreSolution: '**\*.sln'
+    feedsToUse: config
+    nugetConfigPath: src/NuGet.Config
+
+- task: VSBuild@1
+  displayName: 'Build solution **\*.sln'
+  inputs:
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: VSTest@1
+  displayName: 'Test Assemblies **\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
+  inputs:
+    testAssembly: '**\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
+    codeCoverageEnabled: true
+    vsTestVersion: latest
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+  continueOnError: true
+
+  
+
+
+

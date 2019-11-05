@@ -45,7 +45,14 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
 		{
 			Logger.DebugFormat("Converting {0} to pdf", jobId);
 			var localFileName = DownloadLocalCopy(jobId);
-			var outputFileName = localFileName + ".pdf";
+
+            var sanitizer = new SafeHtmlConverter(localFileName)
+            {
+                Logger = Logger
+            };
+            localFileName = sanitizer.Run(jobId);
+
+            var outputFileName = localFileName + ".pdf";
 			var uri = new Uri(localFileName);
 
 			var document = new HtmlToPdfDocument

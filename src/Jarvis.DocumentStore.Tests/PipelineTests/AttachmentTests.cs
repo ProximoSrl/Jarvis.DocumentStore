@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using Jarvis.Framework.TestHelpers;
+using Jarvis.DocumentStore.Tests.Support;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {

@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json.Linq;
 
-#if DisablePriLongPath
+#if DisablePriLongPath || NETSTANDARD
 using Path = System.IO.Path;
 using File = System.IO.File;
 #else
@@ -120,7 +120,12 @@ namespace Jarvis.DocumentStore.Client
         }
 
         /// <summary>
-        /// upload a document
+        /// <para>
+        /// Upload a document calling Document Store Web Api, it is different from the
+        /// <see cref="QueueDocumentImport"/> because
+        /// in this version document store is called directly.
+        /// </para>
+        /// <para>When the call ends, the document was loaded by the documentstore</para>
         /// </summary>
         /// <param name="fileNameWithExtension">File name with extension</param>
         /// <param name="documentHandle">Document handle</param>
@@ -203,7 +208,12 @@ namespace Jarvis.DocumentStore.Client
         }
 
         /// <summary>
-        /// Upload a document
+        /// <para>
+        /// Upload a document calling Document Store Web Api, it is different from the
+        /// <see cref="QueueDocumentImport"/> because
+        /// in this version document store is called directly.
+        /// </para>
+        /// <para>When the call ends, the document was loaded by the documentstore</para>
         /// </summary>
         /// <param name="pathToFile">Path to local document</param>
         /// <param name="documentHandle">Document handle</param>

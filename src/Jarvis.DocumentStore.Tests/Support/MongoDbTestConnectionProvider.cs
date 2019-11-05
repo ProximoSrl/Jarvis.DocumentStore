@@ -1,8 +1,7 @@
-﻿using System;
-using System.Configuration;
-using Jarvis.DocumentStore.Host.Support;
+﻿using Jarvis.Framework.Shared.Helpers;
 using MongoDB.Driver;
-using Jarvis.Framework.Shared.Helpers;
+using System;
+using System.Configuration;
 
 namespace Jarvis.DocumentStore.Tests.Support
 {
@@ -19,21 +18,21 @@ namespace Jarvis.DocumentStore.Tests.Support
             QueueDb = Connect("ds.queue");
         }
 
-        static IMongoDatabase Connect(string connectionStringName)
+        private static IMongoDatabase Connect(string connectionStringName)
         {
             var cstring = ConfigurationManager.ConnectionStrings[connectionStringName];
             if (cstring == null)
             {
                 throw new Exception(string.Format("Connection string {0} not found", connectionStringName));
             }
-            
+
             var url = new MongoUrl(cstring.ConnectionString);
 
             var client = new MongoClient(url);
             return client.GetDatabase(url.DatabaseName);
         }
 
-        static MongoDatabase ConnectLegacy(string connectionStringName)
+        private static MongoDatabase ConnectLegacy(string connectionStringName)
         {
             var cstring = ConfigurationManager.ConnectionStrings[connectionStringName];
             if (cstring == null)
@@ -44,7 +43,9 @@ namespace Jarvis.DocumentStore.Tests.Support
             var url = new MongoUrl(cstring.ConnectionString);
 
             var client = new MongoClient(url);
+#pragma warning disable CS0618 // Type or member is obsolete
             return client.GetServer().GetDatabase(url.DatabaseName);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public static IMongoDatabase OriginalsDb { get; private set; }
@@ -74,15 +75,16 @@ namespace Jarvis.DocumentStore.Tests.Support
             Connect(tenant + ".system").Drop();
             Connect(tenant + ".events").Drop();
             Connect(tenant + ".readmodel").Drop();
+            Connect(tenant + ".descriptors").Drop();
             Connect("ds.queue").Drop();
         }
-
 
         public static void DropAll()
         {
             DropTenant("docs");
             DropTenant("tests");
             DropTenant("demo");
+            DropTenant("tickets");
             Connect("log").Drop();
             Connect("ds.quartz").Drop();
             Connect("ds.queue").Drop();

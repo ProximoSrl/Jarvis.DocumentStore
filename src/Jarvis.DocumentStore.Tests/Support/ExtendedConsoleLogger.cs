@@ -1,18 +1,17 @@
 using Castle.Core.Logging;
-using Jarvis.Framework.TestHelpers;
+using Jarvis.DocumentStore.Tests.Support;
 
 namespace Jarvis.DocumentStore.Tests.Support
 {
     internal class ExtendedConsoleLogger : NullLogger, IExtendedLogger
     {
         public ExtendedConsoleLogger(string name) 
-        {
-            
+        {          
         }
+
         public ExtendedConsoleLogger(string name, LoggerLevel loggerLevel)
             
-        {
-            
+        {          
         }
 
         private TestLogger.TestThreadProperties _threadProperties = new TestLogger.TestThreadProperties();

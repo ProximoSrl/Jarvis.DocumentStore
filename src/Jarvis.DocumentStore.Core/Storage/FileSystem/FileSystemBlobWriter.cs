@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Model;
-using MongoDB.Driver;
-using Castle.Core.Logging;
-using System.Security.Cryptography;
-using Jarvis.Framework.Shared.Helpers;
+using System;
+using System.IO;
 
 namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 {
@@ -22,22 +15,20 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
     internal class FileSystemBlobWriter : IBlobWriter
 #pragma warning restore S3881 // "IDisposable" should be implemented correctly
     {
-        private readonly IMongoCollection<FileSystemBlobDescriptor> _blobDescriptorCollection;
         private readonly ILogger _logger;
         private readonly FileSystemBlobDescriptor _descriptor;
-        private readonly String _destinationFileName;
         private readonly FileSystemBlobStoreWritableStream _writableStream;
+        private readonly IFileSystemBlobDescriptorStorage _fileSystemBlobDescriptorStorage;
 
         public FileSystemBlobWriter(
             BlobId blobId,
             FileNameWithExtension fileName,
             String destinationFileName,
-            IMongoCollection<FileSystemBlobDescriptor> blobDescriptorCollection,
+            IFileSystemBlobDescriptorStorage fileSystemBlobDescriptorStorage,
             ILogger logger)
         {
             BlobId = blobId;
             FileName = fileName;
-            _blobDescriptorCollection = blobDescriptorCollection;
             _logger = logger;
 
             _descriptor = new FileSystemBlobDescriptor()
@@ -47,13 +38,13 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
                 Timestamp = DateTime.Now,
                 ContentType = MimeTypes.GetMimeType(FileName)
             };
-            _destinationFileName = destinationFileName;
-            _blobDescriptorCollection.Save(_descriptor, _descriptor.BlobId);
 
             //Create a wrapper of the stream
             var originalStream = new FileStream(destinationFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             originalStream.SetLength(0);
-            _writableStream = new FileSystemBlobStoreWritableStream(originalStream, _descriptor, _blobDescriptorCollection, this);
+            _writableStream = new FileSystemBlobStoreWritableStream(originalStream, this);
+            _writableStream.StreamClosed += WritableStreamClosed;
+            _fileSystemBlobDescriptorStorage = fileSystemBlobDescriptorStorage;
         }
 
         public BlobId BlobId { get; }
@@ -75,14 +66,24 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && !_writableStream.Disposed)
             {
-                if (!_writableStream.Disposed)
-                {
-                    _writableStream.Dispose();
-                }
+                //It is important to dispose the underling stream, so it will flush all content, will calculate MD5 and raise StreamClosedEvent.
+                _writableStream.Dispose();
+                _logger.DebugFormat("Persisting descriptor for blob {0}", _descriptor.BlobId);
+                _writableStream.StreamClosed -= WritableStreamClosed;
             }
             Disposed = true;
+        }
+
+        private void WritableStreamClosed(
+            object sender,
+            FileSystemBlobStoreWritableStream.FileSystemBlobStoreWritableStreamClosedEventArgs e)
+        {
+            _descriptor.Md5 = e.Md5;
+            _descriptor.Length = e.Length;
+
+            _fileSystemBlobDescriptorStorage.SaveDescriptor(_descriptor);
         }
     }
 }

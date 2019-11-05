@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Jarvis.DocumentStore.Jobs.PdfThumbnails": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\Proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\pdfthumbnails\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:pdfthumb /handle:manual-execution",
+      "workingDirectory": "C:\\develop\\Proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\pdfthumbnails\\"
+    }
+  }
+}

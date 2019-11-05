@@ -42,6 +42,8 @@ namespace Jarvis.DocumentStore.Host.Support
                     //we can simply use the connectionstring
                     SetFileSystemBaseDirectory("originals");
                     SetFileSystemBaseDirectory("artifacts");
+                    SetConnectionString("descriptors");
+                    Set("fsdescriptor.db", GetDatabase("descriptors"));
                     break;
             }
         }

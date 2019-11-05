@@ -15,8 +15,8 @@ namespace Jarvis.DocumentStore.Tests.DocumentStoreCore.Support
 
         StandardDocumentFormatTranslator sut;
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             sut = new StandardDocumentFormatTranslator();
         }

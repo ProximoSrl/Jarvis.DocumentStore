@@ -22,6 +22,8 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
             }
         }
 
+        public ILogger Logger { get; set; } = NullLogger.Instance;
+
         public Func<CreateImageFromPdfTask> Factory { get; set; }
 
         public List<PollerTestResult> Execute()
@@ -35,7 +37,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
             return retValue;
         }
 
-        private static void TestFile(
+        private void TestFile(
             List<PollerTestResult> retValue,
             CreateImageFromPdfTask task,
             String fileName,
@@ -70,16 +72,15 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
                 }
                 else
                 {
+                    Logger.ErrorFormat("Error during PDFThumbnails test conversion");
                     retValue.Add(new PollerTestResult(false, "Pdf to Jpg"));
                 }
             }
             catch (Exception ex)
             {
+                Logger.ErrorFormat(ex, "Error during PDFThumbnails test conversion: {0}", ex.Message);
                 retValue.Add(new PollerTestResult(false, "Pdf to Jpg: " + ex.Message));
             }
         }
-
     }
-
-   
 }

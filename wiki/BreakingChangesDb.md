@@ -1,6 +1,6 @@
-##version 2.0
+## version 2.0
 
-##Rename of Queue property
+## Rename of Queue property
 
 Property DocumentId of queues was renamed during release of Version 2 to DocumentDescriptorId, to update older database you should run this set of queries agains queue database
 
@@ -13,7 +13,7 @@ Property DocumentId of queues was renamed during release of Version 2 to Documen
 	db.getCollection('queue.tika').update({}, {$rename : {"DocumentId" : "DocumentDescriptorId"}}, {multi : true})
 	db.getCollection('queue.videoThumb').update({}, {$rename : {"DocumentId" : "DocumentDescriptorId"}}, {multi : true})
 
-##Rename of readmodels properties
+## Rename of readmodels properties
 
 This query should be run against all tenants db to rename DocumentDb property of readmodel to DocumentDescriptorId
 

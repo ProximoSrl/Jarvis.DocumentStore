@@ -1,37 +1,35 @@
-﻿using Jarvis.DocumentStore.Core.Storage;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Storage.FileSystem;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.IdentitySupport;
-using Castle.Core.Logging;
-using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Core.Storage.FileSystem;
+using NUnit.Framework;
+using System;
+using System.IO;
 
 namespace Jarvis.DocumentStore.Tests.Storage
 {
     [TestFixture]
     public class FileSystemBlobStoreTest : BlobStoreTestBase
     {
-        FileSystemBlobStore _sut;
+        private FileSystemBlobStore _sut;
         private String _tempLocalDirectory;
-        DirectoryManager _directoryManager;
+        private DirectoryManager _directoryManager;
 
         [SetUp]
         public void SetUp()
         {
             _tempLocalDirectory = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(_tempLocalDirectory);
-            _directoryManager = new DirectoryManager(_tempLocalDirectory);
+            _directoryManager = new DirectoryManager(_tempLocalDirectory, 3);
 
             _sut = new FileSystemBlobStore(MongoDbTestConnectionProvider.OriginalsDb,
-                "originals",
+                FileSystemBlobStore.OriginalDescriptorStorageCollectionName,
                 _tempLocalDirectory,
-                new CounterService(MongoDbTestConnectionProvider.SystemDb))
+                new CounterService(MongoDbTestConnectionProvider.SystemDb),
+                "",
+                "")
             {
                 Logger = new ConsoleLogger()
             };
@@ -49,10 +47,10 @@ namespace Jarvis.DocumentStore.Tests.Storage
             String content = "this is the content of the file";
             String tempFileName = GenerateTempTextFile(content, "test1.txt");
             var id = _sut.Upload(DocumentFormats.Original, tempFileName);
-            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id)));
+            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id, "test1.txt")));
             Assert.That(id, Is.Not.Null);
             _sut.Delete(id);
-            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id)), Is.False);
+            Assert.That(File.Exists(_directoryManager.GetFileNameFromBlobId(id, "test1.txt")), Is.False);
         }
     }
 }

@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using AngleSharp;
+using AngleSharp.Html;
 using Jarvis.DocumentStore.Shared.Model;
-using Jarvis.DocumentStore.Jobs.Tika.Filters;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
     public class ContentFormatBuilder
     {
-
-        private ContentFilterManager _filterManager;
+        private readonly ContentFilterManager _filterManager;
 
         public ContentFormatBuilder(ContentFilterManager filterManager)
         {
@@ -26,7 +27,14 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                     SanitizedTikaContent = tikaFullContent,
                 };
 
-            var doc = DocumentBuilder.Html(tikaFullContent);
+            //Use the default configuration for AngleSharp
+            var config = Configuration.Default;
+
+            //Create a new context for evaluating webpages with the given config
+            var context = BrowsingContext.New(config);
+
+            //Just get the DOM representation
+            var doc = context.OpenAsync(req => req.Content(tikaFullContent)).Result;
 
             var allMeta = doc.QuerySelectorAll("meta");
 
@@ -70,14 +78,18 @@ namespace Jarvis.DocumentStore.Jobs.Tika
             }
 
             var content = new DocumentContent(pagesList.ToArray(), meta.ToArray());
-            var sanitized = doc.ToHtml();
+            var sb = new StringBuilder();
+            using (var tw = new StringWriter(sb))
+            {
+                doc.ToHtml(tw, HtmlMarkupFormatter.Instance);
+            }
+            var sanitized = sb.ToString();
             return new ContentFormatBuilderResult()
             {
                 Content = content,
                 SanitizedTikaContent = sanitized,
             };
         }
-
     }
 
     public class ContentFormatBuilderResult

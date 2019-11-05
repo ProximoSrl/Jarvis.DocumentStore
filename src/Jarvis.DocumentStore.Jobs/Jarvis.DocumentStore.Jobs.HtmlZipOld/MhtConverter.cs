@@ -89,7 +89,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         /*
          * Decompress Archive From String
          */
-        private List<PartInfo> decompressString()
+        private List<PartInfo> DecompressString()
         {
             // init Prerequisites
             StringReader reader = null;
@@ -100,7 +100,6 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
             string charset = "utf-8";
             StringBuilder buffer = null;
             this.log += "Starting decompression \n";
-
 
             try
             {
@@ -130,7 +129,8 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
                             if ("text/css".Equals(type, StringComparison.OrdinalIgnoreCase))
                             {
                                 var fileName = ToSafeFileName(location) + ".css";
-                                File.WriteAllText(fileName, info.DataAsString);
+                                var realLocation = Path.Combine(this.OutputDirectory, fileName);
+                                File.WriteAllText(realLocation, info.DataAsString);
                                 cssMap[location] = fileName;
                             }
                             else if (type.Contains("image"))
@@ -331,7 +331,7 @@ namespace Jarvis.DocumentStore.Jobs.HtmlZipOld
         public string getHTMLText()
         {
             // if (this.decodeImageData) throw new Exception("Turn off image decoding for valid html output.");
-            var data = this.decompressString();
+            var data = this.DecompressString();
             string body = "";
             //First, lets write all non-images to mail body
             //Then go back and add images in 

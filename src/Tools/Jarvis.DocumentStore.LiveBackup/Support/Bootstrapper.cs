@@ -1,21 +1,18 @@
-﻿using Castle.Facilities.Logging;
+﻿using Castle.Core.Logging;
+using Castle.Facilities.Logging;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Jarvis.DocumentStore.LiveBackup.Jobs;
 using Jarvis.Framework.CommitBackup.Core;
-using MongoDB.Driver;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.LiveBackup.Support
 {
     public class Bootstrapper
     {
-        IWindsorContainer _container;
+        private IWindsorContainer _container;
+        private ILogger _logger;
 
         public void Start(Boolean autoStartJobs = true)
         {
@@ -27,20 +24,17 @@ namespace Jarvis.DocumentStore.LiveBackup.Support
                 f.LogUsing(LoggerImplementation.ExtendedLog4net)
                 .WithConfig("log4net.config"));
 
+            _logger = _container.Resolve<ILogger>();
+
             ConfigurationServiceSettingsConfiguration config = new ConfigurationServiceSettingsConfiguration();
 
+            //Register only the configuration and the backup jobs.
             _container.Register(
-                Component.For<Func<IMongoDatabase, ICommitReader>>()
-                    .Instance(d => new PlainCommitMongoReader(d)),
-                Component.For<Func<String, Int64, ICommitWriter>>()
-                    .Instance((directory, fileSize) => new PlainTextFileCommitWriter(directory, fileSize)),
                 Component
                     .For<Configuration>()
                     .Instance(config),
                 Component
-                    .For<BackupJob>(),
-                Component
-                    .For<RestoreJob>()
+                    .For<DocumentStoreBackupJob>()
            );
         }
 

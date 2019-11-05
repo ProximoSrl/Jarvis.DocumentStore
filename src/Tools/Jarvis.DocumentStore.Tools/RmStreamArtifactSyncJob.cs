@@ -34,7 +34,7 @@ namespace Jarvis.DocumentStore.Tools
         public string DestinationOriginalConnectionString { get; private set; }
         public string DestinationArtifactsConnectionString { get; private set; }
 
-        private CheckpointSaveDataManager _checkpointSavedDataManager;
+        private readonly CheckpointSaveDataManager _checkpointSavedDataManager;
 
         public Int64 GetLastSyncedCheckpoint()
         {
@@ -141,7 +141,6 @@ namespace Jarvis.DocumentStore.Tools
             var syncUnit = new SyncUnit(new SyncUnitConfigurator());
             while (true)
             {
-
                 var files = rmStream
                     .Find(Builders<BsonDocument>.Filter.Gte("_id", checkpoint))
                     .Sort(Builders<BsonDocument>.Sort.Ascending("_id"))
@@ -184,16 +183,16 @@ namespace Jarvis.DocumentStore.Tools
 
             internal class FileNameWithExtension
             {
-                public string name { get; set; }
+                public string Name { get; set; }
 
-                public string ext { get; set; }
+                public string Ext { get; set; }
             }
         }
     }
 
     internal class CheckpointSaveDataManager
     {
-        private string FilePath =
+        private readonly string FilePath =
             Path.Combine(
             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RmStreamArtifactSyncJob.rm-checkpoint.txt");
 
@@ -216,7 +215,9 @@ namespace Jarvis.DocumentStore.Tools
             {
                 File.WriteAllText(GetTenantFileName(tenantId), checkpoint.ToString());
             }
-            catch { }
+            catch
+            {
+            }
         }
 
         private string GetTenantFileName(string tenantId)

@@ -33,7 +33,24 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// </summary>
     public interface IQueueManager
     {
-        QueuedJob GetNextJob(TenantId tenantId, String queueName, String identity, String callerHandle, Dictionary<String, Object> customData);
+        /// <summary>
+        /// This is the core function called by various queue job executor to get the logical next
+        /// job.
+        /// </summary>
+        /// <param name="tenantId"></param>
+        /// <param name="queueName"></param>
+        /// <param name="identity"></param>
+        /// <param name="callerHandle"></param>
+        /// <param name="parameterOrCustomDataFilter">This filter is done against custom data or against
+        /// the parameter of the job. Custom Data is the dictionary of properties passed from
+        /// external code to an handle, while properties of the job are standard set of value</param>
+        /// <returns></returns>
+        QueuedJob GetNextJob(
+            TenantId tenantId, 
+            String queueName,
+            String identity, 
+            String callerHandle,
+            Dictionary<String, Object> parameterOrCustomDataFilter);
 
         /// <summary>
         /// Set the job as executed
@@ -326,9 +343,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             if (!_isRebuilding) PollNow();
         }
 
-        public QueuedJob GetNextJob(TenantId tenantId, String queueName, String identity, String handle, Dictionary<String, Object> customData)
+        public QueuedJob GetNextJob(TenantId tenantId, String queueName, String identity, String handle, Dictionary<String, Object> parameterOrCustomDataFilter)
         {
-            return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity, handle, tenantId, customData)) as QueuedJob;
+            return ExecuteWithQueueHandler("get next job", queueName, qh => qh.GetNextJob(identity, handle, tenantId, parameterOrCustomDataFilter)) as QueuedJob;
         }
 
         public QueuedJob GetJob(String queueName, string jobId)
@@ -389,7 +406,6 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
             return executor(qh);
         }
 
-
         private Boolean _isRebuilding = false;
 
         public void RebuildStarted()
@@ -401,7 +417,5 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         {
             _isRebuilding = false;
         }
-
     }
-
 }

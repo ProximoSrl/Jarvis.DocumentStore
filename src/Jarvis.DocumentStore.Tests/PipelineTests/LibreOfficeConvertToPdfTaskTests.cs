@@ -20,8 +20,8 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         LibreOfficeUnoConversion _unoConversion;
         private readonly IDictionary<string, string> _mapping = new Dictionary<string, string>();
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             try
             {
@@ -54,7 +54,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                 Console.WriteLine(ex);
                 throw;
             }
-           
+          
         }
 
         [SetUp]
@@ -110,6 +110,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         }
 
         [Test, Explicit]
+        [Category("Explicit")]
         public void parallel_conversion_should_not_throw_exceptions()
         {
             Parallel.ForEach(

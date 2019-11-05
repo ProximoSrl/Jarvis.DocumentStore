@@ -6,7 +6,7 @@ using Jarvis.DocumentStore.JobsHost.Support;
 using Jarvis.DocumentStore.Shared.Helpers;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using Jarvis.Framework.MongoAppender;
+using Jarvis.DocumentStore.MongoDbAppender;
 
 namespace Jarvis.DocumentStore.JobsHost
 {
@@ -109,6 +109,7 @@ namespace Jarvis.DocumentStore.JobsHost
                 Thread.Sleep(3000);
                 Environment.Exit(-1); //code to signal that queue is not supported.
             }
+            bootstrapper.Stop();
             return 0;
         }
 

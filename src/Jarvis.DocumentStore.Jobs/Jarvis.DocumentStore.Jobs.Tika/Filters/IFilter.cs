@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace Jarvis.DocumentStore.Jobs.Tika.Filters
 {
     /// <summary>
-    /// Filter text extracted by tika.
+    /// Filter text extracted by tika, it is used to avoid tika to bload
+    /// the database with really big text.
     /// </summary>
     public interface IFilter
     {
@@ -20,7 +21,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Filters
         String Filter(String tikaContent);
 
         /// <summary>
-        /// 
+        /// It return true if the file should be analyzed.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>

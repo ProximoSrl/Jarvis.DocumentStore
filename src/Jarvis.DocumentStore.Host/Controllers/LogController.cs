@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Jarvis.DocumentStore.Host.Logging;
-using Jarvis.Framework.MongoAppender;
+using Jarvis.DocumentStore.MongoDbAppender;
 using log4net;
 using log4net.Repository.Hierarchy;
 using MongoDB.Bson;

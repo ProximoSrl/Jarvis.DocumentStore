@@ -14,7 +14,7 @@ using Jarvis.Framework.Kernel.ProjectionEngine;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
-using Jarvis.Framework.TestHelpers;
+using Jarvis.DocumentStore.Tests.Support;
 using NUnit.Framework;
 using Jarvis.Framework.Shared.Helpers;
 

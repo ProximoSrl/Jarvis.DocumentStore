@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Castle.Core;
+﻿using Castle.Core;
 using Castle.Core.Logging;
 using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
@@ -13,25 +6,26 @@ using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Support;
+using Jarvis.DocumentStore.Shared.Helpers;
 using Jarvis.DocumentStore.Shared.Serialization;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Shared.Commands;
+using Jarvis.Framework.Shared.Helpers;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.MultitenantSupport;
-using Jarvis.Framework.Shared.ReadModel;
-using Newtonsoft.Json;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using MongoDB.Bson;
-using Jarvis.Framework.Shared.Helpers;
-
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
-
+using Newtonsoft.Json;
+using System;
+using System.Collections.Concurrent;
 using System.IO;
-using Jarvis.DocumentStore.Core.Support;
-using Jarvis.DocumentStore.Shared.Helpers;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Core.BackgroundTasks
 {
@@ -48,7 +42,8 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public String FileName
         {
             get { return _fileName; }
-            private set {
+            private set
+            {
                 _fileName = value;
                 if (!String.IsNullOrEmpty(_fileName))
                 {
@@ -91,7 +86,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         private readonly ConcurrentDictionary<TenantId, IMongoCollection<ImportFailure>>
             _importFailureCollections = new ConcurrentDictionary<TenantId, IMongoCollection<ImportFailure>>();
 
-        DocumentStoreConfiguration _configuration;
+        private readonly DocumentStoreConfiguration _configuration;
 
         internal bool DeleteTaskFileAfterImport { get; set; }
 
@@ -106,10 +101,10 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             _foldersToWatch = _configuration.FoldersToMonitor;
             _tenantAccessor = tenantAccessor;
             _commandBus = commandBus;
-
         }
 
         private Boolean _stopped = false;
+
         /// <summary>
         /// Stop all filesystem polling
         /// </summary>
@@ -381,8 +376,6 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 return null;
             }
         }
-
-
     }
 
     public class ImportFileFromFileSystemRunner : IStartable
@@ -438,6 +431,4 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             _stop.Set();
         }
     }
-
-
 }

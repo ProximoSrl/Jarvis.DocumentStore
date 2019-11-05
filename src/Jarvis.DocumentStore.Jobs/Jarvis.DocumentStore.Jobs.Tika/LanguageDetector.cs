@@ -1,16 +1,20 @@
-﻿using System.Linq;
+﻿using System;
+using System.IO;
+using System.Linq;
 using IvanAkcheurov.NTextCat.Lib;
 
 namespace Jarvis.DocumentStore.Jobs.Tika
 {
-    public class LanguageDetector
+    public static class LanguageDetector
     {
         private static readonly RankedLanguageIdentifier _identifier;
 
         static LanguageDetector()
         {
             var factory = new RankedLanguageIdentifierFactory();
-            _identifier = factory.Load("Core14.profile.xml");
+            var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var coreProfileFile = Path.Combine(currentDirectory, "Core14.profile.xml");
+            _identifier = factory.Load(coreProfileFile);
         }
 
         public static string GetLanguage(string text)

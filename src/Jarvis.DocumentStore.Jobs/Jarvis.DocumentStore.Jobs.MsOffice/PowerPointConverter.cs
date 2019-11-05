@@ -1,77 +1,95 @@
 ﻿using Castle.Core.Logging;
+using Jarvis.DocumentStore.JobsHost.Support;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.PowerPoint;
 using System;
+using System.Linq;
 
 namespace Jarvis.DocumentStore.Jobs.MsOffice
 {
 #pragma warning disable S2583 // Conditionally executed blocks should be reachable
 #pragma warning disable S1854 // Dead stores should be removed
-    public class PowerPointConverter
+    public class PowerPointConverter : BaseConverter
     {
-        private readonly ILogger _logger;
+        private readonly IClientPasswordSet _clientPasswordSet;
 
-        public PowerPointConverter(ILogger logger)
+        public PowerPointConverter(IClientPasswordSet clientPasswordSet)
         {
-            _logger = logger;
+            _clientPasswordSet = clientPasswordSet;
         }
 
-        /// <summary>
-        /// Convert power point to pdf
-        /// </summary>
-        /// <param name="sourcePath"></param>
-        /// <param name="targetPath"></param>
-        /// <returns>Error message, string empty if succeeded</returns>
-        internal String ConvertToPdf(string sourcePath, string targetPath)
+        public string GetPassword(String fileName)
+        {
+            return _clientPasswordSet.GetPasswordFor(fileName).FirstOrDefault() ?? "fake password, to avoid being stuck with ask password dialog";
+        }
+
+        protected override string OnRunJob(JobData job)
         {
             Application app = null;
+
             Presentation presentation = null;
-            OfficeUtils.KillOfficeProcess("POWERPNT");
+            var sourceFile = job.SourceFile;
+            var destinationFile = job.DestinationFile;
             try
             {
                 app = new Application();
+                app.DisplayAlerts = PpAlertLevel.ppAlertsNone;
+                Logger.InfoFormat("Opening {0} in Powerpoint", sourceFile);
                 //app.Visible = MsoTriState.msoFalse;
                 //app.WindowState = PpWindowState.ppWindowMinimized;
-                presentation = app.Presentations.Open(sourcePath, MsoTriState.msoFalse, MsoTriState.msoFalse, MsoTriState.msoFalse);
+                presentation = app.Presentations.Open(
+                    sourceFile,
+                    MsoTriState.msoFalse,
+                    MsoTriState.msoFalse,
+                    MsoTriState.msoFalse);
 
+                Logger.DebugFormat("Delegate conversion {0} in PowerPoint", sourceFile);
                 presentation.ExportAsFixedFormat(
-                    targetPath,
+                    destinationFile,
                     PpFixedFormatType.ppFixedFormatTypePDF,
                     PpFixedFormatIntent.ppFixedFormatIntentScreen);
 
                 presentation.Close();
                 presentation = null;
-                app.Quit();
+
+                Close(app);
                 app = null;
 
                 return String.Empty;
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Error converting {0} - {1}", sourcePath, ex.Message);
+                Logger.ErrorFormat(ex, "Error converting {0} - {1}", sourceFile, ex.Message);
 
                 if (presentation != null)
                 {
-                    this.Close(presentation);
+                    Close(presentation);
                 }
                 if (app != null)
                 {
-                    this.Close(app);
+                    Close(app);
                 }
-                return $"Error converting {sourcePath} - {ex.Message}";
+                return $"Error converting {sourceFile} - {ex.Message}";
             }
+        }
+
+        internal String ConvertToPdf(string sourcePath, string targetPath)
+        {
+            var task = base.QueueJob(sourcePath, targetPath);
+            //this will wait the task.
+            return task.Result;
         }
 
         private void Close(Application app)
         {
             try
             {
-                app.Quit();
+                app.SafeClose();
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close Powerpoint application {0}", ex.Message);
-                //TODO: Try to kill the process.
+                Logger.ErrorFormat(ex, "Unable to kill Powerpoint application {0}", ex.Message);
+                //I do not care if the application generate exception during kill.  
             }
         }
 
@@ -83,7 +101,7 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
             }
             catch (Exception ex)
             {
-                _logger.ErrorFormat(ex, "Unable to close presentation {0}", ex.Message);
+                Logger.ErrorFormat(ex, "Unable to close presentation {0}", ex.Message);
             }
         }
     }

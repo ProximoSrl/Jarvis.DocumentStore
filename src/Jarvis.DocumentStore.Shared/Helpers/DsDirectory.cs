@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NETFULL
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -43,6 +45,9 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         /// <param name="path"></param>
         public static void EnsureDirectory(String path)
         {
+            if (path == null)
+                throw new ArgumentNullException(nameof(path));
+
             if (MyDirectory.Exists(path))
             {
                 return;
@@ -78,3 +83,4 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         }
     }
 }
+#endif

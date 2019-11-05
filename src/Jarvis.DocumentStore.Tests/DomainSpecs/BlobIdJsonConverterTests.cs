@@ -11,8 +11,8 @@ namespace Jarvis.DocumentStore.Tests.DomainSpecs
     {
         JsonSerializerSettings _settings;
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             _settings = new JsonSerializerSettings()
             {

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Jarvis.DocumentStore.Core.Model;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
     public class FsBlobDescriptor : IBlobDescriptor
     {
-        readonly string _pathToFile;
+        private readonly string _pathToFile;
 
         public FsBlobDescriptor(BlobId id, string pathToFile)
         {
@@ -27,17 +23,22 @@ namespace Jarvis.DocumentStore.Core.Storage
         }
 
         public FileNameWithExtension FileNameWithExtension { get; private set; }
- 
-        public string ContentType {
+
+        public string ContentType
+        {
             get { return MimeTypes.GetMimeType(FileNameWithExtension); }
         }
 
-        public FileHash Hash {
+        public FileHash Hash
+        {
             get { throw new NotImplementedException(); }
         }
 
-        public long Length {
+        public long Length
+        {
             get { return new FileInfo(_pathToFile).Length; }
         }
+
+        public bool Exists => File.Exists(_pathToFile);
     }
 }

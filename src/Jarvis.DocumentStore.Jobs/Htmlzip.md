@@ -1,4 +1,4 @@
-###Why two format of the HtmlZip converter
+### Why two format of the HtmlZip converter
 
 The old one uses the old version of the [TuesPechkin](https://github.com/tuespetre/TuesPechkin) library, while the project without old suffix uses latest Nuget package.
 

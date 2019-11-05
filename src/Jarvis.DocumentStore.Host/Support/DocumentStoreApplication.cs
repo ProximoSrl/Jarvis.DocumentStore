@@ -1,24 +1,20 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Formatting;
-using System.Web.Http;
-using System.Web.Http.ExceptionHandling;
 using Castle.Core.Logging;
+using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Logging;
+using Jarvis.DocumentStore.Host.Support.Filters;
 using Jarvis.Framework.Shared.Domain.Serialization;
 using Metrics;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using Newtonsoft.Json.Serialization;
 using Owin;
-using Swashbuckle.Application;
 using Owin.Metrics;
-using Jarvis.DocumentStore.Core.Support;
-
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using Jarvis.DocumentStore.Host.Support.Filters;
+using Swashbuckle.Application;
+using System;
+using System.Linq;
+using System.Net.Http.Formatting;
+using System.Web.Http;
+using System.Web.Http.ExceptionHandling;
 
 namespace Jarvis.DocumentStore.Host.Support
 {
@@ -59,8 +55,7 @@ namespace Jarvis.DocumentStore.Host.Support
             }
         }
 
-
-        void ConfigureAdmin(IAppBuilder application)
+        private void ConfigureAdmin(IAppBuilder application)
         {
             var appFolder = FindAppRoot();
 
@@ -86,7 +81,7 @@ namespace Jarvis.DocumentStore.Host.Support
             while (true)
             {
                 var last = root.Last();
-                if (last == String.Empty || last == "debug" || last == "release" || last == "bin")
+                if (last == String.Empty || last == "debug" || last == "release" || last == "bin" || last == "net461")
                 {
                     root.RemoveAt(root.Count - 1);
                     continue;
@@ -101,7 +96,7 @@ namespace Jarvis.DocumentStore.Host.Support
             return appFolder;
         }
 
-        static void ConfigureApi(IAppBuilder application)
+        private static void ConfigureApi(IAppBuilder application)
         {
             var config = new HttpConfiguration
             {
@@ -113,7 +108,12 @@ namespace Jarvis.DocumentStore.Host.Support
             config.MapHttpAttributeRoutes();
             var loggerFactory = ContainerAccessor.Instance.Resolve<IExtendedLoggerFactory>();
 
+            var allowedIpList = _config.ExtraAllowedIpArray ?? Array.Empty<String>();
+
+            var getOnlyAllowedIpList = _config.GetOnlyIpArray ?? Array.Empty<String>();
+
             config.Filters.Add(new LogFilterAttribute(loggerFactory.Create("LogFilter")));
+            config.Filters.Add(new SecurityFilterAttribute(allowedIpList, getOnlyAllowedIpList));
 
             var jsonFormatter = new JsonMediaTypeFormatter();
             jsonFormatter.SerializerSettings.Converters.Add(new StringValueJsonConverter());

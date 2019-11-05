@@ -2,7 +2,7 @@ using System;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Events;
 using Jarvis.DocumentStore.Tests.DomainSpecs.DocumentSpecs;
-using Jarvis.Framework.TestHelpers;
+using Jarvis.DocumentStore.Tests.Support;
 using Machine.Specifications;
 using NSubstitute;
 

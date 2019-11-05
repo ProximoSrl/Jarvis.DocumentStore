@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Jarvis.DocumentStore.Jobs.LibreOffice": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\Proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\libreoffice\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:office /handle:manual-execution"
+    }
+  }
+}

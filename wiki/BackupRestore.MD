@@ -1,8 +1,8 @@
-##Backup with Mongodump
+## Backup with Mongodump
 
 You should backup original and artifacts database first, then backup main database with commits and system. Backup the system while the system is running can lead to inconsistencies that should be fixed manually.
 
-###Error in the id
+### Error in the id
 
 You start having this error after a restore
 

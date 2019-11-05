@@ -1,46 +1,43 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Jarvis.DocumentStore.Client;
+﻿using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core.Domain.Document;
 using Jarvis.DocumentStore.Core.Domain.DocumentDescriptor;
 using Jarvis.DocumentStore.Core.Jobs;
+using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.ReadModel;
+using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Support;
 using Jarvis.DocumentStore.Host.Support;
+using Jarvis.DocumentStore.Shared.Jobs;
 using Jarvis.DocumentStore.Shared.Model;
 using Jarvis.DocumentStore.Tests.PipelineTests;
+using Jarvis.DocumentStore.Tests.ProjectionTests;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Kernel.MultitenantSupport;
 using Jarvis.Framework.Kernel.ProjectionEngine;
-using Jarvis.Framework.Shared.MultitenantSupport;
-using Jarvis.Framework.Shared.ReadModel;
-using MongoDB.Driver;
-using NUnit.Framework;
-using Quartz;
-using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
-using System;
-using Newtonsoft.Json;
-using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Storage;
-using Jarvis.DocumentStore.Shared.Jobs;
-using Jarvis.DocumentStore.Tests.ProjectionTests;
-
-using NSubstitute;
-using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
-using System.Net;
-using Jarvis.DocumentStore.Core.Support;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using MongoDB.Bson;
-using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
-using Jarvis.DocumentStore.Core.Domain.Document;
-
 using Jarvis.Framework.Shared.Helpers;
 using Jarvis.Framework.Shared.IdentitySupport;
+using Jarvis.Framework.Shared.MultitenantSupport;
+using Jarvis.Framework.Shared.ReadModel;
+using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using Newtonsoft.Json;
+using NSubstitute;
+using NUnit.Framework;
+using Quartz;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using DocumentFormat = Jarvis.DocumentStore.Client.Model.DocumentFormat;
+using DocumentHandle = Jarvis.DocumentStore.Client.Model.DocumentHandle;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 // ReSharper disable InconsistentNaming
 namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
@@ -51,7 +48,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
     [Category("Slow")]
     public class DocumentControllerIntegrationTests
     {
-        DocumentStoreBootstrapper _documentStoreService;
+        private DocumentStoreBootstrapper _documentStoreService;
         private DocumentStoreServiceClient _documentStoreClient;
         private IMongoCollection<DocumentDescriptorReadModel> _documentDescriptorCollection;
         private IMongoCollection<DocumentReadModel> _documentCollection;
@@ -77,7 +74,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             var config = new DocumentStoreTestConfiguration(_engineVersion);
             MongoDbTestConnectionProvider.DropTestsTenant();
-            config.SetTestAddress(TestConfig.ServerAddress);
+            config.SetTestAddress(TestConfig.TestHostServiceAddress);
             _documentStoreService = new DocumentStoreBootstrapper();
             _documentStoreService.Start(config);
             _documentStoreClient = new DocumentStoreServiceClient(
@@ -108,7 +105,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task should_get_info_without_content()
+        public async Task Should_get_info_without_content()
         {
             var documentHandle = DocumentHandle.FromString("Pdf_2");
 
@@ -118,7 +115,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // waits for storage
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             var format = new DocumentFormat("original");
 
             var options = new OpenOptions()
@@ -137,7 +134,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task should_download_with_range_header()
+        public async Task Should_download_with_range_header()
         {
             var documentHandle = DocumentHandle.FromString("Pdf_2");
 
@@ -147,7 +144,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // waits for storage
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             var format = new DocumentFormat("original");
 
             var options = new OpenOptions()
@@ -185,7 +182,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task should_upload_and_download_original_format()
+        public async Task Should_upload_and_download_original_format()
         {
             await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
@@ -196,7 +193,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // waits for storage
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var reader = _documentStoreClient.OpenRead(DocumentHandle.FromString("Pdf_2"));
             using (var downloaded = new MemoryStream())
@@ -204,7 +201,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 using (var fileStream = File.OpenRead(TestConfig.PathToDocumentPdf))
                 {
-                    await fileStream.CopyToAsync(uploaded);
+                    await fileStream.CopyToAsync(uploaded).ConfigureAwait(false);
                 }
                 await (await reader.OpenStream()).CopyToAsync(downloaded);
 
@@ -225,9 +222,8 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             return msArray1.SequenceEqual(msArray2);
         }
 
-
         [Test]
-        public async Task should_upload_file_with_custom_data()
+        public async Task Should_upload_file_with_custom_data()
         {
             var response = await _documentStoreClient.UploadAsync(
                 TestConfig.PathToDocumentPdf,
@@ -241,7 +237,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             Assert.AreEqual("md5", response.HashType);
             Assert.AreEqual("http://localhost:5123/tests/documents/pdf_1", response.Uri);
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var customData = await _documentStoreClient.GetCustomDataAsync(DocumentHandle.FromString("Pdf_1"));
             Assert.NotNull(customData);
@@ -250,7 +246,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task should_upload_with_a_stream()
+        public async Task Should_upload_with_a_stream()
         {
             var handle = DocumentHandle.FromString("Pdf_4");
 
@@ -269,29 +265,27 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task should_get_document_formats()
+        public async Task Should_get_document_formats()
         {
             var handle = new DocumentHandle("Formats");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, handle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
         }
 
-
-
         [Test]
-        public async Task can_add_new_format_with_api()
+        public async Task Can_add_new_format_with_api()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -302,7 +296,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -311,14 +305,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task can_add_new_format_with_api_and_automatic_format_detection()
+        public async Task Can_add_new_format_with_api_and_automatic_format_detection()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -329,7 +323,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -338,18 +332,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task can_add_new_format_with_api_from_object()
+        public async Task Can_add_new_format_with_api_from_object()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             DocumentContent content = new DocumentContent(new DocumentContent.DocumentPage[]
             {
-                new DocumentContent.DocumentPage(1, "TEST"), 
+                new DocumentContent.DocumentPage(1, "TEST"),
             }, new DocumentContent.MetadataHeader[] { });
             //now add format to document.
             AddFormatFromObjectToDocumentModel model = new AddFormatFromObjectToDocumentModel();
@@ -361,7 +355,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
@@ -371,18 +365,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await CompareDownloadedStreamToStringContent(
                 model.StringContent,
                 _documentStoreClient.OpenRead(handle, new DocumentFormat("content")));
-
         }
 
         [Test]
-        public async Task removing_format_from_document()
+        public async Task Removing_format_from_document()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -393,20 +386,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
-
-            //now get the blob for the format
-            var descriptor = _documentDescriptorCollection.FindAll().Single();
-            var blobId = descriptor.Formats
-                .Where(f => f.Key == new DocumentFormat("tika"))
-                .Single().Value.BlobId;
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //now delete format
-            await _documentStoreClient.RemoveFormatFromDocument(handle, new DocumentFormat("tika"));
+            await _documentStoreClient.RemoveFormatFromDocument(handle, new DocumentFormat("tika")).ConfigureAwait(false);
 
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
-            var formats = await _documentStoreClient.GetFormatsAsync(handle);
+            var formats = await _documentStoreClient.GetFormatsAsync(handle).ConfigureAwait(false);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
             Assert.That(formats, Has.Count.EqualTo(1), "Tika format should be removed from the projection");
@@ -416,14 +403,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task adding_two_time_same_format_overwrite_older()
+        public async Task Adding_two_time_same_format_overwrite_older()
         {
             //Upload original
             var handle = new DocumentHandle("Add_Format_Test");
             await _documentStoreClient.UploadAsync(TestConfig.PathToOpenDocumentText, handle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //now add format to document.
             AddFormatFromFileToDocumentModel model = new AddFormatFromFileToDocumentModel();
@@ -434,13 +421,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //get blobId of the original format
             var descriptor = _documentDescriptorCollection.FindAll().Single();
-            BlobId blobId = descriptor.Formats
-                .Single(f => f.Key == new DocumentFormat("tika"))
-                .Value.BlobId;
 
             //now add same format with different content.
             model = new AddFormatFromFileToDocumentModel();
@@ -451,57 +435,58 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.AddFormatToDocument(model, new Dictionary<String, Object>());
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             var formats = await _documentStoreClient.GetFormatsAsync(handle);
             Assert.NotNull(formats);
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("original")));
             Assert.IsTrue(formats.HasFormat(new DocumentFormat("tika")));
             Assert.That(formats, Has.Count.EqualTo(2));
 
-            await CompareDownloadedStreamToFile(TestConfig.PathToHtml, _documentStoreClient.OpenRead(handle, new DocumentFormat("tika")));
+            await CompareDownloadedStreamToFile(TestConfig.PathToHtml, _documentStoreClient.OpenRead(handle, new DocumentFormat("tika"))).ConfigureAwait(false);
 
             //verify old blob storage was deleted
             //Assert.Throws<Exception>(() => _blobStore.GetDescriptor(blobId), "Blob Id for artifact is not deleted");
         }
 
-
         [Test]
-        public async Task can_add_attachment_to_existing_handle()
+        public async Task Can_add_attachment_to_existing_handle()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
-            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
+            await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle).ConfigureAwait(false);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToDocumentPng));
+            await _documentStoreClient
+                .UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToDocumentPng))
+                .ConfigureAwait(false);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var document = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with child handle was not find.");
 
             var handle = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "father")).SingleOrDefault();
             Assert.That(handle, Is.Not.Null, "Father Handle Not Find");
-            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] { 
+            Assert.That(handle.Attachments.Select(a => a.Handle), Is.EquivalentTo(new[] {
                 new Jarvis.DocumentStore.Core.Model.DocumentHandle("content_1")
             }));
         }
 
         [Test]
-        public async Task add_multiple_attachment_to_existing_handle()
+        public async Task Add_multiple_attachment_to_existing_handle()
         {
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //upload attachments
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToDocumentPng));
-            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToOpenDocumentText));
-            await UpdateAndWaitAsync();
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToDocumentPng)).ConfigureAwait(false);
+            await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Content", Path.GetFileName(TestConfig.PathToOpenDocumentText)).ConfigureAwait(false);
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var document = _documentDescriptorCollection.Find(Builders<DocumentDescriptorReadModel>.Filter.Eq("Documents", "content_1")).SingleOrDefault();
             Assert.That(document, Is.Not.Null, "Document with first child handle was not find.");
@@ -515,7 +500,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public async Task add_multiple_time_same_handle_with_same_payload()
+        public async Task Add_multiple_time_same_handle_with_same_payload()
         {
             //Upload father
             var theHandle = new DocumentHandle("a_pdf_file");
@@ -531,7 +516,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                 await job;
             }
 
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var documents = _documentDescriptorCollection.FindAll();
 
@@ -547,20 +532,18 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             //Upload father
             var fatherHandle = new DocumentHandle("father");
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //upload attachments
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "Zip", Path.GetFileName(TestConfig.PathToDocumentPng));
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToOpenDocumentText, fatherHandle, "Zip", Path.GetFileName(TestConfig.PathToOpenDocumentText));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.DeleteAsync(fatherHandle);
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             Assert.That(_documentDescriptorCollection.AsQueryable().Count(), Is.EqualTo(0), "Attachment should be deleted.");
             Assert.That(_documentCollection.AsQueryable().Count(), Is.EqualTo(0), "Attachment should be deleted.");
-
-
         }
 
         [Test]
@@ -571,12 +554,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
             Assert.NotNull(attachments);
@@ -593,7 +576,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             using (DateTimeService.Override(() => now))
             {
                 //now we need to wait cleanupJobs to start 
@@ -614,7 +597,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
             using (DateTimeService.Override(() => now))
             {
                 //now we need to wait cleanupJobs to start 
@@ -633,23 +616,23 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, new DocumentHandle("source_1"), "nested", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var attachments = await _documentStoreClient.GetAttachmentsAsync(fatherHandle);
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments.Length, Is.EqualTo(1));
-            Assert.That(attachments.Attachments[0].RelativePath.ToString(), Is.EqualTo(Path.GetFileName(TestConfig.PathToDocumentPng)));
-            Assert.That(attachments.Attachments[0].Handle.ToString(), Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
+            Assert.That(attachments.Attachments[0].RelativePath, Is.EqualTo(Path.GetFileName(TestConfig.PathToDocumentPng)));
+            Assert.That(attachments.Attachments[0].Handle, Is.EqualTo("http://localhost:5123/tests/documents/source_1"));
         }
 
         [Test]
@@ -660,28 +643,28 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, fatherHandle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToDocumentPng, fatherHandle, "source", Path.GetFileName(TestConfig.PathToDocumentPng));
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.UploadAttachmentAsync(TestConfig.PathToExcelDocument, new DocumentHandle("source_1"), "nested", Path.GetFileName(TestConfig.PathToExcelDocument));
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var attachments = await _documentStoreClient.GetAttachmentsFatAsync(fatherHandle);
             Assert.NotNull(attachments);
             Assert.That(attachments.Attachments, Has.Count.EqualTo(2));
             Assert.That(attachments.Attachments.Select(a => a.FileName), Is.EquivalentTo(new[] {
-                Path.GetFileName(TestConfig.PathToDocumentPng), 
+                Path.GetFileName(TestConfig.PathToDocumentPng),
                 Path.GetFileName(TestConfig.PathToExcelDocument)
             }));
             Assert.That(attachments.Attachments.Select(a => a.Uri),
                 Is.EquivalentTo(new[] {
-                    new Uri("http://localhost:5123/tests/documents/source_1"), 
+                    new Uri("http://localhost:5123/tests/documents/source_1"),
                     new Uri("http://localhost:5123/tests/documents/nested_1")
             }));
         }
@@ -693,7 +676,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             {
                 using (var fileStream = File.OpenRead(pathToFileToCompare))
                 {
-                    await fileStream.CopyToAsync(uploaded);
+                    await fileStream.CopyToAsync(uploaded).ConfigureAwait(false);
                 }
                 await (await documentFormatReader.OpenStream()).CopyToAsync(downloaded);
 
@@ -726,17 +709,17 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             var data = await _documentStoreClient.GetCustomDataAsync(handle);
 
             await _documentStoreClient.DeleteAsync(handle);
 
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
-            var ex = Assert.Throws<HttpRequestException>(async () =>
+            var ex = Assert.ThrowsAsync<HttpRequestException>(async () =>
             {
-                await _documentStoreClient.GetCustomDataAsync(handle);
+                await _documentStoreClient.GetCustomDataAsync(handle).ConfigureAwait(false);
             });
 
             Assert.IsTrue(ex.Message.Contains("404"));
@@ -765,15 +748,15 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             );
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.CopyHandleAsync(handle, copiedHandle);
 
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.DeleteAsync(handle);
 
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             // check readmodel
             var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
@@ -791,7 +774,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         {
             var handle = DocumentHandle.FromString("Pdf_3");
             String longFileName = Path.Combine(
-                Path.GetTempPath(), 
+                Path.GetTempPath(),
                 "_lfn" + new string('X', 240) + ".pdf");
             if (!File.Exists(longFileName))
             {
@@ -801,7 +784,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             await _documentStoreClient.UploadAsync(longFileName, handle);
 
             // wait background projection polling
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             // check readmodel
             var tenantAccessor = ContainerAccessor.Instance.Resolve<ITenantAccessor>();
@@ -816,14 +799,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async Task verify_de_duplication_not_link_to_deleted_handles()
         {
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //re-add same payload with same handle
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleB"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //verify that everything is ok.
             var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
@@ -835,14 +818,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async Task verify_de_duplication_not_link_to_deleted_handles_same_handle()
         {
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //re-add same payload with same handle
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //verify that everything is ok.
             var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
@@ -854,14 +837,14 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         public async Task verify_delete_then_re_add_handle()
         {
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.DeleteAsync(new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //re-add same payload with same handle
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPng, new DocumentHandle("handleA"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             //verify that everything is ok.
             var allDescriptor = _documentDescriptorCollection.FindAll().ToList();
@@ -875,10 +858,10 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             DateTime now = DateTime.UtcNow.AddDays(+30);
             var repo = _tenant.Container.Resolve<IRepositoryEx>();
             await _documentStoreClient.UploadAsync(TestConfig.PathToDocumentPdf, new DocumentHandle("handleX"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             await _documentStoreClient.DeleteAsync(new DocumentHandle("handleX"));
-            await UpdateAndWaitAsync();
+            await UpdateAndWaitAsync().ConfigureAwait(false);
 
             using (DateTimeService.Override(() => now))
             {

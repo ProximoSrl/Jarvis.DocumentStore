@@ -26,16 +26,16 @@ namespace Jarvis.DocumentStore.Jobs.PdfConverter
             Shared.Jobs.PollerJobParameters parameters,
             string workingFolder)
         {
-            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder).ConfigureAwait(false);
-
-            Logger.DebugFormat("Downloaded file {0} to be converted to pdf", pathToFile);
-            var converter = Converters.FirstOrDefault(c => c.CanConvert(pathToFile));
+            Logger.DebugFormat("Downloaded file {0} to be converted to pdf", parameters.FileName);
+            var converter = Converters.FirstOrDefault(c => c.CanConvert(parameters.FileName));
             if (converter == null)
             {
-                Logger.InfoFormat("No converter for extension {0}", Path.GetExtension(pathToFile));
+                Logger.InfoFormat("No converter for extension {0}", Path.GetExtension(parameters.FileName));
                 return ProcessResult.Ok;
             }
 
+            //Download file only if we have one converter that can generate pdf.
+            string pathToFile = await DownloadBlob(parameters.TenantId, parameters.JobId, parameters.FileName, workingFolder).ConfigureAwait(false);
             string outFile = Path.Combine(workingFolder, Guid.NewGuid() + ".pdf");
             if (!converter.Convert(pathToFile, outFile))
             {

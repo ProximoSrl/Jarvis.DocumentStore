@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Jarvis.DocumentStore.Jobs.HtmlZipOld": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\Proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\htmlzipOld\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:htmlzip /handle:manual-execution",
+      "workingDirectory": "C:\\develop\\Proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\htmlzipOld\\"
+    }
+  }
+}

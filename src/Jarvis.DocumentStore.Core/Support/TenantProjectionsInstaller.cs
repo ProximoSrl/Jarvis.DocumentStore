@@ -1,5 +1,6 @@
-﻿using System.Configuration;
-using Castle.Facilities.Startable;
+﻿using Castle.Facilities.Startable;
+using Castle.Facilities.TypedFactory;
+using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
@@ -12,21 +13,17 @@ using Jarvis.Framework.Kernel.ProjectionEngine.RecycleBin;
 using Jarvis.Framework.Shared.Messages;
 using Jarvis.Framework.Shared.MultitenantSupport;
 using Jarvis.Framework.Shared.ReadModel;
-using MongoDB.Driver;
-using Castle.Core.Logging;
-using Jarvis.DocumentStore.Core.Jobs;
-using System;
-using NEventStore.Persistence;
-using Jarvis.DocumentStore.Core.EvenstoreHooks;
-using Castle.Facilities.TypedFactory;
 using Jarvis.NEventStoreEx.CommonDomainEx.Persistence;
+using MongoDB.Driver;
+using NEventStore.Persistence;
+using System;
 
 namespace Jarvis.DocumentStore.Core.Support
 {
     public class TenantProjectionsInstaller<TNotifier> : IWindsorInstaller where TNotifier : INotifyToSubscribers
     {
-        readonly ITenant _tenant;
-        readonly DocumentStoreConfiguration _config;
+        private readonly ITenant _tenant;
+        private readonly DocumentStoreConfiguration _config;
 
         public TenantProjectionsInstaller(
             ITenant tenant,
@@ -52,8 +49,6 @@ namespace Jarvis.DocumentStore.Core.Support
                 EngineVersion = _config.EngineVersion,
                 BucketInfo = _config.BucketInfo,
             };
-
-          
 
             var readModelDb = _tenant.Get<IMongoDatabase>("readmodel.db");
 
@@ -125,48 +120,16 @@ namespace Jarvis.DocumentStore.Core.Support
             if (!_config.IsReadmodelBuilder)
                 return;
 
-
             //This registration made the entire ConcurrentProjectionEngine starts
             //so it is better to register after all the other components are registered
             //correctly.
             if (config.EngineVersion == "v1")
             {
                 throw new NotSupportedException("V1 projection engine not supported anymore");
-                //container.Register(
-                //    Component
-                //      .For<IPollingClient>()
-                //      .ImplementedBy<PollingClientWrapper>()
-                //      .DependsOn(Dependency.OnConfigValue("boost", _config.Boost)),
-                //    Component
-                //        .For<ConcurrentProjectionsEngine, ITriggerProjectionsUpdate>()
-                //        .ImplementedBy<ConcurrentProjectionsEngine>()
-                //        .LifestyleSingleton()
-                //        .DependsOn(Dependency.OnValue<ProjectionEngineConfig>(config))
-                //        .StartUsingMethod(x => x.Start)
-                //        .StopUsingMethod(x => x.Stop)
-                //);
             }
             else if (config.EngineVersion == "v2")
             {
                 throw new NotSupportedException("V2 projection engine not supported anymore because of NES6 dropping standard commit polling client");
-                //container.Register(
-                //    Component.For<ProjectionEngineConfig>()
-                //        .Instance(config),
-                //   Component
-                //       .For<ICommitPollingClient>()
-                //       .ImplementedBy<CommitPollingClient>()
-                //       .DependsOn(Dependency.OnValue("id", "Main-Poller"))
-                //       .LifeStyle.Transient,
-                //    Component
-                //        .For<Func<IPersistStreams, ICommitPollingClient>>()
-                //        .Instance(ps => container.Resolve<ICommitPollingClient>(new { persistStreams = ps })),
-                //  Component
-                //        .For<ProjectionEngine, ITriggerProjectionsUpdate>()
-                //        .ImplementedBy<ProjectionEngine>()
-                //        .LifestyleSingleton()
-                //        .StartUsingMethod(x => x.Start)
-                //        .StopUsingMethod(x => x.Stop)
-                //        );
             }
             else if (config.EngineVersion == "v3")
             {
@@ -186,7 +149,8 @@ namespace Jarvis.DocumentStore.Core.Support
                         .AsFactory(),
                     Component
                         .For<Func<IPersistStreams, ICommitPollingClient>>()
-                        .Instance(ps => container.Resolve<ICommitPollingClient>(new { persistStreams = ps })),
+                        .Instance(ps => container.Resolve<ICommitPollingClient>(
+                            Arguments.FromProperties(new { persistStreams = ps }))),
                     Component
                         .For<ProjectionEngine, ITriggerProjectionsUpdate>()
                         .ImplementedBy<ProjectionEngine>()

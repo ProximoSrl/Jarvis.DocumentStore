@@ -41,7 +41,6 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice.Tests
         {
             try
             {
-                OfficeUtils.KillOfficeProcess("WINWORD");
                 var tempFile = Path.Combine(Path.GetTempPath(), fileName);
                 if (File.Exists(tempFile)) File.Delete(tempFile);
                 File.WriteAllBytes(tempFile, fileContent);
@@ -70,7 +69,6 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice.Tests
         {
             try
             {
-                OfficeUtils.KillOfficeProcess("POWERPNT");
                 var tempFile = Path.Combine(Path.GetTempPath(), fileName);
                 if (File.Exists(tempFile)) File.Delete(tempFile);
                 File.WriteAllBytes(tempFile, fileContent);
@@ -99,7 +97,6 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice.Tests
         {
             try
             {
-                OfficeUtils.KillOfficeProcess("EXCEL");
                 var tempFile = Path.Combine(Path.GetTempPath(), fileName);
                 if (File.Exists(tempFile)) File.Delete(tempFile);
                 File.WriteAllBytes(tempFile, fileContent);

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Jarvis.DocumentStore.Core.Model;
 
@@ -22,5 +23,11 @@ namespace Jarvis.DocumentStore.Core.Storage
         /// Length of the file.
         /// </summary>
         long Length { get; }
+
+        /// <summary>
+        /// Returns true if the binary blob exists, remember that this is a descriptor
+        /// and the existence of this object does not guarantee that binary blob is ok
+        /// </summary>
+        Boolean Exists { get; }
     }
 }

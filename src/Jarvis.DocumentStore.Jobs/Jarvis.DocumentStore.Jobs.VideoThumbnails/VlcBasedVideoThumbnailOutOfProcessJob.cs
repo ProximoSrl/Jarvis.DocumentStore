@@ -1,20 +1,17 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
+using Jarvis.DocumentStore.Shared.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
-using Jarvis.DocumentStore.Client.Model;
-using Jarvis.DocumentStore.Shared.Helpers;
-using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using System.Threading.Tasks;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 
 namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 {
     public class VlcBasedVideoThumbnailOutOfProcessJob : AbstractOutOfProcessPollerJob
     {
-
         public VlcBasedVideoThumbnailOutOfProcessJob()
         {
             base.PipelineId = "video";
@@ -31,11 +28,11 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
             String vlcExecutable = Helper.GetExecutableLocation();
             if (!File.Exists(vlcExecutable))
             {
-                String error = String.Format("Unable to find VLC.exe executable in standard folders. You can specify VLC directory with 'vlc_location' job parameter or with 'vlc_location' app config configuration");
+                String error = "Unable to find VLC.exe executable in standard folders. You can specify VLC directory with 'vlc_location' job parameter or with 'vlc_location' app config configuration";
                 Logger.ErrorFormat(error);
                 Console.WriteLine("Unable to start converter, press a key to close.");
                 Console.ReadKey();
-                throw new ApplicationException(error);
+                throw new ConfigurationErrorsException(error);
             }
 
             var worker = new VlcCommandLineThumbnailCreator(vlcExecutable, format, Logger);
@@ -60,6 +57,5 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
             }
             return ProcessResult.Ok;
         }
-
     }
 }

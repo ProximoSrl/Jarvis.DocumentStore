@@ -1,10 +1,13 @@
 {
+	"secondary-document-store-address" : "",
 	"enable-snapshot-cache" : true,
     "enable-single-aggregate-repository-cache" : false,
 	"disable-lock-on-aggregate-id" : false,
 	"baseConnectionString" : "mongodb://localhost/ds",
 	"nes-engine-version" : "v3",
 	"tenants": ["docs", "demo"],
+	"extra-allowed-ip-array" :["10.0.3.12"],
+	"get-only-ip-array" :["10.0.3.12"],
 	"storage" : {
 		"type" : "FileSystem", //"type" : "GridFs"
 		"fileSystem" : {

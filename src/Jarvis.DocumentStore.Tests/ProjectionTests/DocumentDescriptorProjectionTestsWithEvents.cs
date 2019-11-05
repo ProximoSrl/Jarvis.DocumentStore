@@ -28,7 +28,7 @@ using Jarvis.DocumentStore.Core.EventHandlers;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.Domain.Serialization;
-using Jarvis.Framework.TestHelpers;
+using Jarvis.DocumentStore.Tests.Support;
 
 using Jarvis.Framework.Shared.Helpers;
 

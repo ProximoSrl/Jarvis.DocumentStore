@@ -1,10 +1,10 @@
-##How to write a Document Store poller in .NET
+## How to write a Document Store poller in .NET
 
-###Samples
+### Samples
 
 Inside Document Store, we have some pre-build plugin that can be used as samples to understand how to write a new poller plugin.
 
-###Host
+### Host
 
 Project Jarvis.DocumentStore.JobsHost is the host pre-configured to run a poller. To create a new poller you need only to 
 
@@ -20,7 +20,7 @@ Hosts loads log4net.config file for logging configuration from two location. It 
 
 Hosts does not use configuration manager to get configuration.
 
-###Passwords
+### Passwords
 
 Some file are password protected. Tika is enabled to use password. The real password is stored in client running jobs. The setting is in environment variable
 
