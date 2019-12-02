@@ -126,7 +126,7 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             var list = ConfigurationServiceClient.Instance
                 .GetArraySetting(settingString);
-            return list
+            return list?
                 .OfType<JValue>()
                 .Select(j => j.Value<String>()?.Trim(' ', '\r', '\n', '\t'))
                 .Where(s => !String.IsNullOrEmpty(s))
@@ -137,8 +137,7 @@ namespace Jarvis.DocumentStore.Host.Support
         {
             var storageTypeString = ConfigurationServiceClient.Instance.GetSetting("storageType", "GridFs");
             storageTypeString = String.IsNullOrEmpty(storageTypeString) ? "GridFs" : storageTypeString;
-            StorageType storageType;
-            if (!Enum.TryParse<StorageType>(storageTypeString, true, out storageType))
+            if (!Enum.TryParse<StorageType>(storageTypeString, true, out StorageType storageType))
             {
                 throw new ConfigurationErrorsException($"Mandatory settings Storage.Type not found.");
             }
