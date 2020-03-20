@@ -24,7 +24,7 @@ elseif ($DestinationDir.StartsWith("."))
 
 $DestinationDir = [System.IO.Path]::GetFullPath($DestinationDir)
 $DestinationDirHost = $DestinationDir + "\Jarvis.DocumentStore.Host"
-$DestinationDirJobs = $DestinationDir + "\Jarvis.DocumentStore.Jobs"
+$DestinationDirJobs = $DestinationDir + "\Jobs"
 $DestinationDirConfigs = $DestinationDir + "\DocumentStoreConfig"
 
 Write-Host "Destination dir is $DestinationDir"
@@ -62,25 +62,11 @@ Copy-Item ".\src\Jarvis.DocumentStore.Host\app" `
     -Force -Recurse
 
 Write-Host "Destination dir is  $DestinationDirHost"
-$configFileName = $DestinationDirHost + "\Jarvis.DocumentStore.Host.exe.config"
-#Write-Host "Changing configuration file $configFileName"
-#$xml = [xml](Get-Content $configFileName)
-#Edit-XmlNodes $xml -xpath "/configuration/appSettings/add[@key='uri']/@value" -value "http://localhost:55555"
-#Edit-XmlNodes $xml -xpath "/configuration/appSettings/add[@key='baseConfigDirectory']/@value" -value "..\ConfigurationStore"
-
-#$xml.save($configFileName)
-
-Write-Host "Cleaning up $DestinationDirHost"
-Get-ChildItem $DestinationDirHost -Recurse -Include *.xml | foreach ($_) {remove-item $_.fullname}
-
 
 Write-Host "Copying file for jobs"
 Copy-Item ".\artifacts\jobs\*" `
     $DestinationDirJobs `
     -Force -Recurse
-
-Write-Host "Cleaning up $DestinationDirJobs"
-Get-ChildItem $DestinationDirJobs -Recurse -Include *.xml | foreach ($_) {remove-item $_.fullname}
 
 Write-Host "Compressing everything"
 $sevenZipExe = "c:\Program Files\7-Zip\7z.exe"
@@ -92,7 +78,6 @@ if (-not (test-path $sevenZipExe))
         throw "$env:ProgramFiles\7-Zip\7z.exe needed"
         Exit 
     }
-
 } 
 
 Write-Host "Copying base configuration file"
@@ -113,6 +98,17 @@ Copy-Item ".\assets\configs\defaultParameters.config" `
 
 set-alias sz $sevenZipExe 
 
+#now we need to cleanup all xml files, used for help
+Write-Host "Cleaning up $DestinationDirHost"
+Get-ChildItem $DestinationDirHost -Recurse -Include *.xml | foreach ($_) {remove-item $_.fullname}
+
+Write-Host "Cleaning up $DestinationDirJobs"
+Get-ChildItem $DestinationDirJobs -Recurse -Include *.xml | foreach ($_) {remove-item $_.fullname}
+
+#tika has an xml file that needs to be maintained.
+Write-Host "Copying .\artifacts\jobs\tika\Core14.profile.xml to $DestinationDirJobs\tika"
+Copy-Item ".\artifacts\jobs\tika\Core14.profile.xml" "$DestinationDirJobs\tika" -Force 
+
 $extension = ".7z"
 if ($StandardZipFormatBool -eq $true) 
 {
@@ -120,7 +116,6 @@ if ($StandardZipFormatBool -eq $true)
     $extension = ".zip"
 }
  
-
 $Source = $DestinationDirHost + "\*"
 $Target = $DestinationDir + "\Jarvis.DocumentStore.Host" + $extension
 
@@ -128,7 +123,7 @@ $Target = $DestinationDir + "\Jarvis.DocumentStore.Host" + $extension
 sz a -mx=5 $Target $Source
 
 $Source = $DestinationDirJobs + "\*"
-$Target = $DestinationDir + "\Jarvis.DocumentStore.Jobs" + $extension
+$Target = $DestinationDir + "\Jobs" + $extension
 
 #sz a -m0=lzma2 -mx=9 -aoa $Target $Source
 sz a -mx=5 $Target $Source
