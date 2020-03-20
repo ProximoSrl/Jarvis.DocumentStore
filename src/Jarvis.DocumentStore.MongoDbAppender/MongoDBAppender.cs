@@ -1,9 +1,8 @@
-﻿using System;
-using log4net.Appender;
+﻿using log4net.Appender;
 using log4net.Core;
-using MongoDB.Driver;
 using MongoDB.Bson;
-using log4net.Util;
+using MongoDB.Driver;
+using System;
 
 namespace Jarvis.DocumentStore.MongoDbAppender
 {
