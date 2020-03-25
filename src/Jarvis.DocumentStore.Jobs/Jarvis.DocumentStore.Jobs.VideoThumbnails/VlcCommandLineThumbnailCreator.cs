@@ -65,7 +65,12 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
             using (var p = Process.Start(psi))
             {
                 //wait for 2 minutes.
-                p.WaitForExit(1000 * 60 * 2);
+                var exited = p.WaitForExit(1000 * 60 * 2);
+                if (!exited)
+                {
+                    logger.WarnFormat("Vlc does not stopped after 2 minutes, killing");
+                    p.Kill();
+                }
             }
 
             //Need to find thumbnails, VLC creates multiple files, but the one with the highest number
