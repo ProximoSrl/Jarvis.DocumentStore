@@ -1,16 +1,14 @@
 ﻿using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Helpers;
+using Jarvis.DocumentStore.Shared.Jobs;
+using PdfSharp.Drawing;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
-using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
-using PdfSharp.Drawing;
-using Jarvis.DocumentStore.Shared.Jobs;
 
 namespace Jarvis.DocumentStore.Jobs.PdfComposer
 {
@@ -28,7 +26,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
         /// These are the extension that trigger office queue, remember that office queue
         /// is the queue that is capable of converting an office document into pdf.
         /// </summary>
-        private HashSet<String> officeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private readonly HashSet<String> officeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "xls", "xlsx", "docx", "doc", "ppt", "pptx", "pps", "ppsx", "rtf", "odt", "ods", "odp"
         };
@@ -52,7 +50,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                 Boolean pdfExists = false;
                 try
                 {
-                    pdfExists = await InnerGetPdf(workingFolder, client, files, handle, documentHandle, pdfExists);
+                    pdfExists = await InnerGetPdf(workingFolder, client, files, handle, documentHandle, pdfExists).ConfigureAwait(false);
                 }
                 catch (System.Net.WebException ex)
                 {
@@ -63,7 +61,9 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                 {
                     int requeueCount = GetRequeueCount(parameters);
                     if (requeueCount <= 3) //first 3 times, always retry (lets DS the time to generate jobs)
+                    {
                         return GenerateRequeueProcessResult(requeueCount);
+                    }
 
                     //need to check if this file has some job pending that can generate pdf.
                     var pendingJobs = await client.GetJobsAsync(documentHandle);
@@ -107,7 +107,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             var finalFileName = Path.Combine(outputDirectory, destinationFileName);
             manipulator.Save(finalFileName);
 
-            var result = await client.UploadAsync(finalFileName, new DocumentHandle(destinationHandle));
+            await client.UploadAsync(finalFileName, new DocumentHandle(destinationHandle)).ConfigureAwait(false);
             return ProcessResult.Ok;
         }
 
@@ -183,7 +183,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
         {
             //We wait for the job to be generated only for the first 10 wait.
             Boolean waitForNotGeneratedJob = retryCount < 10;
-            if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "pdfConverter", allowNullJob : waitForNotGeneratedJob))
+            if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "pdfConverter", allowNullJob: waitForNotGeneratedJob))
             {
                 //PdfConverter did not run, need to wait
                 return true;
