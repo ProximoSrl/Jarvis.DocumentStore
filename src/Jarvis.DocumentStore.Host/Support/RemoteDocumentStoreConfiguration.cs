@@ -119,7 +119,7 @@ namespace Jarvis.DocumentStore.Host.Support
             DisableRepositoryLockOnAggregateId = "true".Equals(ConfigurationServiceClient.Instance.GetSetting("disable-lock-on-aggregate-id", "false"), StringComparison.OrdinalIgnoreCase);
 
             GetOnlyIpArray = GetListOfAllowedIp("security.getOnlyIpArray");
-            ExtraAllowedIpArray = GetListOfAllowedIp("security.getOnlyIpArray");
+            ExtraAllowedIpArray = GetListOfAllowedIp("security.extraAllowedIpArray");
         }
 
         private String[] GetListOfAllowedIp(String settingString)
