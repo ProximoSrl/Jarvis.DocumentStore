@@ -70,7 +70,8 @@ namespace Jarvis.DocumentStore.Jobs.MsOffice
                     {
                         var worksheet = wkb.Sheets
                             .OfType<Worksheet>()
-                            .FirstOrDefault(s => s.Name?.Equals(workbookName, StringComparison.OrdinalIgnoreCase) == true);
+                            .FirstOrDefault(s => s.Name?.Equals(workbookName, StringComparison.OrdinalIgnoreCase) == true &&
+                                s.Visible == XlSheetVisibility.xlSheetVisible);
                         if (worksheet != null)
                         {
                             worksheetToPrint = worksheet;
