@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetDir)$(ProjectName).*&quot; &quot;$(SolutionDir)Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Tika\$(OutDir)&quot;" />
+    <Exec Command="xcopy $(TargetDir)$(ProjectName).* $(SolutionDir)Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.Tika\$(OutDir) /Y /E" />
   </Target>
 
   <ItemGroup>
