@@ -16,8 +16,8 @@
   </PropertyGroup>-->
 
   <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(TargetDir)*.*&quot; &quot;$(SolutionDir)..\artifacts\jobs\solidedge\&quot; /Y /E" />
-    <Exec Command="copy /Y &quot;$(ProjectDir)\app.config&quot; &quot;$(SolutionDir)..\artifacts\jobs\solidedge\Jarvis.DocumentStore.JobsHost.exe.config.original&quot;" />
+    <Exec Command="xcopy $(TargetDir)*.* $(SolutionDir)..\artifacts\jobs\solidedge\ /Y /E" />
+    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\solidedge\Jarvis.DocumentStore.JobsHost.exe.config.original" />
   </Target>
   
   <ItemGroup>

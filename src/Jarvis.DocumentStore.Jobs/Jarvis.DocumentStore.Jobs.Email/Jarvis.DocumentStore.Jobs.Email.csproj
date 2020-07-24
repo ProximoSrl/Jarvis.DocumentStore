@@ -17,8 +17,8 @@
   </PropertyGroup>-->
 
   <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(TargetDir)*.*&quot; &quot;$(SolutionDir)..\artifacts\jobs\email\&quot; /Y /E" />
-    <Exec Command="copy /Y &quot;$(ProjectDir)\app.config&quot; &quot;$(SolutionDir)..\artifacts\jobs\email\Jarvis.DocumentStore.JobsHost.exe.config.original&quot;" />
+    <Exec Command="xcopy $(TargetDir)*.* $(SolutionDir)..\artifacts\jobs\email\ /Y /E" />
+    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\email\Jarvis.DocumentStore.JobsHost.exe.config.original" />
   </Target>
   
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

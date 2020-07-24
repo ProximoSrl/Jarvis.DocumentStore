@@ -16,8 +16,8 @@
   </PropertyGroup>-->
 
   <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(TargetDir)*.*&quot; &quot;$(SolutionDir)..\artifacts\jobs\pdfComposer\&quot; /Y /E" />
-    <Exec Command="copy /Y &quot;$(ProjectDir)\app.config&quot; &quot;$(SolutionDir)..\artifacts\jobs\pdfComposer\Jarvis.DocumentStore.JobsHost.exe.config.original&quot;" />
+    <Exec Command="xcopy $(TargetDir)*.* $(SolutionDir)..\artifacts\jobs\pdfComposer\ /Y /E" />
+    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\pdfComposer\Jarvis.DocumentStore.JobsHost.exe.config.original" />
   </Target>
 
   <ItemGroup>
