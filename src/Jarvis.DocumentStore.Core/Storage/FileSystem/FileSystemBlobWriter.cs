@@ -2,6 +2,9 @@
 using Jarvis.DocumentStore.Core.Model;
 using System;
 using System.IO;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 {
@@ -40,7 +43,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
             };
 
             //Create a wrapper of the stream
-            var originalStream = new FileStream(destinationFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            var originalStream = File.Open(destinationFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             originalStream.SetLength(0);
             _writableStream = new FileSystemBlobStoreWritableStream(originalStream, this);
             _writableStream.StreamClosed += WritableStreamClosed;

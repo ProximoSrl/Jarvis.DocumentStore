@@ -2,6 +2,9 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.IO;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Core.Storage
 {
@@ -51,7 +54,7 @@ namespace Jarvis.DocumentStore.Core.Storage
         {
             if (String.IsNullOrEmpty(_localFileName))
                 throw new Exception("Local file name was not correctly set by the blob store");
-            return new FileStream(_localFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return File.Open(_localFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
     }
 }

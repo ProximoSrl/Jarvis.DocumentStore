@@ -31,7 +31,9 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static System.IO.FileStream OpenRead(string pathToFile)
         {
             if (pathToFile?.Length < 240)
+            {
                 return System.IO.File.OpenRead(pathToFile);
+            }
 
             return MyFile.OpenRead(pathToFile);
         }
@@ -39,7 +41,9 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static void WriteAllText(string fileName, string textFile)
         {
             if (DsFile.Exists(fileName))
+            {
                 DsFile.Delete(fileName);
+            }
 
             if (fileName?.Length < 240)
             {
@@ -54,14 +58,20 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static String ReadAllText(string pathToFile)
         {
             if (pathToFile?.Length < 240)
+            {
                 return System.IO.File.ReadAllText(pathToFile);
+            }
+
             return MyFile.ReadAllText(pathToFile);
         }
 
         public static DateTime GetLastWriteTimeUtc(string pathToFile)
         {
             if (pathToFile?.Length < 240)
+            {
                 return System.IO.File.GetLastWriteTimeUtc(pathToFile);
+            }
+
             return MyFile.GetLastWriteTimeUtc(pathToFile);
         }
 
@@ -69,7 +79,9 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         {
             //https://github.com/peteraritchie/LongPath/issues/48
             if (path?.Length < 240)
+            {
                 return System.IO.File.Exists(path);
+            }
 
             return MyFile.Exists(path);
         }
@@ -91,9 +103,22 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         {
             //https://github.com/peteraritchie/LongPath/issues/48
             if (path?.Length < 240)
+            {
                 return System.IO.File.Open(path, fileMode, fileAccess);
+            }
 
             return MyFile.Open(path, fileMode, fileAccess);
+        }
+
+        public static FileStream Open(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
+        {
+            //https://github.com/peteraritchie/LongPath/issues/48
+            if (path?.Length < 240)
+            {
+                return System.IO.File.Open(path, fileMode, fileAccess, fileShare);
+            }
+
+            return MyFile.Open(path, fileMode, fileAccess, fileShare);
         }
 
         public static void Move(String sourcePath, String destinationPath)
@@ -105,7 +130,10 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         {
             //https://github.com/peteraritchie/LongPath/issues/48
             if (path?.Length < 240)
+            {
                 return System.IO.File.Open(path, fileMode);
+            }
+
             return MyFile.Open(path, fileMode);
         }
 
@@ -129,7 +157,9 @@ namespace Jarvis.DocumentStore.Shared.Helpers
                 using (DsFile.Create(path)) { }
             }
             if (path?.Length < 240)
+            {
                 return File.OpenWrite(path);
+            }
 
             return MyFile.OpenWrite(path);
         }
@@ -137,7 +167,9 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static FileAttributes GetAttributes(string path)
         {
             if (path?.Length < 240)
+            {
                 return File.GetAttributes(path);
+            }
 
             return MyFile.GetAttributes(path);
         }

@@ -144,7 +144,7 @@ namespace Jarvis.DocumentStore.Core.Storage
                 throw new ArgumentException($"File {pathToFile} not found");
 
             if (Logger.IsDebugEnabled) Logger.Debug($"Upload document format {format}. File: {pathToFile}");
-            using (var fileStream = new FileStream(pathToFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var fileStream = File.Open(pathToFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 var descriptor = SaveStream(format, new FileNameWithExtension(Path.GetFileName(pathToFile)), fileStream);
                 if (Logger.IsDebugEnabled) Logger.Debug($"Uploaded document format {format}. File: {pathToFile} with blob Id {descriptor.BlobId}");
@@ -196,7 +196,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             Logger.Debug($"File {fileName} was assigned blob {blobId} and will be saved in file {destinationFileName}");
 
             using (var md5 = MD5.Create())
-            using (var fileStream = new FileStream(destinationFileName, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var fileStream = File.Open(destinationFileName, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 fileStream.Seek(0, SeekOrigin.Begin);
                 fileStream.SetLength(0);
@@ -292,7 +292,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public IBlobDescriptor Persist(BlobId blobId, string fileName)
         {
-            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (FileStream fs = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 return Persist(blobId, new FileNameWithExtension(Path.GetFileName(fileName)), fs);
             }
