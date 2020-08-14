@@ -7,6 +7,10 @@ using System.Linq;
 
 namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 {
+    /// <summary>
+    /// This is the real used Descriptor Storage, this write descriptors in mongodb
+    /// while leaving binary blob out of the database.
+    /// </summary>
     public class MongodDbFileSystemBlobDescriptorStorage : IFileSystemBlobDescriptorStorage
     {
         private readonly IMongoCollection<FileSystemBlobDescriptor> _collection;
