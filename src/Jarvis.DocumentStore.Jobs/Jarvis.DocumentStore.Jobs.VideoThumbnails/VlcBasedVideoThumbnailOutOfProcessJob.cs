@@ -42,7 +42,9 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
 
             if (String.IsNullOrEmpty(thumbNail))
             {
-                Logger.WarnFormat("Conversion returned no thumbnail for file {0} - job {1}", parameters.FileName, parameters.JobId);
+                var errMsg = string.Format("Conversion returned no thumbnail for file {0} - job {1}", parameters.FileName, parameters.JobId);
+                Logger.Error(errMsg);
+                return ProcessResult.Fail(errMsg);
             }
             else
             {
@@ -51,7 +53,7 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
                     parameters.JobId,
                     new DocumentFormat(DocumentFormats.RasterImage),
                     thumbNail,
-                    new Dictionary<string, object>());
+                    new Dictionary<string, object>()).ConfigureAwait(false);
 
                 Logger.DebugFormat("Conversion of {0} in format {1} done", parameters.JobId, format);
             }

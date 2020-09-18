@@ -56,10 +56,10 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
             var psi = new ProcessStartInfo(vlcExecutable, arguments)
             {
                 UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
+                RedirectStandardError = false,
+                RedirectStandardOutput = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Minimized
+                WindowStyle = ProcessWindowStyle.Normal
             };
 
             using (var p = Process.Start(psi))
@@ -68,7 +68,7 @@ namespace Jarvis.DocumentStore.Jobs.VideoThumbnails
                 var exited = p.WaitForExit(1000 * 60 * 2);
                 if (!exited)
                 {
-                    logger.WarnFormat("Vlc does not stopped after 2 minutes, killing");
+                    logger.Error("Vlc does not stopped after 2 minutes, killing");
                     p.Kill();
                 }
             }
