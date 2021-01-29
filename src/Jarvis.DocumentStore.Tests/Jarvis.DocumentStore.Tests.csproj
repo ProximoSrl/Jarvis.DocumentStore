@@ -28,7 +28,7 @@
     <PackageReference Include="Jarvis.Framework" Version="2.0.12" />
     <PackageReference Include="Jarvis.Framework.NEventStoreEx" Version="2.0.12" />
     <PackageReference Include="Jarvis.Framework.Shared" Version="2.0.12" />
-    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="log4net" Version="2.0.10" />
     <PackageReference Include="Machine.Specifications" Version="0.9.1" />
     <PackageReference Include="Machine.Specifications.Runner.Console" Version="0.9.2" />
     <PackageReference Include="Machine.Specifications.Should" Version="0.7.2" />
