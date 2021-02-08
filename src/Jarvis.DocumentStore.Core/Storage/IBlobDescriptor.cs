@@ -10,8 +10,11 @@ namespace Jarvis.DocumentStore.Core.Storage
     public interface IBlobDescriptor
     {
         BlobId BlobId { get; }
+
         Stream OpenRead();
+
         FileNameWithExtension FileNameWithExtension { get; }
+
         string ContentType { get; }
 
         /// <summary>
@@ -29,5 +32,11 @@ namespace Jarvis.DocumentStore.Core.Storage
         /// and the existence of this object does not guarantee that binary blob is ok
         /// </summary>
         Boolean Exists { get; }
+
+        /// <summary>
+        /// true if the descriptor point to a reference file, a file that is not store
+        /// inside documenstore.
+        /// </summary>
+        Boolean IsReference { get; }
     }
 }

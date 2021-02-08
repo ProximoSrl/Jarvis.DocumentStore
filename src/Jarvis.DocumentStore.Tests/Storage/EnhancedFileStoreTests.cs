@@ -16,9 +16,9 @@ namespace Jarvis.DocumentStore.Tests.ServicesTests
     [TestFixture]
     public class EnhancedFileStoreTests
     {
-        IBlobStore _originals;
-        IBlobStore _artifacts;
-        BlobStoreByFormat _manager;
+        private IBlobStore _originals;
+        private IBlobStore _artifacts;
+        private BlobStoreByFormat _manager;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()

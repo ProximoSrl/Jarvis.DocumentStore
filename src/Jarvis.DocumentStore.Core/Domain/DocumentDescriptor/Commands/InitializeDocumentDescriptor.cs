@@ -1,4 +1,3 @@
-using System;
 using Jarvis.DocumentStore.Core.Model;
 
 namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands
@@ -11,10 +10,10 @@ namespace Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.Commands
         public FileNameWithExtension FileName { get; private set; }
 
         public InitializeDocumentDescriptor(
-            DocumentDescriptorId aggregateId, 
-            BlobId blobId, 
-            DocumentHandleInfo handleInfo, 
-            FileHash hash, 
+            DocumentDescriptorId aggregateId,
+            BlobId blobId,
+            DocumentHandleInfo handleInfo,
+            FileHash hash,
             FileNameWithExtension fileName
         ) : base(aggregateId)
         {

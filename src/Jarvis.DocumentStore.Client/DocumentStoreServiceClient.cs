@@ -618,7 +618,32 @@ namespace Jarvis.DocumentStore.Client
             DocumentFormat format = null)
         {
             format = format ?? OriginalFormat;
-            return new DocumentImportData(new Uri(fileUri), fileName, handle, format, Tenant, taskId);
+            string realFileName = String.IsNullOrEmpty(fileName) ? null : Path.GetFileName(fileName);
+            return new DocumentImportData(new Uri(fileUri), realFileName, handle, format, Tenant, taskId);
+        }
+
+        /// <summary>
+        /// This will import document in document store as reference, original file 
+        /// specified in <paramref name="fullFileName"/> parameter. You cannot change the file
+        /// name because file name will be taken from reference.
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="fullFileName">Full path of documetn to reference, this document MUST
+        /// never be deleted</param>
+        /// <param name="handle"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public DocumentImportData CreateDocumentImportDataWithFileReference(
+            Guid taskId,
+            string fullFileName,
+            DocumentHandle handle,
+            DocumentFormat format = null)
+        {
+            format = format ?? OriginalFormat;
+            var fileName = Path.GetFileName(fullFileName);
+            var importData = new DocumentImportData(new Uri(fullFileName), fileName, handle, format, Tenant, taskId);
+            importData.ImportAsReference = true;
+            return importData;
         }
 
         public void QueueDocumentImport(DocumentImportData did, string pathToFile)

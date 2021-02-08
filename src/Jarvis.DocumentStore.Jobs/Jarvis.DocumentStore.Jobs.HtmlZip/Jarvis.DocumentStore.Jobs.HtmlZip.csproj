@@ -36,7 +36,7 @@
     <PackageReference Include="DnsClient" Version="1.0.7" />
     <PackageReference Include="HtmlSanitizer" Version="4.0.207" />
     <PackageReference Include="Jarvis.Framework.UdpAppender" Version="1.0.9" />
-    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />

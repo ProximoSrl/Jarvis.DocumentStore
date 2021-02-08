@@ -52,7 +52,8 @@ namespace Jarvis.DocumentStore.Tests.ClientTests
   ""Format"": ""original"",
   ""Tenant"": ""test"",
   ""CustomData"": null,
-  ""DeleteAfterImport"": false
+  ""DeleteAfterImport"": false,
+  ""ImportAsReference"": false
 }";
 
             Assert.AreEqual(expected, File.ReadAllText(fname + ".dsimport"));

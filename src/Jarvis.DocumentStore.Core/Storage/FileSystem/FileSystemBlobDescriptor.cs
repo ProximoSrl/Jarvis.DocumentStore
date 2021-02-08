@@ -28,6 +28,28 @@ namespace Jarvis.DocumentStore.Core.Storage
             LocalFileName = manager.GetFileNameFromBlobId(BlobId, FileNameWithExtension);
         }
 
+        private FileSystemBlobDescriptor()
+        {
+        }
+
+        public static FileSystemBlobDescriptor CreateForReference(
+            BlobId blobId,
+            string filePath,
+            DateTime timeStamp,
+            String contentType)
+        {
+            return new FileSystemBlobDescriptor()
+            {
+                BlobId = blobId,
+                FileNameWithExtension = new FileNameWithExtension(filePath),
+                Timestamp = timeStamp,
+                ContentType = contentType,
+                IsReference = true,
+                LocalFileName = filePath, //Storage of the file is the original place, do not copy
+                OriginalReferenceFilePath = filePath //to simplify troubleshooting we save the original file path, useful if we decide to move the file to internal storage
+            };
+        }
+
         [BsonId]
         public BlobId BlobId { get; private set; }
 
@@ -40,6 +62,21 @@ namespace Jarvis.DocumentStore.Core.Storage
         public String Md5 { get; set; }
 
         public String ContentType { get; private set; }
+
+        /// <summary>
+        /// If true this descriptor is a reference and it does not own the
+        /// content of the file.
+        /// </summary>
+        public bool IsReference { get; private set; }
+
+        /// <summary>
+        /// This property contains the original name of the file if the
+        /// descriptor was created as a reference. This information was
+        /// a duplicate of <see cref="LocalFileName"/> but if the file was
+        /// changed from a reference to a standard file, it is nice to maintain
+        /// the original location as a reference for future inspection.
+        /// </summary>
+        public string OriginalReferenceFilePath { get; private set; }
 
         public FileHash Hash
         {
@@ -86,16 +123,19 @@ namespace Jarvis.DocumentStore.Core.Storage
         /// <param name="directoryManager"></param>
         internal void SetLocalFileName(DirectoryManager directoryManager)
         {
-            //LocalFileName could be null (first version of file system blob storage) so we get the
-            //full name using the directory manager. 
-            if (string.IsNullOrEmpty(LocalFileName))
+            if (!IsReference)
             {
-                LocalFileName = directoryManager.GetFileNameFromBlobId(BlobId, FileNameWithExtension);
-            }
-            else
-            {
-                //Local file name was already saved, this means that this record was saved with the second
-                //version, when fullname was specifyed on record.
+                //LocalFileName could be null (first version of file system blob storage) so we get the
+                //full name using the directory manager. 
+                if (string.IsNullOrEmpty(LocalFileName))
+                {
+                    LocalFileName = directoryManager.GetFileNameFromBlobId(BlobId, FileNameWithExtension);
+                }
+                else
+                {
+                    //Local file name was already saved, this means that this record was saved with the second
+                    //version, when fullname was specifyed on record.
+                }
             }
         }
     }

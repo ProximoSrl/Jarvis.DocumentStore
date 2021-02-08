@@ -36,11 +36,11 @@
     <PackageReference Include="Castle.Windsor-log4net" Version="3.3.0" />
     <PackageReference Include="DnsClient" Version="1.0.7" />
     <PackageReference Include="Jarvis.Framework.UdpAppender" Version="1.0.9" />
-    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Pri.LongPath" Version="2.0.45" />
     <PackageReference Include="System.Buffers" Version="4.3.0" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
