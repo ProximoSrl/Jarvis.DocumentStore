@@ -21,9 +21,9 @@
   </Target>
   
   <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="4.4.0" />
-    <PackageReference Include="Castle.LoggingFacility" Version="5.0.0" />
-    <PackageReference Include="Castle.Windsor" Version="5.0.0" />
+    <PackageReference Include="Castle.Core" Version="4.4.1" />
+    <PackageReference Include="Castle.LoggingFacility" Version="5.1.1" />
+    <PackageReference Include="Castle.Windsor" Version="5.1.1" />
     <PackageReference Include="SolidEdge.Community.Reader" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
