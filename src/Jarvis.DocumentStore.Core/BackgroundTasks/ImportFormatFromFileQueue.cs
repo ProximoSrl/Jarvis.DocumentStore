@@ -39,6 +39,18 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public DocumentFormat Format { get; private set; }
         public TenantId Tenant { get; private set; }
 
+        /// <summary>
+        /// <para>
+        /// If different from null, this contains the name of the 
+        /// file that will be loaded in <see cref="IBlobStore"/> if null
+        /// file name will be taken from <see cref="DocumentImportTask.Uri"/>.
+        /// </para>
+        /// <para>
+        /// This is useful if you want to avoid name clashing, so you can use guid
+        /// for file name to avoid clash on the file system but you want to specify
+        /// a real name in this property.
+        /// </para>
+        /// </summary>
         public String FileName
         {
             get { return _fileName; }
@@ -53,13 +65,26 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         }
 
         public DocumentCustomData CustomData { get; private set; }
+
         public bool DeleteAfterImport { get; private set; }
+
+        /// <summary>
+        /// If true we want to import file as reference, we do not want the file
+        /// to be stored in <see cref="IBlobStore"/>. If this property is equal to 
+        /// true, property <see cref="FileName"/> will be ignored.
+        /// </summary>
+        public bool ImportAsReference { get; private set; }
 
         /* working */
         public string PathToTaskFile { get; set; }
         public string Result { get; set; }
 
         public DateTime FileTimestamp { get; set; }
+
+        internal bool ShouldDeleteFile()
+        {
+            return DeleteAfterImport && !ImportAsReference;
+        }
     }
 
     public class ImportFailure
@@ -79,7 +104,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
         public const string JobExtension = "*.dsimport";
         public ILogger Logger { get; set; }
 
-        private static DocumentFormat OriginalFormat = new DocumentFormat("original");
+        private static readonly DocumentFormat OriginalFormat = new DocumentFormat("original");
         private readonly string[] _foldersToWatch;
         private readonly ITenantAccessor _tenantAccessor;
         private readonly ICommandBus _commandBus;
@@ -115,12 +140,17 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
 
         public void PollFileSystem()
         {
-            if (_stopped) return;
+            if (_stopped)
+            {
+                return;
+            }
 
             foreach (var folder in _foldersToWatch)
             {
                 if (!Directory.Exists(folder))
+                {
                     continue;
+                }
 
                 var options = new ParallelOptions()
                 {
@@ -158,7 +188,6 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
             }
         }
 
-
         internal void UploadFile(String jobFile, DocumentImportTask task)
         {
             String fname = "";
@@ -192,18 +221,35 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 }
 
                 BlobId blobId;
-                if (!String.IsNullOrEmpty(task.FileName))
+                if (task.ImportAsReference)
                 {
-                    //use the real file name from the task not the name of the file
-                    using (FileStream fs = File.Open(fname, FileMode.Open, FileAccess.Read))
-                    {
-                        blobId = blobStore.Upload(task.Format, new FileNameWithExtension(task.FileName), fs);
-                    }
+                    //this is a different path, we import this as a reference.
+                    blobId = blobStore.UploadReference(task.Format, fname);
                 }
                 else
                 {
-                    //No filename given in task, use name of the blob
-                    blobId = blobStore.Upload(task.Format, fname);
+                    var fileNameWithExtension = String.IsNullOrEmpty(task.FileName) ?
+                        new FileNameWithExtension(task.FileName) :
+                        new FileNameWithExtension(fname);
+
+                    //use the real file name from the task not the name of the file
+                    using (FileStream fs = File.Open(fname, FileMode.Open, FileAccess.Read))
+                    {
+                        blobId = blobStore.Upload(task.Format, fileNameWithExtension, fs);
+                    }
+                }
+
+                //now we need to check, if we have other supported format to load with the 
+                //original format.
+                object formatPdfValue = null;
+                string pdfFileToPreload = null;
+                if (task.CustomData?.TryGetValue("format-pdf", out formatPdfValue) == true
+                    && formatPdfValue is string)
+                {
+                    //we have pdf to preload, this  will means that we need to stop office queue
+                    //to prevent office queue to generate pdf
+                    task.CustomData.Add("disable-queue-office", true);
+                    pdfFileToPreload = (String)formatPdfValue;
                 }
 
                 if (task.Format == OriginalFormat)
@@ -220,7 +266,32 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                         descriptor.Hash,
                         fileName
                         );
+
                     _commandBus.Send(createDocument, "import-from-file");
+
+                    //if we are creating original format, we should add pdf format if it is
+                    //already present in the queue
+                    if (!String.IsNullOrEmpty(pdfFileToPreload))
+                    {
+                        BlobId pdfBlobId = null;
+                        if (task.ImportAsReference)
+                        {
+                            pdfBlobId = blobStore.UploadReference(Client.Model.DocumentFormats.Pdf, pdfFileToPreload);
+                        }
+                        else
+                        {
+                            pdfBlobId = blobStore.Upload(Client.Model.DocumentFormats.Pdf, pdfFileToPreload);
+                        }
+
+                        //Need to send add format command to actually immediately add pdf format
+                        //to this descriptor.
+                        var addFormatCommand = new AddFormatToDocumentDescriptor(
+                            documentId,
+                            Client.Model.DocumentFormats.Pdf,
+                            pdfBlobId,
+                            PipelineId.Null);
+                        _commandBus.Send(addFormatCommand, "import-from-file");
+                    }
                 }
                 else
                 {
@@ -305,7 +376,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
 
         private void TaskExecuted(DocumentImportTask task)
         {
-            if (task.DeleteAfterImport)
+            if (task.ShouldDeleteFile())
             {
                 var fname = task.Uri.LocalPath;
                 try
@@ -380,7 +451,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
 
     public class ImportFileFromFileSystemRunner : IStartable
     {
-        private ImportFormatFromFileQueue _job;
+        private readonly ImportFormatFromFileQueue _job;
         private ManualResetEvent _stop;
         private volatile bool _stopPending;
         public ILogger Logger { get; set; }

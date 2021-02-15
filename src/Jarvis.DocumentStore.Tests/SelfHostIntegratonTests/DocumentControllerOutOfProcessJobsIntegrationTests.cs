@@ -435,8 +435,11 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
             var handleCore = new Core.Model.DocumentHandle("Verify_tika_job_multiple");
             var handleClient = new DocumentHandle("Verify_tika_job_multiple");
+
+            var realFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()) + ".pdf";
+            File.Copy(TestConfig.PathToPasswordProtectedPdf, realFile);
             await _documentStoreClient.UploadAsync(
-               TestConfig.PathToPasswordProtectedPdf,
+               realFile,
                handleClient,
                new Dictionary<string, object>{
                     { "callback", "http://localhost/demo"}
@@ -461,7 +464,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     var blob = _blobStore.GetDescriptor(formatInfo.BlobId);
                     Assert.That(
                         blob.FileNameWithExtension.ToString(),
-                        Is.EqualTo(Path.GetFileNameWithoutExtension(TestConfig.PathToPasswordProtectedPdf) + ".tika.html"),
+                        Is.EqualTo(Path.GetFileNameWithoutExtension(realFile) + ".tika.html"),
                         "File name is wrong, we expect the same file name with extension .tika.html");
 
                     var contentFormatInfo = documentDescriptor.Formats[contentFormat];

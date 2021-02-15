@@ -33,7 +33,7 @@ namespace Jarvis.DocumentStore.Core.Storage
         String Download(BlobId blobId, String folder);
 
         /// <summary>
-        /// Create a new file 
+        /// Create a new file
         /// </summary>
         /// <param name="format"></param>
         /// <param name="fname"></param>
@@ -59,6 +59,29 @@ namespace Jarvis.DocumentStore.Core.Storage
         /// <param name="sourceStream">The stream that contains the byte to be written.</param>
         /// <returns>The underling <see cref="BlobId"/> used to identify this blob</returns>
         BlobId Upload(DocumentFormat format, FileNameWithExtension fileName, Stream sourceStream);
+
+        /// <summary>
+        /// Intdroduced to allow for file reference, this function will store information about
+        /// the file specified in <paramref name="pathToFile"/> into the database, but the physical
+        /// file will be left on the original path, and not copied inside the real storage of the blob store.
+        /// </summary>
+        /// <param name="format">Format of the blob, it is needed because we can also store not only 
+        /// the original file but also other format, consider if you are referencing files from a system
+        /// that already converted file to pdf.</param>
+        /// <param name="pathToFile"></param>
+        /// <returns></returns>
+        BlobId UploadReference(DocumentFormat format, String pathToFile);
+
+        /// <summary>
+        /// Blob store is the owner of the file, it stores not only the content but
+        /// saves the hash of the file and this can be used to verify if something changed
+        /// and the file was tampered with.
+        /// </summary>
+        /// <remarks>This method does not have <see cref="DocumentFormat"/> because we can check
+        /// integrity only of original blob. Checking integrity of artifacts makes no sense.</remarks>
+        /// <param name="blobId"></param>
+        /// <returns>False if the integrity of the file fails.</returns>
+        bool CheckIntegrity(BlobId blobId);
 
         /// <summary>
         /// Get storage information about this specific store.

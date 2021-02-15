@@ -23,13 +23,16 @@ using Jarvis.Framework.Shared.Helpers;
 namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
 {
     /// <summary>
+    /// <para>
     /// This is the generic interface for a manager of jobs queue, its purpose
     /// is to give access to jobs to external clients, generate jobs monitoring
     /// the Stream readmodel.
-    /// 
+    /// </para>
+    /// <para>
     /// Its duty is to manage all the single instance of the queues, generating
     /// jobs for the executor and being an arbiter for the real object that physically
     /// manage queues, the <see cref="QueueHandler"/> component.
+    /// </para>
     /// </summary>
     public interface IQueueManager
     {
@@ -46,9 +49,9 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
         /// external code to an handle, while properties of the job are standard set of value</param>
         /// <returns></returns>
         QueuedJob GetNextJob(
-            TenantId tenantId, 
+            TenantId tenantId,
             String queueName,
-            String identity, 
+            String identity,
             String callerHandle,
             Dictionary<String, Object> parameterOrCustomDataFilter);
 
@@ -131,17 +134,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
     /// </summary>
     public class QueueManager : IQueueManager, IObserveProjection
     {
-        private DocumentStoreConfiguration _configuration;
-        private ITenantAccessor _tenantAccessor;
+        private readonly DocumentStoreConfiguration _configuration;
+        private readonly ITenantAccessor _tenantAccessor;
         private Thread _pollerThread;
         private BlockingCollection<CommandData> _commandList;
         private System.Timers.Timer pollerTimer;
 
-        private IMongoCollection<StreamCheckpoint> _checkpointCollection;
+        private readonly IMongoCollection<StreamCheckpoint> _checkpointCollection;
 
         private QueueTenantInfo[] _queueTenantInfos;
 
-        private Dictionary<String, QueueHandler> _queueHandlers;
+        private readonly Dictionary<String, QueueHandler> _queueHandlers;
 
         public ILogger Logger { get; set; }
 
@@ -315,6 +318,17 @@ namespace Jarvis.DocumentStore.Core.Jobs.QueueManager
                                 if (streamData.EventType == HandleStreamEventTypes.DocumentHasNewFormat ||
                                     streamData.EventType == HandleStreamEventTypes.DocumentFormatUpdated)
                                 {
+                                    //verify if we already stopped queue, TODO: use a constant
+                                    if (streamData.DocumentCustomData != null
+                                        && streamData.DocumentCustomData.TryGetValue($"disable-queue-{qh.Value.Name}", out var value))
+                                    {
+                                        if (value is Boolean disableQueue && disableQueue)
+                                        {
+                                            //ok we want to disable queue in custom data.
+                                            Logger.InfoFormat("Document {0} queue {1} skipped due to disable-queue custom value", streamData.Handle, qh.Value.Name);
+                                            continue;
+                                        }
+                                    }
                                     qh.Value.Handle(streamData, info.TenantId);
                                 }
                                 else if (streamData.EventType == HandleStreamEventTypes.DocumentDescriptorDeleted)

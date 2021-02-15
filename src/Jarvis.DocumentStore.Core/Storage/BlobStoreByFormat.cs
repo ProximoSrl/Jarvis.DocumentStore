@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.Core.Model;
-using Jarvis.DocumentStore.Core.Processing;
-using MongoDB.Driver.GridFS;
+using System.IO;
 using DocumentFormat = Jarvis.DocumentStore.Core.Domain.DocumentDescriptor.DocumentFormat;
 
 namespace Jarvis.DocumentStore.Core.Storage
@@ -66,11 +61,21 @@ namespace Jarvis.DocumentStore.Core.Storage
             return ForFormat(format).Upload(format, fileName, sourceStream);
         }
 
+        public BlobId UploadReference(DocumentFormat format, string pathToFile)
+        {
+            return ForFormat(format).UploadReference(format, pathToFile);
+        }
+
         public BlobStoreInfo GetInfo()
         {
             var ori = _originals.GetInfo();
             var art = _artifacts.GetInfo();
             return new BlobStoreInfo(ori,art);
+        }
+
+        public bool CheckIntegrity(BlobId blobId)
+        {
+            return _originals.CheckIntegrity(blobId);
         }
     }
 }

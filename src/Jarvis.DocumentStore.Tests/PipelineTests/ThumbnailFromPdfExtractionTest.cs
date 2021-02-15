@@ -4,6 +4,9 @@ using NUnit.Framework;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Tests.PipelineTests
 {
@@ -61,7 +64,7 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
                     wasCalled = true;
 
                     var tempFile = Path.GetTempFileName() + ".jpg";
-                    using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write))
+                    using (var fs = File.Open(tempFile, FileMode.Create, FileAccess.Write))
                     {
                         s.CopyTo(fs);
                     }

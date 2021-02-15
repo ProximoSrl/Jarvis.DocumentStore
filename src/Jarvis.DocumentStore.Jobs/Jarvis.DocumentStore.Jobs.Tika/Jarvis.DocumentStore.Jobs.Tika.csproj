@@ -18,7 +18,7 @@
 
   <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
     <Exec Command="xcopy $(TargetDir)*.* $(SolutionDir)..\artifacts\jobs\tika\ /Y /E" />
-    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\tika\Jarvis.DocumentStore.JobsHost.exe.config.original" />
+    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\tika\Jarvis.DocumentStore.JobsHost.exe.config" />
   </Target>
   
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
@@ -30,14 +30,14 @@
   </Target>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.9.11" />
-    <PackageReference Include="Castle.Core" Version="4.4.0" />
-    <PackageReference Include="Castle.LoggingFacility" Version="5.0.0" />
-    <PackageReference Include="Castle.Windsor" Version="5.0.0" />
+    <PackageReference Include="Castle.Core" Version="4.4.1" />
+    <PackageReference Include="Castle.LoggingFacility" Version="5.1.1" />
+    <PackageReference Include="Castle.Windsor" Version="5.1.1" />
     <PackageReference Include="DnsClient" Version="1.0.7" />
     <PackageReference Include="IKVM" Version="7.4.5196.0" />
     <PackageReference Include="IvanAkcheurov.NTextCat.Lib" Version="0.2.1.1" />
     <PackageReference Include="Jarvis.Framework.UdpAppender" Version="1.0.9" />
-    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />

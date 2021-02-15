@@ -372,7 +372,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
-        public void Upload_simple_html()
+        public void queue_Upload_simple_html()
         {
             const string taskFolder = @"c:\temp\dsqueue";
 
@@ -385,6 +385,67 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var docsFile = Path.Combine(taskFolder, "doc_simple-html-file_" + DateTime.Now.Ticks);
 
             _docs.QueueDocumentImport(data, docsFile);
+        }
+
+        [Test]
+        public void queue_Upload_pdf_as_reference()
+        {
+            var file = TestConfig.PathToDocumentPdf;
+            DocumentImportData data = _docs.CreateDocumentImportDataWithFileReference(
+                Guid.NewGuid(),
+                file,
+                DocumentHandle.FromString("queued-pdf"));
+
+            const string taskFolder = @"c:\temp\dsqueue";
+            var jobFile = Path.Combine(taskFolder, "pdf_reference_" + DateTime.Now.Ticks);
+            _docs.QueueDocumentImport(data, jobFile);
+        }
+
+        [Test]
+        public void queue_Upload_pdf_as_reference2()
+        {
+            var file = TestConfig.PathToDocumentPdf;
+            DocumentImportData data = _docs.CreateDocumentImportDataWithFileReference(
+                Guid.NewGuid(),
+                file,
+                DocumentHandle.FromString("queued-pdf-2"));
+
+            const string taskFolder = @"c:\temp\dsqueue";
+            var jobFile = Path.Combine(taskFolder, "pdf_reference_2_" + DateTime.Now.Ticks);
+            _docs.QueueDocumentImport(data, jobFile);
+        }
+
+        [Test]
+        public void queue_Upload_excel_as_reference()
+        {
+            var file = TestConfig.PathToExcelDocument;
+            DocumentImportData data = _docs.CreateDocumentImportDataWithFileReference(
+                Guid.NewGuid(),
+                file,
+                DocumentHandle.FromString("queued-excel-reference"));
+
+            data.AddPdfFile(TestConfig.PathToDocumentPdf);
+
+            const string taskFolder = @"c:\temp\dsqueue";
+            var jobFile = Path.Combine(taskFolder, "excel_reference_" + DateTime.Now.Ticks);
+            _docs.QueueDocumentImport(data, jobFile);
+        }
+
+        [Test]
+        public void queue_Upload_excel_NO_reference()
+        {
+            var file = TestConfig.PathToExcelDocument;
+            DocumentImportData data = _docs.CreateDocumentImportData(
+                Guid.NewGuid(),
+                file,
+                file,
+                DocumentHandle.FromString("excel_NO_reference"));
+
+            data.AddPdfFile(TestConfig.PathToDocumentPdf);
+
+            const string taskFolder = @"c:\temp\dsqueue";
+            var jobFile = Path.Combine(taskFolder, "excel_NO_reference_" + DateTime.Now.Ticks);
+            _docs.QueueDocumentImport(data, jobFile);
         }
 
         [Test]

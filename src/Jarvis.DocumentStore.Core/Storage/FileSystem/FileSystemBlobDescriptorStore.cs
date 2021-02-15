@@ -37,7 +37,7 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
                 return null;
 
             var descriptor = JsonConvert.DeserializeObject<FileSystemBlobDescriptor>(File.ReadAllText(descriptorLocalFileName));
-            descriptor.SetLocalFileName(_directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension));
+            descriptor.SetLocalFileName(_directoryManager);
             return descriptor;
         }
 

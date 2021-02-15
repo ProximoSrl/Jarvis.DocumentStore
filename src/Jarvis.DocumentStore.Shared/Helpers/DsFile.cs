@@ -18,7 +18,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
     {
         public static void Delete(string path)
         {
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
             {
                 System.IO.File.Delete(path);
             }
@@ -30,8 +30,10 @@ namespace Jarvis.DocumentStore.Shared.Helpers
 
         public static System.IO.FileStream OpenRead(string pathToFile)
         {
-            if (pathToFile != null && pathToFile.Length < 240)
+            if (pathToFile?.Length < 240)
+            {
                 return System.IO.File.OpenRead(pathToFile);
+            }
 
             return MyFile.OpenRead(pathToFile);
         }
@@ -39,9 +41,11 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static void WriteAllText(string fileName, string textFile)
         {
             if (DsFile.Exists(fileName))
+            {
                 DsFile.Delete(fileName);
+            }
 
-            if (fileName != null && fileName.Length < 240)
+            if (fileName?.Length < 240)
             {
                 System.IO.File.WriteAllText(fileName, textFile);
             }
@@ -53,23 +57,31 @@ namespace Jarvis.DocumentStore.Shared.Helpers
 
         public static String ReadAllText(string pathToFile)
         {
-            if (pathToFile != null && pathToFile.Length < 240)
+            if (pathToFile?.Length < 240)
+            {
                 return System.IO.File.ReadAllText(pathToFile);
+            }
+
             return MyFile.ReadAllText(pathToFile);
         }
 
         public static DateTime GetLastWriteTimeUtc(string pathToFile)
         {
-            if (pathToFile != null && pathToFile.Length < 240)
+            if (pathToFile?.Length < 240)
+            {
                 return System.IO.File.GetLastWriteTimeUtc(pathToFile);
+            }
+
             return MyFile.GetLastWriteTimeUtc(pathToFile);
         }
 
         public static bool Exists(string path)
         {
             //https://github.com/peteraritchie/LongPath/issues/48
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
+            {
                 return System.IO.File.Exists(path);
+            }
 
             return MyFile.Exists(path);
         }
@@ -77,7 +89,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static System.IO.FileStream Create(string path)
         {
             //https://github.com/peteraritchie/LongPath/issues/48
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
             {
                 return System.IO.File.Create(path);
             }
@@ -90,10 +102,23 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static FileStream Open(string path, FileMode fileMode, FileAccess fileAccess)
         {
             //https://github.com/peteraritchie/LongPath/issues/48
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
+            {
                 return System.IO.File.Open(path, fileMode, fileAccess);
+            }
 
             return MyFile.Open(path, fileMode, fileAccess);
+        }
+
+        public static FileStream Open(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
+        {
+            //https://github.com/peteraritchie/LongPath/issues/48
+            if (path?.Length < 240)
+            {
+                return System.IO.File.Open(path, fileMode, fileAccess, fileShare);
+            }
+
+            return MyFile.Open(path, fileMode, fileAccess, fileShare);
         }
 
         public static void Move(String sourcePath, String destinationPath)
@@ -104,45 +129,54 @@ namespace Jarvis.DocumentStore.Shared.Helpers
         public static FileStream Open(string path, FileMode fileMode)
         {
             //https://github.com/peteraritchie/LongPath/issues/48
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
+            {
                 return System.IO.File.Open(path, fileMode);
+            }
+
             return MyFile.Open(path, fileMode);
         }
+
         public static void WriteAllBytes(string path, byte[] data)
         {
             //https://github.com/peteraritchie/LongPath/issues/48
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
             {
-                System.IO.File.WriteAllBytes(path, data);
+                File.WriteAllBytes(path, data);
             }
             else
             {
                 MyFile.WriteAllBytes(path, data);
             }
         }
+
         public static FileStream OpenWrite(string path)
         {
             if (!DsFile.Exists(path))
             {
-                using (DsFile.Create(path)) ;
+                using (DsFile.Create(path)) { }
             }
-            if (path != null && path.Length < 240)
-                return System.IO.File.OpenWrite(path);
+            if (path?.Length < 240)
+            {
+                return File.OpenWrite(path);
+            }
 
             return MyFile.OpenWrite(path);
         }
 
         public static FileAttributes GetAttributes(string path)
         {
-            if (path != null && path.Length < 240)
-                return System.IO.File.GetAttributes(path);
+            if (path?.Length < 240)
+            {
+                return File.GetAttributes(path);
+            }
 
             return MyFile.GetAttributes(path);
         }
 
         public static void SetAttributes(string path, FileAttributes attributes)
         {
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
             {
                 System.IO.File.SetAttributes(path, attributes);
             }
@@ -159,7 +193,7 @@ namespace Jarvis.DocumentStore.Shared.Helpers
 
         public static void SetLastWriteTime(string path, DateTime utcNow)
         {
-            if (path != null && path.Length < 240)
+            if (path?.Length < 240)
             {
                 System.IO.File.SetLastWriteTime(path, utcNow);
             }

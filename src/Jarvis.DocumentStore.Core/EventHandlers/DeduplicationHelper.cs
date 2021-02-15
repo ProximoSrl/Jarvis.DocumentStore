@@ -24,15 +24,19 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
         }
 
         public DocumentDescriptorId FindDuplicateDocumentId(
-            DocumentDescriptorId sourceDocumentId, 
+            DocumentDescriptorId sourceDocumentId,
             FileHash sourceHash,
-            BlobId sourceBlobId 
+            BlobId sourceBlobId
             )
         {
             if (!_config.IsDeduplicationActive)
                 return null;
 
             var original = _blobStore.GetDescriptor(sourceBlobId);
+
+            //SUPER IMPORTANT, ORIGINAL REFERENCE FILES MUST NOT BE DE-DUPLICATED 
+            if (original.IsReference)
+                return null;
 
             var matches = _hashReader.FindDocumentByHash(sourceHash);
             Logger.DebugFormat("Deduplicating document {0}", sourceDocumentId);
@@ -61,7 +65,16 @@ namespace Jarvis.DocumentStore.Core.EventHandlers
                         );
                     continue;
                 }
-             
+
+                // only within same content type!
+                if (candidate.IsReference)
+                {
+                    Logger.DebugFormat("document {0} Is a reference ({1}), cannot be used to de-duplicate",
+                        match.DocumentDescriptorId, candidate.ContentType
+                        );
+                    continue;
+                }
+
                 // binary check
                 using (var candidateStream = candidate.OpenRead())
                 using (var originalStream = original.OpenRead())

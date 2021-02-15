@@ -2,10 +2,14 @@
 using Jarvis.DocumentStore.Core.Model;
 using System;
 using System.IO;
+using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
+using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
+using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 
 namespace Jarvis.DocumentStore.Core.Storage.FileSystem
 {
 #pragma warning disable S3881 
+
     // "IDisposable" should be implemented correctly
     /// <summary>
     /// This is probably not the optimal use of this interface
@@ -18,29 +22,26 @@ namespace Jarvis.DocumentStore.Core.Storage.FileSystem
         private readonly ILogger _logger;
         private readonly FileSystemBlobDescriptor _descriptor;
         private readonly FileSystemBlobStoreWritableStream _writableStream;
+        private readonly DirectoryManager _directoryManager;
         private readonly IFileSystemBlobDescriptorStorage _fileSystemBlobDescriptorStorage;
 
         public FileSystemBlobWriter(
+            DirectoryManager directoryManager,
             BlobId blobId,
             FileNameWithExtension fileName,
             String destinationFileName,
             IFileSystemBlobDescriptorStorage fileSystemBlobDescriptorStorage,
             ILogger logger)
         {
+            _directoryManager = directoryManager;
             BlobId = blobId;
             FileName = fileName;
             _logger = logger;
 
-            _descriptor = new FileSystemBlobDescriptor()
-            {
-                BlobId = BlobId,
-                FileNameWithExtension = FileName,
-                Timestamp = DateTime.Now,
-                ContentType = MimeTypes.GetMimeType(FileName)
-            };
+            _descriptor = new FileSystemBlobDescriptor(_directoryManager, BlobId, FileName, DateTime.UtcNow, MimeTypes.GetMimeType(FileName));
 
             //Create a wrapper of the stream
-            var originalStream = new FileStream(destinationFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            var originalStream = File.Open(destinationFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             originalStream.SetLength(0);
             _writableStream = new FileSystemBlobStoreWritableStream(originalStream, this);
             _writableStream.StreamClosed += WritableStreamClosed;

@@ -18,44 +18,78 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-steps:
+jobs:
+- job: Phase_1
+  displayName: Phase 1
+  cancelTimeoutInMinutes: 1
+  pool:
+    name: Default
+  steps:
 
-- task: LibreOfficeKiller@0
-  displayName: 'LibreOfficeKiller '
+  - checkout: self
+    clean: true
 
-- task: GitVersion@0
-  displayName: 'GitVersion '
-  inputs:
-    BuildNamePrefix: 'DocumentStore - CI'
+  - task: LibreOfficeKiller@0
+    name: LibreOfficeKiller_1
+    displayName: 'LibreOfficeKiller '
 
-- task: NuGetToolInstaller@1
-  displayName: 'Use NuGet 5.x'
-  inputs:
-    versionSpec: 5.x
-    checkLatest: true
+  - task: SonarCloudPrepare@1
+    displayName: Prepare analysis on SonarCloud
+    enabled: False
+    inputs:
+      SonarCloud: 924aab99-64b6-4bcd-bab3-8949d1b11273
+      organization: alkampfergit-github
+      projectKey: DocumentStore
+      projectName: DocumentStore
+      projectVersion: $(AssemblyVersion)
 
-- task: NuGetCommand@2
-  displayName: 'NuGet restore **\*.sln'
-  inputs:
-    restoreSolution: '**\*.sln'
-    feedsToUse: config
-    nugetConfigPath: src/NuGet.Config
+  - task: GitVersion@1
+    name: Run_GitVersion
+    displayName: 'GitVersion '
+    inputs:
+      BuildNamePrefix: Jarvis DocumentStore - CI
 
-- task: VSBuild@1
-  displayName: 'Build solution **\*.sln'
-  inputs:
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
+  - task: NuGetToolInstaller@1
+    displayName: Use NuGet 5.x
+    inputs:
+      versionSpec: 5.x
+      checkLatest: true
 
-- task: VSTest@1
-  displayName: 'Test Assemblies **\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
-  inputs:
-    testAssembly: '**\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
-    codeCoverageEnabled: true
-    vsTestVersion: latest
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-  continueOnError: true
+  - task: NuGetCommand@2
+    name: NuGetInstaller_3
+    displayName: NuGet restore **\*.sln
+    inputs:
+      solution: '**\*.sln'
+      selectOrConfig: config
+      nugetConfigPath: src/NuGet.Config
+
+  - task: VSBuild@1
+    name: VSBuild_4
+    displayName: Build solution **\*.sln
+    inputs:
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+
+  - task: VSTest@1
+    name: VSTest_5
+    displayName: Test Assemblies **\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**
+    continueOnError: True
+    inputs:
+      testAssembly: '**\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
+      codeCoverageEnabled: true
+      vsTestVersion: latest
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+
+  - task: SonarCloudAnalyze@1
+    displayName: Run Code Analysis
+    enabled: False
+
+  - task: SonarCloudPublish@1
+    displayName: Publish Quality Gate Result
+    enabled: False
+    inputs:
+      pollingTimeoutSec: 3000
 
   
 

@@ -174,11 +174,14 @@ namespace Jarvis.DocumentStore.Tests.BackgroudTasksTests
                .Do(callInfo => command = (InitializeDocumentDescriptor)callInfo.Args()[0]);
 
             _queue.PollFileSystem();
-               
-            // asserts
-            _blobstore.Received().Upload(Arg.Is(_originalFormat), Arg.Is<FileNameWithExtension>(f => f.ToString() == descriptor.FileName), Arg.Any<Stream>());
 
+            // asserts
             var calls = _blobstore.ReceivedCalls();
+
+            _blobstore.Received().Upload(
+                Arg.Is(_originalFormat),
+                Arg.Is<FileNameWithExtension>(f => f.ToString() == descriptor.FileName),
+                Arg.Any<FileStream>());
 
             Assert.NotNull(command);
             Assert.AreEqual(_blobId, command.BlobId);

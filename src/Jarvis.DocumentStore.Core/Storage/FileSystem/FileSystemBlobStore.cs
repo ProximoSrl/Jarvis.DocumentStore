@@ -29,7 +29,6 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         private const int FolderPrefixLength = 3;
 
-        //private readonly IFileSystemBlobDescriptorStorage _fileSystemBlobDescriptorStore;
         private readonly IFileSystemBlobDescriptorStorage _mongodDbFileSystemBlobDescriptorStorage;
         private readonly ICounterService _counterService;
 
@@ -82,8 +81,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             _directoryManager = new DirectoryManager(baseDirectory, FolderPrefixLength);
             _counterService = counterService;
 
-            //_fileSystemBlobDescriptorStore = new FileSystemBlobDescriptorStore(_directoryManager);
-            _mongodDbFileSystemBlobDescriptorStorage = new MongodDbFileSystemBlobDescriptorStorage(db, collectionName);
+             _mongodDbFileSystemBlobDescriptorStorage = new MongodDbFileSystemBlobDescriptorStorage(db, collectionName);
             _counterService = counterService;
             if (!String.IsNullOrEmpty(userName))
             {
@@ -94,8 +92,13 @@ namespace Jarvis.DocumentStore.Core.Storage
         public IBlobWriter CreateNew(DocumentFormat format, FileNameWithExtension fname)
         {
             var blobId = new BlobId(format, _counterService.GetNext(format));
-            if (Logger.IsDebugEnabled) Logger.Debug($"CreateNew blob for format {format} with file {fname} - assigned blobId: {blobId}");
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.Debug($"CreateNew blob for format {format} with file {fname} - assigned blobId: {blobId}");
+            }
+
             return new FileSystemBlobWriter(
+                _directoryManager,
                 blobId,
                 fname,
                 GetFileNameFromBlobIdAndRemoveDuplicates(blobId, fname),
@@ -106,7 +109,9 @@ namespace Jarvis.DocumentStore.Core.Storage
         public IBlobDescriptor GetDescriptor(BlobId blobId)
         {
             if (blobId == null)
+            {
                 throw new ArgumentNullException(nameof(blobId));
+            }
 
             Logger.DebugFormat($"GetDescriptor for blobid {blobId}");
 
@@ -117,14 +122,16 @@ namespace Jarvis.DocumentStore.Core.Storage
                 Logger.Info(message);
                 throw new Exception(message);
             }
-            descriptor.SetLocalFileName(_directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension));
+            descriptor.SetLocalFileName(_directoryManager);
             return descriptor;
         }
 
         public bool BlobExists(BlobId blobId)
         {
             if (blobId == null)
+            {
                 throw new ArgumentNullException(nameof(blobId));
+            }
 
             Logger.DebugFormat($"BlobExists for blobid {blobId}");
 
@@ -141,13 +148,23 @@ namespace Jarvis.DocumentStore.Core.Storage
         {
             FileInfo finfo = new FileInfo(pathToFile);
             if (!finfo.Exists)
+            {
                 throw new ArgumentException($"File {pathToFile} not found");
+            }
 
-            if (Logger.IsDebugEnabled) Logger.Debug($"Upload document format {format}. File: {pathToFile}");
-            using (var fileStream = new FileStream(pathToFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.Debug($"Upload document format {format}. File: {pathToFile}");
+            }
+
+            using (var fileStream = File.Open(pathToFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 var descriptor = SaveStream(format, new FileNameWithExtension(Path.GetFileName(pathToFile)), fileStream);
-                if (Logger.IsDebugEnabled) Logger.Debug($"Uploaded document format {format}. File: {pathToFile} with blob Id {descriptor.BlobId}");
+                if (Logger.IsDebugEnabled)
+                {
+                    Logger.Debug($"Uploaded document format {format}. File: {pathToFile} with blob Id {descriptor.BlobId}");
+                }
+
                 _mongodDbFileSystemBlobDescriptorStorage.SaveDescriptor(descriptor);
                 return descriptor.BlobId;
             }
@@ -156,9 +173,47 @@ namespace Jarvis.DocumentStore.Core.Storage
         public BlobId Upload(DocumentFormat format, FileNameWithExtension fileName, Stream sourceStream)
         {
             var descriptor = SaveStream(format, fileName, sourceStream);
-            if (Logger.IsDebugEnabled) Logger.Debug($"Uploaded document format {format} from stream with filename {fileName} with blob Id {descriptor.BlobId}");
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.Debug($"Uploaded document format {format} from stream with filename {fileName} with blob Id {descriptor.BlobId}");
+            }
+
             _mongodDbFileSystemBlobDescriptorStorage.SaveDescriptor(descriptor);
 
+            return descriptor.BlobId;
+        }
+
+        /// <summary>
+        /// This function is inherently different from a standard upload, because we do not 
+        /// really need to copy content of the file, we just need to create a descriptor
+        /// that points to the original file, but nevertheless we need to calculate some
+        /// information like the hash.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="pathToFile"></param>
+        /// <returns></returns>
+        public BlobId UploadReference(DocumentFormat format, string pathToFile)
+        {
+            var finfo = new FileInfo(pathToFile);
+            if (!finfo.Exists)
+            {
+                throw new ArgumentException($"File {pathToFile} does not exists or it is not accessible", nameof(pathToFile));
+            }
+            var blobId = new BlobId(format, _counterService.GetNext(format));
+            FileSystemBlobDescriptor descriptor = FileSystemBlobDescriptor.CreateForReference(
+                blobId,
+                pathToFile,
+                DateTime.UtcNow,
+                MimeTypes.GetMimeType(pathToFile)
+            );
+
+            //we still need to calculate md5 and other info
+            descriptor.Length = finfo.Length;
+            descriptor.Md5 = StorageUtils.GetMd5Hash(pathToFile);  
+            Logger.Info($"Blob {blobId} created as a reference to {pathToFile} with hash {descriptor.Md5} and length {descriptor.Length}");
+
+            //Save the descriptor and exit.
+            _mongodDbFileSystemBlobDescriptorStorage.SaveDescriptor(descriptor);
             return descriptor.BlobId;
         }
 
@@ -185,18 +240,12 @@ namespace Jarvis.DocumentStore.Core.Storage
         /// <returns></returns>
         private FileSystemBlobDescriptor InnerPersistOfBlob(BlobId blobId, FileNameWithExtension fileName, Stream sourceStream)
         {
-            FileSystemBlobDescriptor descriptor = new FileSystemBlobDescriptor()
-            {
-                BlobId = blobId,
-                FileNameWithExtension = fileName,
-                Timestamp = DateTime.Now,
-                ContentType = MimeTypes.GetMimeType(fileName)
-            };
+            FileSystemBlobDescriptor descriptor = new FileSystemBlobDescriptor(_directoryManager, blobId, fileName, DateTime.UtcNow, MimeTypes.GetMimeType(fileName));
             string destinationFileName = GetFileNameFromBlobIdAndRemoveDuplicates(blobId, descriptor.FileNameWithExtension);
             Logger.Debug($"File {fileName} was assigned blob {blobId} and will be saved in file {destinationFileName}");
 
             using (var md5 = MD5.Create())
-            using (var fileStream = new FileStream(destinationFileName, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var fileStream = File.Open(destinationFileName, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 fileStream.Seek(0, SeekOrigin.Begin);
                 fileStream.SetLength(0);
@@ -240,22 +289,77 @@ namespace Jarvis.DocumentStore.Core.Storage
             return finalFileName;
         }
 
-        public string Download(BlobId blobId, string folder)
+        public bool CheckIntegrity(BlobId blobId)
         {
             if (blobId == null)
+            {
                 throw new ArgumentNullException(nameof(blobId));
-
-            if (String.IsNullOrEmpty(folder))
-                throw new ArgumentNullException(nameof(folder));
-
-            if (!Directory.Exists(folder))
-                throw new ArgumentException($"folder {folder} does not exists", nameof(folder));
+            }
 
             var descriptor = _mongodDbFileSystemBlobDescriptorStorage.FindOneById(blobId);
             if (descriptor == null)
+            {
                 throw new ArgumentException($"Descriptor for {blobId} not found in {_mongodDbFileSystemBlobDescriptorStorage.GetType().Name}");
+            }
 
-            var localFileName = _directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension);
+            //ok now we need to check the integrity of the file
+            var fileName = descriptor.IsReference ? descriptor.LocalFileName : _directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension);
+            var fileInfo = new FileInfo(fileName);
+            if (!fileInfo.Exists)
+            {
+                Logger.ErrorFormat("Integrity check for blob {0}, expected file {1} does not exists or it is not accessible", blobId, fileName);
+                return false;
+            }
+
+            if (fileInfo.Length != descriptor.Length)
+            {
+                Logger.ErrorFormat("Integrity check for blob {0} with local file {1} failed because the file does not have original length of {2} but has a length of {3}", blobId, fileName, descriptor.Length, fileInfo.Length);
+                return false;
+            }
+
+            var hash = StorageUtils.GetMd5Hash(fileName);
+            if (!hash.Equals(descriptor.Hash, StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.ErrorFormat("Integrity check for blob {0} with local file {1} failed because hash mismatch, original {2} actual {3}", blobId, fileName, descriptor.Md5, hash);
+                return false;
+            }
+
+            return true;
+        }
+
+        public string Download(BlobId blobId, string folder)
+        {
+            if (blobId == null)
+            {
+                throw new ArgumentNullException(nameof(blobId));
+            }
+
+            if (String.IsNullOrEmpty(folder))
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            if (!Directory.Exists(folder))
+            {
+                throw new ArgumentException($"folder {folder} does not exists", nameof(folder));
+            }
+
+            var descriptor = _mongodDbFileSystemBlobDescriptorStorage.FindOneById(blobId);
+            if (descriptor == null)
+            {
+                throw new ArgumentException($"Descriptor for {blobId} not found in {_mongodDbFileSystemBlobDescriptorStorage.GetType().Name}");
+            }
+
+            string localFileName = null;
+            if (descriptor.IsReference)
+            {
+                localFileName = descriptor.LocalFileName;
+            }
+            else
+            {
+                localFileName = _directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension);
+            }
+
             if (!File.Exists(localFileName))
             {
                 Logger.Error($"Blob {blobId} has descriptor, but blob file {localFileName} not found in the system.");
@@ -263,7 +367,7 @@ namespace Jarvis.DocumentStore.Core.Storage
             }
 
             var originalFileName = descriptor.FileNameWithExtension.ToString();
-            string destinationFileName = Path.Combine(folder, originalFileName);
+            string destinationFileName = Path.Combine(folder, Path.GetFileName(originalFileName));
             Int32 uniqueId = 1;
             while (File.Exists(destinationFileName))
             {
@@ -272,7 +376,11 @@ namespace Jarvis.DocumentStore.Core.Storage
 
             File.Copy(localFileName, destinationFileName);
 
-            if (Logger.IsDebugEnabled) Logger.Debug($"Blob {blobId} downloaded in folder {folder} with name {destinationFileName}");
+            if (Logger.IsDebugEnabled)
+            {
+                Logger.Debug($"Blob {blobId} downloaded in folder {folder} with name {destinationFileName}");
+            }
+
             return destinationFileName;
         }
 
@@ -280,10 +388,16 @@ namespace Jarvis.DocumentStore.Core.Storage
         {
             var descriptor = _mongodDbFileSystemBlobDescriptorStorage.FindOneById(blobId);
             if (descriptor == null)
+            {
                 throw new ArgumentException($"Descriptor for {blobId} not found in {_mongodDbFileSystemBlobDescriptorStorage.GetType().Name}");
+            }
 
-            var fileName = _directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension);
-            File.Delete(fileName);
+            if (!descriptor.IsReference)
+            {
+                //This is not a reference, we need to delete actual stored file.
+                var fileName = _directoryManager.GetFileNameFromBlobId(blobId, descriptor.FileNameWithExtension);
+                File.Delete(fileName);
+            }
 
             _mongodDbFileSystemBlobDescriptorStorage.Delete(blobId);
         }
@@ -292,7 +406,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
         public IBlobDescriptor Persist(BlobId blobId, string fileName)
         {
-            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (FileStream fs = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 return Persist(blobId, new FileNameWithExtension(Path.GetFileName(fileName)), fs);
             }
@@ -311,14 +425,10 @@ namespace Jarvis.DocumentStore.Core.Storage
             using (var stream = descriptor.OpenRead())
             {
                 InnerPersistOfBlob(blobId, descriptor.FileNameWithExtension, stream);
-                FileSystemBlobDescriptor newDescriptor = new FileSystemBlobDescriptor()
+                FileSystemBlobDescriptor newDescriptor = new FileSystemBlobDescriptor(_directoryManager, blobId, descriptor.FileNameWithExtension, DateTime.UtcNow, descriptor.ContentType)
                 {
-                    BlobId = blobId,
-                    ContentType = descriptor.ContentType,
-                    FileNameWithExtension = descriptor.FileNameWithExtension,
                     Length = descriptor.Length,
                     Md5 = descriptor.Hash.ToString(),
-                    Timestamp = DateTime.UtcNow,
                 };
                 _mongodDbFileSystemBlobDescriptorStorage.SaveDescriptor(newDescriptor);
             }

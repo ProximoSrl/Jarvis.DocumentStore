@@ -7,11 +7,7 @@ using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.IdentitySupport;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jarvis.DocumentStore.Tests.Storage
 {
@@ -19,8 +15,8 @@ namespace Jarvis.DocumentStore.Tests.Storage
     [TestFixture("gridfs")]
     public class GenericBlobStoreTests : BlobStoreTestBase
     {
-        IBlobStore _sut;
-        IBlobStoreAdvanced _sutAdvanced;
+        private IBlobStore _sut;
+        private IBlobStoreAdvanced _sutAdvanced;
 
         private readonly String _blobStoreToTest;
         private String _tempLocalDirectory;
@@ -85,6 +81,19 @@ namespace Jarvis.DocumentStore.Tests.Storage
             var download = _sut.Download(id, _tempLocalDirectory);
             Assert.That(Path.GetFileName(download), Is.EqualTo("test1.txt"));
             Assert.That(File.ReadAllText(download), Is.EqualTo(content));
+        }
+
+        [Test]
+        public void Verify_basic_integrity_check()
+        {
+            const String content = "this is the content of the file";
+            String tempFileName = GenerateTempTextFile(content, "test1.txt");
+            var id = _sut.Upload(DocumentFormats.Original, tempFileName);
+            Assert.That(_sut.CheckIntegrity(id), Is.True);
+
+            //we could not black-box testing tampering with the file because
+            //we do not exactly know where the content is saved. We are satisfied
+            //that the check integrity is ok.
         }
 
         [Test]
@@ -270,6 +279,20 @@ namespace Jarvis.DocumentStore.Tests.Storage
             Assert.Throws<Exception>(() =>_sut.GetDescriptor(id));
         }
 
+        [Test]
+        public void Verify_delete_stream_with_reference()
+        {
+            const String content = "this is the content of the file";
+            String tempFileName = GenerateTempTextFile(content, $"{Guid.NewGuid()}.txt");
+            var id = _sut.UploadReference(DocumentFormats.Original, tempFileName);
+            Assert.That(id, Is.Not.Null);
+            _sut.Delete(id);
+
+            Assert.Throws<Exception>(() => _sut.GetDescriptor(id));
+            Assert.That(File.Exists(tempFileName), "Reference file MUST not be deleted");
+            Assert.That(File.ReadAllText(tempFileName), Is.EqualTo(content), "original file should not be modified");
+        }
+
         /// <summary>
         /// To migrate from GridFs we need to pass the id from the outside of the 
         /// blob store
@@ -322,6 +345,105 @@ namespace Jarvis.DocumentStore.Tests.Storage
             var download = _sut.Download(newBlobId, _tempLocalDirectory);
             Assert.That(Path.GetFileName(download), Is.EqualTo("thisisatest.txt"));
             Assert.That(File.ReadAllText(download), Is.EqualTo(content));
+        }
+
+        [Test]
+        public void Can_store_file_as_a_reference()
+        {
+            const String content = "this is the content of the file";
+            const String newContent = "Content of the file is modified";
+
+            BlobId id = CreateABlobReferenceThenAssertWriteAndThenChangeOriginalFile(content, newContent);
+
+            //Verify that the content is changed, this is an indirect verification that the
+            //content of the file is indeed the original uploaded file.
+            AssertBlobIdContainsSpecificContent(id, newContent);
+        }
+
+        [Test]
+        public void Can_detect_if_file_content_is_changed()
+        {
+            const String content = "this is the content of the file";
+            const String newContent = "Content of the file is modified";
+
+            BlobId id = CreateABlobReferenceThenAssertWriteAndThenChangeOriginalFile(content, newContent);
+
+            Assert.That(_sut.CheckIntegrity(id), Is.False);
+        }
+
+        [Test]
+        public void Can_download_reference_file()
+        {
+            const String content = "this is the content of the file";
+            String tempFileName = GenerateTempTextFile(content, "thisisatest.txt");
+            BlobId id = UploadContentAsReference(content, tempFileName);
+
+            var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempPath);
+            try
+            {
+                var downloadedFile = _sut.Download(id, tempPath);
+
+                Assert.That(File.ReadAllText(downloadedFile), Is.EqualTo(content));
+            }
+            finally
+            {
+                Directory.Delete(tempPath, true);
+            }
+        }
+
+        [Test]
+        public void Can_read_reference_file_as_stream()
+        {
+            const String content = "this is the content of the file";
+            String tempFileName = GenerateTempTextFile(content, "thisisatest.txt");
+            BlobId id = UploadContentAsReference(content, tempFileName);
+
+            var descriptor = _sut.GetDescriptor(id);
+            using (var stream = descriptor.OpenRead())
+            using (var sr = new StreamReader(stream))
+            {
+                var readedContent = sr.ReadToEnd();
+                Assert.That(readedContent, Is.EqualTo(content));
+            }
+        }
+
+        private BlobId CreateABlobReferenceThenAssertWriteAndThenChangeOriginalFile(string content, string newContent)
+        {
+            String tempFileName = GenerateTempTextFile(content, "thisisatest.txt");
+            BlobId id = UploadContentAsReference(content, tempFileName);
+
+            //to verify that the storage is indeed pointing to the original file, we change
+            //the original file and verify that the content is indeed changed.
+            File.WriteAllText(tempFileName, newContent);
+            return id;
+        }
+
+        private BlobId UploadContentAsReference(string content, string tempFileName)
+        {
+            BlobId id = _sut.UploadReference(DocumentFormats.Original, tempFileName);
+
+            Assert.That(id, Is.Not.Null);
+            Assert.That(File.Exists(tempFileName), "Original file MUST not be deleted");
+
+            AssertBlobIdContainsSpecificContent(id, content);
+            return id;
+        }
+
+        /// <summary>
+        /// Verify that a blob contains a specific storage.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="content"></param>
+        private void AssertBlobIdContainsSpecificContent(BlobId id, string content)
+        {
+            var descriptor = _sut.GetDescriptor(id);
+            using (var stream = descriptor.OpenRead())
+            using (var reader = new StreamReader(stream))
+            {
+                String value = reader.ReadToEnd();
+                Assert.That(value, Is.EqualTo(content));
+            }
         }
     }
 }
