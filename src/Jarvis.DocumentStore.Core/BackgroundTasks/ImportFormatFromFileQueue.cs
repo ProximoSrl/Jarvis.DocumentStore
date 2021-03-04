@@ -228,7 +228,7 @@ namespace Jarvis.DocumentStore.Core.BackgroundTasks
                 }
                 else
                 {
-                    var fileNameWithExtension = String.IsNullOrEmpty(task.FileName) ?
+                    var fileNameWithExtension = !String.IsNullOrEmpty(task.FileName) ?
                         new FileNameWithExtension(task.FileName) :
                         new FileNameWithExtension(fname);
 

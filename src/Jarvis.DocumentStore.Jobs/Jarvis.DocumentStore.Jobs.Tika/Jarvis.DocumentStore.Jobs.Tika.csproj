@@ -18,7 +18,7 @@
 
   <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
     <Exec Command="xcopy $(TargetDir)*.* $(SolutionDir)..\artifacts\jobs\tika\ /Y /E" />
-    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\tika\Jarvis.DocumentStore.JobsHost.exe.config" />
+    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\tika\Jarvis.DocumentStore.JobsHost.exe.config.original" />
   </Target>
   
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
