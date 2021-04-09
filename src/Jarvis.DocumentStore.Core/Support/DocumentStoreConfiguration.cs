@@ -44,7 +44,7 @@ namespace Jarvis.DocumentStore.Core.Support
             var serverAddress = ServerAddresses[0];
             if (serverAddress.StartsWith("http://+:"))
             {
-                serverAddress = serverAddress.Replace("+", Environment.MachineName);
+                serverAddress = serverAddress.Replace("+", "localhost");
             }
             return serverAddress;
         }
