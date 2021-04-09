@@ -125,6 +125,9 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                 }
 				f.LogUsing(new ExtendedLog4netFactory(log4net.FullName));
 			}
+#if DEBUG
+			UdpAppender.AppendToConfiguration();
+#endif
 		}
 
         private static ConsoleAppender CreateConsoleAppender()
