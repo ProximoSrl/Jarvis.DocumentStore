@@ -21,7 +21,7 @@ namespace Jarvis.DocumentStore.Host.Support.Filters
         /// <summary>
         /// This is the list of the Ip that can call EVERYTHING on this computer
         /// </summary>
-        public static HashSet<String> allowedIpList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private readonly HashSet<string> _allowedIpList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "localhost",
             "127.0.0.1",
@@ -32,21 +32,21 @@ namespace Jarvis.DocumentStore.Host.Support.Filters
         /// Key is the  name of the controller, the list of string are all actions of that controller that
         /// are assocaited to Get permission
         /// </summary>
-        public static Dictionary<String, HashSet<String>> getControllerInfo = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<String, HashSet<String>> _getControllerInfo;
 
         /// <summary>
-        /// This is the list of the Ip that can only get blob, these are the machine that uses this 
+        /// This is the list of the Ip that can only get blob, these are the machine that uses this
         /// documentstore as secondary instance
         /// </summary>
-        public static HashSet<String> getOnlyAllowedIpList= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<String> _getOnlyAllowedIpList;
 
         public SecurityFilterAttribute(IEnumerable<String> allowedIpList, IEnumerable<String> getOnlyIpList)
         {
             //machine name is always allowed.
-            SecurityFilterAttribute.allowedIpList.Add(Environment.MachineName);
+            _allowedIpList.Add(Environment.MachineName);
             foreach (var ip in allowedIpList)
             {
-                SecurityFilterAttribute.allowedIpList.Add(ip);
+                _allowedIpList.Add(ip);
             }
 
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -54,12 +54,12 @@ namespace Jarvis.DocumentStore.Host.Support.Filters
             {
                 if (ip.AddressFamily == AddressFamily.InterNetwork || ip.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    SecurityFilterAttribute.allowedIpList.Add(ip.ToString());
+                    _allowedIpList.Add(ip.ToString());
                 }
             }
-            getOnlyAllowedIpList = new HashSet<string>(getOnlyIpList);
+            _getOnlyAllowedIpList = new HashSet<string>(getOnlyIpList);
 
-            getControllerInfo = new Dictionary<string, HashSet<string>>()
+            _getControllerInfo = new Dictionary<string, HashSet<string>>()
             {
                 ["Documents"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -72,13 +72,13 @@ namespace Jarvis.DocumentStore.Host.Support.Filters
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
             var callingIp = GetClientIpAddress(actionContext.Request);
-            Boolean isOk = allowedIpList.Contains(callingIp);
+            Boolean isOk = _allowedIpList.Contains(callingIp);
             if (!isOk)
             {
                 //maybe this ip can only access in get
-                if (getOnlyAllowedIpList.Contains(callingIp))
+                if (_getOnlyAllowedIpList.Contains(callingIp))
                 {
-                    if (getControllerInfo.TryGetValue(actionContext.ControllerContext.ControllerDescriptor.ControllerName, out var allowedAction))
+                    if (_getControllerInfo.TryGetValue(actionContext.ControllerContext.ControllerDescriptor.ControllerName, out var allowedAction))
                     {
                         if (allowedAction.Contains(actionContext.ActionDescriptor.ActionName))
                         {
