@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Jarvis.DocumentStore.Jobs.Email": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\email\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:email /handle:manual-execution"
+    }
+  }
+}
