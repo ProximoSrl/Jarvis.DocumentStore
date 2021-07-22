@@ -442,7 +442,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>json representation of custom data</returns>
         private Task<string> ToJsonAsync(IDictionary<string, object> data)
         {
-            return Task.Factory.StartNew(() => JsonConvert.SerializeObject(data));
+            return Task.FromResult(JsonConvert.SerializeObject(data));
         }
 
         /// <summary>
@@ -453,7 +453,7 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>custom data</returns>
         private Task<T> FromJsonAsync<T>(string data, JsonSerializerSettings settings = null)
         {
-            return Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(data, settings));
+            return Task.FromResult(JsonConvert.DeserializeObject<T>(data, settings));
         }
 
         /// <summary>

@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Jarvis.DocumentStore.Jobs.Attachments": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\attachments\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:attachments /handle:manual-execution"
+    }
+  }
+}

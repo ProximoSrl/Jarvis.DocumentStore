@@ -200,6 +200,12 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         }
 
         [Test]
+        public void Attachment_problematic_email()
+        {
+            _docs.UploadAsync(@"R:\temp\Email.msg", DocumentHandle.FromString("msg_problematic")).Wait();
+        }
+
+        [Test]
         public void Email_msg_with_zip_with_folders_upload()
         {
             _docs.UploadAsync(TestConfig.PathToMsgWithComplexAttachmentAndZipFileWithFolders, DocumentHandle.FromString("msg_with_zip_folder")).Wait();
