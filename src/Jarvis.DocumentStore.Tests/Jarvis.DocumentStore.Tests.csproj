@@ -46,7 +46,7 @@
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver.GridFS" Version="2.7.0" />
-    <PackageReference Include="MSGReader" Version="1.9.14" />
+    <PackageReference Include="MSGReader" Version="4.0.2" />
     <PackageReference Include="NEventStore" Version="6.0.0-beta0042" />
     <PackageReference Include="NEventStore.Domain" Version="6.0.0-unstable0027" />
     <PackageReference Include="NEventStore.Persistence.MongoDB" Version="6.0.0-beta0093" />

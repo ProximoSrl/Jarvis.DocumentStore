@@ -25,7 +25,7 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
             _sevenZipExtractorFunctions = sevenZipFunctions;
         }
 
-        protected async override Task<ProcessResult> OnPolling(Shared.Jobs.PollerJobParameters parameters, string workingFolder)
+        protected async override Task<ProcessResult> OnPolling(PollerJobParameters parameters, string workingFolder)
         {
             string localFile = await DownloadBlob(
                  parameters.TenantId,
@@ -95,7 +95,19 @@ namespace Jarvis.DocumentStore.Jobs.Attachments
                     foreach (Storage.Attachment attachment in message.Attachments.OfType<Storage.Attachment>())
                     {
                         if (attachment.IsInline)
-                            continue; //no need to uncompress inline attqach
+                        {
+                            //some of the attachments are in whitelist even if inline
+                            if (!String.IsNullOrEmpty(attachment.FileName)) 
+                            {
+                                var fileExtension = Path.GetExtension(attachment.FileName).Trim('.');
+                                if (!permittedExtension.Contains(fileExtension))
+                                {
+                                    //unpermitted file extension inline.
+                                    continue;
+                                }
+                            }
+
+                        }
 
                         String fileName = Path.Combine(unzippingDirectory, attachment.FileName);
                         File.WriteAllBytes(fileName, attachment.Data);
