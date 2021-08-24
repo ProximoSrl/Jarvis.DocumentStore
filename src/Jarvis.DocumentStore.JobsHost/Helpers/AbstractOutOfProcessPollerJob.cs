@@ -2,6 +2,7 @@
 using Jarvis.DocumentStore.Client;
 using Jarvis.DocumentStore.Client.Model;
 using Jarvis.DocumentStore.JobsHost.Support;
+using Jarvis.DocumentStore.Shared.Helpers;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json;
 using System;
@@ -352,7 +353,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 });
                 Logger.DebugFormat("SetJobExecuted url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                pollerResult = client.UploadString(firstUrl.SetJobCompleted, payload);
+                pollerResult = client.UploadStringAwareOfEncoding(firstUrl.SetJobCompleted, payload);
                 Logger.DebugFormat("SetJobExecuted Result: {0}", pollerResult);
             }
         }
@@ -375,7 +376,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                 });
                 Logger.DebugFormat("ReQueuedJob url: {0} with payload {1}", firstUrl.SetJobCompleted, payload);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                pollerResult = client.UploadString(firstUrl.SetJobCompleted, payload);
+                pollerResult = client.UploadStringAwareOfEncoding(firstUrl.SetJobCompleted, payload);
                 Logger.DebugFormat("SetJobExecuted Result: {0}", pollerResult);
             }
         }
@@ -423,7 +424,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
                     });
                     Logger.DebugFormat("Polling url: {0} with payload {1}", firstUrl, payload);
                     client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                    pollerResult = client.UploadString(firstUrl.GetNextJobUrl, payload);
+                    pollerResult = client.UploadStringAwareOfEncoding(firstUrl.GetNextJobUrl, payload);
                     Logger.DebugFormat("GetNextJobResult: {0}", pollerResult);
                 }
                 if (!pollerResult.Equals("null", StringComparison.OrdinalIgnoreCase))
@@ -561,7 +562,7 @@ namespace Jarvis.DocumentStore.JobsHost.Helpers
             {
                 //TODO: use round robin if a document store is down.
                 var url = GetBlobUriForJobFormats(tenantId, jobId);
-                var result = client.DownloadString(url);
+                var result = client.DownloadStringAwareOfEncoding(url);
                 return JsonConvert.DeserializeObject<String[]>(result);
             }
         }

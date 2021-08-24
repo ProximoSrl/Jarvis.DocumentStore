@@ -13,6 +13,7 @@ using Jarvis.DocumentStore.Shared.Serialization;
 using Newtonsoft.Json;
 using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json.Linq;
+using Jarvis.DocumentStore.Shared.Helpers;
 
 #if DisablePriLongPath || NETSTANDARD
 using Path = System.IO.Path;
@@ -262,7 +263,7 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new WebClient())
             {
                 var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
-                return client.DownloadString(resourceUri);
+                return client.DownloadStringAwareOfEncoding(resourceUri);
             }
         }
 
@@ -689,7 +690,7 @@ namespace Jarvis.DocumentStore.Client
             using (var client = new WebClient())
             {
                 Uri endPoint = GenerateUriForFeed(startFeed, numOfFeeds, types);
-                var json = client.DownloadString(endPoint);
+                var json = client.DownloadStringAwareOfEncoding(endPoint);
                 return FromJson<IEnumerable<ClientFeed>>(json);
             }
         }
@@ -699,7 +700,7 @@ namespace Jarvis.DocumentStore.Client
             var getJobsUri = GenerateUriForGetJobs(handle);
             using (var client = new WebClient())
             {
-                var result = await client.DownloadStringTaskAsync(getJobsUri).ConfigureAwait(false);
+                var result = await client.DownloadStringAwareOfEncodingAsync(getJobsUri).ConfigureAwait(false);
                 return GenerateArrayOfJobs(result);
             }
         }
@@ -709,7 +710,7 @@ namespace Jarvis.DocumentStore.Client
             var getJobsUri = GenerateUriForGetJobs(handle);
             using (var client = new WebClient())
             {
-                var result = client.DownloadString(getJobsUri);
+                var result = client.DownloadStringAwareOfEncoding(getJobsUri);
                 return GenerateArrayOfJobs(result);
             }
         }
@@ -724,7 +725,7 @@ namespace Jarvis.DocumentStore.Client
             {
                 ComposeDocumentsModel parameter = CreateParameterForComposeDocuments(resultingDocumentHandle, resultingDocumentFileName, documentList);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                var result = await client.UploadStringTaskAsync(composePdfUri, JsonConvert.SerializeObject(parameter)).ConfigureAwait(false);
+                var result = await client.UploadStringAwareOfEncodingAsync(composePdfUri, JsonConvert.SerializeObject(parameter)).ConfigureAwait(false);
                 return CreateReturnObjectForComposeDocuments(result);
             }
         }
@@ -739,7 +740,7 @@ namespace Jarvis.DocumentStore.Client
             {
                 ComposeDocumentsModel parameter = CreateParameterForComposeDocuments(resultingDocumentHandle, resultingDocumentFileName, documentList);
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                var result = client.UploadString(composePdfUri, JsonConvert.SerializeObject(parameter));
+                var result = client.UploadStringAwareOfEncoding(composePdfUri, JsonConvert.SerializeObject(parameter));
                 return CreateReturnObjectForComposeDocuments(result);
             }
         }
