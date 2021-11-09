@@ -43,6 +43,7 @@ using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Jarvis.Framework.Shared.Helpers;
 using Jarvis.DocumentStore.Jobs.PdfComposer;
 using System.Reflection;
+using System.IO;
 
 #pragma warning disable RCS1090 // Call 'ConfigureAwait(false)'.
 #pragma warning disable S101 // Types should be named in camel case
@@ -79,6 +80,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         private ITriggerProjectionsUpdate _projections;
 
         protected string _engineVersion;
+        protected string _tempPath;
 
         protected DocumentControllerOutOfProcessJobsIntegrationTestsBase(String engineVersion)
         {
@@ -151,6 +153,19 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
         protected virtual void OnStop()
         {
             _sutBase?.Stop();
+        }
+
+        [SetUp]
+        public void SetUp() 
+        {
+            _tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(_tempPath);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+           Pri.LongPath.Directory.Delete(_tempPath, true);
         }
     }
 
@@ -246,7 +261,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                         "File name is wrong, we expect the same file name with extension .tika.html");
 
                     var contentFormatInfo = documentDescriptor.Formats[formats[1]];
-                    var contentFile = _blobStore.Download(contentFormatInfo.BlobId, Path.GetTempPath());
+                    var contentFile = _blobStore.Download(contentFormatInfo.BlobId, _tempPath);
                     var content = File.ReadAllText(contentFile);
 
                     Assert.That(content.Contains("previous post we introduced Jarvis"));
@@ -284,7 +299,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             PrepareJob();
 
             String longFileName = Path.Combine(
-               Path.GetTempPath(),
+               _tempPath,
                "_lfn" + new string('X', 240) + ".pdf");
             if (!File.Exists(longFileName))
             {
@@ -387,7 +402,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
                     var contentFormatInfo = documentDescriptor.Formats[contentFormat];
 
-                    var content = _blobStore.Download(contentFormatInfo.BlobId, Path.GetTempPath());
+                    var content = _blobStore.Download(contentFormatInfo.BlobId, _tempPath);
                     var contentString = File.ReadAllText(content);
                     Assert.That(contentString, Contains.Substring("Questo documento è protetto da password."));
                     return;
@@ -436,7 +451,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
             var handleCore = new Core.Model.DocumentHandle("Verify_tika_job_multiple");
             var handleClient = new DocumentHandle("Verify_tika_job_multiple");
 
-            var realFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()) + ".pdf";
+            var realFile = Path.Combine(_tempPath, Guid.NewGuid().ToString()) + ".pdf";
             File.Copy(TestConfig.PathToPasswordProtectedPdf, realFile);
             await _documentStoreClient.UploadAsync(
                realFile,
@@ -469,7 +484,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
 
                     var contentFormatInfo = documentDescriptor.Formats[contentFormat];
 
-                    var content = _blobStore.Download(contentFormatInfo.BlobId, Path.GetTempPath());
+                    var content = _blobStore.Download(contentFormatInfo.BlobId, _tempPath);
                     var contentString = File.ReadAllText(content);
                     Assert.That(contentString, Contains.Substring("Questo documento è protetto da password."));
                     return;
@@ -669,7 +684,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     var blobId = documentDescriptor.Formats[thumbSmallFormat].BlobId;
                     var file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".small.png"));
-                    var downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
+                    var downloadedImage = _blobStore.Download(blobId, _tempPath);
                     using (var image = Image.FromFile(downloadedImage))
                     {
                         Assert.That(image.Height, Is.EqualTo(200));
@@ -678,7 +693,7 @@ namespace Jarvis.DocumentStore.Tests.SelfHostIntegratonTests
                     blobId = documentDescriptor.Formats[thumbLargeFormat].BlobId;
                     file = _blobStore.GetDescriptor(blobId);
                     Assert.That(file.FileNameWithExtension.ToString(), Is.EqualTo(fileNameWithoutExtension + ".large.png"));
-                    downloadedImage = _blobStore.Download(blobId, Path.GetTempPath());
+                    downloadedImage = _blobStore.Download(blobId, _tempPath);
                     using (var image = Image.FromFile(downloadedImage))
                     {
                         Assert.That(image.Height, Is.EqualTo(800));
