@@ -29,11 +29,11 @@
     <PackageReference Include="Jarvis.Framework.NEventStoreEx" Version="2.0.12" />
     <PackageReference Include="Jarvis.Framework.Shared" Version="2.0.12" />
     <PackageReference Include="Metrics.NET" Version="0.3.7" />
-    <PackageReference Include="mongocsharpdriver" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver.GridFS" Version="2.7.0" />
+    <PackageReference Include="mongocsharpdriver" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Bson" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver.GridFS" Version="2.13.2" />
     <PackageReference Include="NEventStore" Version="6.0.0-beta0042" />
     <PackageReference Include="NEventStore.Domain" Version="6.0.0-unstable0027" />
     <PackageReference Include="NEventStore.Persistence.MongoDB" Version="6.0.0-beta0093" />

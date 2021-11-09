@@ -41,11 +41,11 @@
     <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="3.0.0" />
     <PackageReference Include="Microsoft.Owin.Hosting" Version="3.0.0" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="3.0.0" />
-    <PackageReference Include="mongocsharpdriver" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver.GridFS" Version="2.7.0" />
+    <PackageReference Include="mongocsharpdriver" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Bson" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver.GridFS" Version="2.13.2" />
     <PackageReference Include="MSGReader" Version="4.0.2" />
     <PackageReference Include="NEventStore" Version="6.0.0-beta0042" />
     <PackageReference Include="NEventStore.Domain" Version="6.0.0-unstable0027" />

@@ -33,10 +33,10 @@
     <PackageReference Include="MimeTypes" Version="1.0.2">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="mongocsharpdriver" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
+    <PackageReference Include="mongocsharpdriver" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Bson" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.2" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.2" />
     <PackageReference Include="NEventStore" Version="6.0.0-beta0042" />
     <PackageReference Include="NEventStore.Domain" Version="6.0.0-unstable0027" />
     <PackageReference Include="NEventStore.Persistence.MongoDB" Version="6.0.0-beta0093" />
