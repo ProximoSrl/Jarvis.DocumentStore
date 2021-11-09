@@ -41,8 +41,8 @@
     <PackageReference Include="MongoDB.Bson" Version="2.13.2" />
     <PackageReference Include="MongoDB.Driver" Version="2.13.2" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.13.2" />
-    <PackageReference Include="NEventStore" Version="6.0.0-beta0042" />
-    <PackageReference Include="NEventStore.Domain" Version="6.0.0-unstable0027" />
+    <PackageReference Include="NEventStore" Version="8.0.0" />
+    <PackageReference Include="NEventStore.Domain" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Owin" Version="1.0" />
     <PackageReference Include="Owin.Metrics" Version="0.3.7" />
