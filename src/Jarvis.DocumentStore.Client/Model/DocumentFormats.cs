@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -49,6 +50,25 @@ namespace Jarvis.DocumentStore.Client.Model
         public bool HasFormat(DocumentFormat format)
         {
             return _formats.ContainsKey(format);
+        }
+
+        public Uri GetFormatUri(DocumentFormat format)
+        {
+            if (_formats.TryGetValue(format, out var formatUri))
+            {
+                return formatUri;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Clone content of the internal dictionary, returning a copy
+        /// </summary>
+        /// <returns></returns>
+        public IDictionary<DocumentFormat, Uri> GetAllFormats() 
+        {
+            return new ReadOnlyDictionary<DocumentFormat, Uri>(_formats);
         }
 
         public Int32 Count
