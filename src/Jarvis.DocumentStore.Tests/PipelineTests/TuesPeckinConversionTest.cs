@@ -49,6 +49,24 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
             File.Delete(result);
         }
 
+
+        [Test]
+        public void Verify_sanitize_of_single_html_file_with_base64_image()
+        {
+            var tempFile = Path.ChangeExtension(Path.GetTempFileName(), ".html");
+            File.Copy(TestConfig.PathToHtmlFileWithBase64Image, tempFile);
+            _sanitizer = new SafeHtmlConverter(tempFile)
+            {
+                Logger = NullLogger.Instance
+            };
+            var result = _sanitizer.Run("jobtest");
+
+            Assert.That(File.Exists(result), "HTML file sanitized");
+            string html = File.ReadAllText(result);
+            Assert.IsTrue(html.Contains("<img src=\"data:image/png;base64"), "base64 images are allowed");
+            File.Delete(result);
+        }
+
         [Test]
         public void Verify_sanitize_of_single_mhtml_file()
         {
