@@ -7,7 +7,6 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using System.Threading.Tasks;
-using Jarvis.DocumentStore.Jobs.HtmlZipOld;
 
 namespace Jarvis.DocumentStore.Jobs.HtmlZip
 {

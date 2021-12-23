@@ -50,10 +50,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Jarvis.DocumentStore.Jobs.HtmlZipOld\MhtConverter.cs" Link="MhtConverter.cs" />
-    <Compile Include="..\Jarvis.DocumentStore.Jobs.HtmlZipOld\SafeHtmlConverter.cs" Link="SafeHtmlConverter.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj" />
     <ProjectReference Include="..\..\Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj" />
     <ProjectReference Include="..\..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj" />
