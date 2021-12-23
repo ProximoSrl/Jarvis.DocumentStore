@@ -181,6 +181,10 @@ namespace Jarvis.DocumentStore.Tests.PipelineTests
         {
             get { return Path.Combine(DocumentsFolder, "Architecture.htmlzip"); }
         }
+        public static string PathToHtmlFileWithBase64Image
+        {
+            get { return Path.Combine(DocumentsFolder, "about-us.html"); }
+        }
 
         public static string PathToMediumJpg
         {
