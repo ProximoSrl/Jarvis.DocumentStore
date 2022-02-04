@@ -48,7 +48,7 @@ namespace Jarvis.DocumentStore.Jobs.Tika.Tests
             }
             catch (Exception ex)
             {
-                retValue.Add(new PollerTestResult(false, "video thumb extraction: " + ex.Message));
+                retValue.Add(new PollerTestResult(false, "video thumb extraction: " + ex.ToString()));
             }
 
             return retValue;
