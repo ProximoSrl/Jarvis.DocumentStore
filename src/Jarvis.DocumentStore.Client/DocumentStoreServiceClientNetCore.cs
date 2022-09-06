@@ -1,4 +1,4 @@
-﻿#if NET461
+﻿#if NETSTANDARD2_0_OR_GREATER
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +16,7 @@ using Jarvis.DocumentStore.Shared.Jobs;
 using Newtonsoft.Json.Linq;
 using Jarvis.DocumentStore.Shared.Helpers;
 
-#if DisablePriLongPath
+#if DisablePriLongPath || NETSTANDARD
 using Path = System.IO.Path;
 using File = System.IO.File;
 #else
@@ -43,6 +43,7 @@ namespace Jarvis.DocumentStore.Client
         public string Tenant { get; private set; }
 
         private readonly Uri _documentStoreUri;
+        private readonly IHttpClientFactory _httpClientFactory;
         public static readonly DocumentFormat OriginalFormat = new DocumentFormat("original");
         public string TempFolder { get; set; }
 
@@ -51,9 +52,13 @@ namespace Jarvis.DocumentStore.Client
         /// </summary>
         /// <param name="documentStoreUri">base uri</param>
         /// <param name="tenant">tenantId</param>
-        public DocumentStoreServiceClient(Uri documentStoreUri, string tenant)
+        public DocumentStoreServiceClient(
+            Uri documentStoreUri,
+            string tenant,
+            IHttpClientFactory httpClientFactory)
         {
             Tenant = tenant;
+            _httpClientFactory = httpClientFactory;
             _documentStoreUri = documentStoreUri;
             TempFolder = Path.Combine(Path.GetTempPath(), "jarvis.client");
         }
@@ -242,30 +247,9 @@ namespace Jarvis.DocumentStore.Client
             DocumentHandle originalHandle,
             DocumentHandle copiedHandle)
         {
-            using (var client = new HttpClient())
-            {
-                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
-                return await client.GetStringAsync(resourceUri).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// copy an handle to another handle without forcing the client
-        /// to download and re-upload the same file
-        /// </summary>
-        /// <param name="originalHandle">Handle you want to copy</param>
-        /// <param name="copiedHandle">Copied handle that will point to the very
-        /// same content of the original one.</param>
-        /// <returns></returns>
-        public String CopyHandle(
-            DocumentHandle originalHandle,
-            DocumentHandle copiedHandle)
-        {
-            using (var client = new WebClient())
-            {
-                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
-                return client.DownloadStringAwareOfEncoding(resourceUri);
-            }
+            var client = _httpClientFactory.CreateClient();
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + originalHandle + "/copy/" + copiedHandle);
+            return await client.GetStringAsync(resourceUri).ConfigureAwait(false);
         }
 
         private async Task<UploadedDocumentResponse> UploadFromFile(Uri endPoint, string pathToFile, IDictionary<string, object> customData)
@@ -314,23 +298,106 @@ namespace Jarvis.DocumentStore.Client
         {
             string fileName = Path.GetFileNameWithoutExtension(fileNameWithExtension);
 
-            using (var client = new HttpClient())
+            var client = _httpClientFactory.CreateClient();
+
+            using (
+                var content =
+                    new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
             {
+                content.Add(
+                    new StreamContent(inputStream),
+                    fileName, fileNameWithExtension
+                );
+
+                if (customData != null)
+                {
+                    string jsonContent = await ToJsonAsync(customData).ConfigureAwait(false);
+                    var stringContent = new StringContent(jsonContent);
+                    content.Add(stringContent, "custom-data");
+                }
+
+                using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
+                {
+                    var json = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    message.EnsureSuccessStatusCode();
+                    return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
+                }
+            }
+        }
+
+        public async Task<UploadedDocumentResponse> AddFormatToDocument(
+            AddFormatFromFileToDocumentModel model,
+            IDictionary<string, object> customData = null)
+        {
+            using (var sourceStream = File.OpenRead(model.PathToFile))
+            {
+                var client = _httpClientFactory.CreateClient();
+
                 using (
                     var content =
                         new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
                 {
+                    var fileInfo = new FileInfo(model.PathToFile);
                     content.Add(
-                        new StreamContent(inputStream),
-                        fileName, fileNameWithExtension
+                        new StreamContent(sourceStream),
+                        "stream",
+                        fileInfo.Name
                     );
 
-                    if (customData != null)
+                    customData = customData ?? new Dictionary<String, Object>();
+                    customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
+                    customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
+                    customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
+                    customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName);
+                    customData.Add(AddFormatToDocumentParameters.Format, model.Format);
+
+                    var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
+                    content.Add(stringContent, "custom-data");
+
+                    var modelFormat = model.Format == null ? "null" : model.Format.ToString();
+                    var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + modelFormat);
+
+                    using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
                     {
-                        string jsonContent = await ToJsonAsync(customData).ConfigureAwait(false);
-                        var stringContent = new StringContent(jsonContent);
-                        content.Add(stringContent, "custom-data");
+                        var json = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        message.EnsureSuccessStatusCode();
+                        return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
                     }
+                }
+
+            }
+        }
+
+        public async Task<UploadedDocumentResponse> AddFormatToDocument(
+            AddFormatFromObjectToDocumentModel model,
+            IDictionary<string, object> customData = null)
+        {
+            using (var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes(model.StringContent)))
+            {
+                var client = _httpClientFactory.CreateClient();
+
+                using (
+                    var content =
+                        new MultipartFormDataContent("Upload----" +
+                                                     DateTime.Now.ToString(CultureInfo.InvariantCulture)))
+                {
+                    content.Add(
+                        new StreamContent(sourceStream),
+                        "stream",
+                        model.FileName
+                    );
+
+                    customData = customData ?? new Dictionary<String, Object>();
+                    customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
+                    customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
+                    customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
+                    customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName);
+                    customData.Add(AddFormatToDocumentParameters.Format, model.Format);
+
+                    var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
+                    content.Add(stringContent, "custom-data");
+
+                    var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + model.Format);
 
                     using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
                     {
@@ -342,99 +409,13 @@ namespace Jarvis.DocumentStore.Client
             }
         }
 
-        public async Task<UploadedDocumentResponse> AddFormatToDocument(
-            AddFormatFromFileToDocumentModel model,
-            IDictionary<string, object> customData = null)
-        {
-            using (var sourceStream = File.OpenRead(model.PathToFile))
-            {
-                using (var client = new HttpClient())
-                {
-                    using (
-                        var content =
-                            new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
-                    {
-                        var fileInfo = new FileInfo(model.PathToFile);
-                        content.Add(
-                            new StreamContent(sourceStream),
-                            "stream",
-                            fileInfo.Name
-                        );
-
-                        customData = customData ?? new Dictionary<String, Object>();
-                        customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
-                        customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
-                        customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
-                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName);
-                        customData.Add(AddFormatToDocumentParameters.Format, model.Format);
-
-                        var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
-                        content.Add(stringContent, "custom-data");
-
-                        var modelFormat = model.Format == null ? "null" : model.Format.ToString();
-                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + modelFormat);
-
-                        using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
-                        {
-                            var json = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            message.EnsureSuccessStatusCode();
-                            return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
-                        }
-                    }
-                }
-            }
-        }
-
-        public async Task<UploadedDocumentResponse> AddFormatToDocument(
-            AddFormatFromObjectToDocumentModel model,
-            IDictionary<string, object> customData = null)
-        {
-            using (var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes(model.StringContent)))
-            {
-                using (var client = new HttpClient())
-                {
-                    using (
-                        var content =
-                            new MultipartFormDataContent("Upload----" +
-                                                         DateTime.Now.ToString(CultureInfo.InvariantCulture)))
-                    {
-                        content.Add(
-                            new StreamContent(sourceStream),
-                            "stream",
-                            model.FileName
-                        );
-
-                        customData = customData ?? new Dictionary<String, Object>();
-                        customData.Add(AddFormatToDocumentParameters.CreatedBy, model.CreatedById);
-                        customData.Add(AddFormatToDocumentParameters.DocumentHandle, model.DocumentHandle);
-                        customData.Add(AddFormatToDocumentParameters.JobId, model.JobId);
-                        customData.Add(AddFormatToDocumentParameters.QueueName, model.QueueName);
-                        customData.Add(AddFormatToDocumentParameters.Format, model.Format);
-
-                        var stringContent = new StringContent(JsonConvert.SerializeObject(customData));
-                        content.Add(stringContent, "custom-data");
-
-                        var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/addformat/" + model.Format);
-
-                        using (var message = await client.PostAsync(endPoint, content).ConfigureAwait(false))
-                        {
-                            var json = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            message.EnsureSuccessStatusCode();
-                            return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
-                        }
-                    }
-                }
-            }
-        }
-
         public async Task RemoveFormatFromDocument(DocumentHandle handle, DocumentFormat documentFormat)
         {
-            using (var client = new HttpClient())
-            {
-                var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/" + documentFormat);
+            var client = _httpClientFactory.CreateClient();
 
-                await client.DeleteAsync(resourceUri).ConfigureAwait(false);
-            }
+            var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/" + documentFormat);
+
+            await client.DeleteAsync(resourceUri).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -476,25 +457,23 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>Custom data</returns>
         public async Task<IDictionary<string, object>> GetCustomDataAsync(DocumentHandle documentHandle)
         {
-            using (var client = new HttpClient())
-            {
-                var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@customdata");
+            var client = _httpClientFactory.CreateClient();
 
-                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
-                return await FromJsonAsync<IDictionary<string, object>>(json).ConfigureAwait(false);
-            }
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@customdata");
+
+            var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
+            return await FromJsonAsync<IDictionary<string, object>>(json).ConfigureAwait(false);
         }
 
         public async Task<string> GetFileNameAsync(DocumentHandle documentHandle)
         {
-            using (var client = new HttpClient())
-            {
-                var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@filename");
+            var client = _httpClientFactory.CreateClient();
 
-                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
-                var response = FromJson<JObject>(json);
-                return response["fileName"].Value<String>();
-            }
+            var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + documentHandle + "/@filename");
+
+            var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
+            var response = FromJson<JObject>(json);
+            return response["fileName"].Value<String>();
         }
 
         /// <summary>
@@ -514,7 +493,7 @@ namespace Jarvis.DocumentStore.Client
             }
 
             var endPoint = new Uri(_documentStoreUri, relativeUri);
-            return new DocumentFormatReader(endPoint, options);
+            return new DocumentFormatReader(endPoint, _httpClientFactory, options);
         }
 
         /// <summary>
@@ -527,7 +506,7 @@ namespace Jarvis.DocumentStore.Client
         public DocumentFormatReader OpenBlobIdForRead(String queueName, String jobId)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/blob/" + queueName + "/" + jobId);
-            return new DocumentFormatReader(endPoint);
+            return new DocumentFormatReader(endPoint, _httpClientFactory);
         }
 
         /// <summary>
@@ -538,10 +517,9 @@ namespace Jarvis.DocumentStore.Client
         public async Task DeleteAsync(DocumentHandle handle)
         {
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle);
-            using (var client = new HttpClient())
-            {
-                await client.DeleteAsync(resourceUri).ConfigureAwait(false);
-            }
+            var client = _httpClientFactory.CreateClient();
+
+            await client.DeleteAsync(resourceUri).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -553,10 +531,9 @@ namespace Jarvis.DocumentStore.Client
         public async Task DeleteAttachmentsAsync(DocumentHandle handle, String source)
         {
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments/" + handle + "/" + source);
-            using (var client = new HttpClient())
-            {
-                await client.DeleteAsync(resourceUri).ConfigureAwait(false);
-            }
+            var client = _httpClientFactory.CreateClient();
+
+            await client.DeleteAsync(resourceUri).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -567,34 +544,31 @@ namespace Jarvis.DocumentStore.Client
         public async Task<DocumentFormats> GetFormatsAsync(DocumentHandle handle)
         {
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle);
-            using (var client = new HttpClient())
-            {
-                var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
-                var d = await FromJsonAsync<IDictionary<DocumentFormat, Uri>>(json).ConfigureAwait(false);
-                return new DocumentFormats(d);
-            }
+            var client = _httpClientFactory.CreateClient();
+
+            var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
+            var d = await FromJsonAsync<IDictionary<DocumentFormat, Uri>>(json).ConfigureAwait(false);
+            return new DocumentFormats(d);
         }
 
         public async Task<DocumentAttachments> GetAttachmentsAsync(DocumentHandle handle)
         {
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments/" + handle);
-            using (var client = new HttpClient())
-            {
-                var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
-                var d = await FromJsonAsync<ClientAttachmentInfo[]>(json).ConfigureAwait(false);
-                return new DocumentAttachments(d);
-            }
+            var client = _httpClientFactory.CreateClient();
+
+            var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
+            var d = await FromJsonAsync<ClientAttachmentInfo[]>(json).ConfigureAwait(false);
+            return new DocumentAttachments(d);
         }
 
         public async Task<DocumentAttachmentsFat> GetAttachmentsFatAsync(DocumentHandle handle)
         {
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/attachments_fat/" + handle);
-            using (var client = new HttpClient())
-            {
-                var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
-                var d = await FromJsonAsync<List<DocumentAttachmentsFat.AttachmentInfo>>(json).ConfigureAwait(false);
-                return new DocumentAttachmentsFat(d);
-            }
+            var client = _httpClientFactory.CreateClient();
+
+            var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
+            var d = await FromJsonAsync<List<DocumentAttachmentsFat.AttachmentInfo>>(json).ConfigureAwait(false);
+            return new DocumentAttachmentsFat(d);
         }
 
         /// <summary>
@@ -605,11 +579,10 @@ namespace Jarvis.DocumentStore.Client
         public async Task<DocumentContent> GetContentAsync(DocumentHandle handle)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/content");
-            using (var client = new HttpClient())
-            {
-                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
-                return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default).ConfigureAwait(false);
-            }
+            var client = _httpClientFactory.CreateClient();
+
+            var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
+            return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default).ConfigureAwait(false);
         }
 
         public DocumentImportData CreateDocumentImportData(
@@ -673,12 +646,11 @@ namespace Jarvis.DocumentStore.Client
         /// <returns>Custom data</returns>
         public async Task<IEnumerable<ClientFeed>> GetFeedAsync(Int64 startFeed, Int32 numOfFeeds, params HandleStreamEventTypes[] types)
         {
-            using (var client = new HttpClient())
-            {
-                Uri endPoint = GenerateUriForFeed(startFeed, numOfFeeds, types);
-                var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
-                return await FromJsonAsync<IEnumerable<ClientFeed>>(json).ConfigureAwait(false);
-            }
+            var client = _httpClientFactory.CreateClient();
+
+            Uri endPoint = GenerateUriForFeed(startFeed, numOfFeeds, types);
+            var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
+            return await FromJsonAsync<IEnumerable<ClientFeed>>(json).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -699,11 +671,9 @@ namespace Jarvis.DocumentStore.Client
         public async Task<QueuedJobInfo[]> GetJobsAsync(DocumentHandle handle)
         {
             var getJobsUri = GenerateUriForGetJobs(handle);
-            using (var client = new WebClient())
-            {
-                var result = await client.DownloadStringAwareOfEncodingAsync(getJobsUri).ConfigureAwait(false);
-                return GenerateArrayOfJobs(result);
-            }
+            var client = _httpClientFactory.CreateClient();
+            var result = await client.GetStringAsync(getJobsUri).ConfigureAwait(false);
+            return GenerateArrayOfJobs(result);
         }
 
         public QueuedJobInfo[] GetJobs(DocumentHandle handle)
@@ -756,7 +726,7 @@ namespace Jarvis.DocumentStore.Client
                 StringBuilder sb = new StringBuilder();
                 foreach (var type in types)
                 {
-                    sb.Append("types=" + (Int32)type + "&");
+                    sb.Append("types=").Append((Int32)type).Append('&');
                 }
                 sb.Length -= 1;
                 uriString = uriString + "?" + sb.ToString();
@@ -803,4 +773,5 @@ namespace Jarvis.DocumentStore.Client
     }
 #pragma warning restore S1075 // URIs should not be hardcoded
 }
+
 #endif

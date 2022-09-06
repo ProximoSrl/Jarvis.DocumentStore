@@ -100,6 +100,7 @@ namespace Jarvis.DocumentStore.JobsHost.Support
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("FAIL: ");
                         testFailed = true;
+                        _logger.ErrorFormat("Error executing initial tests: " + result.Message);
                     }
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine(result.Message);

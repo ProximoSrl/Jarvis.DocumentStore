@@ -70,16 +70,26 @@ jobs:
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
 
-  - task: VSTest@1
+  - task: VSTest@2
     name: VSTest_5
     displayName: Test Assemblies **\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**
     continueOnError: True
     inputs:
-      testAssembly: '**\$(BuildConfiguration)\net461\*test*.dll;-:**\obj\**'
-      codeCoverageEnabled: true
-      vsTestVersion: latest
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
+      testAssemblyVer2: |
+        **\$(BuildConfiguration)\*test*.dll
+        **\$(BuildConfiguration)\net461\*test*.dll
+        !**\obj\**
+        !**\*TestPlatform.ObjectModel.dll
+        !**\Tests\Integration\**
+        !**\Jarvis.IntegrationTest*.dll
+        !**\**TestAdapter**
+      runInParallel: false
+      codeCoverageEnabled: false
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      publishRunAttachments: false
+      rerunFailedTests: true
+      rerunMaxAttempts: 5
 
   - task: SonarCloudAnalyze@1
     displayName: Run Code Analysis
