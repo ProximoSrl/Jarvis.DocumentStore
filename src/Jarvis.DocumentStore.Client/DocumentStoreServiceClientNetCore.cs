@@ -406,7 +406,6 @@ namespace Jarvis.DocumentStore.Client
                         return JsonConvert.DeserializeObject<UploadedDocumentResponse>(json);
                     }
                 }
-
             }
         }
 
@@ -417,7 +416,6 @@ namespace Jarvis.DocumentStore.Client
             var resourceUri = new Uri(_documentStoreUri, Tenant + "/documents/" + handle + "/" + documentFormat);
 
             await client.DeleteAsync(resourceUri).ConfigureAwait(false);
-
         }
 
         /// <summary>
@@ -465,7 +463,6 @@ namespace Jarvis.DocumentStore.Client
 
             var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
             return await FromJsonAsync<IDictionary<string, object>>(json).ConfigureAwait(false);
-
         }
 
         public async Task<string> GetFileNameAsync(DocumentHandle documentHandle)
@@ -477,7 +474,6 @@ namespace Jarvis.DocumentStore.Client
             var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
             var response = FromJson<JObject>(json);
             return response["fileName"].Value<String>();
-
         }
 
         /// <summary>
@@ -497,7 +493,7 @@ namespace Jarvis.DocumentStore.Client
             }
 
             var endPoint = new Uri(_documentStoreUri, relativeUri);
-            return new DocumentFormatReader(endPoint, options);
+            return new DocumentFormatReader(endPoint, _httpClientFactory, options);
         }
 
         /// <summary>
@@ -510,7 +506,7 @@ namespace Jarvis.DocumentStore.Client
         public DocumentFormatReader OpenBlobIdForRead(String queueName, String jobId)
         {
             var endPoint = new Uri(_documentStoreUri, Tenant + "/documents/jobs/blob/" + queueName + "/" + jobId);
-            return new DocumentFormatReader(endPoint);
+            return new DocumentFormatReader(endPoint, _httpClientFactory);
         }
 
         /// <summary>
@@ -524,7 +520,6 @@ namespace Jarvis.DocumentStore.Client
             var client = _httpClientFactory.CreateClient();
 
             await client.DeleteAsync(resourceUri).ConfigureAwait(false);
-
         }
 
         /// <summary>
@@ -539,7 +534,6 @@ namespace Jarvis.DocumentStore.Client
             var client = _httpClientFactory.CreateClient();
 
             await client.DeleteAsync(resourceUri).ConfigureAwait(false);
-
         }
 
         /// <summary>
@@ -555,7 +549,6 @@ namespace Jarvis.DocumentStore.Client
             var json = await client.GetStringAsync(resourceUri).ConfigureAwait(false);
             var d = await FromJsonAsync<IDictionary<DocumentFormat, Uri>>(json).ConfigureAwait(false);
             return new DocumentFormats(d);
-
         }
 
         public async Task<DocumentAttachments> GetAttachmentsAsync(DocumentHandle handle)
@@ -590,7 +583,6 @@ namespace Jarvis.DocumentStore.Client
 
             var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
             return await FromJsonAsync<DocumentContent>(json, PocoSerializationSettings.Default).ConfigureAwait(false);
-
         }
 
         public DocumentImportData CreateDocumentImportData(
@@ -659,7 +651,6 @@ namespace Jarvis.DocumentStore.Client
             Uri endPoint = GenerateUriForFeed(startFeed, numOfFeeds, types);
             var json = await client.GetStringAsync(endPoint).ConfigureAwait(false);
             return await FromJsonAsync<IEnumerable<ClientFeed>>(json).ConfigureAwait(false);
-
         }
 
         /// <summary>
@@ -735,7 +726,7 @@ namespace Jarvis.DocumentStore.Client
                 StringBuilder sb = new StringBuilder();
                 foreach (var type in types)
                 {
-                    sb.Append("types=" + (Int32)type + "&");
+                    sb.Append("types=").Append((Int32)type).Append('&');
                 }
                 sb.Length -= 1;
                 uriString = uriString + "?" + sb.ToString();

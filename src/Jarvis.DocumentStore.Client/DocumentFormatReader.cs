@@ -1,3 +1,4 @@
+#if NET461
 using System;
 using System.IO;
 using System.Net;
@@ -9,7 +10,7 @@ namespace Jarvis.DocumentStore.Client
     {
         public Int64 ContentLength { get; private set; }
 
-        public WebHeaderCollection ReponseHeaders { get; private set; }
+        public WebHeaderCollection ResponseData { get; private set; }
 
         private readonly HttpWebRequest _request;
 
@@ -37,8 +38,9 @@ namespace Jarvis.DocumentStore.Client
         {
             var response = await _request.GetResponseAsync().ConfigureAwait(false);
             this.ContentLength = response.ContentLength;
-            this.ReponseHeaders = response.Headers;
+            this.ResponseData = response.Headers;
             return response.GetResponseStream();
         }
     }
 }
+#endif
