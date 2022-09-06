@@ -37,7 +37,7 @@
     <PackageReference Include="NEventStore" Version="6.0.0-beta0042" />
     <PackageReference Include="NEventStore.Domain" Version="6.0.0-unstable0027" />
     <PackageReference Include="NEventStore.Persistence.MongoDB" Version="6.0.0-beta0093" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Buffers" Version="4.3.0" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
   </ItemGroup>
