@@ -69,15 +69,21 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                     string content = null;
                     using (var p = Process.Start(psi))
                     {
-                        //
-                        // Read in all the text from the process with the StreamReader.
-                        //
+                        //wait for 30 seconds with timeout, if extraction requires more than 30 seconds file is really too big or problematic
+                        var closedCorrectly = p.WaitForExit(1000 * 30);
+                        if (!closedCorrectly) 
+                        {
+                            //we have a timeout, ok we really need to kill the process and consider impossible to extract text from this file
+                            p.Kill();
+                            continue;
+                        }
+
                         using (var reader = p.StandardOutput)
                         {
                             content = reader.ReadToEnd();
                         }
 
-                        p.WaitForExit();
+
                         if (p.ExitCode == 0)
                         {
                             return content;
@@ -92,7 +98,6 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 {
                     Logger.ErrorFormat("Error extracting with tika {0}", tika);
                 }
-
             }
 
             throw new ApplicationException("Unable to extract tika with all of present extractors");

@@ -120,6 +120,11 @@ namespace Jarvis.DocumentStore.Jobs.Tika
                 }
             } while (analyzer != null && success == false);
 
+            if (!success) 
+            {
+                return ProcessResult.Fail("Unable to extract content with any version of tika present on the machine.");
+            }
+
             Logger.DebugFormat("Finished tika on job: {0}, charsNum {1}", parameters.JobId, content.Count());
             String sanitizedContent = content;
             if (!string.IsNullOrWhiteSpace(content))
