@@ -183,6 +183,8 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
         {
             //We wait for the job to be generated only for the first 10 wait.
             Boolean waitForNotGeneratedJob = retryCount < 10;
+
+            //We have some job pending for the pdfConverter queue?
             if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "pdfConverter", allowNullJob: waitForNotGeneratedJob))
             {
                 //PdfConverter did not run, need to wait
@@ -192,7 +194,7 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
             var extension = Path.GetExtension(fileName);
             if (!String.IsNullOrEmpty(extension) && officeExtensions.Contains(extension.Trim('.')))
             {
-                //this is a file that can be converted with office.
+                //this is a file that can be converted with office, so we should check office queue, maybe pdf is still pending
                 if (CheckIfQueueJobShouldStillBeExecuted(pendingJobs, "office", allowNullJob: waitForNotGeneratedJob))
                 {
                     //The extension is an extension of office, but office queue still did not run.
@@ -200,10 +202,8 @@ namespace Jarvis.DocumentStore.Jobs.PdfComposer
                 }
             }
 
-            var jobThatStillWereNotRun = pendingJobs.Count(j => !j.Executed);
-            //we do not know if there are some more jobs that can produce pdf, we assume that no pdf format is present
-            //if this handle has no more job to run.
-            return jobThatStillWereNotRun == 0;
+            //ok we can wait if we have NO job, maybe the queue is blocked and we do not have any job still scheduled.
+            return pendingJobs.Count() == 0;
         }
 
         /// <summary>

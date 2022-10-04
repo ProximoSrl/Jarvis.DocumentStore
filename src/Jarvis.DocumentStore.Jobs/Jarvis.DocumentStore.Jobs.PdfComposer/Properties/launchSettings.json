@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\pdfcomposer\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:pdfcomposer /handle:manual-execution"
+    }
+  }
+}
