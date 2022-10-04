@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\tika\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:tika /handle:manual-execution"
+    }
+  }
+}
