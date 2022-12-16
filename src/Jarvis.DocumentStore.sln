@@ -75,6 +75,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jarvis.DocumentStore.Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jarvis.DocumentStore.Jobs.MsGraphOfficeToPdf", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.MsGraphOfficeToPdf\Jarvis.DocumentStore.Jobs.MsGraphOfficeToPdf.csproj", "{2CEF340F-1024-44D7-B196-E957795B8B6A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jarvis.DocumentStore.Jobs.MsGraphOfficePdfThumbnails", "Jarvis.DocumentStore.Jobs\Jarvis.DocumentStore.Jobs.MsGraphOfficePdfThumbnails\Jarvis.DocumentStore.Jobs.MsGraphOfficePdfThumbnails.csproj", "{13D36A3E-09D4-4F57-9B21-4A68F8A5399B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -181,6 +183,10 @@ Global
 		{2CEF340F-1024-44D7-B196-E957795B8B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CEF340F-1024-44D7-B196-E957795B8B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CEF340F-1024-44D7-B196-E957795B8B6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13D36A3E-09D4-4F57-9B21-4A68F8A5399B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13D36A3E-09D4-4F57-9B21-4A68F8A5399B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13D36A3E-09D4-4F57-9B21-4A68F8A5399B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13D36A3E-09D4-4F57-9B21-4A68F8A5399B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -204,6 +210,7 @@ Global
 		{D646774E-3A15-42BB-B9CB-18B80D04B874} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{05F27AFA-6866-41A8-9A76-1C7C14D189DE} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 		{2CEF340F-1024-44D7-B196-E957795B8B6A} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
+		{13D36A3E-09D4-4F57-9B21-4A68F8A5399B} = {1BF1D624-839D-4042-BADD-DB00F4067BED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {480CA723-51F6-4BCA-8AA1-0826CF75CF97}
