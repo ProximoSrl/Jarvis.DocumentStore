@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Jarvis.DocumentStore.Jobs.MsGraphOfficeToPdf": {
+      "commandName": "Executable",
+      "executablePath": "C:\\develop\\Proximo\\Jarvis.DocumentStore\\artifacts\\jobs\\MsGraphOfficeToPdf\\Jarvis.DocumentStore.JobsHost.exe",
+      "commandLineArgs": "/dsuris:http://localhost:5123 /queue:office /handle:manual-execution"
+    }
+  }
+}

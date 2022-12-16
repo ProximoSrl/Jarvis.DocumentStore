@@ -1,0 +1,82 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <AssemblyTitle>Jarvis.DocumentStore.Jobs.MsGraphOfficeToPdf</AssemblyTitle>
+    <Product>Jarvis.DocumentStore.Jobs.MsGraphOfficeToPdf</Product>
+    <Copyright>Copyright ©  2018</Copyright>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+ 
+  <!--<PropertyGroup>
+    <PostBuildEvent>
+      xcopy "$(TargetDir)*.*" "$(SolutionDir)..\artifacts\jobs\MsGraphOfficeToPdf\" /Y /E
+      copy /Y "$(ProjectDir)\app.config" "$(SolutionDir)..\artifacts\jobs\MsGraphOfficeToPdf\Jarvis.DocumentStore.JobsHost.exe.config.original"
+    </PostBuildEvent>
+  </PropertyGroup>-->
+
+  <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
+    <Exec Command="xcopy $(TargetDir)*.* $(SolutionDir)..\artifacts\jobs\MsGraphOfficeToPdf\ /Y /E" />
+    <Exec Command="copy /Y $(ProjectDir)\app.config $(SolutionDir)..\artifacts\jobs\MsGraphOfficeToPdf\Jarvis.DocumentStore.JobsHost.exe.config.original" />
+  </Target>
+
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <!--<PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />-->
+  </Target>
+  <ItemGroup>
+    <PackageReference Include="Castle.Core" Version="4.4.1" />
+    <PackageReference Include="Castle.LoggingFacility" Version="5.1.1" />
+    <PackageReference Include="Castle.Windsor" Version="5.1.1" />
+    <PackageReference Include="DnsClient" Version="1.0.7" />
+    <PackageReference Include="Jarvis.Framework.UdpAppender" Version="1.0.9" />
+    <PackageReference Include="log4net" Version="2.0.12" />
+    <PackageReference Include="MediaTypeMap.Core" Version="2.3.3" />
+    <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
+    <PackageReference Include="System.Buffers" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="office">
+      <HintPath>..\..\..\libs\office\office.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Tests\TestFiles.Designer.cs">
+      <DependentUpon>TestFiles.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Jarvis.DocumentStore.Client\Jarvis.DocumentStore.Client.csproj" />
+    <ProjectReference Include="..\..\Jarvis.DocumentStore.JobsHost\Jarvis.DocumentStore.JobsHost.csproj" />
+    <ProjectReference Include="..\..\Jarvis.DocumentStore.Shared\Jarvis.DocumentStore.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\doc.docx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Tests\TestFiles.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TestFiles.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- Workaround for https://github.com/dotnet/roslyn-project-system/issues/1739 -->
+  <PropertyGroup>
+    <AssemblySearchPaths>$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+  </PropertyGroup>
+  
+</Project>
