@@ -44,7 +44,7 @@
     <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1017" />
     <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1003" />
     <PackageReference Include="MongoDB.Bson" Version="2.7.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.19.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
     <PackageReference Include="System.Buffers" Version="4.3.0" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
