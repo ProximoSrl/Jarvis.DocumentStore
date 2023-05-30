@@ -1,7 +1,9 @@
 ﻿using Castle.Core.Logging;
 using Jarvis.DocumentStore.Client.Model;
+using Jarvis.DocumentStore.Core;
 using Jarvis.DocumentStore.Core.Model;
 using Jarvis.DocumentStore.Core.Storage;
+using Jarvis.DocumentStore.Core.Storage.FileSystem;
 using Jarvis.DocumentStore.Core.Storage.GridFs;
 using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.IdentitySupport;
@@ -15,9 +17,10 @@ namespace Jarvis.DocumentStore.Tests.Storage
     [TestFixture("gridfs")]
     public class GenericBlobStoreTests : BlobStoreTestBase
     {
+        private GridFsBlobStore _gridfsStore;
         private IBlobStore _sut;
         private IBlobStoreAdvanced _sutAdvanced;
-
+        private DirectoryManager _directoryManager;
         private readonly String _blobStoreToTest;
         private String _tempLocalDirectory;
 
@@ -31,6 +34,15 @@ namespace Jarvis.DocumentStore.Tests.Storage
         {
             _tempLocalDirectory = Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(_tempLocalDirectory);
+
+            _gridfsStore = new GridFsBlobStore
+            (
+                MongoDbTestConnectionProvider.OriginalsDbLegacy,
+                new CounterService(MongoDbTestConnectionProvider.SystemDb)
+            )
+            {
+                Logger = new ConsoleLogger()
+            };
 
             if (_blobStoreToTest == "filesystem")
             {
@@ -46,28 +58,21 @@ namespace Jarvis.DocumentStore.Tests.Storage
                 };
                 _sut = fsStore;
                 _sutAdvanced = fsStore as IBlobStoreAdvanced;
+                _directoryManager = new Core.Storage.FileSystem.DirectoryManager(_tempLocalDirectory, 3);
             }
             else if (_blobStoreToTest == "gridfs")
             {
                 MongoDbTestConnectionProvider.DropTestsTenant();
 
-                var gridfsStore = new GridFsBlobStore
-                (
-                    MongoDbTestConnectionProvider.OriginalsDbLegacy,
-                    new CounterService(MongoDbTestConnectionProvider.SystemDb)
-                )
-                {
-                    Logger = new ConsoleLogger()
-                };
-                _sut = gridfsStore;
-                _sutAdvanced = gridfsStore as IBlobStoreAdvanced;
+                _sut = _gridfsStore;
+                _sutAdvanced = _gridfsStore as IBlobStoreAdvanced;
             }
         }
 
         [TearDown]
         public void TearDown()
         {
-            Directory.Delete(_tempLocalDirectory, true);
+            Pri.LongPath.Directory.Delete(_tempLocalDirectory, true);
         }
 
         [Test]
@@ -81,6 +86,37 @@ namespace Jarvis.DocumentStore.Tests.Storage
             var download = _sut.Download(id, _tempLocalDirectory);
             Assert.That(Path.GetFileName(download), Is.EqualTo("test1.txt"));
             Assert.That(File.ReadAllText(download), Is.EqualTo(content));
+        }
+
+        [Test]
+        public void Verify_basic_save_and_reload_stream_with_problematic_too_long_file_name()
+        {
+            if (_blobStoreToTest == "filesystem")
+            {
+                const String content = "this is the content of the file";
+                string fileName = "xxxxxx x xxx xxxxx xxxxxxxxxxx xxxxx xxx xxxxxxxx xxxxxxxxx xxxxx xx xxxxxxxxxxx xxxxx . xxxxx xxxxxxx xx xxxx xxxxxxx xxxxx xxxxx, xx xxxxxxxxxx xxxx xxxxxxr xxxxxx xxxx xx xxxxxxx 2 xxxxxxxxs xxx xxxx xxxxx xxxxxxxxxx xxx xxx xxxx xxxxxxxxxxxx xxxxx..eml";
+                String tempFileName = GenerateTempTextFile(content, "shortfile.txt");
+                BlobId blobId = new BlobId(new Core.Domain.DocumentDescriptor.DocumentFormat("original"), 12345456);
+
+                using (var fs = new FileStream(tempFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    //We can create in gridfs a descriptor with a filename that is not admittible in file system.
+                    var savedBlobId = _gridfsStore.Upload(
+                        new Core.Domain.DocumentDescriptor.DocumentFormat("original"),
+                        new FileNameWithExtension(fileName),
+                        fs);
+
+                    var descriptor = _gridfsStore.GetDescriptor(savedBlobId);
+
+                    //Try to store the file with that too long file name.
+                    _sutAdvanced.RawStore(blobId, descriptor);
+
+                    var download = _sut.Download(blobId, _tempLocalDirectory);
+                    //name of the file is mangled, so we can retrieve the content downloading to a temp file.
+                    Assert.That(Path.GetFileName(download), Is.EqualTo("xxxxxx x xxx xxxxx xxxxxxxxxxx xxxxx xxx xxxxxxxx xxxxxxxxx xxxxx xx xxxxxxxxxxx xxxxx . xxxxx xxxxxxx xx xxxx xxxxxxx xxxxx xxxxx, xx xxxxxxxxxx xxxx xxxxxxr xxxxxx xxxx xx xxxxxxx 2 xxxxxxxxs xxx xxxx xxxxx xxxxxxxxxx xxx xxx xxxx xxx.eml"));
+                    Assert.That(Pri.LongPath.File.ReadAllText(download), Is.EqualTo(content));
+                }
+            }
         }
 
         [Test]
@@ -276,7 +312,7 @@ namespace Jarvis.DocumentStore.Tests.Storage
             Assert.That(id, Is.Not.Null);
             _sut.Delete(id);
 
-            Assert.Throws<Exception>(() =>_sut.GetDescriptor(id));
+            Assert.Throws<Exception>(() => _sut.GetDescriptor(id));
         }
 
         [Test]

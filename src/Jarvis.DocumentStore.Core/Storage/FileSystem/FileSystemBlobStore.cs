@@ -6,8 +6,11 @@ using Jarvis.DocumentStore.Core.Support;
 using Jarvis.Framework.Shared.IdentitySupport;
 using MongoDB.Driver;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using Directory = Jarvis.DocumentStore.Shared.Helpers.DsDirectory;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
@@ -209,7 +212,7 @@ namespace Jarvis.DocumentStore.Core.Storage
 
             //we still need to calculate md5 and other info
             descriptor.Length = finfo.Length;
-            descriptor.Md5 = StorageUtils.GetMd5Hash(pathToFile);  
+            descriptor.Md5 = StorageUtils.GetMd5Hash(pathToFile);
             Logger.Info($"Blob {blobId} created as a reference to {pathToFile} with hash {descriptor.Md5} and length {descriptor.Length}");
 
             //Save the descriptor and exit.
@@ -422,10 +425,16 @@ namespace Jarvis.DocumentStore.Core.Storage
         public void RawStore(BlobId blobId, IBlobDescriptor descriptor)
         {
             Logger.InfoFormat("Ask for raw storage of blob {0} for file {1}", blobId, descriptor.FileNameWithExtension);
+
+            //remember that the descriptor can come from a system like gridfs where you do not have limit on file name length
+            //or characters that can be used in file name, so we need to check if the file name is valid for the file system
+            var fileName = SanitizeFileName(descriptor.FileNameWithExtension);
+
             using (var stream = descriptor.OpenRead())
             {
-                InnerPersistOfBlob(blobId, descriptor.FileNameWithExtension, stream);
-                FileSystemBlobDescriptor newDescriptor = new FileSystemBlobDescriptor(_directoryManager, blobId, descriptor.FileNameWithExtension, DateTime.UtcNow, descriptor.ContentType)
+                FileNameWithExtension finalFileNameWithExtension = new FileNameWithExtension(fileName);
+                InnerPersistOfBlob(blobId, finalFileNameWithExtension, stream);
+                FileSystemBlobDescriptor newDescriptor = new FileSystemBlobDescriptor(_directoryManager, blobId, finalFileNameWithExtension, DateTime.UtcNow, descriptor.ContentType)
                 {
                     Length = descriptor.Length,
                     Md5 = descriptor.Hash.ToString(),
@@ -433,6 +442,39 @@ namespace Jarvis.DocumentStore.Core.Storage
                 _mongodDbFileSystemBlobDescriptorStorage.SaveDescriptor(newDescriptor);
             }
         }
+
+        private string SanitizeFileName(FileNameWithExtension fileNameWithExtension)
+        {
+            var fileName = fileNameWithExtension.ToString();
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return fileName;
+            }
+            var sb = new StringBuilder(fileName.Length);
+            foreach (var c in fileName)
+            {
+                if (invalidChar.Contains(c))
+                {
+                    sb.Append('_');
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+
+            if (sb.Length > 240)
+            {
+                //filename too long, arbitrarly remove extra char.
+                var extension = Path.GetExtension(fileName);
+                sb.Length = 240 - extension.Length;
+                sb.Append(extension);
+            }
+
+            return sb.ToString();
+        }
+
+        private static readonly HashSet<char> invalidChar = new HashSet<char>(System.IO.Path.GetInvalidFileNameChars());
 
         #endregion
     }
