@@ -4,6 +4,8 @@ using Jarvis.DocumentStore.Tests.Support;
 using Jarvis.Framework.Shared.IdentitySupport;
 using Jarvis.Framework.Shared.IdentitySupport.Serialization;
 using Jarvis.Framework.Shared.MultitenantSupport;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using NUnit.Framework;
 using System;
 using System.Configuration;
@@ -17,6 +19,8 @@ namespace Jarvis.DocumentStore.Tests
         [OneTimeSetUp]
         public void This_is_run_before_ANY_tests()
         {
+            var objectSerializer = new ObjectSerializer(type => ObjectSerializer.DefaultAllowedTypes(type) || type.FullName.StartsWith("Jarvis"));
+            BsonSerializer.RegisterSerializer(objectSerializer);
             var overrideTestDb = Environment.GetEnvironmentVariable("TEST_MONGODB");
             if (!String.IsNullOrEmpty(overrideTestDb))
             {

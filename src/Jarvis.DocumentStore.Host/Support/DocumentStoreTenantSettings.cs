@@ -26,6 +26,10 @@ namespace Jarvis.DocumentStore.Host.Support
             SetConnectionString("system");
             SetConnectionString("readmodel");
 
+            var conn = GetConnectionString("system");
+            var url = new MongoUrl(conn);
+            var client = new MongoClient(url);
+
             Set("system.db", GetDatabase("system"));
             Set("readmodel.db", GetDatabase("readmodel"));
 
