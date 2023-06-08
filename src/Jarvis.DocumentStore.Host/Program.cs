@@ -7,6 +7,8 @@ using Jarvis.Framework.Kernel.Support;
 using Jarvis.Framework.Shared.Commands;
 using Jarvis.Framework.Shared.IdentitySupport;
 using log4net.Core;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using System;
 using System.Linq;
 using Topshelf;
@@ -23,6 +25,8 @@ namespace Jarvis.DocumentStore.Host
 
         private static int Main(string[] args)
         {
+            var objectSerializer = new ObjectSerializer(type => ObjectSerializer.DefaultAllowedTypes(type) || type.FullName.StartsWith("Jarvis"));
+            BsonSerializer.RegisterSerializer(objectSerializer);
             var lastErrorFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_lastError.txt");
             if (File.Exists(lastErrorFileName)) File.Delete(lastErrorFileName);
             try

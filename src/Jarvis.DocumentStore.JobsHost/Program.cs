@@ -7,6 +7,8 @@ using Jarvis.DocumentStore.Shared.Helpers;
 using Path = Jarvis.DocumentStore.Shared.Helpers.DsPath;
 using File = Jarvis.DocumentStore.Shared.Helpers.DsFile;
 using Jarvis.DocumentStore.MongoDbAppender;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson.Serialization;
 
 namespace Jarvis.DocumentStore.JobsHost
 {
@@ -17,6 +19,8 @@ namespace Jarvis.DocumentStore.JobsHost
 
         public static int Main(string[] args)
         {
+            var objectSerializer = new ObjectSerializer(type => ObjectSerializer.DefaultAllowedTypes(type) || type.FullName.StartsWith("Jarvis"));
+            BsonSerializer.RegisterSerializer(objectSerializer);
             try
             {
                 Native.DisableWindowsErrorReporting();
